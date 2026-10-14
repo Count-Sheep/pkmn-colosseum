@@ -1467,7 +1467,6 @@ void fn_80116D30(u32 kind, u32 arg)
 {
     s32 skind;
     u32 floor;
-    u32 i;
     u32 offset;
     u8* rec;
     u8* text;
@@ -1492,21 +1491,21 @@ void fn_80116D30(u32 kind, u32 arg)
     }
 
     floor = (u32)fn_800FF56C();
-    i = 0;
+    kind = 0;
     offset = 0;
-    while (i < *(u32*)lbl_80478EC0) {
+    while (kind < *(u32*)lbl_80478EC0) {
         rec = (u8*)(lbl_80478EC4 + offset);
         if (*(u16*)(rec + 2) == floor &&
             (s32)*(u8*)rec == skind &&
             *(u32*)(rec + 4) == arg &&
             *(u32*)(rec + 8) != 0) {
-            scriptSetEventColID(arg);
+            scriptSetEventColID((u32)arg);
             fn_800F7434(*(u32*)(rec + 8), 4, *(u32*)(rec + 0xC),
                         *(u32*)(rec + 0x10), *(u32*)(rec + 0x14),
                         *(u32*)(rec + 0x18));
         }
         offset += 0x1C;
-        i++;
+        kind++;
     }
 }
 #endif

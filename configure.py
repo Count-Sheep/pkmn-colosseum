@@ -169,6 +169,8 @@ config.sjiswrap_path = args.sjiswrap
 config.config_path = Path("config") / config.version / "config.yml"
 config.check_sha_path = Path("config") / config.version / "build.sha1"
 config.force_active_symbols["main"] = [
+    # Present in retail, but its caller is not yet linked from source.
+    "fn_800093D0",
     # game/gba/gba_conv_candidate_80088F58.c: debug-tool callbacks with no
     # reference in main.dol; compiled from source they would be dead-stripped.
     "fn_80088F58",
@@ -3379,6 +3381,13 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/menu/pda_exact_80039A50.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
                 "game/menu/pda_candidate_80039A50.c",
                 mw_version="GC/1.3",
@@ -3392,9 +3401,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: this isolated callback shares PDA's 0.0f.
+            Object(
+                Matching,
+                "game/menu/pda_exact_80039F70.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BAB0", "offset": 0, "expected": "00000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
-                "game/menu/pda_candidate_80039F70.c",
+                "game/menu/pda_candidate_8003A10C.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -3438,6 +3458,20 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/pda_candidate_8003B814.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/menu/pda_exact_8003C24C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/pda_candidate_8003C2B8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -5465,7 +5499,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_80009178.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-sdata 8", "-sdata2 8"],
@@ -5754,8 +5788,15 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart_candidate_800609B4.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/menuCB_BattleStart_candidate_80060A28.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -5800,6 +5841,10 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menuCB_BattleStart_candidate_80061F6C.c",
+                # TEMPORARY constant_import: retail shares this conversion bias.
+                constant_import=[
+                    {"symbol": "lbl_8047BF88", "offset": 0, "expected": "4330000000000000"}
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -6162,9 +6207,24 @@ config.libs = [
             ],
             # fn_80073E8C reports through real string literals; retail pools
             # the unit's read-only strings off one base register (-rostr).
+            # TEMPORARY constant_import: this carve emits only the first 101
+            # bytes of the retail pool owned by rodata_8026860C.c.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_candidate_80073E8C_gc20.c",
+                constant_import=[
+                    {
+                        "section": ".rodata",
+                        "symbol": "lbl_80268780",
+                        "offset": 0,
+                        "expected": (
+                            "706b6a625f75706c6f616465722e6300504b4a425f507265706172653a20"
+                            "6e6f7420666f756e6400504b4a425f507265706172653a20656d707479206f"
+                            "7220746f6f206269672073697a6500504b4a425f507265706172653a207265"
+                            "6164206572726f7200"
+                        ),
+                    }
+                ],
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-rostr"],
                 progress_category="game",
@@ -6370,7 +6430,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/field_candidate_801CAAF4.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -8538,12 +8598,22 @@ config.libs = [
                             "game/menu/menu_middle_r59_8006E9A4_o1.c",
                             "game/menu/menu_middle_r59_8006D940_suffix.c",
                             "game/menu/menu_middle_r59_8006CCC0_o1.c",
+                            "game/menu/menu_middle_r59_8006F720_o1.c",
                             "game/menu/menu_middle_r59_8006C164_o1.c",
                         )
                         else CodeCandidate
                     ),
                     path,
                     mw_version="GC/1.3",
+                    jump_table_import=(
+                        {
+                            "symbol": "jumptable_802EE06C",
+                            "function": "fn_8006F720",
+                            "owner": "game/data/data_802EE06C.c",
+                        }
+                        if path == "game/menu/menu_middle_r59_8006F720_o1.c"
+                        else None
+                    ),
                     extra_cflags=[
                         "-opt nopeephole",
                         "-use_lmw_stmw on",
@@ -9908,9 +9978,21 @@ config.libs = [
                     (Matching, "game/menuShop_exact_8002AB40.c"),
                     (Matching, "game/menuShop_candidate_8002AE9C.c"),
                     (Matching, "game/menuShop_exact_8002B03C.c"),
-                    (CodeCandidate, "game/menuShop_candidate_8002B1A0.c"),
                 ]
             ],
+            Object(
+                CodeCandidate,
+                "game/menuShop_candidate_8002B1A0.c",
+                constant_import=[
+                    {"symbol": "lbl_8047B988", "offset": 0, "expected": "40c90fdb"},
+                    {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
+                    {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menuPokemonChange_r51_8002DD24_o4s.c",

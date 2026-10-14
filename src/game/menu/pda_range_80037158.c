@@ -158,7 +158,7 @@ extern void menuButtonNormal(void* button);
 extern void winSpriteSetDisp(void* sprite, s32 disp);
 extern void fn_800FB680(s32 arg0, s32 arg1, s32 arg2, void* data);
 
-#if !defined(PDA_RANGE_EXACT_80037174_ONLY)
+#if !defined(PDA_RANGE_EXACT_80037174_ONLY) && !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
 void fn_80037158(void)
 {
 }
@@ -175,6 +175,7 @@ void fn_8003715C(void)
 #endif
 
 #if !defined(PDA_RANGE_80037158_ONLY)
+#if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
 void fn_80037174(void)
 {
     lbl_8047A470 = 0;
@@ -429,8 +430,10 @@ void fn_800376C8(void)
 }
 #pragma opt_propagation reset
 #pragma scheduling reset
+#endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
 
 #if !defined(PDA_RANGE_EXACT_80037174_ONLY)
+#if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
 /* Four copies of the same fade-in step, one per 0x18-byte record in
    lbl_803A654C. Two shapes here are load-bearing: 0.0f as a literal, because
    retail reloads the constant instead of reusing the compare's copy, and the
@@ -893,9 +896,60 @@ void fn_80038A00(void)
     lbl_8047A484 = lbl_8047BA58;
 }
 
+#endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
+#if !defined(PDA_SAVE_80038A0C_ONLY)
 /* Re-seed the People screen's two 4-entry widget tables and reset the
    carousel angle back to the table's rest value. */
 static inline void pdaResetPeopleTables(u8* base, u8* tbl)
+{
+    extern void* memcpy(void* dst, const void* src, u32 size);
+    s32 i;
+    u8* src;
+    u8* dst;
+
+    lbl_8047A480 = (void*)0x1b5a;
+    dst = base + 0xb4;
+    src = tbl + 0;
+    for (i = 0; i < 4; src += 0x18, dst += 0x18, i++) {
+        memcpy(dst, src, 0x18);
+    }
+    src = tbl + 0x60;
+    dst = base + 0x54;
+    for (i = 0; i < 4; src += 0x18, dst += 0x18, i++) {
+        memcpy(dst, src, 0x18);
+    }
+    lbl_8047A47C = 0;
+    lbl_8047A488 = *(f32*)(tbl + 0xe0);
+    lbl_8047A484 = *(f32*)(tbl + 0xe0);
+    lbl_8047A47D = 0;
+}
+
+static inline void pdaResetPeopleTablesFirst(u8* base, u8* tbl)
+{
+    extern void* memcpy(void* dst, const void* src, u32 size);
+    u8* dst;
+    s32 i;
+    u8* src;
+
+    lbl_8047A480 = (void*)0x1b5a;
+    dst = base + 0xb4;
+    src = tbl + 0;
+    for (i = 0; i < 4; src += 0x18, dst += 0x18, i++) {
+        memcpy(dst, src, 0x18);
+    }
+    src = tbl + 0x60;
+    dst = base + 0x54;
+    for (i = 0; i < 4; src += 0x18, dst += 0x18, i++) {
+        memcpy(dst, src, 0x18);
+    }
+    lbl_8047A47C = 0;
+    lbl_8047A488 = *(f32*)(tbl + 0xe0);
+    lbl_8047A484 = *(f32*)(tbl + 0xe0);
+    lbl_8047A47D = 0;
+}
+
+#endif /* !PDA_SAVE_80038A0C_ONLY */
+static inline void pdaResetPeopleTablesSave(u8* base, u8* tbl)
 {
     extern void* memcpy(void* dst, const void* src, u32 size);
     u8* dst;
@@ -905,7 +959,7 @@ static inline void pdaResetPeopleTables(u8* base, u8* tbl)
     lbl_8047A480 = (void*)0x1b5a;
     src = tbl + 0;
     dst = base + 0xb4;
-    for (i = 0; i < 4; dst += 0x18, src += 0x18, i++) {
+    for (i = 0; i < 4; src += 0x18, dst += 0x18, i++) {
         memcpy(dst, src, 0x18);
     }
     src = tbl + 0x60;
@@ -919,6 +973,7 @@ static inline void pdaResetPeopleTables(u8* base, u8* tbl)
     lbl_8047A47D = 0;
 }
 
+#if !defined(PDA_SAVE_80038A0C_ONLY)
 /* People screen driver: run the top-level menu, dispatch the four entries,
    and tear the menu down on exit. */
 #pragma peephole off
@@ -939,23 +994,25 @@ void fn_8003842C(void)
     extern void fn_8010A420(u8* model);
     extern void* peopleInfoBiosGetPtr(s32 id);
     extern void fn_8018F4C8(void* info, s32 kind, s32* out0, s32* out1);
-    u8* tbl;
-    u8* base;
+    struct {
+        u8* base;
+        u8* tbl;
+    } refs;
     s32 state;
     s32 running;
     s32 choice;
     s32 motion;
     s32 scratch;
 
-    base = lbl_803A6498;
-    tbl = lbl_802E51C8;
+    refs.tbl = lbl_802E51C8;
+    refs.base = lbl_803A6498;
     state = 0;
     running = 1;
     fn_801661D0(0x55, 0x1f4, 1, 1);
     do {
         switch (state) {
         case 0:
-            pdaResetPeopleTables(base, tbl);
+            pdaResetPeopleTablesFirst(refs.base, refs.tbl);
             menuOpen(0x18, 0);
             menuOpen(0x1e, 0);
             menuOpen(0x1f, 0);
@@ -976,17 +1033,17 @@ void fn_8003842C(void)
                 switch (choice) {
                 case 0:
                     menuCloseCustom(0x20, 0, 1);
-                    pdaResetPeopleTables(base, tbl);
+                    pdaResetPeopleTables(refs.base, refs.tbl);
                     state = 0xa;
                     break;
                 case 1:
                     menuCloseCustom(0x20, 0, 1);
-                    pdaResetPeopleTables(base, tbl);
+                    pdaResetPeopleTables(refs.base, refs.tbl);
                     state = 0x14;
                     break;
                 case 2:
                     menuCloseCustom(0x20, 0, 1);
-                    pdaResetPeopleTables(base, tbl);
+                    pdaResetPeopleTables(refs.base, refs.tbl);
                     state = 0x1e;
                     break;
                 case 3:
@@ -1008,13 +1065,14 @@ void fn_8003842C(void)
             state = 1;
             break;
         case 0x1e:
-            menuModelInit(base, (s16)(*(s16*)(lbl_802EF0A8 + 0x5fd6) + 0xa),
+            menuModelInit(refs.base, (s16)(*(s16*)(lbl_802EF0A8 + 0x5fd6) + 0xa),
                           *(s16*)(lbl_802EF0A8 + 0x5fd8));
-            fn_8010A010(base, 0xf70400);
+            fn_8010A010(refs.base, 0xf70400);
             fn_8018F4C8(peopleInfoBiosGetPtr(0xf70400), 1, &motion, &scratch);
-            menuModelSetMotion(base, motion);
-            state = fn_80038A0C();
-            fn_8010A420(base);
+            menuModelSetMotion(refs.base, motion);
+            choice = fn_80038A0C();
+            fn_8010A420(refs.base);
+            state = choice;
             break;
         case 0x28:
             state = 0x3e8;
@@ -1030,6 +1088,8 @@ void fn_8003842C(void)
 }
 #pragma peephole reset
 
+#endif /* !PDA_SAVE_80038A0C_ONLY */
+#if !defined(PDA_DRIVER_8003842C_ONLY)
 /* Prime the save-overwrite prompt with the current play time and the two
    hero-name message slots. */
 static inline void pdaFillSavePrompt(void)
@@ -1080,25 +1140,27 @@ s32 fn_80038A0C(void)
     extern void gamedatasaveBiosSetPrevfloorid(void* data, s32 value);
     extern void gamedatasaveBiosSetFloorposindex(void* data, u8 value);
     extern void fn_8011418C(s32* floorId, s32* prevFloorId, u8* posIndex);
-    u8* base;
-    u8* tbl;
+    struct {
+        u8* base;
+        u8* tbl;
+    } refs;
     void* backup;
     u8* slot;
     s32 result;
     u8 saved;
     s32 running;
-    s32 state;
+    s16 state;
     void* data;
     s8 answer;
     s32 prevFloorId;
     s32 floorId;
     u8 posIndex;
 
-    base = lbl_803A6498;
-    state = 0;
-    tbl = lbl_802E51C8;
+    refs.tbl = lbl_802E51C8;
+    refs.base = lbl_803A6498;
     running = 1;
-    slot = base + 0x48;
+    state = 0;
+    slot = refs.base + 0x48;
     do {
         switch (state) {
         case 0:
@@ -1155,7 +1217,7 @@ s32 fn_80038A0C(void)
             heroSetStatus(0, 0x18, (u8)(heroMoveIsMember(1) ? 1 : 0));
             savedataGetStatus(0, 0);
             data = gamedatasaveBiosGetPtr(savedataGetStatus(0, 1));
-            *(s32*)&base[0x48] = gamedatasaveBiosGetFloorid(data);
+            *(s32*)&refs.base[0x48] = gamedatasaveBiosGetFloorid(data);
             *(s32*)&slot[4] = gamedatasaveBiosGetPrevfloorid(data);
             slot[8] = gamedatasaveBiosGetFloorposindex(data);
             fn_8011418C(&floorId, &prevFloorId, &posIndex);
@@ -1171,11 +1233,13 @@ s32 fn_80038A0C(void)
             break;
         }
     } while (running);
-    pdaResetPeopleTables(base, tbl);
+    pdaResetPeopleTablesSave(refs.base, refs.tbl);
     return result;
 }
 #pragma peephole reset
+#endif /* !PDA_DRIVER_8003842C_ONLY */
 
+#if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
 s32 fn_80039004(PdaSprite* context, PdaSprite* sprite)
 {
     extern f32 lbl_803A65B0[][3];
@@ -1350,6 +1414,16 @@ static inline s32 pdaBoxItemNum(s32 target)
 }
 
 /* PC item list: cursor/page input, item swapping, and caption refresh. */
+static inline void pdaTouchBoxItems(void)
+{
+    extern u16 pcboxGetNbItemSlot(s32 box);
+    s32 count = pcboxGetNbItemSlot(0);
+    s32 index;
+    for (index = 0; index < count; index++) {
+        fn_801429E8(pcboxGetItem(0, (s16)index));
+    }
+}
+
 #pragma peephole off
 s32 fn_80039A84(void)
 {
@@ -1363,8 +1437,6 @@ s32 fn_80039A84(void)
     extern f32 lbl_8047BAB4;
     extern f32 lbl_8047BAB8;
     PdaKeyInfo* keyInfo;
-    s32 initIndex;
-    s32 initSlots;
     s32 docSlots;
     s32 docFound;
     s32 docIndex;
@@ -1391,10 +1463,7 @@ s32 fn_80039A84(void)
     if (lbl_8047BAB0 != lbl_8047A4C0) {
         return 0;
     }
-    initSlots = pcboxGetNbItemSlot(0);
-    for (initIndex = 0; initIndex < initSlots; initIndex++) {
-        fn_801429E8(pcboxGetItem(0, (s16)initIndex));
-    }
+    pdaTouchBoxItems();
     target = lbl_8047A4A8 + lbl_8047A4AC;
     if (lbl_8047A4B8 < 0) {
         if ((keyInfo->trigger & 0xc0) != 0) {
@@ -2091,18 +2160,21 @@ void fn_8003D818(void)
     extern u16 memoDataGetCount(u16* data);
     extern void fn_8003E394(void);
     u8* work;
-    u16 count;
-    u32 index;
+    struct {
+        u16 count;
+        u32 index;
+    } memo;
 
     work = (u8*)&lbl_803A6818;
-    count = 0;
-    index = count;
-    while ((u16)index < memoDataGetCount(0)) {
-        lbl_8047A4E4[(u16)index] = memoDataGetPokemonID(0, index);
-        count++;
-        index++;
+    memo.count = 0;
+    memo.index = memo.count;
+    while ((u16)memo.index < memoDataGetCount(0)) {
+        lbl_8047A4E4[(u16)memo.index] =
+            memoDataGetPokemonID(0, memo.index);
+        memo.count++;
+        memo.index++;
     }
-    lbl_8047A4E8 = count;
+    lbl_8047A4E8 = memo.count;
     work[0x158] = 0;
     work[0x159] = 0;
     work[0x15b] = 0;
@@ -9627,8 +9699,16 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
 }
 #pragma peephole reset
 
+#endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
+#if !defined(PDA_DRIVER_8003842C_ONLY)
 extern u8 lbl_80267060[];
 extern u8 lbl_803A65B0[];
+typedef struct PdaMenuRecord {
+    s32 eventId;
+    u8 pad04[0x10];
+    u8 enabled;
+    u8 pad15[3];
+} PdaMenuRecord;
 
 /* Position and tint one of the PDA's eight main menu buttons. */
 #pragma peephole off
@@ -9639,7 +9719,7 @@ s32 fn_80038E74(void* work, PdaSprite* sprite)
 
     (void)work;
     for (i = 0; i < 8; i++) {
-        if (sprite->eventId == *(s32*)(lbl_80267060 + i * 0x18)) {
+        if (sprite->eventId == *(s32*)(i * 0x18 + lbl_80267060)) {
             break;
         }
     }
@@ -9647,9 +9727,9 @@ s32 fn_80038E74(void* work, PdaSprite* sprite)
         return 0;
     }
     {
+        f32 x = *(volatile f32*)(lbl_803A65B0 + i * 0xc);
         f32* pos = ((f32(*)[3])lbl_803A65B0)[i];
-        f32 x = pos[0];
-        enabled = lbl_80267060[i * 0x18 + 0x14];
+        enabled = ((PdaMenuRecord*)lbl_80267060)[(u8)i].enabled;
         sprite->field_50 = x;
         sprite->field_52 = pos[1];
         sprite->alpha = pos[2];
@@ -9668,7 +9748,9 @@ s32 fn_80038E74(void* work, PdaSprite* sprite)
     return 0;
 }
 #pragma peephole reset
+#endif /* !PDA_DRIVER_8003842C_ONLY */
 
+#if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
 extern u16 pcboxGetNbItemSlot(s32 box);
 extern u16 itemBiosGetItemDataId(void* item);
 extern void* itemDataBiosGetPtr(u16 id);
@@ -9809,5 +9891,6 @@ s32 fn_80039128(u8* work)
     return 0;
 }
 #pragma peephole reset
+#endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
 #endif /* !PDA_RANGE_EXACT_80037174_ONLY */
 #endif /* !PDA_RANGE_80037158_ONLY */

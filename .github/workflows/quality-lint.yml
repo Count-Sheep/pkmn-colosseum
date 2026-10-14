@@ -16,6 +16,8 @@ jobs:
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Test quality allowlists
         run: python3 .github/scripts/test_quality_scan.py
+      - name: Test verified jump-table import
+        run: python3 tools/test_import_jump_table_symbol.py
       - name: Scan added lines for asm-wrappers / .inc includes
         run: |
           python3 .github/scripts/quality_scan.py '${{ github.event.pull_request.base.sha }}' '${{ github.sha }}'

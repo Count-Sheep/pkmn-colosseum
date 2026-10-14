@@ -60,6 +60,7 @@ class Object:
             "cflags": None,
             "constant_export": None,
             "constant_import": None,
+            "jump_table_import": None,
             "extab_padding": None,
             "extra_asflags": [],
             "extra_cflags": [],
@@ -829,6 +830,7 @@ def generate_build_ninja(
 
     constant_export = config.tools_dir / "export_constant_symbol.py"
     constant_import = config.tools_dir / "import_constant_symbol.py"
+    jump_table_import = config.tools_dir / "import_jump_table_symbol.py"
     for rule, command in [
         ("mwcc", mwcc_cmd),
         ("mwcc_sjis", mwcc_sjis_cmd),
@@ -849,6 +851,15 @@ def generate_build_ninja(
             name=rule + "_constant_import",
             command=command + f" && $python {constant_import} --object \"$out\" $constant_imports",
             description="MWCC $out (import shared constant)",
+            depfile="$basefile.d",
+            deps="gcc",
+        )
+        n.rule(
+            name=rule + "_jump_table_import",
+            command=command + f' && $python {jump_table_import} --object "$out"'
+            ' --owner "$jump_table_owner" --symbol "$jump_table_symbol"'
+            ' --function "$jump_table_function"',
+            description="MWCC $out (import verified jump table)",
             depfile="$basefile.d",
             deps="gcc",
         )
@@ -1225,6 +1236,22 @@ def generate_build_ninja(
                 build_rule += "_constant_import"
                 build_implcit = [*build_implcit, constant_import]
                 variables["constant_imports"] = " ".join(literals)
+            table = obj.options["jump_table_import"]
+            if table is not None:
+                if prodg or export is not None or imports is not None or \
+                        set(table) != {"symbol", "function", "owner"} or \
+                        not all(re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", table[key])
+                                for key in ("symbol", "function")) or \
+                        not re.fullmatch(r"game/data/[A-Za-z_0-9]+\.c", table["owner"]):
+                    sys.exit(f"Invalid MWCC jump-table import for {obj.name}")
+                build_rule += "_jump_table_import"
+                build_implcit = [*build_implcit, jump_table_import]
+                variables.update({
+                    "jump_table_owner": config.out_path() / "obj" /
+                    Path(table["owner"]).with_suffix(".o"),
+                    "jump_table_symbol": table["symbol"],
+                    "jump_table_function": table["function"],
+                })
             n.comment(f"{obj.name}: {lib_name} (linked {obj.completed})")
             n.build(
                 outputs=obj.src_obj_path,
