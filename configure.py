@@ -3773,6 +3773,8 @@ config.libs = [
                     (Matching, "game/menu/menu_pda_mail_candidate_8004DDC0.c"),
                     (Matching, "game/menu/menu_pda_mail_exact_8004DF34.c"),
                     (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004DFCC.c"),
+                    (Matching, "game/menu/menu_pda_mail_exact_8004E440.c"),
+                    (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004E510.c"),
                     (Matching, "game/menu/menu_pda_mail_exact_8004E790.c"),
                     (Matching, "game/menu/menu_pda_mail_candidate_8004E9C0.c"),
                 ]
