@@ -3347,38 +3347,17 @@ config.libs = [
             Object(
                 Matching,
                 "game/menu/pda_candidate_8003842C.cpp",
-                mw_version="GC/1.3.2",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/pda_exact_800388C4.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            # TEMPORARY constant_import
-            Object(
-                Matching,
-                "game/menu/pda_candidate_80038990.c",
+                # TEMPORARY constant_import: the merged driver/save unit
+                # shares the original PDA conversion biases.
                 constant_import=[{"symbol": "lbl_8047BA80", "offset": 0, "expected": "4330000080000000"},
                                  {"symbol": "lbl_8047BA88", "offset": 8, "expected": "4330000000000000"}],
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/menu/pda_exact_80038A00.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-pragma \"peephole off\""],
                 progress_category="game",
             ),
             Object(
                 CodeCandidate,
-                "game/menu/pda_candidate_80038A0C.c",
-                constant_import=[{"symbol": "lbl_8047BA88", "offset": 0, "expected": "4330000000000000"}],
+                "game/menu/pda_candidate_80038E74.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
