@@ -1,4 +1,10 @@
 {
+  "fn_8003A10C": {
+    "best_local_change": "Completed and linked the 1044-byte PC item withdrawal/discard unit. The initial lookup uses its own local order; withdrawal returns the item ID through its finished scan index, discard through its finished match count. A distinct count-lookup local order fixes the final r25/r26 swap; the message ID is u16. Scoped peephole/lifetime controls and allocation-shaped helper variants are explicitly documented.",
+    "remaining_diff": "None in the function or unit; all 54 relocations and all 26 canonical hashes match. This clears the static item-management choices 0/2 decomp gate, not a new headed native execution claim.",
+    "pipeline_action": "Classify same-size instruction streams whose differences are solely register operands as allocation problems. Recover individual inline-callsite local lifetimes and return-local reuse instead of collapsing all calls into one shared helper layout. Verify isolated-source fidelity against the full translation unit before fast probes. Treat helper variants and lifetime controls as explicit byte-match-first exceptions, not original-source evidence.",
+    "rejected_probes": "Direct m2c transplantation needed missing item-pointer arguments repaired and still scored at most 87.30%. Caller declaration swaps, blanket helper permutations, separate branch locals, narrower prototypes, extra branch helpers, dead stores and broad optimization controls did not finish the match. The successful sequence was initial-helper layout, lifetime splitting off, u16 message ID, distinct return-local reuse and the withdrawal count lookup's slots/index/found/item declaration order."
+  },
   "fn_80084A8C": {
     "best_local_change": "Recreated the real 416-byte shared read-only pool as typed state flags, four initial-state rows, 46 message records and filenames. Named pooled references replace manual base-plus-offset arithmetic. Swapped hero/k declaration order and retained the language result in a u8 local. Isolated and linked the complete 12380-byte unit at 100%.",
     "remaining_diff": "None in function or unit. Shared-pool retention/import exceptions are documented in docs/RULE_EXCEPTIONS.md; they are not a strict exception-free C claim.",
@@ -229,7 +235,7 @@
   },
   "fn_80039F70": {
     "best_local_change": "Carved the existing 412-byte exact PDA callback into its own Matching unit at 0x80039F70-0x8003A10C; full report marks it 100% and complete, and all 26 canonical hashes pass.",
-    "remaining_diff": "None for this function. Its sibling fn_8003A10C remains 99.02299% and unlinked in the suffix candidate.",
+    "remaining_diff": "None. Sibling fn_8003A10C is now also 100% and linked in its standalone unit.",
     "pipeline_action": "For exact functions isolated from a larger translation unit, compare full DOL hashes after text matching. This callback's three 0.0f references needed relocation-verified reuse of lbl_8047BAB0; text-only matching was insufficient.",
     "rejected_probes": "Without constant import, the new private .sdata2 word changed DOL size and failed the hash. Importing the equally valued lbl_8047BC94 restored size but left three wrong relocations; the retail symbol is lbl_8047BAB0."
   },
