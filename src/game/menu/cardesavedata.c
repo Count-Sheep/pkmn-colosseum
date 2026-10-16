@@ -12,7 +12,8 @@
 #if !defined(CARDESAVEDATA_GRID_ONLY) && \
     !defined(CARDESAVEDATA_DECODE_TU) && \
     !defined(CARDESAVEDATA_EXACT_8007FD64_ONLY) && \
-    !defined(CARDESAVEDATA_EXACT_800849B4_ONLY)
+    !defined(CARDESAVEDATA_EXACT_800849B4_ONLY) && \
+    !defined(CARDESAVEDATA_EXACT_80084A8C_ONLY)
 #define CARDESAVEDATA_ALL
 #endif
 
@@ -3095,6 +3096,9 @@ void* fn_80083CFC(void* ptr) {
     return ptr != 0 ? ptr : (void*)savedataGetStatus(0, 0xD);
 }
 
+#endif
+
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_80084A8C_ONLY)
 /* Update the four-controller Card-e connection/status display. */
 typedef struct CardEStatusWork {
     s32 state[4];
@@ -3136,6 +3140,9 @@ static inline CardEStatusWork* CardEGetStatusWork(u8* window)
     return *(CardEStatusWork**)((void* (*)(u8*))windowGetFreeWork)(window);
 }
 
+#endif
+
+#if defined(CARDESAVEDATA_ALL)
 static inline void CardEShowStatusSprite(void* sprite, u32 bit)
 {
     if (sprite != NULL) {
@@ -3388,7 +3395,73 @@ s32 fn_800849B4(s32 mode, s32 command, void* input, void* output)
 #pragma pop
 #endif
 
-#if defined(CARDESAVEDATA_ALL)
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_80084A8C_ONLY)
+
+#pragma push
+/* RULE-EXCEPTION(user-approved): preserve the original shared Card-e pool
+ * while this transfer function is isolated; see docs/RULE_EXCEPTIONS.md. */
+#pragma pool_data on
+#pragma force_active on
+static const u32 cardEStateFlags[12] = {
+    0, 8, 0x1B, 0x1F, 0x1F, 0xBB, 0x7B, 0x7B, 0x700, 0x700, 0x1700, 0xF00,
+};
+static const s32 cardEInitialStates[4][4] = {
+    {8, 1, 0, 0},
+    {8, 1, 1, 0},
+    {8, 1, 1, 1},
+    {1, 1, 1, 1},
+};
+static const CardEMessageEntry cardEMessages[46] = {
+    {0x10D0, 0x126, 0x12C},
+    {0x10D1, 0x13C, 0x142},
+    {0x10D2, 0x13C, 0x142},
+    {0x10D3, 0x147, 0x14D},
+    {0x10D4, 0x147, 0x14D},
+    {0x10D5, 0x13C, 0x142},
+    {0x10D6, 0x13C, 0x142},
+    {0x10D7, 0x13C, 0x142},
+    {0x10D8, 0x147, 0x14D},
+    {0x10D9, 0x147, 0x14D},
+    {0x10DA, 0x13C, 0x142},
+    {0x10DB, 0x13C, 0x142},
+    {0x10DC, 0x13C, 0x142},
+    {0x10DD, 0x147, 0x14D},
+    {0x10DE, 0x147, 0x14D},
+    {0x10DF, 0x13C, 0x142},
+    {0x10E0, 0x13C, 0x142},
+    {0x10E1, 0x147, 0x14D},
+    {0x10E2, 0x147, 0x14D},
+    {0x10E3, 0x13C, 0x142},
+    {0x10E4, 0x13C, 0x142},
+    {0x10E5, 0x13C, 0x142},
+    {0x10E6, 0x147, 0x14D},
+    {0x10E7, 0x147, 0x14D},
+    {0x10E8, 0x13C, 0x142},
+    {0x10E9, 0x13C, 0x142},
+    {0x10EA, 0x147, 0x14D},
+    {0x10EB, 0x147, 0x14D},
+    {0x10EC, 0x13C, 0x142},
+    {0x10ED, 0x13C, 0x142},
+    {0x10EE, 0x147, 0x14D},
+    {0x10EF, 0x147, 0x14D},
+    {0x10F0, 0x13C, 0x142},
+    {0x10F1, 0x13C, 0x142},
+    {0x10F2, 0x13C, 0x142},
+    {0x10F3, 0x147, 0x14D},
+    {0x10F4, 0x147, 0x14D},
+    {0x10F5, 0x13C, 0x142},
+    {0x10F6, 0x147, 0x14D},
+    {0x10F7, 0x147, 0x14D},
+    {0x10F8, 0x147, 0x14D},
+    {0x10F9, 0x147, 0x14D},
+    {0x10FA, 0x147, 0x14D},
+    {0x10FB, 0x147, 0x14D},
+    {0x10FC, 0x126, 0x12C},
+    {0x10FD, 0x126, 0x12C},
+};
+static const char cardEFile[12] = "menuGBAC.c";
+static const char cardETransferFile[16] = "colbtl.bin";
+#pragma force_active reset
 
 /* Typed views of the unprototyped externs used by the transfer flow. */
 #define CardE_threadSwitch() ((void (*)(void))_threadSwitch)()
@@ -3539,9 +3612,11 @@ static inline u8 CardEIsLangArea(u8 lang)
     u32 attest;
 
     if (fn_80128E24() != 0 && (bios = fn_80128E04()) != NULL &&
-        (attest = gamedataBiosGetGamedataAtttestPtr(bios)) != 0 &&
-        gamedataAttestBiosGetLangareaId((void*)attest) == lang) {
-        return 1;
+        (attest = gamedataBiosGetGamedataAtttestPtr(bios)) != 0) {
+        u8 area = gamedataAttestBiosGetLangareaId((void*)attest);
+        if (area == lang) {
+            return 1;
+        }
     }
     return 0;
 }
@@ -3576,8 +3651,7 @@ static inline u8 CardECheckRegion(u32 region)
 }
 
 /* Open the transfer status window and seed each port's state. */
-static inline CardEStatusWork* CardEOpenStatus(const u8* data, s32 mode,
-                                               s32 command, s32 done)
+static inline CardEStatusWork* CardEOpenStatus(s32 mode, s32 command, s32 done)
 {
     void* window;
     CardEStatusWork* work;
@@ -3588,11 +3662,11 @@ static inline CardEStatusWork* CardEOpenStatus(const u8* data, s32 mode,
     ((void (*)(s32, s32))menuOpen)(0xE4, 0);
     window = ((void* (*)(s32))windowSearchID)(0xE4);
     if (window == NULL) {
-        __assert(data + 0x184, 0x1F4, lbl_8047C1A0);
+        __assert(cardEFile, 0x1F4, lbl_8047C1A0);
     }
     work = CardEGetStatusWork(window);
     work->command = command;
-    initial = (const s32*)(data + 0x30 + mode * 0x10);
+    initial = cardEInitialStates[mode];
     work->mode = mode;
     work->port = lbl_80478954[done];
     for (i = 0; i < 4; i++) {
@@ -3615,24 +3689,23 @@ u8 fn_80084A8C(s32 mode, u32 command, void* input, void* output)
     u8 outBuffer[0xD8];
     u8 heroBuffer[0xB1C];
     u32 flags;
-    const u8* data = lbl_8026F2E8;
     void* status;
-    void* hero;
+    s32 k;
     CardEStatusWork* work;
     s32 result;
     s32 n;
     s8 port;
-    s32 k;
+    void* hero;
     u8 ok;
     u8 linked = 0;
     void* out;
 
     CardE_portClose(1);
-    while (!((s32 (*)(s32, const u8*, void*))fn_800932F0)(1, data + 0x190,
-                                                          NULL)) {
+    while (!((s32 (*)(s32, const u8*, void*))fn_800932F0)(
+        1, (const u8*)cardETransferFile, NULL)) {
         CardE_threadSwitch();
     }
-    work = CardEOpenStatus(data, mode, command, 0);
+    work = CardEOpenStatus(mode, command, 0);
 
     if ((command & 0x10) && (mode == 0 || mode == 2)) {
         status = savedataGetStatus(0, 2);
@@ -3781,7 +3854,7 @@ u8 fn_80084A8C(s32 mode, u32 command, void* input, void* output)
                 if ((command & 8) == 0) {
                     return 0;
                 }
-                work = CardEOpenStatus(data, mode, command, k);
+                work = CardEOpenStatus(mode, command, k);
                 work->state[(s8)port] = 6;
                 goto retry;
             }
@@ -3861,6 +3934,10 @@ u8 fn_80084A8C(s32 mode, u32 command, void* input, void* output)
     }
 }
 
+#pragma pop
+#endif
+
+#if defined(CARDESAVEDATA_ALL)
 #define CARDE_GRID_TABLE ((CardEGridTable*)lbl_8026F488)
 #define CARDE_SHOW_MODEL(model_id, anim_id)                                      \
     do {                                                                         \

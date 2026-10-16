@@ -3905,8 +3905,31 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/cardesavedata_candidate_80084A8C_o3.c",
+                # TEMPORARY constant_import and jump_table_import: the isolated
+                # transfer routine shares Card-e's literal and switch pools.
+                constant_import=[
+                    {"symbol": "lbl_8026F2E8", "section": ".rodata", "offset": 0, "expected": (
+                        "00000000000000080000001b0000001f0000001f000000bb0000007b0000007b00000700000007000000170000000f0000000008000000010000000000000000"
+                        "00000008000000010000000100000000000000080000000100000001000000010000000100000001000000010000000110d00126012c10d1013c014210d2013c"
+                        "014210d30147014d10d40147014d10d5013c014210d6013c014210d7013c014210d80147014d10d90147014d10da013c014210db013c014210dc013c014210dd"
+                        "0147014d10de0147014d10df013c014210e0013c014210e10147014d10e20147014d10e3013c014210e4013c014210e5013c014210e60147014d10e70147014d"
+                        "10e8013c014210e9013c014210ea0147014d10eb0147014d10ec013c014210ed013c014210ee0147014d10ef0147014d10f0013c014210f1013c014210f2013c"
+                        "014210f30147014d10f40147014d10f5013c014210f60147014d10f70147014d10f80147014d10f90147014d10fa0147014d10fb0147014d10fc0126012c10fd"
+                        "0126012c6d656e75474241432e630000636f6c62746c2e62696e000000000000"
+                    )},
+                    {"symbol": "lbl_8047C1A8", "offset": 0, "expected": "00000000"},
+                    {"symbol": "lbl_8047C1AC", "offset": 4, "expected": "3f800000"},
+                    {"symbol": "lbl_8047C1B0", "offset": 8, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047C1B8", "offset": 16, "expected": "4330000000000000"},
+                ],
+                jump_table_import={
+                    "symbol": "jumptable_802EEB78",
+                    "function": "fn_80084A8C",
+                    "owner": "game/data/data_802EEB78.c",
+                    "owner_offset": 0,
+                },
                 mw_version="GC/2.5",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
