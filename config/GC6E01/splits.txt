@@ -682,24 +682,6 @@ game/data/sdata2_8047BCA0.c:
 game/data/sdata2_8047BDA0.c:
 	.sdata2     start:0x8047BDA0 end:0x8047BE08
 
-game/data/bss_803A6498.c:
-	.bss        start:0x803A6498 end:0x803A9E40
-
-game/data/bss_803A9E40.c:
-	.bss        start:0x803A9E40 end:0x803B6E40
-
-game/data/bss_803B6E40.c:
-	.bss        start:0x803B6E40 end:0x803D6E40
-
-game/data/bss_803D6E40.c:
-	.bss        start:0x803D6E40 end:0x803F6E40
-
-game/data/bss_803F6E40.c:
-	.bss        start:0x803F6E40 end:0x803FB380
-
-game/data/data_802E51C8.c:
-	.data       start:0x802E51C8 end:0x802E6270
-
 game/data/rodata_80267060.c:
 	.rodata     start:0x80267060 end:0x80267250
 
@@ -733,8 +715,28 @@ game/menu/pda_candidate_80038170.c:
 game/menu/pda_exact_80038250.c:
 	.text       start:0x80038250 end:0x8003842C
 
-game/menu/pda_candidate_8003842C.c:
+game/menu/pda_candidate_8003842C.cpp:
 	.text       start:0x8003842C end:0x800388C4
+	.data       start:0x802E51C8 end:0x802E52B8
+	.bss        start:0x803A6498 end:0x803A65B0
+
+game/data/bss_803A6498.c:
+	.bss        start:0x803A65B0 end:0x803A9E40
+
+game/data/bss_803A9E40.c:
+	.bss        start:0x803A9E40 end:0x803B6E40
+
+game/data/bss_803B6E40.c:
+	.bss        start:0x803B6E40 end:0x803D6E40
+
+game/data/bss_803D6E40.c:
+	.bss        start:0x803D6E40 end:0x803F6E40
+
+game/data/bss_803F6E40.c:
+	.bss        start:0x803F6E40 end:0x803FB380
+
+game/data/data_802E51C8.c:
+	.data       start:0x802E52B8 end:0x802E6270
 
 game/menu/pda_exact_800388C4.c:
 	.text       start:0x800388C4 end:0x80038990
