@@ -1438,16 +1438,10 @@ static inline s32 pdaBoxItemNum(s32 target)
 }
 
 /* PC item list: cursor/page input, item swapping, and caption refresh. */
-static inline void pdaTouchBoxItems(void)
-{
-    extern u16 pcboxGetNbItemSlot(s32 box);
-    s32 count = pcboxGetNbItemSlot(0);
-    s32 index;
-    for (index = 0; index < count; index++) {
-        fn_801429E8(pcboxGetItem(0, (s16)index));
-    }
-}
-
+/* RULE-EXCEPTION(user-approved): allocation shaping and local compiler controls;
+   see docs/RULE_EXCEPTIONS.md, fn_80039A84. */
+#pragma push
+#pragma opt_lifetimes off
 #pragma peephole off
 s32 fn_80039A84(void)
 {
@@ -1479,6 +1473,7 @@ s32 fn_80039A84(void)
     u16 keys;
     u16 itemId;
     s32 top;
+    s32 previousPageTop;
     u8 moved;
     void* item;
 
@@ -1487,7 +1482,10 @@ s32 fn_80039A84(void)
     if (lbl_8047BAB0 != lbl_8047A4C0) {
         return 0;
     }
-    pdaTouchBoxItems();
+    countTotal = pcboxGetNbItemSlot(0);
+    for (target = 0; target < countTotal; target++) {
+        fn_801429E8(pcboxGetItem(0, (s16)target));
+    }
     target = lbl_8047A4A8 + lbl_8047A4AC;
     if (lbl_8047A4B8 < 0) {
         if ((keyInfo->trigger & 0xc0) != 0) {
@@ -1522,16 +1520,13 @@ s32 fn_80039A84(void)
     }
     max = countTotal + 1;
     if ((keyInfo->buttons & 2) != 0) {
-        cursor = lbl_8047A4AC;
-        cursor = cursor + 1;
-        top = lbl_8047A4A8;
-        lbl_8047A4AC = cursor;
-        if (cursor + top >= max) {
-            lbl_8047A4AC = cursor - 1;
+        lbl_8047A4AC++;
+        if (lbl_8047A4AC + lbl_8047A4A8 >= max) {
+            lbl_8047A4AC = lbl_8047A4AC - 1;
         } else {
-            if (cursor >= 8) {
-                lbl_8047A4A8 = top + 1;
-                lbl_8047A4AC = cursor - 1;
+            if (lbl_8047A4AC >= 8) {
+                lbl_8047A4A8 = lbl_8047A4A8 + 1;
+                lbl_8047A4AC = lbl_8047A4AC - 1;
                 lbl_8047A4BC = 1;
             } else {
                 lbl_8047A4BC = 0;
@@ -1569,9 +1564,9 @@ s32 fn_80039A84(void)
         }
     }
     if ((keyInfo->buttons & 4) != 0 && moved == 0) {
-        top = lbl_8047A4A8 - 8;
-        if (top >= 0) {
-            lbl_8047A4A8 = top;
+        previousPageTop = lbl_8047A4A8 - 8;
+        if (previousPageTop >= 0) {
+            lbl_8047A4A8 = previousPageTop;
             fn_80166A50(0x3c5, 0, 0xff, 0);
         }
     }
@@ -1589,7 +1584,7 @@ s32 fn_80039A84(void)
     lbl_8047A4B4 = message;
     return 0;
 }
-#pragma peephole reset
+#pragma pop
 
 void fn_80039F44(void* button)
 {
