@@ -117,6 +117,17 @@ typedef struct PdaMailAttachmentConfig {
 } PdaMailAttachmentConfig;
 
 #ifndef MENU_PDA_MAIL_PARTIAL
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004B7EC) - see docs/RULE_EXCEPTIONS.md */
+static inline void pdaMailWaitModel(void* model)
+{
+    if (model == 0) {
+        return;
+    }
+    while (GSmodelIsAnimating(model) != 0) {
+        _threadSwitch();
+    }
+}
+
 #pragma peephole off
 void fn_8004B7EC(void)
 {
@@ -165,11 +176,7 @@ void fn_8004B7EC(void)
     GSlightStartAnimation(light);
     GSmodelStartAnimation(model);
     fn_80166AB8(0x448, 0, 0);
-    if (model != 0) {
-        while (GSmodelIsAnimating(model)) {
-            _threadSwitch();
-        }
-    }
+    pdaMailWaitModel(model);
     GSmodelStopAnimation(model);
     cameraWaitSyncAnime(1);
     GSlightSetActive(light, 0);
