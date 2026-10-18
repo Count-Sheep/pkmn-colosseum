@@ -302,9 +302,9 @@
   },
   "evolutionStart": {
     "best_local_change": "No accepted change; the isolated function remains 99.84674% matched and unlinked.",
-    "remaining_diff": "Only six instructions differ: the retained r6/r8 pointer roles and the two pointers in the final move-learning loop rotate among r25/r27/r28.",
-    "pipeline_action": "Treat parameter and late-loop pointer live ranges as a register-allocation search; preserve the inlined evolutionRun context and remeasure candidates in the canonical report.",
-    "rejected_probes": "Reversing the waza-list/slot-list pointer declaration order scored 98.98467%; delaying both pointer initializations until after pokemonBiosCopy scored 98.10345%. Both were reverted."
+    "remaining_diff": "Registers only: retail colours r6 as r28 and r8 as r27 and copies sp first (sp=r25, wp=r27). Ours colours r6=r27, r8=r28 (wp=r25, sp=r27).",
+    "pipeline_action": "2026-10-18 replay (GC/2.6 reproduces the unit; simplify K=29 ascending, ties to the lower vreg, then colour2.assign reproduces every colour). The params r6 (v35) and r8 (v37) have identical interference, so v35 is always pushed first and coloured after v37. Retail needs (a) the slot-list copy made before the waza-list copy and kept with an edge to v37, and (b) one extra permanent neighbour on v35 (for example a coalesced node live only between the two copies). No source form found that does either.",
+    "rejected_probes": "Reversing the waza-list/slot-list pointer declaration order scored 98.98467%; delaying both pointer initializations until after pokemonBiosCopy scored 98.10345%. Both were reverted. 2026-10-18: every combination of param order, local/param/assigned wp and sp, declaration order and late assignment (42 forms; 99.85% at best, r6 always r27); carrier locals (x=y) for either pointer; u32/void* types on the signature or inline params; a separate inline loop helper (98.05%); pointer locals in evolutionStart (98.98%); indexed loop (97.98%, strength-reduced copies); permutations of the evolutionRun locals."
   },
   "menuFightButtonTargetSecret": {
     "best_local_change": "Carved the already text-exact 532-byte battle target-button callback into a standalone C unit; it is now 100% linked with all 26 canonical hashes passing.",
@@ -378,5 +378,12 @@
     "remaining_diff": "Registers only: after/wait swap (r30/r29), state r22 vs r19, first r23 vs r22, the hoisted kind base r24 vs r23, loop-1 model r18 vs r24, trigger r19 vs r24, the move ids and late voices r19 vs r18, and the 0x4330 bias register.",
     "pipeline_action": "GC/2.6 replays the unit exactly (kaisi_model capture.py; model.py reproduces every colour). The replay says retail needs (a) state numbered below skipped (declare state after skipped) and (b) two more kept (coalesced) copies whose live range covers the loop-1 seqUpdate model load to its fn_801DA94C call, without adding more than one in the fade loop. Kept copies only appeared for call results held in a named local and then moved (argument/return), or multi-definition returns.",
     "rejected_probes": "No graph change from: getSeqModel with a local or ternary, id/model through extra inlines, seq parameters, function-level model/id, playing type/return forms, fn_801DA94C/9E8/8C4 prototype changes, skip-check inline, time/wait casts, voice wrapper layers, GC/1.3-2.6, -O4,p/s, -inline variants. Direct model/id expressions in seqUpdate let CSE merge the two slwi (code change). Linking also needs a carve that drops evolutionStart/evolutionOpen/evolution with evolutionWazaLearn emitted first (retail order), and a constant_import for lbl_8047E6B8 (the 0x43300000 bias)."
+  },
+
+  "msgctrlTime": {
+    "best_local_change": "None this round; 98.23%.",
+    "remaining_diff": "Final block only: retail colours the buffer base r3, the first index r4 and the zero r4; ours swaps them (base r4, index r3, zero r3).",
+    "pipeline_action": "Block-level replay: colouring is descending vreg with lowest free volatile. Retail needs the base address vreg numbered after the zero constant and the index, and the addi placed before the first slwi before register allocation. The front end always lowers the base inside the glyph store (V,C,X,L,B, then Z,Y).",
+    "rejected_probes": "All neutral (98.23%) or worse: i as int/u32 (u8/u16/s16 82%); i++ split, ++i or i+1 forms (95.4-95.8%); i[arr], pointer-arithmetic and casted-base forms; a u8[] declaration with casts; a block-local or inline-returned buffer pointer; inline put/terminate helpers; temporaries for the glyph value and index; glyph as u32; a defined (non-extern) buffer; a function-level buffer pointer (70%); local declaration permutations; -opt peephole, -O4,s, scheduling off, GC/1.2.5 to 2.0."
   }
 }
