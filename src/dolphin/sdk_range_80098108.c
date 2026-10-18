@@ -69,15 +69,18 @@ typedef void (*OSExceptionHandler)(u8 exception, OSContext* context, u32 dsisr, 
 extern OSBootInfo* BootInfo_8047A6A0;
 extern u32* BI2DebugFlag_8047A6A4;
 extern OSExceptionHandler* OSExceptionTable_8047A6C4;
-#if !defined(SDK_EXI_ECB_STATIC)
-extern EXIControl lbl_803FB3C8[];
-#else
-/* EXIBios.c's Ecb is file-static: the compiler keeps its base address in a
+#if defined(SDK_EXI_GETID_ONLY)
+/* EXIBios.c's Ecb, defined by the EXIGetID unit, which owns its .bss: a
+   definition in the TU lets the compiler keep its base address in a
    register across EXIGetID's inlined helpers. */
-static EXIControl lbl_803FB3C8[3];
+EXIControl lbl_803FB3C8[3];
+#else
+extern EXIControl lbl_803FB3C8[];
 #endif
+#if !defined(SDK_EXI_GETID_ONLY)
 static DVDDriveInfo DriveInfo_803FB4A0;
 static DVDCommandBlock DriveBlock_803FB4C0;
+#endif
 extern OSSavedRegionAddress __OSSavedRegionStart;
 extern OSSavedRegionAddress __OSSavedRegionEnd;
 
@@ -102,6 +105,7 @@ static volatile EXIRegBlock* const ExiHw = (volatile EXIRegBlock*)0xCC006800;
 static volatile OSLowMem* const LowMem = (volatile OSLowMem*)0x80000000;
 
 s32 fn_80099400(s32 chan, u32 dev, u32* id);
+BOOL fn_800993D0(s32 chan);
 BOOL fn_80098790(s32 chan);
 u32 fn_800986A0(s32 chan, s32 exi, s32 tc, s32 ext);
 u32 __OSGetDIConfig(void);
@@ -112,7 +116,7 @@ void* memset(void* dst, int value, size_t n);
 
 /* SDK_OS_SUFFIX_ONLY (sdk_r48_80099790_suffix.c) builds only OS.c's
    0x80099790 - 0x8009A0E0 run, with its .data, .sdata and .bss. */
-#if !defined(SDK_OS_SUFFIX_ONLY)
+#if !defined(SDK_OS_SUFFIX_ONLY) && !defined(SDK_EXI_GETID_ONLY)
 
 /* 0x80098108 | size: 0x8 */
 #pragma push
@@ -813,100 +817,92 @@ BOOL fn_800993D0(s32 chan) {
  * __EXIAttach, EXIDetach and EXIUnlock are all inlined here in the target,
  * so their bodies are repeated rather than called.
  */
-#endif /* !SDK_OS_SUFFIX_ONLY */
+#endif /* !SDK_OS_SUFFIX_ONLY && !SDK_EXI_GETID_ONLY */
 #ifndef SDK_EXI_PREFIX_ONLY
 #if !defined(SDK_OS_SUFFIX_ONLY)
-/* RULE-EXCEPTION(user-approved): local optimization_level 0, as the
-   neighbouring EXIBios functions in this file use — see
-   docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma optimization_level 0
 /*
  * RULE-EXCEPTION(user-approved): inline copies of __EXIAttach, EXIUnlock
  * and EXIDetach (EXIBios.c); retail expands all three inside EXIGetID, so
  * they are repeated here as static inlines — see docs/RULE_EXCEPTIONS.md
  */
-static inline int EXIGetID_Attach(s32 chan, EXICallback extCallback) {
-    EXIControl* exi;
+static inline BOOL EXIGetID_Attach(s32 chan, EXICallback extCallback) {
+    EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled;
 
-    exi = &lbl_803FB3C8[chan];
     enabled = OSDisableInterrupts();
-
-    if ((exi->state & 8) || !fn_80098790(chan)) {
+    if ((exi->state & 8) || fn_80098790(chan) == FALSE) {
         OSRestoreInterrupts(enabled);
-        return 0;
+        return FALSE;
     }
 
-    fn_800986A0(chan, 1, 0, 0);
-    exi->extCallback = extCallback;
-    __OSUnmaskInterrupts(0x100000U >> (chan * 3));
-    exi->state |= 8;
+    fn_800986A0(chan, TRUE, FALSE, FALSE);
 
+    exi->extCallback = extCallback;
+    __OSUnmaskInterrupts(0x100000U >> (3 * chan));
+    exi->state |= 8;
     OSRestoreInterrupts(enabled);
-    return 1;
+
+    return TRUE;
 }
 
-static inline int EXIGetID_Unlock(s32 chan) {
-    EXIControl* exi;
+static inline BOOL EXIGetID_Unlock(s32 chan) {
+    EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled;
     EXICallback unlockedCallback;
 
-    exi = &lbl_803FB3C8[chan];
     enabled = OSDisableInterrupts();
-
     if (!(exi->state & 0x10)) {
         OSRestoreInterrupts(enabled);
-        return 0;
+        return FALSE;
     }
-
     exi->state &= ~0x10;
     fn_80098110(chan, exi);
-    if (exi->items > 0) {
+
+    if (0 < exi->items) {
         unlockedCallback = exi->queue[0].callback;
-        if (--exi->items > 0) {
-            memmove(&exi->queue[0], &exi->queue[1], exi->items * 8);
+        if (0 < --exi->items) {
+            memmove(&exi->queue[0], &exi->queue[1], sizeof(exi->queue[0]) * exi->items);
         }
         unlockedCallback(chan, 0);
     }
 
     OSRestoreInterrupts(enabled);
-    return 1;
+    return TRUE;
 }
 
-static inline int EXIGetID_Detach(s32 chan) {
-    EXIControl* exi;
+static inline BOOL EXIGetID_Detach(s32 chan) {
+    EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled;
 
-    exi = &lbl_803FB3C8[chan];
     enabled = OSDisableInterrupts();
-
     if (!(exi->state & 8)) {
         OSRestoreInterrupts(enabled);
-        return 1;
+        return TRUE;
     }
-
-    if ((exi->state & 0x10) && (exi->device == 0)) {
+    if ((exi->state & 0x10) && exi->device == 0) {
         OSRestoreInterrupts(enabled);
-        return 0;
+        return FALSE;
     }
 
+    /* RULE-EXCEPTION(user-approved): no-op self-assignment; see docs/RULE_EXCEPTIONS.md */
+    exi = exi;
     exi->state &= ~8;
-    __OSMaskInterrupts(0x500000U >> (chan * 3));
-
+    __OSMaskInterrupts(0x700000U >> (3 * chan));
     OSRestoreInterrupts(enabled);
-    return 1;
+    return TRUE;
 }
 
 s32 fn_80099400(s32 chan, u32 dev, u32* id) {
     EXIControl* exi = &lbl_803FB3C8[chan];
-    int err;
+    BOOL err;
     u32 cmd;
     s32 startTime;
     BOOL enabled;
 
-    if ((chan < 2) && (dev == 0)) {
-        if (fn_80098790(chan) == 0) {
+    /* RULE-EXCEPTION(user-approved): no-op self-assignment; see docs/RULE_EXCEPTIONS.md */
+    dev = dev;
+    if (chan < 2 && dev == 0) {
+        if (!fn_80098790(chan)) {
             return 0;
         }
 
@@ -918,53 +914,42 @@ s32 fn_80099400(s32 chan, u32 dev, u32* id) {
         if (!EXIGetID_Attach(chan, NULL)) {
             return 0;
         }
-
         startTime = __EXIProbeStartTime[chan];
     }
 
     err = !EXILock(chan, dev, (chan < 2 && dev == 0) ? (EXICallback)fn_800993D0 : NULL);
-    if (err == 0) {
+    if (!err) {
         err = !EXISelect(chan, dev, 0);
-        if (err == 0) {
+        if (!err) {
             cmd = 0;
-            err |= !EXIImm(chan, &cmd, 2, 1, 0);
+            err |= !EXIImm(chan, &cmd, 2, 1, NULL);
             err |= !EXISync(chan);
-            err |= !EXIImm(chan, id, 4, 0, 0);
+            err |= !EXIImm(chan, id, 4, 0, NULL);
             err |= !EXISync(chan);
             err |= !EXIDeselect(chan);
         }
-
         EXIGetID_Unlock(chan);
     }
 
-    if ((chan < 2) && (dev == 0)) {
+    if (chan < 2 && dev == 0) {
         EXIGetID_Detach(chan);
         enabled = OSDisableInterrupts();
-        err |= __EXIProbeStartTime[chan] != startTime;
-
+        err |= (startTime != __EXIProbeStartTime[chan]);
         if (!err) {
             exi->id = *id;
             exi->idTime = startTime;
         }
-
         OSRestoreInterrupts(enabled);
 
-        if (err) {
-            return 0;
-        }
-
-        return exi->idTime;
+        return err ? 0 : exi->idTime;
     }
 
-    if (err) {
-        return 0;
-    }
-
-    return 1;
+    return err ? 0 : !0;
 }
-#pragma pop
 
 #endif /* !SDK_OS_SUFFIX_ONLY */
+/* SDK_EXI_GETID_ONLY (sdk_r48_80099400_o2.c) builds only EXIGetID. */
+#if !defined(SDK_EXI_GETID_ONLY)
 
 /* OS.c. Hand-written Dolphin SDK asm (zeroes the FPRs, paired singles
    too when HID2[PSE] is set); evidence: docs/asm_evidence/os_primitives.md */
@@ -1383,5 +1368,6 @@ OSExceptionHandler __OSSetExceptionHandler(u8 exception, OSExceptionHandler hand
     *entry = handler;
     return old;
 }
+#endif /* !SDK_EXI_GETID_ONLY */
 #endif
 

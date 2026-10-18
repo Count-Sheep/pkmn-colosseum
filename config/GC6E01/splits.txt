@@ -1727,6 +1727,7 @@ dolphin/sdk_r48_80098108_prefix.c:
 
 dolphin/sdk_r48_80099400_o2.c:
 	.text       start:0x80099400 end:0x80099790
+	.bss        start:0x803FB3C8 end:0x803FB488
 
 dolphin/sdk_r48_80099790_suffix.c:
 	.text       start:0x80099790 end:0x8009A0E0

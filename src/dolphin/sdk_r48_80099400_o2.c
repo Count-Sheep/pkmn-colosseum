@@ -1,4 +1,3 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-/* EXIGetID belongs to EXIBios.c, whose Ecb is file-static. */
-#define SDK_EXI_ECB_STATIC
+/* EXIBios.c EXIGetID (0x80099400 - 0x80099790) with its Ecb .bss. */
+#define SDK_EXI_GETID_ONLY
 #include "src/dolphin/sdk_range_80098108.c"

@@ -4111,10 +4111,11 @@ config.libs = [
                 progress_category="sdk",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "dolphin/sdk_r48_80099400_o2.c",
                 mw_version="GC/1.2.5",
                 cflags=["-O1" if flag == "-O4,p" else flag for flag in cflags_base],
+                extra_cflags=["-opt level=0"],
                 progress_category="sdk",
             ),
             Object(
