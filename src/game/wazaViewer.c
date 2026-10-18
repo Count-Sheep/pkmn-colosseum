@@ -975,14 +975,14 @@ void fn_801D6A64(void) {
     extern void fn_800FE6A0(f32 width, f32 height);
     extern void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...);
 
-    const char* messages;
-    void** models;
-    void* effect;
-    void* node;
     s32 state;
+    void* node;
+    const char* messages;
+    u8 paused;
+    void* effect;
     s32 arg1;
     s32 arg2;
-    u8 paused;
+    void** models;
     u8 color[4];
 
     messages = (const char*)lbl_80279338;
