@@ -1396,7 +1396,7 @@ config.libs = [
             ],
             # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/effect/effect_visual_candidate_801402AC.c",
                 constant_import=[
                     {"symbol": "lbl_8047D340", "offset": 0, "expected": "4059999a"},
