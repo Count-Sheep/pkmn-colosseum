@@ -7960,15 +7960,19 @@ extern u32 fn_800F7AF0(s32 chan);
 extern s32 menuOpen(s32 id, s32 flag);
 
 /* Cry voice of the highlighted entry, 0xffff when it cannot be resolved. */
-static inline u16 pdaCurrentVoice(void)
+static inline u16 pdaCurrentVoice(s32 index)
 {
-    u32 work = pdaLoadPokemon(lbl_803A6818.currentIndex);
+    u32 work = lbl_8047A4E0;
     void* data;
 
     if (work != 0) {
-        data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
-        if (data != NULL) {
-            return pokemonDataBiosGetVoice(data);
+        work = pdaLoadPokemon(index);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetVoice(data);
+            }
+            return 0xffff;
         }
         return 0xffff;
     }
@@ -7976,15 +7980,19 @@ static inline u16 pdaCurrentVoice(void)
 }
 
 /* Cry sample of the highlighted entry, NULL when it cannot be resolved. */
-static inline void* pdaCurrentCry(void)
+static inline void* pdaCurrentCry(s32 index)
 {
-    u32 work = pdaLoadPokemon(lbl_803A6818.currentIndex);
+    u32 work = lbl_8047A4E0;
     void* data;
 
     if (work != 0) {
-        data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
-        if (data != NULL) {
-            return pokemonNakigoeDataBiosGetDataAddress(data);
+        work = pdaLoadPokemon(index);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonNakigoeDataBiosGetDataAddress(data);
+            }
+            return NULL;
         }
         return NULL;
     }
@@ -8059,9 +8067,9 @@ void fn_80046168(void)
             if (menuOpen(0xa2, 1) >= 0) {
                 if (pdaEntrySeen() != 0) {
                     menuOpen(0x3e, 0);
-                    voice = pdaCurrentVoice();
+                    voice = pdaCurrentVoice(lbl_803A6818.currentIndex);
                     fn_80166AB8(voice, 0, 0);
-                    pdaPushCry(pdaCurrentCry(), voice);
+                    pdaPushCry(pdaCurrentCry(lbl_803A6818.currentIndex), voice);
                     *(s32*)(S + 0x20) = 1;
                 }
             } else {
@@ -8122,9 +8130,9 @@ void fn_80046168(void)
                 *(s32*)(S + 0x20) = 0;
             } else {
                 if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x100) != 0) {
-                    voice = pdaCurrentVoice();
+                    voice = pdaCurrentVoice(lbl_803A6818.currentIndex);
                     fn_80166AB8(voice, 0, 0);
-                    pdaPushCry(pdaCurrentCry(), voice);
+                    pdaPushCry(pdaCurrentCry(lbl_803A6818.currentIndex), voice);
                 }
                 if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x200) != 0) {
                     if (*(s32*)(S + 0x1c) == 2) {
