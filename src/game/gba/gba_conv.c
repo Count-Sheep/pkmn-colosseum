@@ -138,7 +138,7 @@ void fn_80089030(u8 x);
  * Those units build with -opt nopeephole, matching the peephole-off state the
  * full file reaches through fn_80088428's pragma. */
 #if defined(GBA_CONV_CARVE_800886D0) || defined(GBA_CONV_CARVE_800889E4) || \
-    defined(GBA_CONV_CARVE_80088C60)
+    defined(GBA_CONV_CARVE_80088C60) || defined(GBA_CONV_CARVE_800884BC)
 #define GBA_CONV_CARVE
 #define PR424_GBA_CONV_TAIL_ONLY
 #endif
@@ -5074,8 +5074,9 @@ static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
     s32 col;
 
     for (row = 0; row < 3; row++) {
+        GbaConvSpeciesGrid g = grid;
         for (col = 0; col < 3; col++) {
-            if (gbaConvGridAt(grid, row, col) == id) {
+            if (gbaConvGridAt(g, row, col) == id) {
                 return 1;
             }
         }
@@ -5107,7 +5108,9 @@ void fn_80088428(void) {
     fn_800FF660();
     state->result = r31;
 }
+#endif
 
+#if !defined(GBA_CONV_CARVE) || defined(GBA_CONV_CARVE_800884BC)
 #if !defined(GBA_CONV_800889E4_ONLY)
 /* 0x800884BC | size: 0x214 */
 u32 fn_800884BC(u16 a, u16 b, u16 c) {
