@@ -5990,7 +5990,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart_candidate_8005FFE4.c",
                 # TEMPORARY constant_import: retail shares the TU's literal pool;
                 # its {6,6,6,6} initialiser is labelled as two 4-byte words.

@@ -718,6 +718,23 @@ static inline void battleStartFillOrder(MenuCBBattleStartOrderRow* row, u16 n)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): inline helper chosen for register allocation (_menuCBBattleStartSetIndex__Fv) - see docs/RULE_EXCEPTIONS.md */
+static inline void battleStartCopyRows(const MenuCBBattleStartOrderTable* rows, u16* count)
+{
+    s32 player;
+    /* RULE-EXCEPTION(user-approved): scalar carrier (count cursor copy) - see docs/RULE_EXCEPTIONS.md */
+    u16* cnt = count;
+    MenuCBBattleStartOrderRow* order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
+
+    for (player = 0; player < 2; cnt++, player++, order++) {
+        MenuCBBattleStartOrderTable table = *rows;
+        MenuCBBattleStartOrderRow* src = table.row;
+
+        src += *cnt - 1;
+        *order = *src;
+    }
+}
+
 void _menuCBBattleStartSetIndex__Fv(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -753,28 +770,12 @@ void _menuCBBattleStartSetIndex__Fv(void)
     }
 
     switch (battleType) {
-    case 0: {
-        order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
-        for (player = 0; player < 2; player++, order++) {
-            MenuCBBattleStartOrderTable table = lbl_80267AF8;
-            MenuCBBattleStartOrderRow* src = table.row;
-
-            src += count[player] - 1;
-            *order = *src;
-        }
+    case 0:
+        battleStartCopyRows(&lbl_80267AF8, count);
         break;
-    }
-    case 1: {
-        order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
-        for (player = 0; player < 2; player++, order++) {
-            MenuCBBattleStartOrderTable table = lbl_80267B88;
-            MenuCBBattleStartOrderRow* src = table.row;
-
-            src += count[player] - 1;
-            *order = *src;
-        }
+    case 1:
+        battleStartCopyRows(&lbl_80267B88, count);
         break;
-    }
     case 2:
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
         for (player = 0; player < 4; player++, order++) {
