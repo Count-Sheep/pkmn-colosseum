@@ -511,6 +511,13 @@ static inline u8 fn_8003D1FC_setup(u8* sub, const PdaCamPresets* presets)
     return 1;
 }
 
+static inline void pda_80048918_GetMotion(u32 id, s32* motion)
+{
+    s32 out8;
+
+    fn_8018F4C8(peopleInfoBiosGetPtr(id), 1, motion, &out8);
+}
+
 void fn_80048918(void)
 {
     extern u16 memoDataGetCount(s32 a);
@@ -523,7 +530,6 @@ void fn_80048918(void)
     f32 persp2;
     f32 persp1;
     f32 persp0;
-    s32 out8;
     void* res;
     void* cam;
     void* anim;
@@ -684,7 +690,7 @@ void fn_80048918(void)
     default:
         break;
     }
-    fn_8018F4C8(peopleInfoBiosGetPtr(0xf70400), 1, &motion, &out8);
+    pda_80048918_GetMotion(0xf70400, &motion);
     menuModelSetMotion((u8*)&lbl_803A6818 + 0xc4, motion);
     total = lbl_8047A4E8;
     *(f32*)((u8*)&lbl_803A6818 + 0x40) = lbl_8047BC94;
