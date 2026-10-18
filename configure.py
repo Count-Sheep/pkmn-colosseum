@@ -3653,7 +3653,6 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/pda_candidate_8003B814_r46_8003CF38_o4s.c",
                 mw_version="GC/1.3",
-                cflags=["-O4,s" if flag == "-O4,p" else flag for flag in cflags_base],
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
