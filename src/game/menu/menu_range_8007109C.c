@@ -2258,13 +2258,13 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                 for (i = 0; i < 0x80; i++) {
                     crc_byte = candidate;
                     reply_crc = gbaBootCrc(context->crc, &crc_byte, 1);
-                    if (reply_crc == expected_crc) {
+                    if (expected_crc == reply_crc) {
                         break;
                     }
                     candidate++;
                     crc_byte = candidate;
                     reply_crc = gbaBootCrc(*(volatile u32*)&context->crc, &crc_byte, 1);
-                    if (reply_crc == expected_crc) {
+                    if (expected_crc == reply_crc) {
                         break;
                     }
                     candidate++;
