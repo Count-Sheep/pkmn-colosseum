@@ -4015,8 +4015,8 @@ void fn_8006EFF8(void* arg0) {
     switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
     case 0:
         if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
-            node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
             sequence = ((u16*)lbl_80267EA8)[12];
+            node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
             while (node != NULL) {
                 fn_801081F8(menu, *(s16*)(node + 6), sequence);
                 node = *(u8**)node;
@@ -4026,8 +4026,8 @@ void fn_8006EFF8(void* arg0) {
         break;
     case 3:
         if ((s8)MENU_MIDDLE_U8_0002(menu)->unk_0002 == 0) {
-            node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
             sequence = ((u16*)lbl_80267EA8)[13];
+            node = (u8*)MENU_MIDDLE_U32_001C(menu)->unk_001C;
             while (node != NULL) {
                 fn_801081F8(menu, *(s16*)(node + 6), sequence);
                 node = *(u8**)node;
