@@ -3651,6 +3651,29 @@ void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
 
 /* Main summary-screen state machine. */
 #pragma peephole off
+/* fn_80044630's pdaApproach: the upper clamp is the 20.0f literal (as an extern read it colours the clamp's float registers in the other order). */
+/* RULE-EXCEPTION(user-approved): reconstructed inline helper pda_80044630_Approach (fn_80044630's copy of pdaApproach) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_80044630_Approach(f32* current, f32* target, f32 rate)
+{
+    f32 step;
+    f32 distance;
+    f32 scaled;
+
+    step = *target - *current;
+    scaled = lbl_8047BCC4 * step;
+    step = scaled * rate;
+    if (step > 20.0f) {
+        step = 20.0f;
+    }
+    if (step <= lbl_8047BCC8) {
+        step = lbl_8047BCC8;
+    }
+    distance = *target - (*current += step);
+    if (pdaAbsF(distance) <= pdaAbsF(step) || pdaAbsF(distance) < lbl_8047BCBC) {
+        *current = *target;
+    }
+}
+
 void fn_80044630(void) {
     extern void  _threadSwitch(void);
     extern u32   menuCloseCustom(u32 a, u32 b, u32 c);
@@ -3874,7 +3897,7 @@ void fn_80044630(void) {
 
             /* ease block D: unk1DC toward unk1E0 (signed-delta + clamps) */
             if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
-                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4060,7 +4083,7 @@ void fn_80044630(void) {
 
             /* ease block D */
             if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
-                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4381,7 +4404,7 @@ void fn_80044630(void) {
 
             /* ease block D */
             if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
-                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4535,7 +4558,7 @@ void fn_80044630(void) {
 
             /* ease block D */
             if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
-                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
@@ -4799,7 +4822,7 @@ void fn_80044630(void) {
 
             /* block D */
             if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
-                pdaApproach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle */
