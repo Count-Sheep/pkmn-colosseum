@@ -6240,9 +6240,11 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_r55_80068794_gc13_o4s.c",
+                constant_import=[{"symbol": "lbl_8047BFE8", "offset": 0, "expected": "00000000"}],
                 mw_version="GC/1.3",
                 extra_cflags=[
                     "-O4,s",

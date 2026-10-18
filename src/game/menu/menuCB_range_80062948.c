@@ -2509,6 +2509,7 @@ static inline u16 fn_800688C4_GetEntrySlot(u16 command)
 }
 
 #if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY) && !defined(MENUCB_RANGE_SUFFIX_80068DBC_ONLY) /* the exact island 0x800688C4-0x80068DBC builds fn_800688C4, fn_800689FC, fn_80068BB0 only */
+#define ENTRY_ABS(x) ((x) > 0.0f ? (x) : -(x))
 void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
 {
     typedef struct EntryPosition {
@@ -2534,10 +2535,7 @@ void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
             position = &((EntryWork*) lbl_803A9F08)->position[player];
             msg->s50 = ((EntryMoveTable*) lbl_802EF0A8)[msg->cmd].x +
                        (s32) position->current[slot];
-            difference = position->target[slot] - position->current[slot];
-            if (difference < 0.0f) {
-                difference = -difference;
-            }
+            difference = ENTRY_ABS(position->target[slot] - position->current[slot]);
             msg->alpha67 = -(lbl_8047C00C * difference - lbl_8047C008);
             msg->flags4 |= 2;
         } else {
@@ -2548,7 +2546,7 @@ void fn_80068794(void* context, UICmdMsg* msg, s32 player, s32 slot)
 #endif /* !MENUCB_RANGE_EXACT_800688C4_ONLY */
 
 
-#if !defined(MENUCB_RANGE_SUFFIX_80068DBC_ONLY)
+#if !defined(MENUCB_RANGE_SUFFIX_80068DBC_ONLY) && !defined(MENUCB_RANGE_80068794_FN_ONLY)
 void fn_800688C4(u8* context, UICmdMsg* msg, s32 player, s32 kind)
 {
     void* name;
@@ -2607,7 +2605,10 @@ void fn_80068BB0(u8* context, UICmdMsg* msg, s32 player, s32 kind)
 }
 #endif /* !MENUCB_RANGE_SUFFIX_80068DBC_ONLY */
 
-#if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY)
+#if defined(MENUCB_RANGE_80068794_FN_ONLY) /* fn_80068794 alone: close the peephole push here */
+#pragma pop
+#endif
+#if !defined(MENUCB_RANGE_EXACT_800688C4_ONLY) && !defined(MENUCB_RANGE_80068794_FN_ONLY)
 void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
 {
     void* nickname;
