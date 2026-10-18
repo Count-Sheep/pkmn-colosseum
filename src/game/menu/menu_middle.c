@@ -3949,7 +3949,7 @@ normal:
 
 
 /* 0x8006EFF8 | size: 0x28C */
-void fn_8006EFF8(void* arg0) {
+void fn_8006EFF8(void* menu) {
     typedef struct Entry_8006EFF8 {
         u16 nameId;
         u16 ownedId;
@@ -3958,7 +3958,7 @@ void fn_8006EFF8(void* arg0) {
     } Entry_8006EFF8;
     extern void* windowGetParam(void* menu, s32 index);
     extern void* windowSearchItemID(void* menu, s32 itemId);
-    extern void winSpriteSetDisp(void* widget, u8 flag);
+    extern void winSpriteSetDisp(void* node, u32 enable);
     extern u16 fn_80077D88(s32 index);
     extern u8 fn_80142984(u16 item);
     extern void* itemDataBiosGetPtr(u16 item);
@@ -3968,26 +3968,25 @@ void fn_8006EFF8(void* arg0) {
     u16 sequence;
     u8* node;
     u16 item;
-    void* cursorWidget;
     u8* owned;
-    u8* menu;
     s32 index;
     void* nameWidget;
     u32 i;
     void* iconWidget;
+    void* cursorWidget;
     void* ownedWidget;
 
-    menu = arg0;
     owned = windowGetParam(menu, 0);
     winSpriteSetDisp(windowSearchItemID(menu, 0xA40), (s8)MENU_MIDDLE_U8_0094(menu)->unk_0094 > 0);
     winSpriteSetDisp(windowSearchItemID(menu, 0xA3F), (s8)MENU_MIDDLE_U8_0094(menu)->unk_0094 < 50);
 
     entries = (Entry_8006EFF8*)lbl_80268424;
     for (i = 0; i < 11; i++) {
-        nameWidget = windowSearchItemID(menu, entries[i].nameId);
-        ownedWidget = windowSearchItemID(menu, entries[i].ownedId);
-        iconWidget = windowSearchItemID(menu, entries[i].iconId);
-        cursorWidget = windowSearchItemID(menu, entries[i].cursorId);
+        /* RULE-EXCEPTION(user-approved): codegen-only (u16) casts on the u16 item ids, register-only evidence - see docs/RULE_EXCEPTIONS.md */
+        nameWidget = windowSearchItemID(menu, (u16)entries[i].nameId);
+        ownedWidget = windowSearchItemID(menu, (u16)entries[i].ownedId);
+        iconWidget = windowSearchItemID(menu, (u16)entries[i].iconId);
+        cursorWidget = windowSearchItemID(menu, (u16)entries[i].cursorId);
         index = i + (s8)MENU_MIDDLE_U8_0094(menu)->unk_0094;
         if (index == 60) {
             MENU_MIDDLE_U32_004C(nameWidget)->unk_004C = 0x43E6;
@@ -4008,8 +4007,9 @@ void fn_8006EFF8(void* arg0) {
                 MENU_MIDDLE_U32_0064(ownedWidget)->unk_0064 = 0xFFFFFFFF;
             }
         }
-        winSpriteSetDisp(iconWidget, owned[index]);
-        winSpriteSetDisp(cursorWidget, i == (s8)MENU_MIDDLE_U8_0095(menu)->unk_0095);
+        /* RULE-EXCEPTION(user-approved): codegen-only (u8) casts on the byte flags passed to the u32 parameter, register-only evidence - see docs/RULE_EXCEPTIONS.md */
+        winSpriteSetDisp(iconWidget, (u8)owned[index]);
+        winSpriteSetDisp(cursorWidget, (u8)(i == (s8)MENU_MIDDLE_U8_0095(menu)->unk_0095));
     }
 
     switch ((s8)MENU_MIDDLE_U8_0001(menu)->unk_0001) {
