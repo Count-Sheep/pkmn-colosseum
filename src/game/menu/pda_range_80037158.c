@@ -6664,6 +6664,12 @@ static inline void* pdaCurrentData(void)
         pokemonBiosGetPokemonDataId(pdaLoadPokemonB(lbl_803A6818.currentIndex)));
 }
 
+/* Ability ID in the given slot of the highlighted entry. */
+static inline u16 pda_800411FC_Ability(s32 slot)
+{
+    return pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), slot);
+}
+
 /* Type-name message of the highlighted entry, 0 when unavailable. */
 static inline u32 pda_800411FC_TypeName(void)
 {
@@ -6741,7 +6747,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     layout = lbl_802EF0A8;
 
     if (pdaEntrySeen() != 0) {
-        tokusei0 = pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), 0);
+        tokusei0 = pda_800411FC_Ability(0);
         msg = GSmsgGetGSchar((u32)pokemonTokuseiDataBiosGetName(
             pokemonTokuseiDataBiosGetPtr(tokusei0)));
         msgctrlSetValue(0x37, msg);
@@ -6755,7 +6761,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     }
 
     if (pdaEntrySeen() != 0) {
-        tokusei1 = pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), 1);
+        tokusei1 = pda_800411FC_Ability(1);
         if (tokusei1 != 0 && tokusei1 != tokusei0) {
             pos = (s16*)(lbl_802EF0A8 + 0x20b42);
             msgctrlSetValue(0x37,
