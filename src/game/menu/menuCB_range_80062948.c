@@ -108,18 +108,17 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
 
     switch (msg->cmd) {
     case 0xB38: {
-        void* q;
         u32 t;
         u32 snd;
         s32 mask = -0x100;
-        q = (void*) toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
-        t = pokemonBiosGetNicknamePtr();
+        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        t = pokemonBiosGetNicknamePtr(h);
         if (t == 0) {
             t = GSmsgGetGSchar(1);
         }
         msgctrlSetValue(0x37, t);
         fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xe7);
-        switch ((u8) menuSubGetPokemonSexForDisp(q)) {
+        switch ((u8) menuSubGetPokemonSexForDisp(h)) {
         case 0:
             snd = 0xd67;
             break;
@@ -149,8 +148,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
     case 0xB3A: {
         s32 v;
         s32 mask = -0x100;
-        toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
-        v = pokemonBiosGetHp();
+        v = pokemonBiosGetHp(toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]));
         msgctrlSetValue(0x34, (u16) v);
         fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xd3);
         break;
@@ -440,8 +438,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         }
         if (v != 0) {
             s32 w;
-            wazaDataBiosGetPtr((u16) v);
-            w = (u8) wazaDataBiosGetZokuseiDataId();
+            w = (u8) wazaDataBiosGetZokuseiDataId(wazaDataBiosGetPtr((u16) v));
             switch (w) {
             case 0xfffe:
                 break;
@@ -473,8 +470,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         }
         if (v != 0) {
             s32 w;
-            wazaDataBiosGetPtr((u16) v);
-            w = (u8) wazaDataBiosGetZokuseiDataId();
+            w = (u8) wazaDataBiosGetZokuseiDataId(wazaDataBiosGetPtr((u16) v));
             switch (w) {
             case 0xfffe:
                 break;
@@ -506,8 +502,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         }
         if (v != 0) {
             s32 w;
-            wazaDataBiosGetPtr((u16) v);
-            w = (u8) wazaDataBiosGetZokuseiDataId();
+            w = (u8) wazaDataBiosGetZokuseiDataId(wazaDataBiosGetPtr((u16) v));
             switch (w) {
             case 0xfffe:
                 break;
@@ -539,8 +534,7 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         }
         if (v != 0) {
             s32 w;
-            wazaDataBiosGetPtr((u16) v);
-            w = (u8) wazaDataBiosGetZokuseiDataId();
+            w = (u8) wazaDataBiosGetZokuseiDataId(wazaDataBiosGetPtr((u16) v));
             switch (w) {
             case 0xfffe:
                 break;
@@ -628,12 +622,18 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         break;
     }
     case 0xB1E: {
-        u8* p;
+        typedef struct EntrySlot {
+            u8 active;
+            u8 _1;
+            u16 id;
+            u8 _4[8];
+        } EntrySlot;
+        EntrySlot* p;
         idx = ((u32*) lbl_803A9F08)[3];
         toolentryTaisenGetBattleType();
-        p = (u8*) lbl_803A9F08 + (idx * 0xc + 0x30);
-        if (p[0] != 0) {
-            fn_8010B9E8(ctx, msg, *(u16*) (p + 2));
+        p = (EntrySlot*) ((u8*) lbl_803A9F08 + 0x30) + idx;
+        if (p->active != 0) {
+            fn_8010B9E8(ctx, msg, p->id);
         }
         break;
     }
