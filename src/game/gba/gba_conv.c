@@ -5137,12 +5137,12 @@ u32 fn_800884BC(u16 a, u16 b, u16 c) {
     GbaConvChannelState* state = (GbaConvChannelState*)lbl_803FB2F8;
     s32 i;
     GbaConvSpeciesGrid grid;
-    static const GbaConvSpeciesGrid species = {{{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}};
 
     state->ids[0] = a;
     state->ids[1] = b;
     state->ids[2] = c;
-    grid = species;
+    /* lbl_8026F488 starts with the 3x3 grid {{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}. */
+    grid = *(const GbaConvSpeciesGrid*)lbl_8026F488;
     for (i = 0; i < 3; i++) {
         if (!gbaConvGridHas(grid, state->ids[i])) {
             return 2;
