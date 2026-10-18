@@ -3722,6 +3722,8 @@ void fn_80044630(void) {
     const f32* tbl;
     s32  running = 1;
     void* h;
+    void* handle;
+    u32 mem;
 
     fn_80048918();
     tbl = lbl_80267150;
@@ -4780,29 +4782,29 @@ void fn_80044630(void) {
     }
 
     /* === EXIT / cleanup epilogue (.L_80046054 fall-through .. blr) === */
-    h = *(void**)(S + 0x10C);
-    fn_801CB954(h, 0);
+    handle = *(void**)(S + 0x10C);
+    fn_801CB954(handle, 0);
     {
-        void* rv = GSresGetResource(fn_80113F48(), h);
+        void* rv = GSresGetResource(fn_80113F48(), handle);
         if (rv != 0)
             GSmodelSetVisibility(rv, 0);
     }
-    fn_801CB9D8(h);
+    fn_801CB9D8(handle);
 
-        h = *(void**)((u8*)&lbl_803A6818 + 0x150);
-    fn_801CB954(h, 0);
+        handle = *(void**)((u8*)&lbl_803A6818 + 0x150);
+    fn_801CB954(handle, 0);
     {
-        void* rv = GSresGetResource(fn_80113F48(), h);
+        void* rv = GSresGetResource(fn_80113F48(), handle);
         if (rv != 0)
             GSmodelSetVisibility(rv, 0);
     }
-    fn_801CB9D8(h);
+    fn_801CB9D8(handle);
 
     if (lbl_8047A4E0 != 0) {
-        h = (void*)fn_800E202C(lbl_8047A4E0);
-        if ((u16)(u32)h != 0) {
+        mem = fn_800E202C(lbl_8047A4E0);
+        if ((u16)mem != 0) {
             fn_800E24B0();
-            fn_800E209C((u32)h);
+            fn_800E209C(mem);
         }
         lbl_8047A4E0 = 0;
     }
@@ -4811,10 +4813,10 @@ void fn_80044630(void) {
         fn_8010A420((u8*)&lbl_803A6818 + 0x7c);
         fn_8010A420((u8*)&lbl_803A6818 + 0xc4);
 
-        h = (void*)fn_800E202C((u32)lbl_8047A4E4);
-    if ((u16)(u32)h != 0) {
+        mem = fn_800E202C((u32)lbl_8047A4E4);
+    if ((u16)mem != 0) {
         fn_800E24B0();
-        fn_800E209C((u32)h);
+        fn_800E209C(mem);
     }
     lbl_8047A4E4 = 0;
 }
