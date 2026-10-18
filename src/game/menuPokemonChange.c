@@ -465,6 +465,7 @@ void fn_8002FC58(void) {
     s32 value;
     s32 selected;
     s32 result;
+    s32 item;
 
     cursor = count = 0;
     party = savedataGetStatus(0, 2);
@@ -511,9 +512,9 @@ void fn_8002FC58(void) {
     windowCheckCursor(0xD9, 1);
     value = windowGetValue(0xD9);
     selected = 0;
-    cursor = menuGetCursorItemID(0xD9);
+    item = menuGetCursorItemID(0xD9);
     for (i = 0; i < 12; i++) {
-        if (cursor == lbl_80266E90[i].itemId) {
+        if (item == lbl_80266E90[i].itemId) {
             selected = lbl_80266E90[i].slot;
         }
     }
