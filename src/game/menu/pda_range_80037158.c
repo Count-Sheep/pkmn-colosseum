@@ -5062,6 +5062,7 @@ static inline u8 pda_8003D4C8_Color(u32 id)
             if (data != NULL) {
                 return pokemonDataBiosGetColor(data, 0);
             }
+        } else {
             return 0;
         }
     }
@@ -5075,17 +5076,18 @@ u16 fn_8003D4C8(void)
     extern void fn_8003D8CC(void);
     extern void fn_8003DC54(void);
     extern void fn_8003E394(void);
+    u32 id;
+    u16 total;
     u16 buf[500];
     u16 i;
     u16 count;
-    u16 total;
 
     lbl_8047A4E8 = pda_8003D818_LoadIds();
     fn_8003D8CC();
     if (*(s8*)((u8*)&lbl_803A6818 + 0x159) != 0) {
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
-            u32 id = lbl_8047A4E4[i];
+            id = lbl_8047A4E4[i];
             if ((id & 0x8000) == 0) {
                 pdaLoadPokemonId(id);
                 if (*(s8*)((u8*)&lbl_803A6818 + 0x159) ==
@@ -6138,30 +6140,38 @@ static inline void pdaFree(void* p)
     }
 }
 
-static inline u16 pdaGetWeight(u16 id)
+static inline u16 pdaGetWeight(u32 id)
 {
-    u32 work = pdaLoadPokemonId(id);
+    u32 work = lbl_8047A4E0;
     void* data;
 
     if (work != 0) {
-        data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
-        if (data != NULL) {
-            return pokemonDataBiosGetWeight(data);
+        work = pdaLoadPokemonId(id);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetWeight(data);
+            }
+            return 0;
         }
         return 0;
     }
     return 0;
 }
 
-static inline u16 pdaGetHeight(u16 id)
+static inline u16 pdaGetHeight(u32 id)
 {
-    u32 work = pdaLoadPokemonId(id);
+    u32 work = lbl_8047A4E0;
     void* data;
 
     if (work != 0) {
-        data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
-        if (data != NULL) {
-            return pokemonDataBiosGetHeight(data);
+        work = pdaLoadPokemonId(id);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetHeight(data);
+            }
+            return 0;
         }
         return 0;
     }
