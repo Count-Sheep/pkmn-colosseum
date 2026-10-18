@@ -5853,8 +5853,8 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     }
 
     {
-    u16* lastOutputPixel;
     const u8* placement;
+    u16* lastOutputPixel;
     s32 spotHeight;
     s32 spot;
     s32 row;
