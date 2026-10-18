@@ -5823,11 +5823,9 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     s16 spotHeight;
     s32 pixelCount;
     s32 size;
-    s16 spot;
     s16 row;
+    s16 spot;
     s16 column;
-    s16 xOffset;
-    s16 yOffset;
     s32 startPixel;
     s32 x;
     s32 y;
@@ -5873,11 +5871,9 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
 
     lastOutputPixel = outputPixels + (pixelCount - 1);
     for (spot = 0; spot < 4; spot++) {
-        yOffset = (s16)((pattern >> 4) & 0xF) - 8;
-        xOffset = (s16)(pattern & 0xF) - 8;
+        x = (s32)(3.4f * (s16)((s16)(pattern & 0xF) - 8));
+        y = (s32)(3.4f * (s16)((s16)((pattern >> 4) & 0xF) - 8));
         pattern >>= 8;
-        x = (s32)(3.4f * xOffset);
-        y = (s32)(3.4f * yOffset);
         y += lbl_80478BA8[spot][1];
         x += lbl_80478BA8[spot][0];
         startPixel = (s16)(x + y * baseWidth);
