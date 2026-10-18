@@ -108,17 +108,18 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
 
     switch (msg->cmd) {
     case 0xB38: {
+        void* q;
         u32 t;
         u32 snd;
         s32 mask = -0x100;
-        h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
-        t = pokemonBiosGetNicknamePtr(h);
+        q = (void*) toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
+        t = pokemonBiosGetNicknamePtr(q);
         if (t == 0) {
             t = GSmsgGetGSchar(1);
         }
         msgctrlSetValue(0x37, t);
         fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xe7);
-        switch ((u8) menuSubGetPokemonSexForDisp(h)) {
+        switch ((u8) menuSubGetPokemonSexForDisp(q)) {
         case 0:
             snd = 0xd67;
             break;
@@ -545,16 +546,16 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
         }
         break;
     }
-    case 0xB1F:
-        windowDrawSprite(
-            0, 0, ctx,
-            ((u16*) lbl_802ED9FC)[(u16) pokemonGetStatus(
-                0,
-                (u16) pokemonGetStatus(toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]), 0,
-                                  0x6e, 0),
-                0x16, 0)],
-            0);
+    case 0xB1F: {
+        u32 v1;
+        v1 = (u16) pokemonGetStatus(
+            0,
+            (u16) pokemonGetStatus(toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]), 0,
+                                   0x6e, 0),
+            0x16, 0);
+        windowDrawSprite(0, 0, ctx, ((u16*) lbl_802ED9FC)[v1], 0);
         break;
+    }
     case 0xB20: {
         u32 v1;
         u32 v2;
