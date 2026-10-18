@@ -960,66 +960,29 @@ void fn_801D624C(void) {
 
 #if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_6A64_ONLY)
 /**
- * wazaViewerDrawOverlay - when the overlay bit is set and the current effect's
- * sequence entry is active, print the playback state (STEP, SLOW MOTION,
- * PAUSED, PLAYING). key1/key2 are the sequence search keys, overridden from
- * the effect's node when it has one; the caller passes 0, 0.
+ * fn_801D6A64 - Move animation secondary mega-function.
+ * Address: 0x801D6A64 | Size: 0x3F4
  */
-/* RULE-EXCEPTION(user-approved): single-use inline helper; its 0, 0 key parameters give retail's shared-zero li/mr copy and post-RA reschedule, and key2 is declared before key1 for retail's r4/r5 colouring - see docs/RULE_EXCEPTIONS.md */
-static inline void wazaViewerDrawOverlay(void** models, s32 state, const char* messages, s32 key2, s32 key1) {
+void fn_801D6A64(void) {
     extern f32 lbl_8047E2F0;
     extern const char lbl_8047E2F4;  /* "STEP" */
     extern const char lbl_8047E2FC;  /* "PAUSED" */
     extern const char lbl_8047E304;  /* "PLAYING" */
     extern f32 lbl_8047E30C;
-    extern void fn_800FE6A0(f32 width, f32 height);
-    extern void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...);
-    void* effect;
-    void* node;
-
-    if (((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->overlay) {
-        effect = models[*(s32*)(lbl_804673F8 + 0x624)];
-        if (effect != NULL) {
-            node = *(void**)((u8*)effect + 0x68);
-            if (node != NULL) {
-                key1 = *(u16*)((u8*)node + 0x2C);
-                key2 = *(u16*)((u8*)node + 0x2E);
-            }
-            if ((u8)fn_801DA94C(effect, key1, key2)) {
-                fn_800FE6A0(lbl_8047E2F0, lbl_8047E2F0);
-                switch (state) {
-                case 3:
-                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, &lbl_8047E2F4);
-                    break;
-                case 4:
-                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, messages + 0x138);
-                    break;
-                case 1:
-                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, &lbl_8047E2FC);
-                    break;
-                case 2:
-                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, &lbl_8047E304);
-                    break;
-                }
-                fn_800FE6A0(lbl_8047E30C, lbl_8047E30C);
-            }
-        }
-    }
-}
-
-/**
- * fn_801D6A64 - Move animation secondary mega-function.
- * Address: 0x801D6A64 | Size: 0x3F4
- */
-void fn_801D6A64(void) {
     extern void fn_80168408(void* filter, u8* color);
     extern u8 dbgMenuIsOpen(void);
     extern s32 fn_801E11E0(void);
+    extern void fn_800FE6A0(f32 width, f32 height);
+    extern void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...);
 
     const char* messages;
     void** models;
     void* effect;
+    s32 arg1;
+    s32 arg2;
     void** models;
+    void* current;
+    void* currentNode;
     u8 color[4];
 
     messages = (const char*)lbl_80279338;
@@ -1050,7 +1013,35 @@ void fn_801D6A64(void) {
     }
     fn_801D7230();
     state = fn_801E11E0();
-    wazaViewerDrawOverlay(models, state, messages, 0, 0);
+    arg2 = arg1 = 0;
+    if (((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->overlay) {
+        current = models[*(s32*)(lbl_804673F8 + 0x624)];
+        if (current != NULL) {
+            currentNode = *(void**)((u8*)current + 0x68);
+            if (currentNode != NULL) {
+                arg1 = *(u16*)((u8*)currentNode + 0x2C);
+                arg2 = *(u16*)((u8*)currentNode + 0x2E);
+            }
+            if ((u8)fn_801DA94C(current, arg1, arg2)) {
+                fn_800FE6A0(lbl_8047E2F0, lbl_8047E2F0);
+                switch (state) {
+                case 3:
+                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, &lbl_8047E2F4);
+                    break;
+                case 4:
+                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, messages + 0x138);
+                    break;
+                case 1:
+                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, &lbl_8047E2FC);
+                    break;
+                case 2:
+                    fn_800FAEF8(0xC8, 0x10, 0xFF0000A0, &lbl_8047E304);
+                    break;
+                }
+                fn_800FE6A0(lbl_8047E30C, lbl_8047E30C);
+            }
+        }
+    }
     if (fn_801E11E0() == 1) {
         wazaViewerPollCommand(messages);
     }
