@@ -3705,6 +3705,28 @@ config.libs = [
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/menu/pda_exact_80040018.c",
+                constant_import=[{"symbol": "lbl_8047BCB8", "offset": 0, "expected": "3e800000"},
+                                 {"symbol": "lbl_8047BCBC", "offset": 4, "expected": "3f800000"},
+                                 {"symbol": "lbl_8047BC94", "offset": 8, "expected": "00000000"},
+                                 {"symbol": "lbl_8047BCC0", "offset": 12, "expected": "3f4ccccd"},
+                                 {"symbol": "lbl_8047BCC4", "offset": 16, "expected": "41200000"},
+                                 {"symbol": "lbl_8047BC98", "offset": 20, "expected": "41a00000"},
+                                 {"symbol": "lbl_8047BCC8", "offset": 24, "expected": "c1a00000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/pda_candidate_8003B814_r46_80040308.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menu/pda_exact_80041114.c",
