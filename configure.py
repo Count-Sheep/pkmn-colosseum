@@ -10634,7 +10634,7 @@ config.libs = [
                 CodeCandidate,
                 "game/gs_spline.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-O2,p"],
                 progress_category="game",
             ),
             # The camera TU's text up to cameraInit (0x801765F4-0x80179DFC)
