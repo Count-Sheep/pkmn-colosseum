@@ -14159,16 +14159,14 @@ static inline u8 fn_8021D688_itemType(u16 itemId)
     extern u8 itemParamGetCriticalFlag();
     u32 p;
 
-    itemDataBiosGetPtr(itemId);
-    itemDataBiosGetItemEffectParam();
-    p = itemParamGetPtr();
+    p = itemParamGetPtr(itemDataBiosGetItemEffectParam(itemDataBiosGetPtr(itemId)));
     if (p == 0) {
         return 7;
     }
     if (itemId == 0x13) {
         return 1;
     }
-    if (itemParamGetHPUp() != 0) {
+    if (itemParamGetHPUp(p) != 0) {
         return 2;
     }
     if (itemParamGetSleepFlag(p) == 1 || itemParamGetPoisonFlag(p) == 1 ||
