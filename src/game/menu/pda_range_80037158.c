@@ -2187,28 +2187,8 @@ static inline u16 pda_8003D818_LoadIds(void)
     return count;
 }
 
-#pragma peephole off
-u16 fn_8003D818(void)
-{
-    extern u16* lbl_8047A4E4;
-    extern u16 lbl_8047A4E8;
-    extern u16 memoDataGetPokemonID(u16* data, u32 index);
-    extern u16 memoDataGetCount(u16* data);
-    extern void fn_8003E394(void);
-    u8* work;
-
-    work = (u8*)&lbl_803A6818;
-    lbl_8047A4E8 = pda_8003D818_LoadIds();
-    work[0x158] = 0;
-    work[0x159] = 0;
-    work[0x15b] = 0;
-    work[0x15a] = 0;
-    work[0x15c] = 0;
-    fn_8003E394();
-    lbl_803A6818.field_10 = lbl_8047A4E8;
-    return lbl_8047A4E8;
-}
-#pragma peephole reset
+/* Defined after its caller fn_80040308, which retail calls rather than inlines. */
+u16 fn_8003D818(void);
 
 void fn_80041114(void* work)
 {
@@ -7892,6 +7872,28 @@ void fn_80040308(void* menu)
             break;
         }
     }
+}
+#pragma peephole reset
+
+/* Reload the memo id table, clear the list filters and refresh the list. */
+#pragma peephole off
+u16 fn_8003D818(void)
+{
+    extern u16* lbl_8047A4E4;
+    extern u16 lbl_8047A4E8;
+    extern void fn_8003E394(void);
+    u8* work;
+
+    work = (u8*)&lbl_803A6818;
+    lbl_8047A4E8 = pda_8003D818_LoadIds();
+    work[0x158] = 0;
+    work[0x159] = 0;
+    work[0x15b] = 0;
+    work[0x15a] = 0;
+    work[0x15c] = 0;
+    fn_8003E394();
+    lbl_803A6818.field_10 = lbl_8047A4E8;
+    return lbl_8047A4E8;
 }
 #pragma peephole reset
 
