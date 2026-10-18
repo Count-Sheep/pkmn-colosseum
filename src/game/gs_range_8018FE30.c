@@ -94,12 +94,9 @@ extern void floorChangePos(u32 floorId, s16 direction, f32 x, f32 y, f32 z);
  * place and ORs in a separately named `shifted` value: that keeps the loaded
  * word in the register the andc writes back, puts the shifted value first in
  * the or, and declaring `word` before `bitPosition` gives retail's r6/r7
- * colouring of the bit position and word pointer. */
-static inline u32 flagGetBitLength(u32 value)
-{
-    return 32 - __cntlzw(value);
-}
-
+ * colouring of the bit position and word pointer. Counting the leading zeros
+ * into `zeros` before the width/position reads numbers the cntlzw result
+ * before the typeAndWidth reload, as fn_8018FE30's colouring needs. */
 static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
                                 u32 value)
 {
@@ -112,14 +109,16 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
     u32 end;
     u32* word;
     u32 bitPosition;
+    u32 zeros;
 
     if (buffer == NULL) {
         GSlogWrite(lbl_802741F8);
         return;
     }
+    zeros = __cntlzw(value);
     bitWidth = defs[flagId].typeAndWidth & 0x3F;
     bitOffset = defs[flagId].bitPosition;
-    length = flagGetBitLength(value);
+    length = 32 - zeros;
     if (length > bitWidth) {
         GSlogWrite(lbl_8027422C, flagId, value, value, length, bitWidth);
         value &= lbl_8036C568[bitWidth];
