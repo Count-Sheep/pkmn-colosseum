@@ -451,6 +451,23 @@ static inline u32 pdaLoadPokemon(s32 index)
     return 0;
 }
 
+/* Point the rig's light from beside the camera at the model. */
+static inline void pda_80048918_SetLight(PdaVec3* pos, PdaVec3* target, const PdaCamPresets* presets)
+{
+    PdaVec3 color;
+    PdaVec3 lightPos;
+
+    color = presets->lightColor;
+    memcpy(&lightPos, pos, 12);
+    lightPos.x = lightPos.x - lbl_8047BC98;
+    lightPos.y = lightPos.y + lbl_8047BC9C;
+    GSlightSetType(*(void**)((u8*)&lbl_803A6818 + 0x108), 2);
+    GSlightSetColor(*(void**)((u8*)&lbl_803A6818 + 0x108), &color);
+    GSlightSetPosition(*(void**)((u8*)&lbl_803A6818 + 0x108), &lightPos);
+    GSlightSetTarget(*(void**)((u8*)&lbl_803A6818 + 0x108), target);
+    GSlightSetActive(*(void**)((u8*)&lbl_803A6818 + 0x108), 1);
+}
+
 static inline u8 fn_8003D1FC_setup(u8* sub, const PdaCamPresets* presets)
 {
     void* model;
@@ -459,8 +476,6 @@ static inline u8 fn_8003D1FC_setup(u8* sub, const PdaCamPresets* presets)
     f32 persp1;
     f32 persp2;
     f32 persp3;
-    PdaVec3 color;
-    PdaVec3 lightPos;
     PdaVec3 lightTarget;
     PdaVec3 pos;
     PdaVec3 bound;
@@ -490,15 +505,7 @@ static inline u8 fn_8003D1FC_setup(u8* sub, const PdaCamPresets* presets)
     GScameraSetPerspective(*(void**)((u8*)&lbl_803A6818 + 0xfc), persp0, persp1, persp2,
                            persp3);
     GScameraLookAt(*(void**)((u8*)&lbl_803A6818 + 0xfc), lbl_802E543C, lbl_802E5448);
-    color = presets->lightColor;
-    memcpy(&lightPos, &pos, 12);
-    lightPos.x = lightPos.x - lbl_8047BC98;
-    lightPos.y = lightPos.y + lbl_8047BC9C;
-    GSlightSetType(*(void**)((u8*)&lbl_803A6818 + 0x108), 2);
-    GSlightSetColor(*(void**)((u8*)&lbl_803A6818 + 0x108), &color);
-    GSlightSetPosition(*(void**)((u8*)&lbl_803A6818 + 0x108), &lightPos);
-    GSlightSetTarget(*(void**)((u8*)&lbl_803A6818 + 0x108), &lightTarget);
-    GSlightSetActive(*(void**)((u8*)&lbl_803A6818 + 0x108), 1);
+    pda_80048918_SetLight(&pos, &lightTarget, presets);
     cam = *(void**)((u8*)&lbl_803A6818 + 0x114);
     if (cam != NULL) {
         GScameraSetPosition(cam, (u8*)&lbl_803A6818 + 0x118);
