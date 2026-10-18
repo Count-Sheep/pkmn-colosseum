@@ -4,14 +4,12 @@
 
 extern void* lbl_802EE608[];
 extern u8 lbl_802EE618[];
-extern void* jumptable_802EE868[];
 
-extern u8 fn_8007D978[];
 extern u8 lbl_80268AF8[];
 extern u8 lbl_80268B0C[];
 extern u8 lbl_80268B20[];
 
-/* Auto-carved .data unit 0x802EE608..0x802EE890 (3 objects). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
+/* Auto-carved .data unit 0x802EE608..0x802EE868 (2 objects; jumptable_802EE868 is owned by menu_carde_matrix_candidate_8007D978). Non-relocated data as byte-exact u8[]; pointer/jump tables as void*[] for R_PPC_ADDR32 relocations. */
 
 void* lbl_802EE608[4] = {
     (void*)((u8*)lbl_80268AF8),
@@ -71,17 +69,4 @@ u8 lbl_802EE618[592] = {
     0x02, 0xF9, 0x02, 0xFA, 0x02, 0xFB, 0x02, 0xFC, 0x02, 0xFD, 0x02, 0xFE,
     0x02, 0xFF, 0x03, 0x00, 0x03, 0x01, 0x03, 0x02, 0x03, 0x03, 0x03, 0x04,
     0x03, 0x05, 0x03, 0x06,
-};
-
-void* jumptable_802EE868[10] = {
-    (void*)((u8*)fn_8007D978 + 0x2348),
-    (void*)((u8*)fn_8007D978 + 0x196C),
-    (void*)((u8*)fn_8007D978 + 0x1B08),
-    (void*)((u8*)fn_8007D978 + 0x1B0C),
-    (void*)((u8*)fn_8007D978 + 0x1B34),
-    (void*)((u8*)fn_8007D978 + 0x1B38),
-    (void*)((u8*)fn_8007D978 + 0x1E4C),
-    (void*)((u8*)fn_8007D978 + 0x2178),
-    (void*)((u8*)fn_8007D978 + 0x219C),
-    (void*)((u8*)fn_8007D978 + 0x2314),
 };

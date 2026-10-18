@@ -1490,7 +1490,7 @@ game/data/sdata2_8047C128.c:
 	.sdata2     start:0x8047C128 end:0x8047C180
 
 game/data/data_802EE608.c:
-	.data       start:0x802EE608 end:0x802EE890
+	.data       start:0x802EE608 end:0x802EE868
 
 game/menu/menu_exact_8007B350.c:
 	.text       start:0x8007B350 end:0x8007B6A4
@@ -1524,6 +1524,7 @@ game/menu/menu_carde_matrix_candidate_8007D4FC_gc20.c:
 
 game/menu/menu_carde_matrix_candidate_8007D978.c:
 	.text       start:0x8007D978 end:0x8007FD64
+	.data       start:0x802EE868 end:0x802EE890
 
 game/menu/cardesavedata_exact_8007FD64.c:
 	.text       start:0x8007FD64 end:0x8007FDBC

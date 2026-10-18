@@ -6532,12 +6532,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 648,
+          "size": 608,
           "virtual_address": 2150557192
         }
       ],
       "total_code": 0,
-      "total_data": 648,
+      "total_data": 608,
       "total_functions": 0
     },
     {
@@ -6674,13 +6674,18 @@
       "name": "main/game/menu/menu_carde_matrix_candidate_8007D978",
       "sections": [
         {
+          "name": ".data",
+          "size": 40,
+          "virtual_address": 2150557800
+        },
+        {
           "name": ".text",
           "size": 9196,
           "virtual_address": 2147998072
         }
       ],
       "total_code": 9196,
-      "total_data": 0,
+      "total_data": 40,
       "total_functions": 1
     },
     {
