@@ -307,11 +307,6 @@ static inline u8 menuFightIsTimeUp(void)
 /* 0x800117BC | 0x1EC */
 extern void winMsgOpenFight();
 extern void winMsgCloseFight();
-#if 0
-asm void menuFightOpenWaza(void) {
-#include "src/game/gs_npc_interact_fn_800117BC.inc"
-}
-#else
 s32 menuFightOpenWaza(u8* status, u32 arg1, u32 arg2) {
     extern u32 _menuFightIsUse__FP16MENU_WAZA_STATUSUs(u8* status, u16 waza);
     extern void menuCloseCustom();
@@ -358,7 +353,6 @@ s32 menuFightOpenWaza(u8* status, u32 arg1, u32 arg2) {
     winSeqSetMenu((void*)menu, 0x20);
     return sel;
 }
-#endif
 
 /* 0x74 | menuFightCloseTop | nullcheck_call_flag */
 u32 menuFightCloseTop(void* obj) {
