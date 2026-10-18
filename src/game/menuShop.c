@@ -923,7 +923,8 @@ s32 fn_8002AB40(void* r3, u8* r4) {
 #endif
 
 /* fn_8002ACB8 - 0x8002ACB8 | size: 0x18c */
-extern u32 lbl_8047A660;
+/* RULE-EXCEPTION(user-approved): volatile pending-credit reads chosen for codegen - see docs/RULE_EXCEPTIONS.md */
+extern volatile u32 lbl_8047A660;
 extern u32 lbl_8047A664;
 #if 0
 asm void fn_8002ACB8(void) {
@@ -957,9 +958,9 @@ s32 fn_8002ACB8(void* r3, u8* r4) {
         break;
     case 3:
         if (ctx + 0x20 != NULL) {
-            if ((s32)*(volatile u32*)&lbl_8047A660 > 0) {
-                *(u32*)(ctx + 0x778) += *(volatile u32*)&lbl_8047A660;
-                *(u32*)(ctx + 0x77C) += *(volatile u32*)&lbl_8047A660;
+            if ((s32)lbl_8047A660 > 0) {
+                *(u32*)(ctx + 0x778) += lbl_8047A660;
+                *(u32*)(ctx + 0x77C) += lbl_8047A660;
                 lbl_8047A660 = 0;
             }
             if ((s32)lbl_8047A664 > 0) {
@@ -2348,7 +2349,7 @@ extern void* memcpy(void* dst, const void* src, u32 n);
 extern void* memset(void* dst, int val, u32 n);
 extern u32 lbl_8047A3DC;
 extern u32 lbl_8047A3D8;
-extern u32 lbl_8047A660;
+extern volatile u32 lbl_8047A660;
 extern u32 lbl_8047A664;
 extern u32 lbl_80478E54;
 extern u32 lbl_80478E44;
@@ -2370,7 +2371,7 @@ asm void fn_8002C408(void) {
 static inline u32 shopGetMoney(u8 mode, ShopWork* work)
 {
     extern u32 heroGetStatus(u8* ptr, u32 selector, u32 idx);
-    extern u32 lbl_8047A660;
+    extern volatile u32 lbl_8047A660;
     extern u32 lbl_8047A664;
 
     switch (mode) {
@@ -2394,6 +2395,114 @@ static inline u32 shopGetMoney(u8 mode, ShopWork* work)
     default:
         return heroGetStatus(NULL, 0xd, 0);
     }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline leave helper chosen for codegen - see docs/RULE_EXCEPTIONS.md */
+/* Asks whether to leave the shop of type `mode`; a PC-box shop (3) that
+ * changed its stock writes the stock back first. Returns 1 to leave. */
+static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
+{
+    extern u32   savedataGetStatus(u8* obj, u16 sel);
+    extern void  heroSetStatus(u8* ptr, u32 selector, u32 value);
+    extern u16   itemBiosGetItemDataId(void* slot);
+    extern u16   itemBiosGetNum(void* slot);
+    extern void  fn_8002A1C4(u8* idx, s32 msgId, s32 term, ...);
+    extern u32   fn_80029FAC(u8* idx, s32 a, s32 b, s32 c, ...);
+    extern void  winMsgOpenWithSE(s32 a, u32 str, s32 c, s32 d, u8 e);
+    extern s8    menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
+    extern void  winMsgClose(s32 slot);
+    extern s32   fn_801D0748(u32 a, u32 b, u32 c);
+    extern void  fn_80093574(s32 a);
+    extern void  fn_80092C90(s32 a, void* list, s32 c);
+    extern s32   fn_80093610(s32 a);
+    extern void  fn_80093698(s32 a);
+    extern void* memcpy(void* dst, const void* src, u32 n);
+    extern void* memset(void* dst, int v, u32 n);
+    extern u32 lbl_8047A3DC;
+    extern u32 lbl_8047A3D8;
+    extern u32 lbl_80478E54;
+    extern u32 lbl_80478E4C;
+    s32 answer;
+    s32 i;
+    u16 id;
+    u8* slot;
+    u8 name;
+    u8 se;
+    struct {
+        u32 credit0;
+        u32 credit1;
+        u32 field764;
+        u16 zero;
+        u16 count;
+        struct {
+            u16 id;
+            u16 num;
+        } items[50];
+    } inv;
+
+    if (work->exitFlag == 0) {
+        winMsgOpenWithSE(2, fn_80029FAC(&se, mapIdx, 0xd, -1), 1, 0, se);
+        answer = menuSubOpenYesNo(0, -1, -1, 0);
+        winMsgClose(1);
+        if (answer == 1 || answer == -1) {
+            return 0;
+        }
+        if ((u8)mode == 3) {
+            fn_8002A1C4((u8*)mapIdx, 0xe, -1);
+        }
+        return 1;
+    }
+    winMsgOpenWithSE(2, fn_80029FAC(&se, mapIdx, 0xf, -1), 1, 0, se);
+    answer = menuSubOpenYesNo(0, -1, -1, 0);
+    winMsgClose(1);
+    if (answer == 1 || answer == -1) {
+        return 0;
+    }
+    if ((u8)mode == 3) {
+        name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
+        winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
+        memset(&inv, 0, sizeof(inv));
+        inv.credit0 = work->credit0;
+        inv.credit1 = work->credit1;
+        inv.field764 = work->field764;
+        inv.zero = 0;
+        inv.count = work->count;
+        for (i = 0; i < inv.count; i++) {
+            if (i < 0 || i > work->count) {
+                id = 0;
+            } else {
+                slot = (u8*)work + i * 4;
+                id = itemBiosGetItemDataId(slot);
+                if (id != 0) {
+                    inv.items[i].num = itemBiosGetNum(slot);
+                }
+            }
+            inv.items[i].id = id;
+            if (inv.items[i].id == 0) {
+                inv.items[i].num = 0;
+                break;
+            }
+        }
+        fn_80093574(1);
+        fn_80092C90(1, &inv, 0);
+        fn_80093574(1);
+        if (fn_80093610(1) != 0xc) {
+            fn_80093698(1);
+            winMsgOpenWithSE(2, 0x3d85, 1, 0, name);
+            winMsgClose(1);
+        } else {
+            fn_80093698(1);
+            winMsgOpenWithSE(2, 0x3d84, 1, 0, name);
+            winMsgClose(1);
+        }
+        fn_8002A1C4((u8*)mapIdx, 0xe, -1);
+        return 1;
+    }
+    if (fn_801D0748(4, 2, 0) != 4) {
+        memcpy((void*)savedataGetStatus(NULL, 3), (void*)lbl_8047A3DC, 0x7198);
+        heroSetStatus(NULL, 0xd, lbl_8047A3D8);
+    }
+    return 1;
 }
 
 /*
@@ -2451,6 +2560,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     u8 type;
     u8 kind;
     s32 done;
+    u32 item;
     s32 ok;
     u32 money;
     s32 cheapest;
@@ -2469,9 +2579,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     s32 ret;
     ShopWork* work;
     u8* slot;
-    u8 name;
     u8 se;
-    u8 se2;
     s32 header;
     struct {
         s32 enabled;
@@ -2484,17 +2592,6 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         u8 pad;
         u32 trailer;
     } qtyParams;
-    struct {
-        u32 credit0;
-        u32 credit1;
-        u32 field764;
-        u16 zero;
-        u16 count;
-        struct {
-            u16 id;
-            u16 num;
-        } items[50];
-    } inv;
     ShopListMenu params;
 
     type = mode;
@@ -2544,22 +2641,22 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
     }
     kind = mode;
-    work = &params.work;
     while (done == 0) {
+    for (;;) {
         if ((s32)lbl_804788A8 != 0) {
             for (i = 0; i < 5; i++) {
                 *(s16*)(lbl_802E4F68 + i * 8 + 4) = *(s16*)(lbl_802EF0A8 + *(s32*)(lbl_802E4F68 + i * 8) * 0x1c + 4);
             }
             lbl_804788A8 = 0;
         }
-        done = shopOpenItemList(&params, mapIdx, mode, 0);
-        if ((u16)done == 0) {
-            goto confirm;
+        item = shopOpenItemList(&params, mapIdx, mode, 0);
+        if ((u16)item == 0) {
+            break;
         }
-        itemDataBiosGetPtr(done);
+        itemDataBiosGetPtr(item);
         n = (u16)itemDataBiosGetCoupon();
         if (n > 0) {
-            n = (s32)shopGetMoney(type, work) / n;
+            n = (s32)shopGetMoney(type, &params.work) / n;
             if (n > 0x63) {
                 n = 0x63;
             }
@@ -2570,9 +2667,9 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             fn_8002A1C4((u8*)mapIdx, 8, -1);
             continue;
         }
-        itemDataBiosGetPtr(done);
+        itemDataBiosGetPtr(item);
         price = itemDataBiosGetCoupon();
-        id = done;
+        id = item;
         lbl_8047A3E4 = fn_80029FAC(&se, mapIdx, 0xc, 0x2d, id, -1);
         if (n < 1) {
             qty = 0;
@@ -2608,26 +2705,29 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
         switch (type) {
         case 2:
-            room = (u16)pcboxGetItemCapacity(0, done);
+            room = pcboxGetItemCapacity(0, item) & 0xFFFF;
             break;
         case 3:
-            if (work != NULL) {
+            if (&params.work != NULL) {
+                u16 id;
+                s32 count;
                 room = 0;
-                slot = (u8*)work;
-                for (i = 0; i < work->count; i++) {
-                    if (itemBiosGetItemDataId(slot) == (u16)done) {
+                count = params.work.count;
+                slot = (u8*)&params.work;
+                for (i = 0; i < count; i++, slot += 4) {
+                    id = itemBiosGetItemDataId(slot);
+                    if (id == (u16)item) {
                         room += (u16)(999 - itemBiosGetNum(slot));
-                    } else if (itemBiosGetItemDataId(slot) == 0) {
+                    } else if (id == 0) {
                         room += 999;
                     }
-                    slot += 4;
                 }
             } else {
                 room = 0;
             }
             break;
         default:
-            room = heroItemCheckAddItemDataId(NULL, done);
+            room = heroItemCheckAddItemDataId(NULL, item);
             break;
         }
         if (room < qty) {
@@ -2635,7 +2735,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             continue;
         }
         fn_8002A1C4((u8*)mapIdx, 6, -1);
-        fn_80029EF4((void*)total, done, qty, mode, work);
+        fn_80029EF4((void*)total, item, qty, mode, &params.work);
         fn_80166AB8(0x3cc, 0, 0);
         if ((u8)mode != 4) {
             continue;
@@ -2646,73 +2746,10 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         if (answer != -1 && answer != 1) {
             continue;
         }
-    confirm:
+        break;
+    }
         if (kind == 2 || kind == 3) {
-            if (work->exitFlag == 0) {
-                winMsgOpenWithSE(2, fn_80029FAC(&se2, mapIdx, 0xd, -1), 1, 0, se2);
-                answer = menuSubOpenYesNo(0, -1, -1, 0);
-                winMsgClose(1);
-                if (answer == 1 || answer == -1) {
-                    done = 0;
-                } else {
-                    if ((u8)mode == 3) {
-                        fn_8002A1C4((u8*)mapIdx, 0xe, -1);
-                    }
-                    done = 1;
-                }
-            } else {
-                winMsgOpenWithSE(2, fn_80029FAC(&se2, mapIdx, 0xf, -1), 1, 0, se2);
-                answer = menuSubOpenYesNo(0, -1, -1, 0);
-                winMsgClose(1);
-                if (answer == 1 || answer == -1) {
-                    done = 0;
-                } else if ((u8)mode == 3) {
-                    name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
-                    winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
-                    memset(&inv, 0, sizeof(inv));
-                    inv.credit0 = work->credit0;
-                    inv.credit1 = work->credit1;
-                    inv.field764 = work->field764;
-                    inv.zero = 0;
-                    inv.count = work->count;
-                    for (i = 0; i < inv.count; i++) {
-                        if (i < 0 || i > work->count) {
-                            id = 0;
-                        } else {
-                            slot = (u8*)work + i * 4;
-                            id = itemBiosGetItemDataId(slot);
-                            if (id != 0) {
-                                inv.items[i].num = itemBiosGetNum(slot);
-                            }
-                        }
-                        inv.items[i].id = id;
-                        if (inv.items[i].id == 0) {
-                            inv.items[i].num = 0;
-                            break;
-                        }
-                    }
-                    fn_80093574(1);
-                    fn_80092C90(1, &inv, 0);
-                    fn_80093574(1);
-                    if (fn_80093610(1) != 0xc) {
-                        fn_80093698(1);
-                        winMsgOpenWithSE(2, 0x3d85, 1, 0, name);
-                        winMsgClose(1);
-                    } else {
-                        fn_80093698(1);
-                        winMsgOpenWithSE(2, 0x3d84, 1, 0, name);
-                        winMsgClose(1);
-                    }
-                    fn_8002A1C4((u8*)mapIdx, 0xe, -1);
-                    done = 1;
-                } else {
-                    if (fn_801D0748(4, 2, 0) != 4) {
-                        memcpy((void*)savedataGetStatus(NULL, 3), (void*)lbl_8047A3DC, 0x7198);
-                        heroSetStatus(NULL, 0xd, lbl_8047A3D8);
-                    }
-                    done = 1;
-                }
-            }
+            done = shopConfirmLeave(&params.work, mapIdx, mode);
         } else {
             done = 1;
         }
