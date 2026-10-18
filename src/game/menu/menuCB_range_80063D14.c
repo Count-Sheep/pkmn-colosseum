@@ -120,27 +120,14 @@ static inline void menuCBClearEntrySlots(MenuCBEntryWork* state)
     }
 }
 
-/* RULE-EXCEPTION(user-approved): single-use inline helper (setup stores + GBA port loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
-static inline void menuCBEntryInit(void)
+/* RULE-EXCEPTION(user-approved): single-use inline helper (GBA port loop, nested under menuCBEntryInit) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBEntryPorts(s32 battleType, s32 playerCount)
 {
-    s32 battleType;
-    s32 playerCount;
     s32 player;
     void* command;
     u16 maxCount;
     MenuCBEntryPort* port;
     u16 pokemonCount;
-
-    battleType = toolentryTaisenGetBattleType();
-    playerCount = toolentryTaisenGetEntryPlayerNum();
-    MENUCB_WORK->cancelled = 1;
-    MENUCB_WORK->message = -1;
-    MENUCB_WORK->scale = lbl_8047BFE8;
-    MENUCB_WORK->frame = 0;
-    MENUCB_WORK->cursor = 0;
-    MENUCB_WORK->timer = 0;
-    MENUCB_WORK->state = 0;
-    MENUCB_WORK->selection = 0;
 
     for (player = 0; player < playerCount; player++) {
         s32 wazaText;
@@ -165,6 +152,25 @@ static inline void menuCBEntryInit(void)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (setup stores) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBEntryInit(void)
+{
+    s32 battleType;
+    s32 playerCount;
+
+    battleType = toolentryTaisenGetBattleType();
+    playerCount = toolentryTaisenGetEntryPlayerNum();
+    MENUCB_WORK->cancelled = 1;
+    MENUCB_WORK->message = -1;
+    MENUCB_WORK->scale = lbl_8047BFE8;
+    MENUCB_WORK->frame = 0;
+    MENUCB_WORK->cursor = 0;
+    MENUCB_WORK->timer = 0;
+    MENUCB_WORK->state = 0;
+    MENUCB_WORK->selection = 0;
+    menuCBEntryPorts(battleType, playerCount);
+}
+
 /* RULE-EXCEPTION(user-approved): single-use inline helper (entry order loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
 static inline void menuCBEntryInitOrder(void)
 {
@@ -181,10 +187,24 @@ static inline void menuCBEntryInitOrder(void)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (decision wait loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBWaitDecided(void)
+{
+    s32 waiting;
+
+    waiting = 1;
+    do {
+        if (menuCBDecided()) {
+            waiting = 0;
+        } else {
+            _threadSwitch();
+        }
+    } while (waiting != 0);
+}
+
 s32 fn_80063D14(void* work)
 {
     s32 battleType;
-    s32 waiting;
     s32 player;
     s32 count;
     s32 menuResult;
@@ -263,14 +283,7 @@ s32 fn_80063D14(void* work)
             winMsgOpen(2, 0x44DC, 1, 1);
         } else {
             winMsgOpen(2, 0x44E7, 1, 1);
-            waiting = 1;
-            do {
-                if (menuCBDecided()) {
-                    waiting = 0;
-                } else {
-                    _threadSwitch();
-                }
-            } while (waiting != 0);
+            menuCBWaitDecided();
             winMsgClose(1);
         }
         menuCBClearEntrySlots(MENUCB_WORK);
