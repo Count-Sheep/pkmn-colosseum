@@ -2505,7 +2505,9 @@ config.libs = [
                         }
                         else "GC/1.3"
                     ),
-                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                    # fn_801D603C keeps retail's `li r4,0; mr r5,r4` key copy only below -O3.
+                    extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"]
+                    + (["-O2,p"] if path == "game/wazaViewer_candidate_801D56B0.c" else []),
                     progress_category="game",
                 )
                 for status, path in [
@@ -2516,7 +2518,7 @@ config.libs = [
                     (Matching, "game/wazaViewer_exact_801D56B0.c"),
                     (Matching, "game/wazaViewer_candidate_801D5A94.c"),
                     (Matching, "game/wazaViewer_exact_801D5DA0.c"),
-                    (CodeCandidate, "game/wazaViewer_candidate_801D56B0.c"),
+                    (Matching, "game/wazaViewer_candidate_801D56B0.c"),
                     (Matching, "game/wazaViewer_exact_801D624C.c"),
                     (CodeCandidate, "game/wazaViewer_candidate_801D6A64.c"),
                     (Matching, "game/wazaViewer_exact_801D6E58.c"),
