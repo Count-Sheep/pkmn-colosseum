@@ -3755,8 +3755,8 @@ void fn_8006E338(void* obj) {
     void* widget;
     u8 allReady;
     void* w0;
-    void* w1;
     void* w2;
+    void* w1;
 
     allReady = 1;
     if (*(s8*)((u8*)obj + 2) == 0) {
