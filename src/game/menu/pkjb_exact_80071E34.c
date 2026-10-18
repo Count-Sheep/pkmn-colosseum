@@ -5,10 +5,10 @@
  */
 #include "game/menu/pkjb_uploader_shared.h"
 
-s32 fn_80071EA4(s32 chan, u32* data);
+s32 fn_80071EA4(s32 chan, u8* data);
 
 /* 0x80071E34 | 0x70: fn_80071EA4 with the key state held. */
-s32 fn_80071E34(s32 chan, u32* data)
+s32 fn_80071E34(s32 chan, u8* data)
 {
     s32 key;
     s32 result;
