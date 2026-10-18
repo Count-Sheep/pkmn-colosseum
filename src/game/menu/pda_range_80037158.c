@@ -8815,13 +8815,42 @@ extern f32 lbl_8047BDD0;
 extern f32 lbl_8047BDD4;
 extern f32 lbl_804788D8;
 
-/* Backdrop alpha ramp and the staggered caption pulses on the mail screen. */
-#pragma peephole off
-void fn_8004A7A8(void* work, PdaSprite* sprite)
+/* Fade the caption with the widgets' horizontal offset, then pulse its alpha
+ * and grey level with a sine wave; `k` staggers the phase per caption. */
+static inline void pda_8004A7A8_Pulse(PdaSprite* sprite, f32 k)
 {
     extern f64 sin(f64 x);
     s32 fade;
     f32 pulse;
+
+    if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
+        fade = 0xff;
+    } else {
+        fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
+    }
+    sprite->alpha = 0xff - fade;
+    pulse = sin(3.1415927f * (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) + lbl_804788D8 * k);
+    pulse += 1.0f;
+    pulse *= 0.5f;
+    pulse *= 256.0f;
+    if (pulse > 255.0f) {
+        pulse = 255.0f;
+    }
+    if (pulse < 0.0f) {
+        pulse = 0.0f;
+    }
+    sprite->alpha = pulse;
+    sprite->colorR = pulse;
+    sprite->colorG = pulse;
+    sprite->colorB = pulse;
+}
+
+/* Backdrop alpha ramp and the staggered caption pulses on the mail screen. */
+#pragma peephole off
+void fn_8004A7A8(void* work, PdaSprite* sprite)
+{
+    s32 fade;
+    s16* pos;
 
     switch (sprite->eventId) {
     case 0x6e0:
@@ -8834,9 +8863,8 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
     case 0x756:
     case 0x757:
     case 0x758:
-        sprite->field_50 =
-            (s16)(*(s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c + 2) +
-                  (s32)*(f32*)(lbl_803A6A60 + 0x30));
+        pos = (s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c);
+        sprite->field_50 = pos[1] + (s32)*(f32*)(lbl_803A6A60 + 0x30);
         spriteSetEnv(fn_800FE6D0(
             (s16)(*(s16*)((u8*)work + 0x84) + sprite->field_50),
             (s16)(*(s16*)((u8*)work + 0x86) + sprite->field_52)));
@@ -8847,9 +8875,8 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
     case 0x435:
     case 0x436:
     case 0x6dd:
-        sprite->field_52 =
-            (s16)(*(s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c + 4) +
-                  (s32)*(f32*)(lbl_803A6A60 + 0x34));
+        pos = (s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c);
+        sprite->field_52 = pos[2] + (s32)*(f32*)(lbl_803A6A60 + 0x34);
         break;
     case 0x437:
     case 0x438:
@@ -8864,244 +8891,34 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->alpha = 0xff - fade;
         break;
     case 0x6ea:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                             (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                         lbl_804788D8 * 0.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 0.0f);
         break;
     case 0x6eb:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 1.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 1.0f);
         break;
     case 0x6ec:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 2.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 2.0f);
         break;
     case 0x6ed:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 3.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 3.0f);
         break;
     case 0x6ee:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 4.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 4.0f);
         break;
     case 0x6ef:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                             (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                         lbl_804788D8 * 0.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 0.0f);
         break;
     case 0x6f0:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 1.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 1.0f);
         break;
     case 0x6f1:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 2.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 2.0f);
         break;
     case 0x6f2:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 3.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 3.0f);
         break;
     case 0x6f3:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
-            fade = 0xff;
-        } else {
-            fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
-        }
-        sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(3.1415927f *
-                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * 4.0f);
-        pulse = pulse + 1.0f;
-        pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * 256.0f;
-        if (pulse > 255.0f) {
-            pulse = 255.0f;
-        }
-        if (pulse < 0.0f) {
-            pulse = 0.0f;
-        }
-        sprite->alpha = (u8)(s32)pulse;
-        sprite->colorR = (u8)(s32)pulse;
-        sprite->colorG = (u8)(s32)pulse;
-        sprite->colorB = (u8)(s32)pulse;
+        pda_8004A7A8_Pulse(sprite, 4.0f);
         break;
     case 0x6e7:
     case 0x6e8:
