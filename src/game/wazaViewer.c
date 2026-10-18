@@ -229,7 +229,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  */
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
+#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464) && !defined(PR409_WAZA_VIEWER_7B94_ONLY)
 #if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
@@ -290,7 +290,7 @@ void wazaViewerThread(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464) && !defined(PR409_WAZA_VIEWER_7B94_ONLY)
 
 /**
  * fn_801D56B0 - Re-arm the viewer after a sequence file has been loaded:
@@ -1264,7 +1264,7 @@ void fn_801D7230(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
+#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464) && !defined(PR409_WAZA_VIEWER_7B94_ONLY)
 /**
  * fn_801D744C - Move animation OR bits into lbl_804673F8+0xC.
  * Address: 0x801D744C | Size: 0x18
@@ -1562,14 +1562,14 @@ void fn_801D7B94(void* effect) {
     u8* data;
     WazaSequenceEntry* entry;
     struct GSmodel* model;
-    GSpart* part;
     void* camera;
+    GSpart* part;
+    s32 i;
     WazaViewerVec cameraPosition;
     WazaViewerVec transform;
     f32 fov;
     f32 aspect;
     f32 scale;
-    s32 i;
 
     data = effect;
     model = *(struct GSmodel**)(data + 0x24);
