@@ -85,7 +85,7 @@ void _wazaViewerUpdate(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_53D8_7E58) || defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94)
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_53D8_7E58) || defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) || defined(PR409_WAZA_VIEWER_EXACT_5DA0)
 
 extern u8 lbl_80279338[];
 
@@ -229,7 +229,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  */
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94)
+#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0)
 #if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
@@ -290,7 +290,7 @@ void wazaViewerThread(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0)
 
 /**
  * fn_801D56B0 - Re-arm the viewer after a sequence file has been loaded:
@@ -442,7 +442,11 @@ void fn_801D58E4(void) {
     *(s32*)(lbl_804673F8 + 0x63C) = 0;
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 #if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94)
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_5A94_PREFIX)
 /**
  * fn_801D5A94 - Move animation helper: combined effect sequence.
  * Address: 0x801D5A94 | Size: 0x30C
@@ -517,6 +521,9 @@ void fn_801D5A94(s32 slot) {
     ((void**)(lbl_804673F8 + 0x61C))[slot] = effect;
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_EXACT_5DA0)
 /**
  * fn_801D5DA0 - Move animation helper: element-specific rendering.
  * Address: 0x801D5DA0 | Size: 0x29C
@@ -631,6 +638,10 @@ void fn_801D5DA0(void) {
     GSmodelEnableModulation(*(void**)((u8*)sequence + 0x24), color);
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_EXACT_5DA0)
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_603C_SUFFIX)
 /**
  * fn_801D603C - Move animation helper: hit effect rendering.
  * Address: 0x801D603C | Size: 0x210
@@ -1241,6 +1252,8 @@ void fn_801D7230(void) {
     }
 }
 
+#endif
+
 /**
  * fn_801D744C - Move animation OR bits into lbl_804673F8+0xC.
  * Address: 0x801D744C | Size: 0x18
@@ -1622,6 +1635,8 @@ void fn_801D7B94(void* effect) {
         fn_800D6728();
     }
 }
+
+#endif
 
 #endif
 
