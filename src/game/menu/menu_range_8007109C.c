@@ -1956,7 +1956,8 @@ static inline u32 menuGbaCrcRoll(u32 crc) {
 
     for (i = 32; i > 0; i--) {
         if ((crc & 1) != 0) {
-            crc = (crc >> 1) ^ 0xA1C1;
+            crc >>= 1;
+            crc ^= 0xA1C1;
         } else {
             crc >>= 1;
         }
