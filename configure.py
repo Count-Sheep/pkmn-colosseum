@@ -8308,7 +8308,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menuShop_candidate_8002D91C.c",
                 constant_import=[{"symbol": "lbl_8047B998", "offset": 0, "expected": "4330000080000000"}],
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nolifetimes"],
                 progress_category="game",
             ),
