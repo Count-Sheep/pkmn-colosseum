@@ -1279,7 +1279,7 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
                 *(s16*)(tbl + 0x4930) - *(s16*)(entry + 0x4),
                 *(s16*)(tbl + 0x4932), *(s16*)(tbl + 0x4934));
 
-    slot_i = (s8)((u8*)arg0)[0x94];
+    slot_i = *(s8*)((u8*)arg0 + 0x94);
     slot_count = *(s32*)(refs.ctx + 0x8);
     msgctrlSetValue(0x50, (void*)0x270f);
     x_mid = GSmsgGetRect(0xdb) >> 16;
