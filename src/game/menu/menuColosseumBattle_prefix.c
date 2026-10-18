@@ -69,6 +69,7 @@ typedef struct ColosseumUnownMenuTable {
 static inline s32 colosseumBattleGetMenuPokemonId(void* pokemon) {
     u32 id;
     u32 form;
+    u8 shiny;
 
     id = pokemonBiosGetPokemonDataId(pokemon);
     if ((u16)id == 0) {
@@ -90,8 +91,8 @@ static inline s32 colosseumBattleGetMenuPokemonId(void* pokemon) {
         }
         return table.ids[(u8)form].normal;
     }
-    id = pokemonGetStatus(NULL, id, 0x5A,
-                          (u16)(((u8)pokemonGetStatus(pokemon, id, 0xC1, 0) != 0) ? 1 : 0));
+    shiny = pokemonGetStatus(pokemon, id, 0xC1, 0);
+    id = pokemonGetStatus(NULL, id, 0x5A, (u16)((u8)shiny != 0 ? 1 : 0));
     if (id == 0) {
         return -1;
     }
@@ -112,9 +113,9 @@ static inline s32 colosseumBattleCountPokemon(void) {
         }
     }
 
-    for (box = 0; box < pcboxGetNbPokemonBox(); box++) {
-        for (slot = 0; slot < fn_801347D8(); slot++) {
-            pokemon = getPokemon__5PCBOXFScSc(0, (s8)box, (s8)slot);
+    for (slot = 0; slot < pcboxGetNbPokemonBox(); slot++) {
+        for (box = 0; box < fn_801347D8(); box++) {
+            pokemon = getPokemon__5PCBOXFScSc(0, (s8)slot, (s8)box);
             if (pokemon != NULL && pokemonCheckValid(pokemon) != 0) {
                 count++;
             }
@@ -126,12 +127,14 @@ static inline s32 colosseumBattleCountPokemon(void) {
 /* Address: 0x80058150 | Size: 0x604 */
 void fn_80058150(void) {
     u32 handle;
+    s32 boxSlot;
     u32* list;
     u32* out;
-    void* pokemon;
-    s32 listCount;
-    s32 box;
     s32 slot;
+    s32 listCount;
+    void* pokemon;
+    void* boxPokemon;
+    s32 box;
     u32 id;
     s32 connectedState;
     s32 shouldSkipWait;
@@ -160,11 +163,11 @@ void fn_80058150(void) {
                 }
             }
 
-            for (box = 0; box < pcboxGetNbPokemonBox(); box++) {
-                for (slot = 0; slot < fn_801347D8(); slot++) {
-                    pokemon = getPokemon__5PCBOXFScSc(0, (s8)box, (s8)slot);
-                    if (pokemon != NULL && pokemonCheckValid(pokemon) != 0) {
-                        id = colosseumBattleGetMenuPokemonId(pokemon);
+            for (slot = 0; slot < pcboxGetNbPokemonBox(); slot++) {
+                for (boxSlot = 0; boxSlot < fn_801347D8(); boxSlot++) {
+                    boxPokemon = getPokemon__5PCBOXFScSc(0, (s8)slot, (s8)boxSlot);
+                    if (boxPokemon != NULL && pokemonCheckValid(boxPokemon) != 0) {
+                        id = colosseumBattleGetMenuPokemonId(boxPokemon);
                         if (id != -1) {
                             *out++ = id;
                         }
