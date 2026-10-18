@@ -14,7 +14,7 @@
 #include "game/menu/pkjb_uploader_shared.h"
 
 s32 fn_80074360(s32 chan);
-s32 fn_8007480C(s32 chan);
+s32 fn_8007480C(s32 chan, s32 use_primary_image);
 
 /* 0x80074324 | 0x3C: drop the key state, then reset the link. */
 s32 fn_80074324(s32 chan)
@@ -98,14 +98,15 @@ s32 fn_80074360(s32 chan)
     return result;
 }
 
-/* 0x800745B4 | 0x258: boot the GBA, then retry the 0xAA ping for 2 s. */
-s32 fn_800745B4(s32 chan)
+/* 0x800745B4 | 0x258: boot the GBA, then retry the 0xAA ping for 2 s.
+ * use_primary_image picks the multiboot image fn_8007480C sends. */
+s32 fn_800745B4(s32 chan, s32 use_primary_image)
 {
     s32 result;
     u32 timeout;
     u32 start;
 
-    result = fn_8007480C(chan);
+    result = fn_8007480C(chan, use_primary_image);
     if (result == 0) {
         timeout = OS_TIMER_CLOCK * 8;
         start = OSGetTick();

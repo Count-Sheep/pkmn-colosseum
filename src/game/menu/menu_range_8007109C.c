@@ -743,7 +743,7 @@ s32 fn_80074360(s32 chan)
     return result;
 }
 
-extern s32 fn_8007480C();
+s32 fn_8007480C(s32 channel, s32 use_primary_image);
 
 /* Wait (up to 5 ms) for the GBA to become ready, then send the 0xAA
  * handshake byte and check that the GBA echoes it. */
@@ -788,13 +788,13 @@ static inline s32 fn_800745B4_handshake(s32 chan)
     return 0;
 }
 
-s32 fn_800745B4(s32 chan)
+s32 fn_800745B4(s32 chan, s32 use_primary_image)
 {
     s32 result;
     u32 timeout;
     u32 start;
 
-    result = fn_8007480C(chan);
+    result = fn_8007480C(chan, use_primary_image);
     if (result == 0) {
         timeout = OS_TIMER_CLOCK * 8;
         start = OSGetTick();
