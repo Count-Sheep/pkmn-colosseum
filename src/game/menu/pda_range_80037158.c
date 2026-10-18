@@ -9335,6 +9335,10 @@ void fn_8003C7C0(void)
     u32 rnd;
     u32 handle;
     f32 step;
+    u8 shadow;
+    u8 snagged;
+    f32 baseX;
+    f32 baseY;
 
     state = 0;
     running = 1;
@@ -9354,17 +9358,19 @@ void fn_8003C7C0(void)
     *(u32*)((u8*)&lbl_803A6748 + 0x98) =
         pokemonCreateRndFit(lbl_803A6610, -1, -1, 0, 0);
     *(f32*)((u8*)&lbl_803A6748 + 0x28) = lbl_8047BAC4;
-    if (lbl_8047A4DC >= 10) {
+    if ((s32)lbl_8047A4DC >= 10) {
         *(s32*)((u8*)&lbl_803A6748 + 0xc) = 10;
     } else {
         *(s32*)((u8*)&lbl_803A6748 + 0xc) = lbl_8047A4DC;
     }
     model = (u8*)&lbl_803A6748 + 0x4c;
     *(s32*)((u8*)&lbl_803A6748 + 0x10) = lbl_8047A4DC;
-    *(f32*)((u8*)&lbl_803A6748 + 0x2c) = (f32)*(s16*)(lbl_802EF0A8 + 0x509e);
-    *(f32*)((u8*)&lbl_803A6748 + 0x34) = (f32)*(s16*)(lbl_802EF0A8 + 0x509e);
-    *(f32*)((u8*)&lbl_803A6748 + 0x30) = (f32)*(s16*)(lbl_802EF0A8 + 0x50a0);
-    *(f32*)((u8*)&lbl_803A6748 + 0x38) = (f32)*(s16*)(lbl_802EF0A8 + 0x50a0);
+    baseX = *(s16*)(lbl_802EF0A8 + 0x509e);
+    baseY = *(s16*)(lbl_802EF0A8 + 0x50a0);
+    *(f32*)((u8*)&lbl_803A6748 + 0x2c) = baseX;
+    *(f32*)((u8*)&lbl_803A6748 + 0x34) = baseX;
+    *(f32*)((u8*)&lbl_803A6748 + 0x30) = baseY;
+    *(f32*)((u8*)&lbl_803A6748 + 0x38) = baseY;
     menuModelInit(model, *(s16*)(lbl_802EF0A8 + 0x17ca6),
                   *(s16*)(lbl_802EF0A8 + 0x17ca8));
 
@@ -9391,8 +9397,10 @@ void fn_8003C7C0(void)
                     rndId = lbl_8047A4D4[idx].battleId;
                     fn_801EE614(entry);
                     fn_801EE8F4(entry);
-                    if (fn_801EEAD0(entry) != 0) {
-                        if (fn_801EEC74(entry) != 0) {
+                    shadow = fn_801EEAD0(entry);
+                    snagged = fn_801EEC74(entry);
+                    if (shadow != 0) {
+                        if (snagged != 0) {
                             mode = 1;
                         } else {
                             mode = 0;
