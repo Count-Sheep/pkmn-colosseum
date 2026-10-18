@@ -683,25 +683,19 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
     extern void msgctrlSetValue(u32 id, void* value);
     extern u8* fn_80082FE4(MenuCardEEntry* entry, u8 layer);
     extern MenuCardEMatrixCell* fn_80082EA4(MenuCardEEntry* entry, u8 layer, s8 row, s8 column);
-    MenuCardEMatrixSprite* sprite;
-#if !defined(MENU_CARDE_MATRIX_TU) && !defined(MENU_CARDE_MATRIX_POOL)
-    MenuCardEMatrixTable* table;
-#endif
-    MenuCardEMatrixContext* context;
-    s8 row;
-    s32 group;
-    s32 index;
-    MenuCardEEntry* entry;
-    s8 column;
-    s32 which;
     u8 layer;
     u8* rows;
-    MenuCardEMatrixCell* cell;
+    s8 column;
+    s32 which;
+    MenuCardEEntry* entry;
+    MenuCardEMatrixContext* context;
+    s8 row;
     u16 value;
+    s32 index;
+    s32 group;
+    MenuCardEMatrixCell* cell;
+    MenuCardEMatrixSprite* sprite;
 
-#if !defined(MENU_CARDE_MATRIX_TU) && !defined(MENU_CARDE_MATRIX_POOL)
-    table = &lbl_80268B88;
-#endif
     if (window == NULL) {
         window = windowSearchID(0xA6);
     }
