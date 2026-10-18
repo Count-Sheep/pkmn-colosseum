@@ -6642,12 +6642,12 @@ static inline u8 pdaEntrySeen(void)
 }
 
 /* Species-name message for the highlighted entry, 0 when unavailable. */
-static inline u32 pdaCurrentNameMsg(void)
+static inline u32 pdaCurrentNameMsg(s32 index)
 {
     u32 work;
 
     if (lbl_8047A4E0 != 0) {
-        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+        work = pdaLoadPokemonB(index);
         if (work != 0) {
             return GSmsgGetGSchar((u32)pokemonDataBiosGetName(
                 pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work))));
@@ -6662,6 +6662,15 @@ static inline void* pdaCurrentData(void)
 {
     return pokemonDataBiosGetPtr(
         pokemonBiosGetPokemonDataId(pdaLoadPokemonB(lbl_803A6818.currentIndex)));
+}
+
+/* Type-name message of the highlighted entry, 0 when unavailable. */
+static inline u32 pda_800411FC_TypeName(void)
+{
+    if (lbl_8047A4E0 != 0) {
+        return pokemonDataBiosGetTypeName(pdaCurrentData());
+    }
+    return 0;
 }
 
 /* Height of the highlighted entry, 0 when unavailable. */
@@ -6723,7 +6732,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     u32 msg;
     s16* pos;
 
-    name = pdaCurrentNameMsg();
+    name = pdaCurrentNameMsg(lbl_803A6818.currentIndex);
     if (name == 0) {
         name = GSmsgGetGSchar(1);
     }
@@ -6823,7 +6832,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
 
     layout = lbl_802EF0A8;
     if (pdaEntrySeen() != 0) {
-        msgctrlSetValue(0x31, pokemonDataBiosGetTypeName(pdaCurrentData()));
+        msgctrlSetValue(0x31, pda_800411FC_TypeName());
         fn_800FBB34(lbl_8047A4F0 +
                         (*(s16*)(layout + 0x5a22) - sprite->field_50),
                     *(s16*)(layout + 0x5a24) - sprite->field_52,
