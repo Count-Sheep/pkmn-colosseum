@@ -4885,6 +4885,28 @@ static inline u32 pdaLoadPokemonId(u32 id)
     return 0;
 }
 
+/* pdaLoadPokemonId for the lookup helpers, which go on to read the work slot. */
+static inline u32 pdaLoadPokemonWork(u32 id)
+{
+    u32 rnd;
+    u32 species = id;
+    u32 trainerRnd;
+    u32 work;
+
+    if ((work = lbl_8047A4E0) != 0) {
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
 /* Shiny/color variant of the memo entry, or 0 when it cannot be resolved. */
 static inline u8 pdaGetPokemonColor(u16 id)
 {
@@ -5062,7 +5084,7 @@ static inline u8 pda_8003D4C8_Color(u32 id)
     void* data;
 
     if (work != 0) {
-        work = pdaLoadPokemonId(id);
+        work = pdaLoadPokemonWork(id);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
@@ -5151,7 +5173,7 @@ extern void* pokemonDataBiosGetName(void* data);
 /* Name of the memo entry as a wide string, or NULL when unavailable. */
 static inline void* pdaGetPokemonName(u16 id)
 {
-    u32 work = pdaLoadPokemonId(id);
+    u32 work = pdaLoadPokemonWork(id);
 
     if (work != 0) {
         return pokemonDataBiosGetName(
@@ -6058,7 +6080,7 @@ u8 fn_800484A4(u8* work)
 static inline u16 pdaGetTypeIcon(u32 id, s32 slot)
 {
     u32 type = (u16)pokemonGetStatus(
-        0, (u16)pokemonGetStatus(pdaLoadPokemonId(id), 0, 0x6e, 0), 0x16, slot);
+        0, (u16)pokemonGetStatus(pdaLoadPokemonWork(id), 0, 0x6e, 0), 0x16, slot);
 
     if (type >= 9) {
         type = type - 1;
@@ -6169,7 +6191,7 @@ static inline u16 pdaGetWeight(u32 id)
     void* data;
 
     if (work != 0) {
-        work = pdaLoadPokemonId(id);
+        work = pdaLoadPokemonWork(id);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
@@ -6188,7 +6210,7 @@ static inline u16 pdaGetHeight(u32 id)
     void* data;
 
     if (work != 0) {
-        work = pdaLoadPokemonId(id);
+        work = pdaLoadPokemonWork(id);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
