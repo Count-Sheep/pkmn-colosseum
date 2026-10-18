@@ -2298,8 +2298,8 @@ u32 fn_8007B6D8(GbaBootContext* context) {
     extern s32 GBAGetStatus(s32 chan, u8* status);
     extern s32 GBARead(s32 chan, void* dst, u8* status);
     extern s32 GBAWrite(s32 chan, void* src, u8* status);
-    u8 crc_byte;
     u8 gba_status;
+    u8 crc_byte;
     u32 recv_word;
     u32 send_word;
     u32 channel;
@@ -2312,6 +2312,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
     u32 decrypt_word;
     u32 expected_crc;
     u32 i;
+    s32 result;
 
     channel = context->channel;
     context->state = 0;
@@ -2319,7 +2320,8 @@ u32 fn_8007B6D8(GbaBootContext* context) {
     if (GBAReset(channel, &gba_status) != 0) {
         return 0;
     }
-    if (GBAGetStatus(channel, &gba_status) == 0 &&
+    result = GBAGetStatus(channel, &gba_status);
+    if (result == 0 &&
         gba_status == 0x28) {
         if (GBARead(channel, &recv_word, &gba_status) != 0) {
             return 0;
@@ -2418,7 +2420,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
         return 1;
     }
 
-    if (GBAGetStatus(channel, &gba_status) != 0 || gba_status != 8) {
+    if (result != 0 || gba_status != 8) {
         return 0;
     }
     if (GBARead(channel, &recv_word, &gba_status) != 0) {
