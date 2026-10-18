@@ -8,7 +8,7 @@ typedef struct ShopLocationEntry {
 } ShopLocationEntry;
 
 typedef struct ShopTravelState {
-    u32 location;
+    s32 location;
     u32 active;
 } ShopTravelState;
 
