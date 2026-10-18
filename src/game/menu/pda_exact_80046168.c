@@ -149,6 +149,58 @@ static inline void* pdaCurrentCry(s32 index)
     return NULL;
 }
 
+/* Trainer-ID roll of a memo entry. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; inlining the trainer roll one level deeper numbers its result after the loader's locals, which gives retail's registers in the case-1 cry reload - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_80046168_TrainerRnd(u32 species)
+{
+    return memoDataGetPokemonTrainerRndFromID(0, species);
+}
+
+/* pdaLoadPokemon for the case-1 cry reload, with the trainer roll in its helper. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; a second copy of pdaLoadPokemon whose trainer roll goes through pda_80046168_TrainerRnd - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_80046168_LoadPokemon(s32 index)
+{
+    u32 work = lbl_8047A4E0;
+    u32 rnd;
+    u32 species;
+    u32 trainerRnd;
+
+    if (work != 0) {
+        species = lbl_8047A4E4[index];
+        if (species >= 0x8000) {
+            species = species & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = pda_80046168_TrainerRnd(species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
+/* pdaCurrentCry for the case-1 cry reload. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; a second copy of pdaCurrentCry that reloads through pda_80046168_LoadPokemon - see docs/RULE_EXCEPTIONS.md */
+static inline void* pda_80046168_CurrentCry(s32 index)
+{
+    u32 work = lbl_8047A4E0;
+    void* data;
+
+    if (work != 0) {
+        work = pda_80046168_LoadPokemon(index);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonNakigoeDataBiosGetDataAddress(data);
+            }
+            return NULL;
+        }
+        return NULL;
+    }
+    return NULL;
+}
+
 /* Push a cry onto the ring of trails and age every older entry. */
 #define PDA_CRY(n) (((PdaCryTrail*)lbl_802E52C8)[n])
 static inline void pdaPushCry(void* data, u32 voice)
@@ -260,6 +312,7 @@ void fn_80046168(void)
     u8* S;
     s32 running;
     u16 voice;
+    void* cry;
 
     running = 1;
     pda_80046168_ClearCries();
@@ -298,7 +351,8 @@ void fn_80046168(void)
                 if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x100) != 0) {
                     voice = pdaCurrentVoice(lbl_803A6818.currentIndex);
                     fn_80166AB8(voice, 0, 0);
-                    pdaPushCry(pdaCurrentCry(lbl_803A6818.currentIndex), voice);
+                    cry = pda_80046168_CurrentCry(lbl_803A6818.currentIndex);
+                    pdaPushCry(cry, voice);
                 } else if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x200) != 0) {
                     if (*(s32*)(S + 0x1c) == 2) {
                         *(s32*)(S + 0x1c) = 8;

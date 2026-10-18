@@ -3909,7 +3909,7 @@ config.libs = [
             ),
             # TEMPORARY constant_import: the 0.0f compare literal and the int-to-float bias.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_exact_80046168.c",
                 constant_import=[{"symbol": "lbl_8047BC94", "offset": 0, "expected": "00000000"},
                                  {"symbol": "lbl_8047BCB0", "offset": 8, "expected": "4330000080000000"}],
