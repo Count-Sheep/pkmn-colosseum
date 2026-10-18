@@ -3486,114 +3486,8 @@ void fn_8003B6D0(u8* ctx)
     fn_800FB680(0, 0, ctx[0x8b] | -0x100, (void*)0xcf);
 }
 
-#pragma peephole off
-void fn_8003F040(void) {
-    u8 tmp[0x1a];
-    u8* base;
-    u16* idx;
-    s32 count;
-    u32 i;
-    s32 j;
-    s32 gap;
-    s32 k;
-    u32 src_id;
-    u32 lookup;
-    u32 ctx;
-    u32 allocation;
-    u32 a;
-    u8* p;
-    u8* q;
-    u32 handle;
-
-    allocation = fn_800E2C04(0x28a0, 0x20);
-    if ((u16)allocation != 0) {
-        allocation = fn_800E27B0();
-    } else {
-        allocation = 0;
-    }
-    base = (u8*)allocation;
-
-    allocation = fn_800E2C04(0x320, 0x20);
-    if ((u16)allocation != 0) {
-        allocation = fn_800E27B0();
-    } else {
-        allocation = 0;
-    }
-    idx = (u16*)allocation;
-
-    for (i = 0; (u16)i < (u16)(*(u16*)&lbl_8047A4E8); i++) {
-        u32 ii = (u16)i;
-        src_id = ((u16*)lbl_8047A4E4)[ii];
-        idx[ii] = (u16)src_id;
-        lookup = src_id;
-        ctx = lbl_8047A4E0;
-        if (ctx != 0) {
-            if (src_id >= 0x8000) {
-                lookup = src_id & 0x3FFF;
-            }
-            allocation = gamedataGetStatus(0, 1);
-            fn_801240C4(ctx, lookup & 0xFFFF, 0xa, allocation);
-            a = fn_8025FDDC(0, lookup);
-            lookup = fn_8025FD34(0, lookup);
-            fn_8011DFE0(ctx, a);
-            fn_8011DF90(ctx, lookup);
-            allocation = lbl_8047A4E0;
-        } else {
-            allocation = 0;
-        }
-        if (allocation != 0) {
-            fn_8011F5C8();
-            fn_8011E778();
-            allocation = fn_8011E760();
-        } else {
-            allocation = 0;
-        }
-        p = base + ii * 0x1a;
-        fn_800F96E4(p + 2, 0x18, (u8*)allocation);
-        *(u16*)p = i;
-    }
-
-    count = (s32)*(u16*)&lbl_8047A4E8;
-    for (gap = count / 2; gap > 0; gap = gap / 2) {
-        for (j = gap; j < count; j++) {
-            k = j - gap;
-            p = base + k * 0x1a;
-            /* Retail emits the three memcpys before GScharCmp, i.e. the
-             * top-test rotation with the compare in the loop condition. */
-            q = base + (k + gap) * 0x1a;
-            while (k >= 0 &&
-                   GScharCmp((u32)(p + 2), (u32)(q + 2)) >= 0) {
-                memcpy(tmp, p, 0x1a);
-                memcpy(p, q, 0x1a);
-                memcpy(q, tmp, 0x1a);
-                p -= gap * 0x1a;
-                k -= gap;
-                q = base + (k + gap) * 0x1a;
-            }
-        }
-    }
-
-    for (i = 0; (u16)i < (u16)(*(u16*)&lbl_8047A4E8); i++) {
-        u32 ii = (u16)i;
-        ((u16*)lbl_8047A4E4)[ii] = idx[*(u16*)(base + ii * 0x1a)];
-    }
-
-    if (base != 0) {
-        handle = fn_800E202C((u32)base);
-        if ((u16)handle != 0) {
-            fn_800E24B0(handle);
-            fn_800E209C(handle);
-        }
-    }
-    if (idx != 0) {
-        handle = fn_800E202C((u32)idx);
-        if ((u16)handle != 0) {
-            fn_800E24B0(handle);
-            fn_800E209C(handle);
-        }
-    }
-}
-#pragma peephole reset
+/* fn_8003F040 (sort by name) follows fn_8003E394, its only caller. */
+void fn_8003F040(void);
 
 void fn_8003F2DC(u8* arr, s32 count, s32 dir) {
     u8 tmp[4];
@@ -6354,6 +6248,58 @@ void fn_8003E394(void)
     default:
         break;
     }
+}
+#pragma peephole reset
+
+typedef struct PdaNamePair {
+    u16 index;
+    u16 name[12];
+} PdaNamePair;
+
+/* Sort the memo index table by species name. */
+#pragma peephole off
+void fn_8003F040(void)
+{
+    extern s32 GScharCmp(u16* a, u16* b);
+    extern void* memcpy(void* dst, const void* src, u32 size);
+    u16 i;
+    PdaNamePair tmp;
+    s32 gap;
+    PdaNamePair* q;
+    PdaNamePair* pairs;
+    s32 k;
+    s32 j;
+    PdaNamePair* p;
+    u16* ids;
+    s32 count;
+
+    pairs = (PdaNamePair*)pdaAlloc(0x28a0, 0x20);
+    ids = (u16*)pdaAlloc(0x320, 0x20);
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        u32 id = lbl_8047A4E4[i];
+        ids[i] = id;
+        fn_800F96E4((u8*)pairs[i].name, 0x18, (u8*)pdaGetPokemonName(id));
+        pairs[i].index = i;
+    }
+
+    count = lbl_8047A4E8;
+    for (gap = count / 2; gap > 0; gap = gap / 2) {
+        for (j = gap; j < count; j++) {
+            for (k = j - gap, p = &pairs[k];
+                 k >= 0 && GScharCmp(p->name, (q = &pairs[k + gap])->name) >= 0;
+                 p -= gap, k -= gap) {
+                memcpy(&tmp, p, 0x1a);
+                memcpy(p, q, 0x1a);
+                memcpy(q, &tmp, 0x1a);
+            }
+        }
+    }
+
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        lbl_8047A4E4[i] = ids[pairs[i].index];
+    }
+    pdaFree(pairs);
+    pdaFree(ids);
 }
 #pragma peephole reset
 
