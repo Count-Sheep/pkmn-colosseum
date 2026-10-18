@@ -40,6 +40,7 @@
     !defined(MENU_MIDDLE_EXACT_8006D940_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006DC28_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E9A4_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006F284_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006F720_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FCF8_ONLY) && \
@@ -4040,6 +4041,21 @@ void fn_8006EFF8(void* arg0) {
     }
 }
 
+#endif
+
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006F284_ONLY)
+#ifdef MENU_MIDDLE_EXACT_8006F284_ONLY
+/* fn_8006BB34's parameter block, which is outside this carve. */
+typedef struct Param_8006BB34 {
+    u8 pad0[0x11];
+    u8 sel11;
+    u8 sel12;
+    u8 sel13;
+    s16 val14;
+    s16 val16;
+} Param_8006BB34;
+#endif
 
 /* winSpriteSetDisp with the visibility flag narrowed to a byte first;
  * winSpriteSetDisp itself takes a u32. */
@@ -4051,8 +4067,11 @@ static inline void fn_8006F284_setDisp(void* sprite, u8 visible) {
 }
 
 /* 0x8006F284 | size: 0x49C */
+/* The fn_8006F284 carve builds with -opt nopeephole instead. */
+#ifndef MENU_MIDDLE_EXACT_8006F284_ONLY
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
+#endif
 void fn_8006F284(void* menu) {
     extern void* windowSearchItemID(void* menu, s32 itemId);
     extern void menuItemBiosSetSelectFlag(s32 itemId, u8 flag);
@@ -4193,7 +4212,9 @@ void fn_8006F284(void* menu) {
 
     fn_80070D84(menu, (MenuMiddleEntry*)(data + 0x56C), 2);
 }
+#ifndef MENU_MIDDLE_EXACT_8006F284_ONLY
 #pragma peephole reset
+#endif
 
 #endif
 

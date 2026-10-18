@@ -8929,7 +8929,6 @@ config.libs = [
                 )
                 for path, version, opt in [
                     ("game/menu/menu_middle_r59_8006E798_middle.c", "GC/2.0", None),
-                    ("game/menu/menu_middle_r59_8006F284_prefix.c", "GC/1.3", None),
                 ]
             ],
             *[
@@ -8944,6 +8943,7 @@ config.libs = [
                             "game/menu/menu_middle_r59_8006CCC0_o1.c",
                             "game/menu/menu_middle_r59_8006F720_o1.c",
                             "game/menu/menu_middle_r59_8006C164_o1.c",
+                            "game/menu/menu_middle_r59_8006F284_prefix.c",
                         )
                         else CodeCandidate
                     ),
@@ -8976,6 +8976,7 @@ config.libs = [
                     "game/menu/menu_middle_r59_8006E9A4_o1.c",
                     "game/menu/menu_middle_r59_8006F720_o1.c",
                     "game/menu/menu_middle_r59_8006C164_o1.c",
+                    "game/menu/menu_middle_r59_8006F284_prefix.c",
                 ]
             ],
             Object(
