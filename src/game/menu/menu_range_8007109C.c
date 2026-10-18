@@ -2302,7 +2302,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
     u8 crc_byte;
     u32 recv_word;
     u32 send_word;
-    u32 channel;
+    s32 channel;
     u32 transfer_size;
     u32 handshake;
     u32 offset;
