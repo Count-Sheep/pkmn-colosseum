@@ -1960,6 +1960,45 @@ extern const f32 lbl_8047C128;
     ((((x) >> 24) | (((x) >> 8) & 0xFF00)) | (((x) << 8) & 0xFF0000) |  \
      ((x) << 24))
 
+static inline u32 menuGbaCrcRoll(u32 crc) {
+    s32 i;
+
+    for (i = 32; i > 0; i--) {
+        if ((crc & 1) != 0) {
+            crc = (crc >> 1) ^ 0xA1C1;
+        } else {
+            crc >>= 1;
+        }
+    }
+    return crc;
+}
+
+static inline u32 menuGbaCountLowBits(u32 value) {
+    u32 count = 0;
+    u32 i;
+
+    for (i = 0; i < 32; i++) {
+        if ((value & 1) != 0) {
+            count++;
+        }
+        value >>= 1;
+    }
+    return count;
+}
+
+static inline u32 menuGbaCountHighBits(u32 value) {
+    u32 count = 0;
+    u32 i;
+
+    for (i = 0; i < 24; i++) {
+        if ((value & 0x80000000) != 0) {
+            count++;
+        }
+        value <<= 1;
+    }
+    return count;
+}
+
 s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     extern void OSReport(const char* fmt, ...);
     u8 status;
@@ -1984,6 +2023,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     u32 candidate;
     u32 checksum;
     const char* strings;
+    u32 seed;
 
     strings = (const char*)lbl_80268780;
     if (use_primary_image != 0) {
@@ -2002,14 +2042,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
             challenge = (OSGetTick() & 0x00FFFFFF) | 0xDD000000;
         }
 
-        value = challenge;
-        bit_count = offset = 0;
-        for (; offset < 32; offset++) {
-            if ((value & 1) != 0) {
-                bit_count++;
-            }
-            value >>= 1;
-        }
+        bit_count = menuGbaCountLowBits(challenge);
         i++;
     } while (bit_count < 10 || bit_count > 24);
 
@@ -2048,13 +2081,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         response_key = 0;
     } else {
         response_key = value & 0xFFFFFF00;
-        bit_count = 0;
-        for (i = 0; i < 24; i++) {
-            if ((value & 0x80000000) != 0) {
-                bit_count++;
-            }
-            value <<= 1;
-        }
+        bit_count = menuGbaCountHighBits(value);
         if (bit_count < 7 || bit_count > 14) {
             OSReport(strings + 0x98, response_key);
             response_key = 0;
@@ -2094,8 +2121,9 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         }
     }
 
-    rolling_crc = challenge ^ response_key;
-    rolling_key = rolling_crc * 0x6177614B + 1;
+    seed = challenge ^ response_key;
+    rolling_crc = seed;
+    rolling_key = seed * 0x6177614B + 1;
     expected_status = 0x30;
 
     for (offset = 0; offset < padded_size; offset += 4, image++) {
@@ -2103,14 +2131,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         encoded = value;
         if (offset >= 0xA0) {
             encoded = (value - rolling_crc) ^ rolling_key;
-            rolling_crc ^= value;
-            for (i = 0; i < 32; i++) {
-                if ((rolling_crc & 1) != 0) {
-                    rolling_crc = (rolling_crc >> 1) ^ 0xA1C1;
-                } else {
-                    rolling_crc >>= 1;
-                }
-            }
+            rolling_crc = menuGbaCrcRoll(rolling_crc ^ value);
             rolling_key = rolling_key * 0x6177614B + 1;
         }
 
@@ -2176,23 +2197,9 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                 checksum = final_word >> 8;
                 candidate = 0xFFFFFFFF;
                 for (offset = 0; offset < 0x100; offset++) {
-                    value = candidate ^ rolling_crc;
-                    for (i = 0; i < 32; i++) {
-                        if ((value & 1) != 0) {
-                            value = (value >> 1) ^ 0xA1C1;
-                        } else {
-                            value >>= 1;
-                        }
-                    }
+                    value = menuGbaCrcRoll(candidate ^ rolling_crc);
                     if (checksum == value) {
-                        value = candidate ^ 0xBB;
-                        for (i = 0; i < 32; i++) {
-                            if ((value & 1) != 0) {
-                                value = (value >> 1) ^ 0xA1C1;
-                            } else {
-                                value >>= 1;
-                            }
-                        }
+                        value = menuGbaCrcRoll(candidate ^ 0xBB);
                         final_word = value | 0xBB000000;
                         OSReport(strings + 0x100,
                                  candidate, final_word);
