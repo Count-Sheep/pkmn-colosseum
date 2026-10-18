@@ -417,6 +417,12 @@ typedef struct PokemonChangeMenuEntry {
     u16 itemId;
 } PokemonChangeMenuEntry;
 
+/* The NPC-event queue popped by fn_80030170 (gs_npc_event.c). */
+typedef struct PokemonChangeQueue {
+    void* items[13];
+    u32 index;
+} PokemonChangeQueue;
+
 /* 0x8002FC58 | size: 0x518
  * Builds and runs the Pokemon-change selection menu (0xD9). */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
@@ -428,8 +434,8 @@ void fn_8002FC58(void) {
     extern u8 pokemonCheckValid(void* pokemon);
     extern u8 menuCBRule_CheckPokemonEventFlag(void* pokemon);
     extern void menuItemBiosSetSelectFlag(s32 itemId, s32 flag);
-    extern void fn_80030170(void);
-    extern void fn_8010B01C(s32 a, void (*cb)(void));
+    extern void* fn_80030170(PokemonChangeQueue* queue);
+    extern u16 fn_8010B01C(void* pokemon, void* (*callback)(u32), u32 arg);
     extern s32 menuGetCursor(s32 id);
     extern s32 menuGetCursorFromItemID(s32 id, s32 itemId);
     extern void fn_801021F8(s32 id, s32 flag);
@@ -438,7 +444,7 @@ void fn_8002FC58(void) {
     extern void windowCheckCursor(s32 id, s32 flag);
     extern s32 windowGetValue(s32 id);
     extern s32 menuGetCursorItemID(s32 id);
-    extern void* lbl_803A2650[];
+    extern PokemonChangeQueue lbl_803A2650;
     extern u8 lbl_803A2688[];
     extern PokemonChangeMenuEntry lbl_80266E90[];
     extern u8 lbl_8047A410;
@@ -462,19 +468,20 @@ void fn_8002FC58(void) {
     for (i = 0; i < 6; i++) {
         pokemon = heroBiosGetPokemonPtr(party, i);
         if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
-            lbl_803A2650[count++] = pokemon;
+            lbl_803A2650.items[count++] = pokemon;
         }
     }
-    party = lbl_803A2688;
+    /* RULE-EXCEPTION(user-approved): scalar reuse - the partner's party walk reuses the two dead locals the other way round (pokemon holds the party record, party the Pokemon), which gives retail's register numbering - see docs/RULE_EXCEPTIONS.md */
+    pokemon = lbl_803A2688;
     for (i = 0; i < 6; i++) {
-        pokemon = heroBiosGetPokemonPtr(party, i);
-        if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
-            lbl_803A2650[count++] = pokemon;
+        party = heroBiosGetPokemonPtr(pokemon, i);
+        if (pokemonCheckValid(party) != 0 && menuCBRule_CheckPokemonEventFlag(party) == 1) {
+            lbl_803A2650.items[count++] = party;
         }
     }
-    lbl_803A2650[count] = NULL;
-    lbl_803A2650[13] = NULL;
-    fn_8010B01C(0, fn_80030170);
+    lbl_803A2650.items[count] = NULL;
+    lbl_803A2650.index = 0;
+    fn_8010B01C(NULL, (void* (*)(u32))fn_80030170, (u32)&lbl_803A2650);
     save = savedataGetStatus(0, 2);
     member = heroBiosGetPokemonPtr(save, 0);
     selectable = 0;
