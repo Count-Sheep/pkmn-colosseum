@@ -8040,26 +8040,50 @@ static inline void pda_80046168_ClearCries(void)
     }
 }
 
-/* Cry-playback thread for the PDA's Pokemon entry. */
-#pragma peephole off
-void fn_80046168(void)
+/* 1 when the stick or the cancel buttons leave the cry screen. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its early returns give retail's shared join for the cancel test - see docs/RULE_EXCEPTIONS.md */
+static inline u8 pda_80046168_StickCancel(void)
 {
-    extern void _threadSwitch(void);
     /* Retail converts the stick values to single precision (fsubs) for this
      * call, so this caller saw atan2 declared with float parameters. */
     extern f64 atan2(f32 y, f32 x);
     extern s8 fn_800F7A08(s32 chan, s32 index);
     extern s8 fn_800F7A7C(s32 chan, s32 index);
+    s8 x;
+    s8 y;
+    f32 ang;
+
+    if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x8) != 0) {
+        return 1;
+    }
+    if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x4) != 0) {
+        return 1;
+    }
+    x = fn_800F7A08(1, 0);
+    y = fn_800F7A7C(1, 0);
+    if ((y < 0 ? -y : y) > 0x20 || (x < 0 ? -x : x) > 0x20) {
+        ang = atan2(y, x);
+        if (pda_800439BC_Fabs(ang) < lbl_8047BCFC) {
+            return 1;
+        }
+        if (pda_800439BC_Fabs(ang) > lbl_8047BD00) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Cry-playback thread for the PDA's Pokemon entry. */
+#pragma peephole off
+void fn_80046168(void)
+{
+    extern void _threadSwitch(void);
     u8* S;
     PdaCryTrail* t;
     s32 running;
     s32 i;
     s32 playing;
-    u8 cancel;
     u16 voice;
-    s8 x;
-    s8 y;
-    f32 ang;
 
     running = 1;
     pda_80046168_ClearCries();
@@ -8109,31 +8133,7 @@ void fn_80046168(void)
                 }
                 t++;
             }
-            if ((u8)playing != 0) {
-                if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x8) != 0) {
-                    cancel = 1;
-                } else if ((fn_800F7BC4(1) & fn_800F7AF0(1) & 0x4) != 0) {
-                    cancel = 1;
-                } else {
-                    x = fn_800F7A08(1, 0);
-                    y = fn_800F7A7C(1, 0);
-                    if ((y < 0 ? -y : y) > 0x20 || (x < 0 ? -x : x) > 0x20) {
-                        ang = atan2(y, x);
-                        if (pda_800439BC_Fabs(ang) < lbl_8047BCFC) {
-                            cancel = 1;
-                        } else if (pda_800439BC_Fabs(ang) > lbl_8047BD00) {
-                            cancel = 1;
-                        } else {
-                            cancel = 0;
-                        }
-                    } else {
-                        cancel = 0;
-                    }
-                }
-            } else {
-                cancel = 1;
-            }
-            if (cancel == 1) {
+            if ((u8)playing == 0 || pda_80046168_StickCancel() == 1) {
                 menuCloseCustom(0x3e, 0, 1);
                 *(s32*)(S + 0x20) = 0;
             } else {
