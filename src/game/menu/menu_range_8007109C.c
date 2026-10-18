@@ -2124,7 +2124,8 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         value = MENU_BSWAP32(*image);
         encoded = value;
         if (offset >= 0xA0) {
-            encoded = (value - rolling_crc) ^ rolling_key;
+            encoded = value - rolling_crc;
+            encoded ^= rolling_key;
             rolling_crc = menuGbaCrcRoll(rolling_crc ^ value);
             rolling_key = rolling_key * 0x6177614B + 1;
         }
@@ -2189,8 +2190,8 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                 OSReport(strings + 0xCC, final_word,
                          rolling_crc);
                 checksum = final_word >> 8;
-                candidate = 0xFFFFFFFF;
                 for (offset = 0; offset < 0x100; offset++) {
+                    candidate = (offset << 24) - 1;
                     value = menuGbaCrcRoll(candidate ^ rolling_crc);
                     if (checksum == value) {
                         value = menuGbaCrcRoll(candidate ^ 0xBB);
@@ -2199,7 +2200,6 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                                  candidate, final_word);
                         goto found;
                     }
-                    candidate += 0x01000000;
                 }
                 OSReport(strings + 0x130, final_word,
                          rolling_crc);
