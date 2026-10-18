@@ -148,7 +148,9 @@ void __OSReboot(u32 resetCode, u32 bootDol) {
     DVDCommandBlock streamCommand;
     DVDCommandBlock headerCommand;
     DVDCommandBlock rebootCommand;
-    ApploaderHeader* header = &lbl_803FB820;
+    /* RULE-EXCEPTION(user-approved): raw-buffer alias of the apploader header chosen for allocation - see docs/RULE_EXCEPTIONS.md */
+    void* headerBuffer = &lbl_803FB820;
+    ApploaderHeader* header = (ApploaderHeader*)headerBuffer;
     u32 rebootSize;
     u32 offset;
     OSTime start;
@@ -194,7 +196,7 @@ void __OSReboot(u32 resetCode, u32 bootDol) {
         AISetStreamPlayState(0);
     }
 
-    DVDReadAbsAsyncPrio(&headerCommand, header, sizeof(ApploaderHeader),
+    DVDReadAbsAsyncPrio(&headerCommand, headerBuffer, sizeof(ApploaderHeader),
                         0x2440, NULL, 0);
     start = OSGetTime();
     while (DVDGetCommandBlockStatus(&headerCommand)) {
