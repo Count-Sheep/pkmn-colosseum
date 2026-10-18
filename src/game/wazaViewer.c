@@ -162,10 +162,10 @@ static inline void wazaViewerPollCommand(const char* messages) {
     extern void fn_800E24B0(u16 block);
     extern void fn_800E209C(u16 block);
 
-    u32 size;
+    void* readFile;
     char* path;
     void* sizeFile;
-    void* readFile;
+    u32 size;
     u16 block;
     void* record;
     void* writeFile;
@@ -975,8 +975,10 @@ void fn_801D6A64(void) {
     extern void fn_800FE6A0(f32 width, f32 height);
     extern void fn_800FAEF8(s32 x, s32 y, u32 color, const char* fmt, ...);
 
+    s32 state;
+    void* node;
     const char* messages;
-    void** models;
+    u8 paused;
     void* effect;
     s32 arg1;
     s32 arg2;
