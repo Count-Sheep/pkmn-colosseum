@@ -1562,22 +1562,26 @@ void fn_801D7B94(void* effect) {
     extern void fn_800D6680(f32, f32, f32);
     extern void fn_800D5CB8(s32, s32, s32, s32, s32);
     extern void fn_800D6728(void);
+    typedef struct WazaSequenceEntry {
+        u8 unk00[0x4C];
+        s32 parts[0x10];
+        u8 unk8C[0xD4 - 0x8C];
+    } WazaSequenceEntry;
     u8* data;
-    u8* entry;
+    WazaSequenceEntry* entry;
     struct GSmodel* model;
     GSpart* part;
     void* camera;
-    WazaViewerVec transform;
     WazaViewerVec cameraPosition;
-    f32 aspect;
+    WazaViewerVec transform;
     f32 fov;
+    f32 aspect;
     f32 scale;
-    s32 partIndex;
     s32 i;
 
     data = effect;
     model = *(struct GSmodel**)(data + 0x24);
-    entry = *(u8**)(data + 0x2C) + *(u16*)(data + 0x32) * 0xD4;
+    entry = *(WazaSequenceEntry**)(data + 0x2C) + *(u16*)(data + 0x32);
     _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID(
         *(void**)(data + 0x2C));
     camera = GScameraGetActiveCamera();
@@ -1620,12 +1624,11 @@ void fn_801D7B94(void* effect) {
     fn_800D7820(lbl_80314638);
     fn_800D6A00(0);
 
-    partIndex = *(s32*)(lbl_804673F8 + 0x18);
-    if (partIndex < 0) {
+    if (*(s32*)(lbl_804673F8 + 0x18) < 0) {
         fn_800D67BC(0x10);
         for (i = 0; i < 0x10; i++) {
             part = GSmodelGetPart(
-                model, *(s32*)(entry + 0x4C + i * 4));
+                model, entry->parts[i]);
             if (part != NULL) {
                 GSpartGetTransform(part, &transform, NULL, NULL);
                 GSpartFree(part);
@@ -1640,7 +1643,7 @@ void fn_801D7B94(void* effect) {
     } else {
         fn_800D67BC(1);
         part = GSmodelGetPart(
-            model, *(s32*)(entry + 0x4C + partIndex * 4));
+            model, entry->parts[*(s32*)(lbl_804673F8 + 0x18)]);
         if (part != NULL) {
             GSpartGetTransform(part, &transform, NULL, NULL);
             GSpartFree(part);
