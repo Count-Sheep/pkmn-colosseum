@@ -2,19 +2,22 @@
  * @file pkjb_candidate_80071AE4.c
  * @brief pkjb_uploader.c carve, 0x80071AE4 - 0x800722A0 (candidate).
  *
- * fn_80071E34 is exact; fn_80071AE4 and fn_80071EA4 are not yet:
- * - fn_80071AE4: retail keeps the upload size (count * 4 + 16, + 0x70 with
- *   the extra block) inside the retry loop and computes the header swap
- *   after the hoisted idle-callback addresses; this source hoists both.
- * - fn_80071EA4: the two header/body receive loops are right; only the
- *   placement of the first loop's pointer copy and the swap scheduling
- *   differ.
+ * fn_80071E34 and fn_80071EA4 are exact; fn_80071AE4 is not yet: retail
+ * keeps the upload size (count * 4 + 16, + 0x70 with the extra block)
+ * inside the retry loop and computes the header swap after the hoisted
+ * idle-callback addresses; this source hoists both.
+ *
+ * fn_80071EA4 receives into a byte buffer (gbaCommunication.c passes
+ * u8 readBuffer[0xD8]) one word at a time at a byte offset; the body size
+ * is an unsigned word count times 4. pkjb_candidate_80071EA4.c links it
+ * alone (PKJB_80071EA4_ONLY).
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
  */
 #include "game/menu/pkjb_uploader_shared.h"
 
 s32 fn_80071EA4(s32 chan, u8* data);
 
+#ifndef PKJB_80071EA4_ONLY
 static inline s32 pkjbSendBlockIdle(s32 chan, const u32* data, s32 size)
 {
     u32 word;
@@ -122,6 +125,7 @@ s32 fn_80071E34(s32 chan, u8* data)
     gbaCommandSetKeyState(key, 1);
     return result;
 }
+#endif /* !PKJB_80071EA4_ONLY */
 
 static inline s32 pkjbRecvBlock(s32 chan, u8* data, s32 size)
 {
@@ -148,7 +152,7 @@ s32 fn_80071EA4(s32 chan, u8* data)
 {
     u32 response;
     s32 result;
-    s32 size;
+    u32 size;
 
     result = fn_80073C38(chan);
     if (result != 0) {
