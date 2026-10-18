@@ -52,8 +52,9 @@ void fn_800473E0(PdaStatLine* p)
     PdaVec3 v1;
     f32 t;
     s32 num;
-    s32 i;
     f32 step;
+    s32 i;
+    s32 off;
     u32 count;
     f32 dx;
 
@@ -108,10 +109,12 @@ void fn_800473E0(PdaStatLine* p)
     ctrl.y = 0.0f;
     ctrl.x = 233.0f;
     GSsplineAddControlVectorValue(spline, &ctrl, 1.0f);
+    off = 0;
     for (i = 0; i < (s32)p->drawn; i++) {
-        GSvecCopy(&v0, &spline->vectors[i]);
+        GSvecCopy(&v0, (u8*)spline->vectors + off);
         v0.z = 0.0f;
-        GSvecCopy(&spline->vectors[i], &v0);
+        GSvecCopy((u8*)spline->vectors + off, &v0);
+        off += 0xc;
     }
     for (i = (s32)p->drawn; i < (s32)p->lifted; i++) {
         GSvecCopy(&v0, &spline->vectors[i]);
