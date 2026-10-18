@@ -5075,6 +5075,28 @@ static inline u8 pda_8003D4C8_Color(u32 id)
     return 0;
 }
 
+/* Copy the seen entries whose colour matches the active colour tab into buf; returns the count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D4C8_Filter (fn_8003D4C8) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pda_8003D4C8_Filter(u16* buf)
+{
+    u16 count;
+    u16 i;
+    u32 id;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            pdaLoadPokemonId(id);
+            if (*(s8*)((u8*)&lbl_803A6818 + 0x159) == pda_8003D4C8_Color(id)) {
+                buf[count] = id;
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
 /* Rebuild the memo index table, optionally filtered by the active color tab. */
 #pragma peephole off
 u16 fn_8003D4C8(void)
@@ -5082,7 +5104,6 @@ u16 fn_8003D4C8(void)
     extern void fn_8003D8CC(void);
     extern void fn_8003DC54(void);
     extern void fn_8003E394(void);
-    u32 id;
     u16 total;
     u16 buf[500];
     u16 i;
@@ -5091,18 +5112,7 @@ u16 fn_8003D4C8(void)
     lbl_8047A4E8 = pda_8003D818_LoadIds();
     fn_8003D8CC();
     if (*(s8*)((u8*)&lbl_803A6818 + 0x159) != 0) {
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                pdaLoadPokemonId(id);
-                if (*(s8*)((u8*)&lbl_803A6818 + 0x159) ==
-                    pda_8003D4C8_Color(id)) {
-                    buf[count] = id;
-                    count++;
-                }
-            }
-        }
+        count = pda_8003D4C8_Filter(buf);
         for (i = 0; i < count; i++) {
             lbl_8047A4E4[i] = buf[i];
         }
