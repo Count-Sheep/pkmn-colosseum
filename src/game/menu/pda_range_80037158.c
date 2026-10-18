@@ -5238,6 +5238,15 @@ static inline f32 pdaFabs(f32 v)
     return -v;
 }
 
+/* fn_800439BC's pdaFabs: retail reloads the 0.0f literal at every compare. */
+static inline f32 pda_800439BC_Fabs(f32 v)
+{
+    if (v > 0.0f) {
+        return v;
+    }
+    return -v;
+}
+
 /* Sample the stick and buttons into the PDA's own key-repeat state. */
 #pragma peephole off
 void fn_800439BC(void* scene)
@@ -5263,16 +5272,16 @@ void fn_800439BC(void* scene)
     y = fn_800F7A7C(1, 0);
     if ((y < 0 ? -y : y) > 0x20 || (x < 0 ? -x : x) > 0x20) {
         ang = atan2((f64)y, (f64)x);
-        if (pdaFabs(ang) < lbl_8047BCFC) {
+        if (pda_800439BC_Fabs(ang) < lbl_8047BCFC) {
             buttons |= 2;
-        } else if (pdaFabs(ang) > lbl_8047BD00) {
+        } else if (pda_800439BC_Fabs(ang) > lbl_8047BD00) {
             buttons |= 1;
         }
-        if (lbl_8047BD04 < pdaFabs(ang) && pdaFabs(ang) < lbl_8047BD08) {
-            if (ang >= lbl_8047BC94) {
-                buttons |= 8;
-            } else {
+        if (lbl_8047BD04 < pda_800439BC_Fabs(ang) && pda_800439BC_Fabs(ang) < lbl_8047BD08) {
+            if (ang < 0.0f) {
                 buttons |= 4;
+            } else {
+                buttons |= 8;
             }
         }
     }
