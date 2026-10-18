@@ -11158,6 +11158,17 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menu_carde_matrix_candidate_8007D978.c",
+                constant_import=[
+                    {"symbol": "lbl_8047C148", "offset": 0, "expected": "3f800000"},
+                    {"symbol": "lbl_8047C14C", "offset": 4, "expected": "3d800000"},
+                    {"symbol": "lbl_8047C150", "offset": 8, "expected": "00000000"},
+                    {"symbol": "lbl_8047C154", "offset": 12, "expected": "42400000"},
+                    {"symbol": "lbl_8047C158", "offset": 16, "expected": "42000000"},
+                    {"symbol": "lbl_8047C15C", "offset": 20, "expected": "41200000"},
+                    {"symbol": "lbl_8047C160", "offset": 24, "expected": "3d000000"},
+                    {"symbol": "lbl_8047C168", "offset": 32, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047C170", "offset": 40, "expected": "4330000000000000"},
+                ],
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
