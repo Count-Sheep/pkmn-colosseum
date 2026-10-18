@@ -202,7 +202,7 @@ void fn_8004B7EC(void)
         } else {
             phase = ((s8*)lbl_803A6A60)[0];
         }
-        lbl_803A6A60[0] = (s8) phase;
+        ((s8*)lbl_803A6A60)[0] = phase;
         active = 1;
         state->menuBusy = active;
 
@@ -272,7 +272,7 @@ void fn_8004B7EC(void)
 
     phase = 0;
     active = 1;
-    while (active) {
+    do {
         switch (phase) {
         case 0:
             if (!fadeCheck(0)) {
@@ -285,7 +285,7 @@ void fn_8004B7EC(void)
             active = 0;
             break;
         }
-    }
+    } while (active);
 
     if (state->offscreenHidden != 1) {
         menuOffScreenSetDisp(1);
@@ -300,7 +300,7 @@ void fn_8004B7EC(void)
 
     phase = 0;
     active = 1;
-    while (active) {
+    do {
         switch (phase) {
         case 0:
             fadeSet(2, lbl_8047BDA8);
@@ -317,7 +317,7 @@ void fn_8004B7EC(void)
             active = 0;
             break;
         }
-    }
+    } while (active);
     fn_800FF660();
     floorSetFadeScript(0, 0);
 }
