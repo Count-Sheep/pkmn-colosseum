@@ -3725,8 +3725,8 @@ void fn_80044630(void) {
     void* handle;
     u32 mem;
 
-    fn_80048918();
     tbl = lbl_80267150;
+    fn_80048918();
     S = (u8*)&lbl_803A6818;
 
     S118 = S + 0x118;
