@@ -94,41 +94,33 @@ static inline void pdaUpdateOrbitSprite(PdaSprite* sprite, f32 baseAngle,
 }
 
 #ifndef PDA_ORBIT_ONLY_FOURTH
-#pragma peephole off
 void fn_800379E8(void* window, PdaSprite* sprite)
 {
     extern f32 lbl_802E52B8[4];
     (void)window;
     pdaUpdateOrbitSprite(sprite, lbl_802E52B8[3], 0);
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_80037BB0(void* window, PdaSprite* sprite)
 {
     extern f32 lbl_802E52B8[4];
     (void)window;
     pdaUpdateOrbitSprite(sprite, lbl_802E52B8[2], 0);
 }
-#pragma peephole reset
 
-#pragma peephole off
 void fn_80037D78(void* window, PdaSprite* sprite)
 {
     extern f32 lbl_802E52B8[4];
     (void)window;
     pdaUpdateOrbitSprite(sprite, lbl_802E52B8[1], 0);
 }
-#pragma peephole reset
 #endif
 
 #ifdef PDA_ORBIT_INCLUDE_FOURTH
-#pragma peephole off
 void fn_80037F40(void* window, PdaSprite* sprite)
 {
     extern f32 lbl_802E52B8[4];
     (void)window;
     pdaUpdateOrbitSprite(sprite, lbl_802E52B8[0], 1);
 }
-#pragma peephole reset
 #endif
