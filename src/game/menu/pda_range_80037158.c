@@ -6635,6 +6635,26 @@ extern void* pokemonTokuseiDataBiosGetPtr(u32 id);
 extern void* pokemonTokuseiDataBiosGetName(void* data);
 extern u32 pokemonDataBiosGetTypeName(void* data);
 
+static inline void pda_800411FC_Seeds(u32 work, u32 trainerRnd, u32 rnd)
+{
+    pokemonBiosSetRnd(work, rnd);
+    pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+}
+
+static inline u32 pda_800411FC_Load(s32 index)
+{
+    u32 work = lbl_8047A4E0;
+    u32 species;
+    if (work != 0) {
+        species = lbl_8047A4E4[index];
+        if (species >= 0x8000) species = species & 0x3fff;
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        pda_800411FC_Seeds(work, memoDataGetPokemonTrainerRndFromID(0, species), memoDataGetPokemonRndFromID(0, species));
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
 /* Whether the highlighted memo entry has actually been seen. */
 static inline u8 pdaEntrySeen(void)
 {
@@ -6661,7 +6681,7 @@ static inline u32 pdaCurrentNameMsg(s32 index)
 static inline void* pdaCurrentData(void)
 {
     return pokemonDataBiosGetPtr(
-        pokemonBiosGetPokemonDataId(pdaLoadPokemonB(lbl_803A6818.currentIndex)));
+        pokemonBiosGetPokemonDataId(pda_800411FC_Load(lbl_803A6818.currentIndex)));
 }
 
 /* Ability ID in the given slot of the highlighted entry. */
@@ -6686,7 +6706,7 @@ static inline u16 pdaCurrentHeight(void)
     void* data;
 
     if (lbl_8047A4E0 != 0) {
-        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+        work = pda_800411FC_Load(lbl_803A6818.currentIndex);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
@@ -6706,7 +6726,7 @@ static inline u16 pdaCurrentWeight(void)
     void* data;
 
     if (lbl_8047A4E0 != 0) {
-        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+        work = pda_800411FC_Load(lbl_803A6818.currentIndex);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
