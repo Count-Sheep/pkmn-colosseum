@@ -2071,7 +2071,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     }
     value = MENU_BSWAP32(recv_word);
     if ((value & 0xFF) != 0xEE) {
-        OSReport(strings + 0x68);
+        OSReport(strings + 0x68, value);
         response_key = 0;
     } else {
         response_key = value & 0xFFFFFF00;
