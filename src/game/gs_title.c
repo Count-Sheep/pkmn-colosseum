@@ -3624,7 +3624,6 @@ s32 fn_80022720(u32 arg0, u32* arg1) {
 #endif
 
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_CANDIDATE_80022834)
-#pragma optimization_level 4
 
 /* fn_80022834 - 0x80022834 | size: 0x308 */
 extern void itemDataBiosGetPtr(void);
@@ -3639,6 +3638,62 @@ extern void evolutionWazaLearn(void);
 extern void pokemonWazaCreate(void);
 extern void pokemonGetSoubiItemSoubiDataId(void);
 extern void pokemonGetFriendFormPokemonFriendFilterId(void);
+/* RULE-EXCEPTION(user-approved): single-use inline helper, register-only
+ * evidence - see docs/RULE_EXCEPTIONS.md. Its inlined return temp gives
+ * retail's tmp/effect copy and register numbering for fn_80022834. */
+static inline s32 gsTitleTeachWazaMachine(s32 c, u32 status) {
+    extern u32 itemDataBiosGetWazaIDByWazaMachineNo(u32);
+    extern u32 pokemonBiosGetPokemonWazaDataId(s32, u16);
+    extern void pokemonBiosGetPokemonDataId(s32);
+    extern s32 pokemonDataBiosGetPtr(void);
+    extern u8 pokemonDataBiosGetWazaMcn(s32, s32);
+    extern s32 evolutionWazaLearn(s32, u32, void*, s32, void*, s32);
+    extern void pokemonWazaCreate(s32, u32, u32);
+    extern u32 pokemonGetSoubiItemSoubiDataId(s32);
+    extern void pokemonGetFriendFormPokemonFriendFilterId(s32, u32, s32);
+    extern void cbForgetWazaSelect__FP7PokemonUsl(void);
+    s32 i;
+    s32 tmp;
+    u32 v2;
+    u8 buf;
+
+    if (pokemonIsDarkPokemon(c) != 0) {
+        winMsgOpen(2, 0x424C, 1, 0);
+        winMsgClose(1);
+        return 0;
+    } else {
+        v2 = itemDataBiosGetWazaIDByWazaMachineNo(status);
+        for (i = 0; i < 4; i++) {
+            if ((u16)v2 == (u16)pokemonBiosGetPokemonWazaDataId(c, i)) {
+                break;
+            }
+        }
+        if (i < 4) {
+            msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(c));
+            msgctrlSetValue(0x39, (void*)(u16)v2);
+            winMsgOpen(2, 0x4244, 1, 0);
+            winMsgClose(1);
+            return 0;
+        } else {
+            pokemonBiosGetPokemonDataId(c);
+            if (pokemonDataBiosGetWazaMcn(pokemonDataBiosGetPtr(), status) == 0) {
+                msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(c));
+                msgctrlSetValue(0x39, (void*)(u16)v2);
+                winMsgOpen(2, 0x423F, 1, 0);
+                winMsgClose(1);
+                return 0;
+            } else {
+                tmp = evolutionWazaLearn(c, v2, &buf, 1, cbForgetWazaSelect__FP7PokemonUsl, 0);
+                if (tmp != 0) {
+                    pokemonWazaCreate(c, buf, v2 & 0xFFFF);
+                    pokemonGetFriendFormPokemonFriendFilterId(c, pokemonGetSoubiItemSoubiDataId(c), 4);
+                }
+            }
+        }
+    }
+    return tmp;
+}
+
 s32 fn_80022834(u32 arg0, u32* arg1) {
     extern void* itemDataBiosGetPtr(u32);
     extern u32 itemDataBiosGetWazaMachineNo(void*);
@@ -3655,25 +3710,20 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
     extern void pokemonGetFriendFormPokemonFriendFilterId(s32, u32, s32);
     extern void cbForgetWazaSelect__FP7PokemonUsl(void);
 
+    u16 value16;
     u8 status;
-    s32 i;
     s32 msg;
     void* handle;
-    s32 c;
-    u16 value16;
     s32 state;
     s32 type_byte;
     s32 action;
-    s32 tmp;
-    u32 v2;
     s32 effect;
     s32 slot;
     u32 sc;
     s32 sd;
-    u8 buf;
 
     handle = itemDataBiosGetPtr((u16)arg0);
-    status = (u8)itemDataBiosGetWazaMachineNo(handle);
+    status = itemDataBiosGetWazaMachineNo(handle) & 0xFF;
     value16 = itemDataBiosGetWazaIDByWazaMachineNo(status);
     fn_80166A50(0x4CB, 0, 0xFF, 0);
     type_byte = itemDataBiosGetHidenMachineNo(handle);
@@ -3700,42 +3750,7 @@ s32 fn_80022834(u32 arg0, u32* arg1) {
     slot = fn_800141BC((void*)arg0, 1);
     if (slot >= 0) {
         fn_80014118(slot, &sc, &sd);
-        c = sc;
-        if (pokemonIsDarkPokemon(c) != 0) {
-            winMsgOpen(2, 0x424C, 1, 0);
-            winMsgClose(1);
-            tmp = 0;
-        } else {
-            v2 = itemDataBiosGetWazaIDByWazaMachineNo(status);
-            for (i = 0; i < 4; i++) {
-                if ((u16)v2 == (u16)pokemonBiosGetPokemonWazaDataId(c, i)) {
-                    break;
-                }
-            }
-            if (i < 4) {
-                msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(c));
-                msgctrlSetValue(0x39, (void*)(u16)v2);
-                winMsgOpen(2, 0x4244, 1, 0);
-                winMsgClose(1);
-                tmp = 0;
-            } else {
-                pokemonBiosGetPokemonDataId(c);
-                if (pokemonDataBiosGetWazaMcn(pokemonDataBiosGetPtr(), status) == 0) {
-                    msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(c));
-                    msgctrlSetValue(0x39, (void*)(u16)v2);
-                    winMsgOpen(2, 0x423F, 1, 0);
-                    winMsgClose(1);
-                    tmp = 0;
-                } else {
-                    tmp = evolutionWazaLearn(c, v2, &buf, 1, cbForgetWazaSelect__FP7PokemonUsl, 0);
-                    if (tmp != 0) {
-                        pokemonWazaCreate(c, buf, v2 & 0xFFFF);
-                        pokemonGetFriendFormPokemonFriendFilterId(c, pokemonGetSoubiItemSoubiDataId(c), 4);
-                    }
-                }
-            }
-        }
-        effect = tmp;
+        effect = gsTitleTeachWazaMachine(sc, status);
     }
 
     fn_80014198(slot);

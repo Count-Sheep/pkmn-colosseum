@@ -10507,6 +10507,12 @@ config.libs = [
             Object(
                 Matching,
                 "game/gs_title_candidate_8002217C.c",
+                jump_table_import={
+                    "symbol": "jumptable_802E4F00",
+                    "function": "fn_80022478",
+                    "owner": "game/data/data_802E4DB0_prefix.c",
+                    "owner_offset": 0x150,
+                },
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
