@@ -5081,16 +5081,25 @@ static inline s32 gbaConvGridRowHas(GbaConvSpeciesGrid grid, s32 row, u16 id) {
     return 0;
 }
 
-static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
+static inline s32 gbaConvGridSearch(GbaConvSpeciesGrid grid, u16 id) {
     s32 row;
+    s32 col;
 
     for (row = 0; row < 3; row++) {
         GbaConvSpeciesGrid g = grid;
-        if (gbaConvGridRowHas(g, row, id)) {
-            return 1;
+        for (col = 0; col < 3; col++) {
+            GbaConvSpeciesGrid h = g;
+            if (gbaConvGridAt(h, row, col) == id) {
+                return 1;
+            }
         }
     }
     return 0;
+}
+
+static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
+    GbaConvSpeciesGrid g = grid;
+    return gbaConvGridSearch(g, id);
 }
 
 #endif
