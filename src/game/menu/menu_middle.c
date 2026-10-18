@@ -3749,7 +3749,6 @@ void fn_8006E338(void* obj) {
     s32 i;
     s32 col;
     s32 j;
-    u32 color;
     u32 index;
     u8 ready;
     void* sprite;
@@ -3758,7 +3757,6 @@ void fn_8006E338(void* obj) {
     void* w0;
     void* w1;
     void* w2;
-    s32 hidden;
 
     allReady = 1;
     if (*(s8*)((u8*)obj + 2) == 0) {
@@ -3795,13 +3793,12 @@ void fn_8006E338(void* obj) {
             sprite = menuSpriteBiosGetPtr((s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[i]) != 0 ? 0x2B2 : 0x2AE);
             fn_80071318(playerWidgets[4], sprite);
             fn_8006E338_SetIcon(playerWidgets[5], ((u16*)&lbl_8047C058)[i]);
-            color = sMenuCBHookTrainerColors_8006E338[i];
             w0 = playerWidgets[0];
             w1 = playerWidgets[1];
             w2 = playerWidgets[2];
-            MENU_MIDDLE_U32_0064(w0)->unk_0064 = (MENU_MIDDLE_U32_0064(w0)->unk_0064 & 0xFF) | color;
-            MENU_MIDDLE_U32_0064(w1)->unk_0064 = (MENU_MIDDLE_U32_0064(w1)->unk_0064 & 0xFF) | color;
-            MENU_MIDDLE_U32_0064(w2)->unk_0064 = (MENU_MIDDLE_U32_0064(w2)->unk_0064 & 0xFF) | color;
+            MENU_MIDDLE_U32_0064(w0)->unk_0064 = (MENU_MIDDLE_U32_0064(w0)->unk_0064 & 0xFF) | sMenuCBHookTrainerColors_8006E338[i];
+            MENU_MIDDLE_U32_0064(w1)->unk_0064 = (MENU_MIDDLE_U32_0064(w1)->unk_0064 & 0xFF) | sMenuCBHookTrainerColors_8006E338[i];
+            MENU_MIDDLE_U32_0064(w2)->unk_0064 = (MENU_MIDDLE_U32_0064(w2)->unk_0064 & 0xFF) | sMenuCBHookTrainerColors_8006E338[i];
             allReady &= savedataGetStatus(0, 0xE)->players[i].ready;
         }
     }
@@ -3816,9 +3813,8 @@ void fn_8006E338(void* obj) {
             MENU_MIDDLE_U32_004C(widgets[10])->unk_004C = ready ? 0 : 0x3F3F;
             MENU_MIDDLE_U32_004C(widgets[9])->unk_004C = ready ? 0 : 0x3F40;
             winSpriteSetDisp(widgets[2], !allReady);
-            hidden = ready == 0;
-            winSpriteSetDisp(widgets[8], hidden);
-            winSpriteSetDisp(widgets[7], hidden);
+            winSpriteSetDisp(widgets[8], !ready);
+            winSpriteSetDisp(widgets[7], !ready);
             winSpriteSetDisp(widgets[13], ready && !allReady);
         } else {
             for (col = 0; col < 14u; col++) {
