@@ -345,7 +345,7 @@ s32 fn_801C7730(s32 side, s32 slot)
     radius += lbl_8047E100;
 
     if (fieldSegmentBlocked(&partner, &requested, &origin,
-                            1.0f + radius) == 0) {
+                            lbl_8047E100 + radius) == 0) {
         return 0;
     }
 
@@ -363,7 +363,7 @@ s32 fn_801C7730(s32 side, s32 slot)
             continue;
         }
         if (fieldPlaneCrossed(&partner, &requested, &origin,
-                              &entries[i].pos) == 0) {
+                              &entries[i].pos)) {
             continue;
         }
 
@@ -412,7 +412,7 @@ s32 fn_801C7730(s32 side, s32 slot)
             continue;
         }
         if (fieldPlaneCrossed(&partner, &requested, &origin,
-                              &entries[i].pos) == 0) {
+                              &entries[i].pos)) {
             continue;
         }
         if (fieldSegmentBlocked(&partner, &requested, &entries[i].pos,
