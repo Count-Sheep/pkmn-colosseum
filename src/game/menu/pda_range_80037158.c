@@ -4888,28 +4888,6 @@ static inline u32 pdaLoadPokemon(s32 index)
     return 0;
 }
 
-/* pdaLoadPokemon with the trainer seed written back over the species. */
-static inline u32 pdaLoadPokemonB(s32 index)
-{
-    u32 work = lbl_8047A4E0;
-    u32 species;
-    u32 rnd;
-
-    if (work != 0) {
-        species = lbl_8047A4E4[index];
-        if (species >= 0x8000) {
-            species = species & 0x3fff;
-        }
-        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
-        rnd = memoDataGetPokemonRndFromID(0, species);
-        species = memoDataGetPokemonTrainerRndFromID(0, species);
-        pokemonBiosSetRnd(work, rnd);
-        pokemonBiosSetCatchTrainerRnd(work, species);
-        return lbl_8047A4E0;
-    }
-    return 0;
-}
-
 /* As pdaLoadPokemon, but from an entry ID the caller already has in hand. */
 static inline u32 pdaLoadPokemonId(u16 id)
 {
@@ -6635,32 +6613,19 @@ extern void* pokemonTokuseiDataBiosGetPtr(u32 id);
 extern void* pokemonTokuseiDataBiosGetName(void* data);
 extern u32 pokemonDataBiosGetTypeName(void* data);
 
+/* Write both seeds into the work Pokemon. MWCC evaluates the arguments right to
+ * left, so a caller passing both lookups runs the Pokemon seed lookup first. */
 static inline void pda_800411FC_Seeds(u32 work, u32 trainerRnd, u32 rnd)
 {
     pokemonBiosSetRnd(work, rnd);
     pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
 }
 
+/* fn_800411FC's pdaLoadPokemon: rebuild the work Pokemon for memo entry `index`. */
 static inline u32 pda_800411FC_Load(s32 index)
 {
     u32 work = lbl_8047A4E0;
     u32 species;
-    if (work != 0) {
-        species = lbl_8047A4E4[index];
-        if (species >= 0x8000) species = species & 0x3fff;
-        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
-        pda_800411FC_Seeds(work, memoDataGetPokemonTrainerRndFromID(0, species), memoDataGetPokemonRndFromID(0, species));
-        return lbl_8047A4E0;
-    }
-    return 0;
-}
-
-/* pda_800411FC_Load with the Pokemon seed held in a local. */
-static inline u32 pda_800411FC_LoadRnd(s32 index)
-{
-    u32 work = lbl_8047A4E0;
-    u32 species;
-    u32 rnd;
 
     if (work != 0) {
         species = lbl_8047A4E4[index];
@@ -6668,30 +6633,8 @@ static inline u32 pda_800411FC_LoadRnd(s32 index)
             species = species & 0x3fff;
         }
         pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
-        rnd = memoDataGetPokemonRndFromID(0, species);
-        pda_800411FC_Seeds(work, memoDataGetPokemonTrainerRndFromID(0, species), rnd);
-        return lbl_8047A4E0;
-    }
-    return 0;
-}
-
-/* RULE-EXCEPTION(user-approved): scalar reuse - the dead index parameter carries the Pokemon seed, which numbers its web like retail's - see docs/RULE_EXCEPTIONS.md */
-static inline u32 pda_800411FC_NameLoad(u32 index)
-{
-    u32 work = lbl_8047A4E0;
-    u32 species;
-    u32 trainerRnd;
-
-    if (work != 0) {
-        species = lbl_8047A4E4[index];
-        if (species >= 0x8000) {
-            species = species & 0x3fff;
-        }
-        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
-        index = memoDataGetPokemonRndFromID(0, species);
-        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
-        pokemonBiosSetRnd(work, index);
-        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        pda_800411FC_Seeds(work, memoDataGetPokemonTrainerRndFromID(0, species),
+                           memoDataGetPokemonRndFromID(0, species));
         return lbl_8047A4E0;
     }
     return 0;
@@ -6709,7 +6652,7 @@ static inline u32 pdaCurrentNameMsg(s32 index)
     u32 work;
 
     if (lbl_8047A4E0 != 0) {
-        work = pda_800411FC_NameLoad(index);
+        work = pda_800411FC_Load(index);
         if (work != 0) {
             return GSmsgGetGSchar((u32)pokemonDataBiosGetName(
                 pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work))));
@@ -6719,37 +6662,21 @@ static inline u32 pdaCurrentNameMsg(s32 index)
     return 0;
 }
 
-/* Bios record for the highlighted entry, NULL when unavailable. */
-static inline void* pdaCurrentData(void)
-{
-    return pokemonDataBiosGetPtr(
-        pokemonBiosGetPokemonDataId(pda_800411FC_Load(lbl_803A6818.currentIndex)));
-}
-
 /* Ability ID in the given slot of the highlighted entry. */
 static inline u16 pda_800411FC_Ability(s32 slot)
 {
-    return pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), slot);
-}
-
-/* Bios record for the highlighted entry, via pda_800411FC_LoadRnd. */
-static inline void* pda_800411FC_Data0(void)
-{
-    return pokemonDataBiosGetPtr(
-        pokemonBiosGetPokemonDataId(pda_800411FC_LoadRnd(lbl_803A6818.currentIndex)));
-}
-
-/* First ability ID of the highlighted entry. */
-static inline u16 pda_800411FC_Ability0(void)
-{
-    return pokemonDataBiosGetTokuseiDataId(pda_800411FC_Data0(), 0);
+    return pokemonDataBiosGetTokuseiDataId(
+        pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(
+            pda_800411FC_Load(lbl_803A6818.currentIndex))),
+        slot);
 }
 
 /* Type-name message of the highlighted entry, 0 when unavailable. */
 static inline u32 pda_800411FC_TypeName(void)
 {
     if (lbl_8047A4E0 != 0) {
-        return pokemonDataBiosGetTypeName(pdaCurrentData());
+        return pokemonDataBiosGetTypeName(pokemonDataBiosGetPtr(
+            pokemonBiosGetPokemonDataId(pda_800411FC_Load(lbl_803A6818.currentIndex))));
     }
     return 0;
 }
@@ -6761,7 +6688,7 @@ static inline u16 pdaCurrentHeight(void)
     void* data;
 
     if (lbl_8047A4E0 != 0) {
-        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+        work = pda_800411FC_Load(lbl_803A6818.currentIndex);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
@@ -6781,7 +6708,7 @@ static inline u16 pdaCurrentWeight(void)
     void* data;
 
     if (lbl_8047A4E0 != 0) {
-        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
+        work = pda_800411FC_Load(lbl_803A6818.currentIndex);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
@@ -6822,7 +6749,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     layout = lbl_802EF0A8;
 
     if (pdaEntrySeen() != 0) {
-        tokusei0 = pda_800411FC_Ability0();
+        tokusei0 = pda_800411FC_Ability(0);
         msg = GSmsgGetGSchar((u32)pokemonTokuseiDataBiosGetName(
             pokemonTokuseiDataBiosGetPtr(tokusei0)));
         msgctrlSetValue(0x37, msg);
