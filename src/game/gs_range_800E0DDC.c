@@ -392,7 +392,8 @@ extern f64 cos(f32);
 extern f32 lbl_8047CB38;
 extern f64 lbl_8047CB40;
 extern u8 lbl_80270658[];
-extern u32 lbl_8047AB30;
+struct GSFreeBlock;
+extern struct GSFreeBlock* lbl_8047AB30;
 extern u32 lbl_8047AB68;
 extern u32 lbl_8047AB64;
 extern u32 lbl_8047AB38;
@@ -464,7 +465,7 @@ static inline u32 gsMemLargestFree(void) {
     GSFreeBlock* block;
     u32 largest = 0;
 
-    for (block = (GSFreeBlock*)lbl_8047AB30; block != NULL; block = block->next) {
+    for (block = lbl_8047AB30; block != NULL; block = block->next) {
         if (block->size > largest) {
             largest = block->size;
         }
@@ -553,7 +554,7 @@ static inline void gsMemInsertFree(GSFreeBlock* block, u32 size) {
     GSFreeBlock* before = NULL;
     GSFreeBlock* scan;
 
-    for (scan = (GSFreeBlock*)lbl_8047AB30; scan != NULL && scan < block; scan = scan->next) {
+    for (scan = lbl_8047AB30; scan != NULL && scan < block; scan = scan->next) {
         before = scan;
     }
     if (before != NULL) {
@@ -561,8 +562,8 @@ static inline void gsMemInsertFree(GSFreeBlock* block, u32 size) {
         block->next = before->next;
     } else {
         block->prev = NULL;
-        block->next = (GSFreeBlock*)lbl_8047AB30;
-        lbl_8047AB30 = (u32)block;
+        block->next = lbl_8047AB30;
+        lbl_8047AB30 = block;
     }
     block->size = size;
     if (block->prev != NULL) {
@@ -672,7 +673,7 @@ u32 fn_800E1544(void)
     GSFreeBlock* next;
 
     oldLargest = gsMemLargestFree();
-    block = (GSFreeBlock*)lbl_8047AB30;
+    block = lbl_8047AB30;
     if (block != NULL && block->next != NULL) {
         while (block != NULL) {
             size = block->size;
@@ -687,7 +688,7 @@ u32 fn_800E1544(void)
             }
             if (desc->locked == 0 && desc->pinned == 0) {
                 wasHead = 0;
-                if ((GSFreeBlock*)lbl_8047AB30 == block) {
+                if (lbl_8047AB30 == block) {
                     wasHead = 1;
                 }
                 prev = block->prev;
@@ -706,9 +707,9 @@ u32 fn_800E1544(void)
                 fresh->size = size;
                 gsMemMergeNext(fresh);
                 if (wasHead) {
-                    lbl_8047AB30 = (u32)fresh;
+                    lbl_8047AB30 = fresh;
                 }
-                block = (GSFreeBlock*)lbl_8047AB30;
+                block = lbl_8047AB30;
                 continue;
             }
 
@@ -749,8 +750,8 @@ u32 fn_800E1544(void)
             prev = block->prev;
             next = block->next;
             remaining = block->size;
-            if (block == (GSFreeBlock*)lbl_8047AB30) {
-                lbl_8047AB30 = (u32)next;
+            if (block == lbl_8047AB30) {
+                lbl_8047AB30 = next;
             }
             if (prev != NULL) {
                 prev->next = next;
@@ -766,7 +767,7 @@ u32 fn_800E1544(void)
                 destination += (*entry)->size;
                 remaining -= (*entry)->size;
                 before = NULL;
-                for (scan = (GSFreeBlock*)lbl_8047AB30; scan != NULL && scan < (GSFreeBlock*)source; scan = scan->next) {
+                for (scan = lbl_8047AB30; scan != NULL && scan < (GSFreeBlock*)source; scan = scan->next) {
                     before = scan;
                 }
                 freed = (GSFreeBlock*)source;
@@ -775,8 +776,8 @@ u32 fn_800E1544(void)
                     freed->next = before->next;
                 } else {
                     freed->prev = NULL;
-                    freed->next = (GSFreeBlock*)lbl_8047AB30;
-                    lbl_8047AB30 = (u32)freed;
+                    freed->next = lbl_8047AB30;
+                    lbl_8047AB30 = freed;
                 }
                 freed->size = (*entry)->size;
                 if (freed->prev != NULL) {
@@ -797,7 +798,7 @@ u32 fn_800E1544(void)
                 if (fresh->prev != NULL) {
                     fresh->prev->next = fresh;
                 } else {
-                    lbl_8047AB30 = (u32)fresh;
+                    lbl_8047AB30 = fresh;
                 }
                 if (fresh->next != NULL) {
                     fresh->next->prev = fresh;
@@ -812,7 +813,7 @@ u32 fn_800E1544(void)
                     desc->checksum = gsMemChecksum(desc);
                 }
             }
-            block = (GSFreeBlock*)lbl_8047AB30;
+            block = lbl_8047AB30;
             continue;
             }
             }
@@ -824,7 +825,8 @@ u32 fn_800E1544(void)
 #endif
 
 extern u8 lbl_80270658[];
-extern u32 lbl_8047AB30;
+struct GSFreeBlock;
+extern struct GSFreeBlock* lbl_8047AB30;
 extern u32 lbl_8047AB68;
 extern u32 lbl_8047AB64;
 extern u32 lbl_8047AB38;
@@ -859,11 +861,11 @@ u8 fn_800E0E14(u8 verbose, u8 dumpMap) {
     if (verbose) {
         GSlogWrite("--[ GSmem state check ]--------------------------\n");
     }
-    if ((GSFreeBlock*)lbl_8047AB30 != NULL && ((GSFreeBlock*)lbl_8047AB30)->prev != NULL) {
+    if (lbl_8047AB30 != NULL && (lbl_8047AB30)->prev != NULL) {
         GSlogWrite("!!! first block's previous pointer is not NULL\n");
         ok = 0;
     }
-    for (block = (GSFreeBlock*)lbl_8047AB30; block != NULL; block = block->next) {
+    for (block = lbl_8047AB30; block != NULL; block = block->next) {
         freeCount++;
         if ((u32)block < lbl_8047AB68 || (u32)block > lbl_8047AB64) {
             GSlogWrite("!!! Free block is outside of GSmem area\n");
@@ -967,14 +969,14 @@ u8 fn_800E0E14(u8 verbose, u8 dumpMap) {
         GSlogWrite("Active locks:        %d\n", lbl_8047AB48);
         GSlogWrite("Entry table size:    %d bytes\n", lbl_8047AB34 - lbl_8047AB38 + 0x10);
         largest = 0;
-        for (block = (GSFreeBlock*)lbl_8047AB30; block != NULL; block = block->next) {
+        for (block = lbl_8047AB30; block != NULL; block = block->next) {
             if (block->size > largest) {
                 largest = block->size;
             }
         }
         GSlogWrite("Largest free space:  %d bytes\n", largest);
         total = 0;
-        for (block = (GSFreeBlock*)lbl_8047AB30; block != NULL; block = block->next) {
+        for (block = lbl_8047AB30; block != NULL; block = block->next) {
             total += block->size;
         }
         GSlogWrite("Total free space:    %d bytes\n", total);
