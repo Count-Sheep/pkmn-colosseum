@@ -8175,11 +8175,12 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     f32 kMul;
     f32 kDiv;
     f32 y;
-    s32 i;
-    s32 j;
-    s32 alpha;
-    s16 row;
+    u8 fade;
     u32 color;
+    s16 row;
+    s32 j;
+    s32 i;
+    s32 alpha;
     f32 step;
 
     data = *(u8**)((u8*)work + 0x60);
@@ -8255,7 +8256,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     kScale = 480.0f;
     kMin = 0.0f;
     for (j = 0; j < 12; j++) {
-        alpha = (u8)(kAlpha * (kOne - (f32)j / kDiv));
+        fade = (s32)(kAlpha * (kOne - (f32)j / kDiv)) & 0xff;
         y = top - kMul * (f32)j / kScale;
         if (y < kMin) {
             y = y + kOne;
@@ -8268,7 +8269,8 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
         fn_800D5648(1.0f);
         fn_800D67BC(2);
         fn_800D61E4(0, row);
-        color = (u8)alpha | 0x00800000;
+        /* RULE-EXCEPTION(user-approved): redundant mask on the u8 row alpha, chosen for code generation (fn_800495C8) - see docs/RULE_EXCEPTIONS.md */
+        color = (fade & 0xff) | 0x00800000;
         fn_800D5BA0(0, color);
         fn_800D61E4(sprite->x, row);
         fn_800D5BA0(0, color);
