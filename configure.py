@@ -3807,11 +3807,18 @@ config.libs = [
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
-                "game/menu/pda_candidate_8003B814_r46_80041B5C.c",
+                Matching,
+                "game/menu/pda_exact_800439BC.c",
+                constant_import=[{"symbol": "lbl_8047BC94", "offset": 0, "expected": "00000000"},
+                                 {"symbol": "lbl_8047BCFC", "offset": 4, "expected": "3f75be0b"},
+                                 {"symbol": "lbl_8047BD00", "offset": 8, "expected": "400ba058"},
+                                 {"symbol": "lbl_8047BD04", "offset": 12, "expected": "3f1c61aa"},
+                                 {"symbol": "lbl_8047BD08", "offset": 16, "expected": "4021f770"},
+                                 {"symbol": "lbl_8047BCB0", "offset": 24, "expected": "4330000080000000"}],
                 mw_version="GC/1.3",
-                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # TEMPORARY constant_import: retail shares the int-to-float bias.
