@@ -2254,12 +2254,19 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                 }
 
                 expected_crc = GBA_BOOT_BSWAP(context->reply[0x40F]);
-                for (candidate = 0; candidate < 0x100; candidate++) {
+                for (candidate = 0; candidate < 0x100;) {
                     crc_byte = candidate;
                     reply_crc = gbaBootCrc(context->crc, &crc_byte, 1);
                     if (reply_crc == expected_crc) {
                         break;
                     }
+                    candidate++;
+                    crc_byte = candidate;
+                    reply_crc = gbaBootCrc(context->crc, &crc_byte, 1);
+                    if (reply_crc == expected_crc) {
+                        break;
+                    }
+                    candidate++;
                 }
                 if (candidate == 0x100) {
                     GBA_BOOT_FAIL(context, 7);
