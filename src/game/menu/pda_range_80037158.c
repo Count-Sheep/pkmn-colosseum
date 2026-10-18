@@ -8285,17 +8285,78 @@ extern f32 lbl_8047BDE4;
 extern u8 fn_801902E0(s32 id);
 extern void menuItemBiosSetSelectFlag(s32 id, s32 flag);
 
-/* Per-frame timing, scroll easing and page-flip for the mail list. */
+/* Ease the widgets' horizontal offset toward its target: 10 x the gap per
+ * second, at most 20 per frame, snapping once the remaining gap is within the
+ * step or under 1. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8004B278_EaseX (fn_8004B278) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8004B278_EaseX(f32* cur, f32* target)
+{
+    f32 tgt;
+    f32 delta;
+    f32 rest;
+    f32 moved;
+
+    if (*cur != *target) {
+        delta = *target - *cur;
+        delta = 10.0f * delta;
+        moved = delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
+        if (moved > 20.0f) {
+            moved = 20.0f;
+        }
+        if (moved <= -20.0f) {
+            moved = -20.0f;
+        }
+        *cur += moved;
+        tgt = *target;
+        rest = tgt - *cur;
+        moved = moved > 0.0f ? moved : -moved;
+        if ((rest > 0.0f ? rest : -rest) <= moved || (rest > 0.0f ? rest : -rest) < 1.0f) {
+            *cur = tgt;
+        }
+    }
+}
+
+/* The same easing for the vertical offset. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8004B278_EaseY (fn_8004B278) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8004B278_EaseY(f32* cur, f32* target)
+{
+    f32 delta;
+    f32 rest;
+    f32 moved;
+    f32 speed;
+    f32 tgt;
+
+    if (*cur != *target) {
+        delta = *target - *cur;
+        delta = 10.0f * delta;
+        moved = delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
+        if (moved > 20.0f) {
+            moved = 20.0f;
+        }
+        if (moved <= -20.0f) {
+            moved = -20.0f;
+        }
+        *cur += moved;
+        tgt = *target;
+        rest = tgt - *cur;
+        if (moved > 0.0f) {
+            speed = moved;
+        } else {
+            speed = -moved;
+        }
+        if ((rest > 0.0f ? rest : -rest) <= speed || (rest > 0.0f ? rest : -rest) < 1.0f) {
+            *cur = tgt;
+        }
+    }
+}
+
+/* Per-frame timing, offset easing and background scroll for the mail screen. */
 #pragma peephole off
 s32 fn_8004B278(u8* work)
 {
     extern u32 fn_800D3088(void);
     extern s32 fn_800D37CC(void);
     u8* data;
-    f32 delta;
-    f32 moved;
-    f32 rest;
-    f32* p;
 
     data = *(u8**)(work + 0x60);
     *(f32*)((u8*)&lbl_803A6A60 + 8) = (f32)fn_800D3088() / (f32)fn_800D37CC();
@@ -8310,61 +8371,8 @@ s32 fn_8004B278(u8* work)
         *(f32*)(lbl_803A6A60 + 0x40) = 0.0f;
     }
 
-    if (*(f32*)(lbl_803A6A60 + 0x30) != *(f32*)(lbl_803A6A60 + 0x38)) {
-        delta = *(f32*)(lbl_803A6A60 + 0x38) - *(f32*)(lbl_803A6A60 + 0x30);
-        moved = 10.0f * delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
-        if (moved > 20.0f) {
-            moved = 20.0f;
-        }
-        if (moved <= -20.0f) {
-            moved = -20.0f;
-        }
-        *(f32*)(lbl_803A6A60 + 0x30) = *(f32*)(lbl_803A6A60 + 0x30) + moved;
-        rest = *(f32*)(lbl_803A6A60 + 0x38) - *(f32*)(lbl_803A6A60 + 0x30);
-        if (moved > 0.0f) {
-        } else {
-            moved = -moved;
-        }
-        if ((rest > 0.0f ? rest : -rest) <= moved) {
-            *(f32*)(lbl_803A6A60 + 0x30) = *(f32*)(lbl_803A6A60 + 0x38);
-        } else {
-            if (rest > 0.0f) {
-            } else {
-                rest = -rest;
-            }
-            if (rest < 1.0f) {
-                *(f32*)(lbl_803A6A60 + 0x30) = *(f32*)(lbl_803A6A60 + 0x38);
-            }
-        }
-    }
-
-    if (*(f32*)(lbl_803A6A60 + 0x34) != *(f32*)(lbl_803A6A60 + 0x3c)) {
-        delta = *(f32*)(lbl_803A6A60 + 0x3c) - *(f32*)(lbl_803A6A60 + 0x34);
-        moved = 10.0f * delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
-        if (moved > 20.0f) {
-            moved = 20.0f;
-        }
-        if (moved <= -20.0f) {
-            moved = -20.0f;
-        }
-        *(f32*)(lbl_803A6A60 + 0x34) = *(f32*)(lbl_803A6A60 + 0x34) + moved;
-        rest = *(f32*)(lbl_803A6A60 + 0x3c) - *(f32*)(lbl_803A6A60 + 0x34);
-        if (moved > 0.0f) {
-        } else {
-            moved = -moved;
-        }
-        if ((rest > 0.0f ? rest : -rest) <= moved) {
-            *(f32*)(lbl_803A6A60 + 0x34) = *(f32*)(lbl_803A6A60 + 0x3c);
-        } else {
-            if (rest > 0.0f) {
-            } else {
-                rest = -rest;
-            }
-            if (rest < 1.0f) {
-                *(f32*)(lbl_803A6A60 + 0x34) = *(f32*)(lbl_803A6A60 + 0x3c);
-            }
-        }
-    }
+    pda_8004B278_EaseX((f32*)(lbl_803A6A60 + 0x30), (f32*)(lbl_803A6A60 + 0x38));
+    pda_8004B278_EaseY((f32*)(lbl_803A6A60 + 0x34), (f32*)(lbl_803A6A60 + 0x3c));
 
     switch (*(s8*)(work + 1)) {
     case 0:
@@ -8374,11 +8382,8 @@ s32 fn_8004B278(u8* work)
         }
         break;
     case 2:
-        p = *(f32**)(data + 8);
-        *p = *p + 0.003125f;
-        if (*p >= 1.0f) {
-            p = *(f32**)(data + 8);
-            *p = *p - 1.0f;
+        if ((**(f32**)(data + 8) += 0.003125f) >= 1.0f) {
+            **(f32**)(data + 8) -= 1.0f;
         }
         break;
     case 3:

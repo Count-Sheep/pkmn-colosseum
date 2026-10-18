@@ -913,7 +913,10 @@ game/menu/pda_exact_800492CC_gc20.c:
 	.text       start:0x800492CC end:0x800495C8
 
 game/menu/pda_candidate_800495C8.c:
-	.text       start:0x800495C8 end:0x8004B598
+	.text       start:0x800495C8 end:0x8004B278
+
+game/menu/pda_exact_8004B278.c:
+	.text       start:0x8004B278 end:0x8004B598
 
 game/menu/pda_exact_8004B598.c:
 	.text       start:0x8004B598 end:0x8004B7EC

@@ -3964,6 +3964,25 @@ config.libs = [
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: retail shares the mail-screen float literals and conversion biases.
+            Object(
+                Matching,
+                "game/menu/pda_exact_8004B278.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BDA8", "offset": 0, "expected": "3f000000"},
+                    {"symbol": "lbl_8047BDA0", "offset": 4, "expected": "3f800000"},
+                    {"symbol": "lbl_8047BDAC", "offset": 8, "expected": "00000000"},
+                    {"symbol": "lbl_8047BDD8", "offset": 12, "expected": "41200000"},
+                    {"symbol": "lbl_8047BDDC", "offset": 16, "expected": "41a00000"},
+                    {"symbol": "lbl_8047BDE0", "offset": 20, "expected": "c1a00000"},
+                    {"symbol": "lbl_8047BDE4", "offset": 24, "expected": "3b4ccccd"},
+                    {"symbol": "lbl_8047BDC0", "offset": 32, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047BDE8", "offset": 40, "expected": "4330000000000000"},
+                ],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menu/pda_exact_8004B598.c",
