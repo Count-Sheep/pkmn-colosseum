@@ -2290,7 +2290,7 @@ static inline void gbaBootDelay(GbaBootContext* ctx) {
     OSCreateAlarm(ctx);
     level = OSDisableInterrupts();
     OSSetAlarm(ctx, 0x10, (void*)fn_8007C23C);
-    OSSuspendThread((u8*)ctx + 0x28);
+    OSSuspendThread(&ctx->thread_and_work);
     OSRestoreInterrupts(level);
 }
 
