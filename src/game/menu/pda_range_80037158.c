@@ -8000,9 +8000,9 @@ static inline void* pdaCurrentCry(s32 index)
 }
 
 /* Push a cry onto the ring of trails and age every older entry. */
+#define PDA_CRY(n) (((PdaCryTrail*)lbl_802E52C8)[n])
 static inline void pdaPushCry(void* data, u32 voice)
 {
-    PdaCryTrail* t = (PdaCryTrail*)lbl_802E52C8;
     s32 i;
     s32 j;
 
@@ -8011,21 +8011,21 @@ static inline void pdaPushCry(void* data, u32 voice)
         lbl_8047A4EC = 0;
     }
     i = lbl_8047A4EC;
-    t[i].data = data;
-    t[i].voice = voice;
-    t[i].field_0c = lbl_8047BC94;
-    t[i].field_14 = lbl_8047BC94;
-    t[i].offset = 0;
-    t[i].active = 1;
-    t[i].alpha = lbl_8047BCA0;
-    t[i].field_20 = lbl_8047BD18;
+    PDA_CRY(i).data = data;
+    PDA_CRY(i).voice = voice;
+    PDA_CRY(i).field_0c = lbl_8047BC94;
+    PDA_CRY(i).field_14 = lbl_8047BC94;
+    PDA_CRY(i).offset = 0;
+    PDA_CRY(i).active = 1;
+    PDA_CRY(i).alpha = lbl_8047BCA0;
+    PDA_CRY(i).field_20 = lbl_8047BD18;
     for (j = i - 1; j >= 0; j--) {
-        t[j].offset = (s32)((f32)t[j].offset + t[j].speed);
-        t[j].field_20 = t[j].field_20 + lbl_8047BD1C;
+        PDA_CRY(j).offset = (s32)((f32)PDA_CRY(j).offset + PDA_CRY(j).speed);
+        PDA_CRY(j).field_20 = PDA_CRY(j).field_20 + lbl_8047BD1C;
     }
-    for (j = 7; j > (s32)lbl_8047A4EC; j--) {
-        t[j].offset = (s32)((f32)t[j].offset + t[j].speed);
-        t[j].field_20 = t[j].field_20 + lbl_8047BD1C;
+    for (j = 7; j > lbl_8047A4EC; j--) {
+        PDA_CRY(j).offset = (s32)((f32)PDA_CRY(j).offset + PDA_CRY(j).speed);
+        PDA_CRY(j).field_20 = PDA_CRY(j).field_20 + lbl_8047BD1C;
     }
 }
 
