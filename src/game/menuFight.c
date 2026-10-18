@@ -23,6 +23,15 @@
 
 #include "dolphin/types.h"
 
+/* One-function carves: menuFight_r51_8000DE24.c, menuFight_r51_8000E290.c and
+ * menuFight_candidate_8000ED34.c each define one MENU_FIGHT_ONLY_<addr> and
+ * compile only that function (with the declarations and inline helpers it
+ * uses); every other function is excluded so the object links at its range. */
+#if defined(MENU_FIGHT_ONLY_8000DEC4) || defined(MENU_FIGHT_ONLY_8000E290) || \
+    defined(MENU_FIGHT_ONLY_8000ED34)
+#define MENU_FIGHT_ONLY
+#endif
+
 /* =========================================================================
  * External declarations
  * ========================================================================= */
@@ -78,6 +87,7 @@ extern u32   windowGetParam();                           /* Get participant data
  * 1 functions matched
  * =================================================================== */
 
+#ifndef MENU_FIGHT_ONLY
 extern u8 lbl_8047A2A0;
 
 /* Address: 0x8000DAA8 | Size: 0x8 | Pattern: sda_getter */
@@ -277,14 +287,8 @@ s32 menuFightCloseWaza(s32 arg) {
 }
 #endif
 
-/* 0x800117BC | 0x1EC */
-extern void winMsgOpenFight();
-extern void winMsgCloseFight();
-#if 0
-asm void menuFightOpenWaza(void) {
-#include "src/game/gs_npc_interact_fn_800117BC.inc"
-}
-#else
+#endif /* !MENU_FIGHT_ONLY */
+
 /* TRUE when the battle timer forces the current menu closed. */
 static inline u8 menuFightIsTimeUp(void)
 {
@@ -299,6 +303,15 @@ static inline u8 menuFightIsTimeUp(void)
     return 0;
 }
 
+#ifndef MENU_FIGHT_ONLY
+/* 0x800117BC | 0x1EC */
+extern void winMsgOpenFight();
+extern void winMsgCloseFight();
+#if 0
+asm void menuFightOpenWaza(void) {
+#include "src/game/gs_npc_interact_fn_800117BC.inc"
+}
+#else
 s32 menuFightOpenWaza(u8* status, u32 arg1, u32 arg2) {
     extern u32 _menuFightIsUse__FP16MENU_WAZA_STATUSUs(u8* status, u16 waza);
     extern void menuCloseCustom();
@@ -735,6 +748,9 @@ void menuFightButtonSecretKousan(u8* ptr) {
 }
 #endif
 
+#endif /* !MENU_FIGHT_ONLY */
+
+#if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000DEC4)
 /* menuFightDrawTargetSecret - 0x8000DEC4 | size: 0x12c */
 #if 0
 asm void menuFightDrawTargetSecret(void) {
@@ -746,42 +762,45 @@ typedef struct MenuFightTargetSprite {
     s16 tag;
 } MenuFightTargetSprite;
 
+/* Sprite tag a secret-move target id highlights; 0 for none. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its return temp gives retail's value/counter register order - see docs/RULE_EXCEPTIONS.md */
+static inline s32 menuFightTargetSecretTag(s32 target)
+{
+    switch (target) {
+    case 0x45:
+        return 0x125C;
+    case 0x46:
+        return 0x125E;
+    case 0x47:
+        return 0x12BE;
+    case 0x48:
+        return 0x125D;
+    default:
+        return 0;
+    }
+}
+
 void menuFightDrawTargetSecret(u8* arg1, u8* arg2) {
     extern void* windowGetParam(u8* a, u32 b);
     extern void winSpriteSetDisp(u8* a, u32 b);
     u8* entry;
     s32 i;
     entry = (u8*)windowGetParam(arg1, 0);
-    for (i = 0; i < 2; i++) {
-        s32 value;
-        switch (*(s32*)(entry + 4)) {
-            case 0x45: value = 0x125C; break;
-            case 0x46: value = 0x125E; break;
-            case 0x47: value = 0x12BE; break;
-            case 0x48: value = 0x125D; break;
-            default: value = 0; break;
-        }
+    for (i = 0; i < 4; i++) {
+        s32 value = menuFightTargetSecretTag(*(s32*)(entry + 4));
         if (value == ((MenuFightTargetSprite*)arg2)->tag) {
             winSpriteSetDisp(arg2, 1);
             return;
         }
-        switch (*(s32*)(entry + 0xC)) {
-            case 0x45: value = 0x125C; break;
-            case 0x46: value = 0x125E; break;
-            case 0x47: value = 0x12BE; break;
-            case 0x48: value = 0x125D; break;
-            default: value = 0; break;
-        }
-        if (value == *(s16*)(arg2 + 6)) {
-            winSpriteSetDisp(arg2, 1);
-            return;
-        }
-        entry += 0x10;
+        entry += 8;
     }
-    winSpriteSetDisp(arg2, i - 2);
+    winSpriteSetDisp(arg2, 0);
 }
 #endif
 
+#endif
+
+#ifndef MENU_FIGHT_ONLY
 /* menuFightButtonTargetSecret - 0x8000DFF0 | size: 0x214 */
 extern u8* windowGetKeyInfo();
 #if 0
@@ -882,6 +901,8 @@ asm void menuFightCtrlTarget(void) {
 void menuFightCtrlTarget(void) {}
 #endif
 
+#endif /* !MENU_FIGHT_ONLY */
+
 /* menuFightDrawSecretPokemonStatus - 0x8000E290 | size: 0x780 */
 extern void* pokemonDataBiosGetPtr();
 extern u8 pokemonDataBiosGetZokuseiDataId();
@@ -926,6 +947,7 @@ static inline u32 menuFightGetSecretPokemon(u32 trainer, s32 slot)
     return pokemon;
 }
 
+#if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000E290)
 void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
 {
     extern u32 windowGetParam();
@@ -1153,6 +1175,9 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     }
 }
 
+#endif
+
+#ifndef MENU_FIGHT_ONLY
 /* menuFightDrawSecretPokemon - 0x8000EA10 | size: 0x324 */
 extern u32 fightFloorGetGcHeroFightTrainerPtr(s32 arg);
 extern u32 fightTrainerGetValidFightPokemonPtr(u32 warpId, u16 variant);
@@ -1275,6 +1300,9 @@ void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
 }
 #endif
 
+#endif /* !MENU_FIGHT_ONLY */
+
+#if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000ED34)
 /* menuFightButtonSecretPokemonTop - 0x8000ED34 | size: 0x5dc */
 extern void menuSetDisp(void);
 extern void fn_800F7920(void);
@@ -1456,6 +1484,9 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
 }
 #endif
 
+#endif
+
+#ifndef MENU_FIGHT_ONLY
 /* menuFightCtrlSecretPokemonTop - 0x8000F310 | size: 0x4c */
 #if 0
 asm void menuFightCtrlSecretPokemonTop(void) {
@@ -2753,3 +2784,4 @@ doneLabel:
     return 0;
 }
 #endif
+#endif /* !MENU_FIGHT_ONLY */
