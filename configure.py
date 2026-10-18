@@ -9338,11 +9338,19 @@ config.libs = [
                     (Matching, "game/gs_npc_event_candidate_80032ED8.c", "GC/1.3"),
                 ]
             ],
+            # fn_80031B4C only (GS_NPC_EVENT_ONLY_80031B4C carve); its switch
+            # table jumptable_802E4F90 stays owned by data_802E4DB0_prefix.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_npc_event_candidate_80031B4C_o3.c",
+                jump_table_import={
+                    "symbol": "jumptable_802E4F90",
+                    "function": "fn_80031B4C",
+                    "owner": "game/data/data_802E4DB0_prefix.c",
+                    "owner_offset": 0x1E0,
+                },
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -10329,6 +10337,15 @@ config.libs = [
                     {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
                     {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
                     {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
+                    # fn_8002B880's float literals (it builds alone, linked, in
+                    # menuShop_r40_8002B880_gc125n).
+                    {"symbol": "lbl_8047B9A4", "offset": 0x18, "expected": "40000000"},
+                    {"symbol": "lbl_8047B9A0", "offset": 0x1C, "expected": "3f000000"},
+                    {"symbol": "lbl_8047B978", "offset": 0x20, "expected": "437f0000"},
+                    {"symbol": "lbl_8047B9AC", "offset": 0x24, "expected": "42340000"},
+                    {"symbol": "lbl_8047B97C", "offset": 0x28, "expected": "3f800000"},
+                    {"symbol": "lbl_8047B9B0", "offset": 0x2C, "expected": "3e800000"},
+                    {"symbol": "lbl_8047B9B4", "offset": 0x30, "expected": "3f400000"},
                 ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],

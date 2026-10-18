@@ -138,7 +138,7 @@ extern void  fn_800FB680(s32, s32, u32, u16);
  * Stubs for remaining GSnpcEvt functions (0x80031188-0x800330B8)
  * ========================================================================= */
 
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 /* 0x80031188 | 0xA0 */
 extern u8 lbl_803A2688[];
 #if 0
@@ -473,6 +473,8 @@ void fn_80031B10(void) {
 }
 #endif
 
+#endif /* guard split */
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
 /* 0x80031B4C | 0x954 */
 extern void fn_801D036C(void);
 extern void fn_800849B4(void);
@@ -595,8 +597,131 @@ static inline s32 NpcEventRunChoiceMenu(s32 yes_sprite, s32 no_sprite)
     return cursor;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80031B4C case 3 (start menu choice); it sets retail's inline-local numbering and so the register colouring - see docs/RULE_EXCEPTIONS.md */
+static inline void NpcEventAskStart(void)
+{
+    extern void fn_801021F8(s32, s32);
+
+    fn_801021F8(0xD9, 0);
+    switch (NpcEventRunChoiceMenu(0x43E4, 0x43E5)) {
+    case 1:
+        lbl_8047A42C = 5;
+        break;
+    case 0:
+        lbl_8047A42C = 6;
+        break;
+    case -1:
+        lbl_8047A42C = 2;
+        break;
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80031B4C case 4 (quit menu choice); it sets retail's inline-local numbering and so the register colouring - see docs/RULE_EXCEPTIONS.md */
+static inline void NpcEventAskQuit(void)
+{
+    extern void fn_801021F8(s32, s32);
+    s32 choice;
+
+    fn_801021F8(0xD9, 0);
+    NpcEventShowMenuSprite(0xD9, 0x10B2, 0x43DB);
+    choice = NpcEventRunChoiceMenu(0x43D4, 0x43D5);
+    NpcEventHideMenuSprite(0xD9, 0x10B2);
+    switch (choice) {
+    case 0:
+        lbl_8047A42C = 2;
+        break;
+    case 1:
+        lbl_8047A42C = 0;
+        break;
+    case -1:
+        lbl_8047A42C = 2;
+        break;
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80031B4C case 10 (summary screen); it sets retail's inline-local numbering and so the register colouring - see docs/RULE_EXCEPTIONS.md */
+static inline void NpcEventShowSummary(s32 pokemon)
+{
+    extern void menuSetEnablePort(s32);
+    extern void fn_80097CD0(s32, s32, s32);
+    menuSetEnablePort(2);
+    fn_80097CD0(pokemon, 0, 0);
+    menuSetEnablePort(1);
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80031B4C case 13 (trade preview); it sets retail's inline-local numbering and so the register colouring - see docs/RULE_EXCEPTIONS.md */
+static inline void NpcEventTradeShow(u8* base)
+{
+    extern void menuOpen();
+    extern void menuModelInit(void*, s32, s32);
+    extern void fn_80109C88(void*, s32);
+    extern s32 pokemonBiosGetNicknamePtr(s32 pokemon);
+    extern void winMsgClose();
+    extern void winMsgOpen();
+    extern void fadeCheck(s32);
+    extern void fadeSet(s32, f32);
+    s32 name;
+    s32 nick1;
+    s32 nick2;
+    s32 pokemon1;
+    s32 pokemon2;
+
+    name = heroGetStatus(base + 0x170, 1, 0);
+    pokemon1 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+    pokemon2 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
+    menuOpen(0xDE, 0);
+    menuModelInit(base + 0xD18, 0xE8, 0x11C);
+    menuModelInit(base + 0xCD0, 0xE8, 0x11C);
+    fn_80109C88(base + 0xD18, pokemon1);
+    fn_80109C88(base + 0xCD0, pokemon2);
+    nick1 = pokemonBiosGetNicknamePtr(pokemon1);
+    nick2 = pokemonBiosGetNicknamePtr(pokemon2);
+    msgctrlSetValue(0x4D, name);
+    msgctrlSetValue(0x32, nick1);
+    msgctrlSetValue(0x33, nick2);
+    fadeSet(2, lbl_8047B9D0);
+    fadeCheck(1);
+    winMsgOpen(2, 0x43D6, 1, 0);
+    msgctrlSetValue(0x32, nick1);
+    msgctrlSetValue(0x33, nick2);
+    winMsgOpen(2, 0x43D8, 1, 0);
+    winMsgClose(1);
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_80031B4C case 16 (trade result); it sets retail's inline-local numbering and so the register colouring - see docs/RULE_EXCEPTIONS.md */
+static inline void NpcEventTradeDone(u8* base)
+{
+    extern void pokemonBiosSetFriend(s32, s32);
+    extern s32 pokemonBiosGetNicknamePtr(s32 pokemon);
+    extern void memoDataSet(s32, s32);
+    extern void winMsgClose();
+    extern void winMsgOpen();
+    s32 pokemon1;
+    s32 name;
+    s32 pokemon2;
+    s32 nick1;
+    s32 nick2;
+
+    name = heroGetStatus(base + 0x170, 1, 0);
+    pokemon1 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+    pokemon2 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
+    pokemonBiosSetFriend(pokemon1, 0x46);
+    pokemonBiosSetFriend(pokemon2, 0x46);
+    memoDataSet(0, pokemon1);
+    nick1 = pokemonBiosGetNicknamePtr(pokemon1);
+    nick2 = pokemonBiosGetNicknamePtr(pokemon2);
+    msgctrlSetValue(0x4D, name);
+    msgctrlSetValue(0x32, nick1);
+    msgctrlSetValue(0x33, nick2);
+    winMsgOpen(2, 0x43DA, 1, 0);
+    winMsgClose(1);
+}
+
+#if !defined(GS_NPC_EVENT_ONLY_80031B4C)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_80031B4C(void) {
     extern void fn_8001E074();
     extern void stateFunctionSaveReport(s32);
@@ -645,10 +770,6 @@ void fn_80031B4C(void) {
     extern s32 fn_801D036C(void);
     u8* base;
     s32 handle;
-    s32 work0;
-    s32 work1;
-    s32 work2;
-    s32 work3;
 
     base = lbl_803A2518;
     lbl_804788B0 = 1;
@@ -672,36 +793,10 @@ void fn_80031B4C(void) {
                 fn_8002FC58();
                 break;
             case 3:
-                fn_801021F8(0xD9, 0);
-                work0 = NpcEventRunChoiceMenu(0x43E4, 0x43E5);
-                switch (work0) {
-                case 1:
-                    lbl_8047A42C = 5;
-                    break;
-                case 0:
-                    lbl_8047A42C = 6;
-                    break;
-                case -1:
-                    lbl_8047A42C = 2;
-                    break;
-                }
+                NpcEventAskStart();
                 break;
             case 4:
-                fn_801021F8(0xD9, 0);
-                NpcEventShowMenuSprite(0xD9, 0x10B2, 0x43DB);
-                work3 = NpcEventRunChoiceMenu(0x43D4, 0x43D5);
-                NpcEventHideMenuSprite(0xD9, 0x10B2);
-                switch (work3) {
-                case 0:
-                    lbl_8047A42C = 2;
-                    break;
-                case 1:
-                    lbl_8047A42C = 0;
-                    break;
-                case -1:
-                    lbl_8047A42C = 2;
-                    break;
-                }
+                NpcEventAskQuit();
                 break;
             case 5:
                 fadeSet(3, lbl_8047B9D0);
@@ -742,10 +837,7 @@ void fn_80031B4C(void) {
                 menuSetDisp(0xD9, 0);
                 fadeSet(2, lbl_8047B9D4);
                 fadeCheck(1);
-                work3 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A428);
-                menuSetEnablePort(2);
-                fn_80097CD0(work3, 0, 0);
-                menuSetEnablePort(1);
+                NpcEventShowSummary(heroGetStatus(base + 0x170, 3, (u16)lbl_8047A428));
                 fadeSet(3, lbl_8047B9D4);
                 fadeCheck(1);
                 GSmodelSetVisibility(lbl_8047A414, 1);
@@ -767,31 +859,10 @@ void fn_80031B4C(void) {
             case 12:
                 fn_8002E460(handle);
                 break;
-            case 13: {
-
-                work0 = heroGetStatus(base + 0x170, 1, 0);
-                work2 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
-                work3 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
-                menuOpen(0xDE, 0);
-                menuModelInit(base + 0xD18, 0xE8, 0x11C);
-                menuModelInit(base + 0xCD0, 0xE8, 0x11C);
-                fn_80109C88(base + 0xD18, work2);
-                fn_80109C88(base + 0xCD0, work3);
-                work2 = pokemonBiosGetNicknamePtr(work2);
-                work3 = pokemonBiosGetNicknamePtr(work3);
-                msgctrlSetValue(0x4D, work0);
-                msgctrlSetValue(0x32, work2);
-                msgctrlSetValue(0x33, work3);
-                fadeSet(2, lbl_8047B9D0);
-                fadeCheck(1);
-                winMsgOpen(2, 0x43D6, 1, 0);
-                msgctrlSetValue(0x32, work2);
-                msgctrlSetValue(0x33, work3);
-                winMsgOpen(2, 0x43D8, 1, 0);
-                winMsgClose(1);
+            case 13:
+                NpcEventTradeShow(base);
                 lbl_8047A42C = 14;
                 break;
-            }
             case 14:
                 stateFunctionExChangeMain();
                 break;
@@ -802,24 +873,10 @@ void fn_80031B4C(void) {
                 fn_8010A420(base + 0xCD0);
                 lbl_8047A42C = 0;
                 break;
-            case 16: {
-
-                work3 = heroGetStatus(base + 0x170, 1, 0);
-                work1 = heroGetStatus(NULL, 3, (u16)lbl_8047A424);
-                work0 = heroGetStatus(base + 0x170, 3, (u16)lbl_8047A420);
-                pokemonBiosSetFriend(work1, 0x46);
-                pokemonBiosSetFriend(work0, 0x46);
-                memoDataSet(0, work1);
-                work2 = pokemonBiosGetNicknamePtr(work1);
-                work0 = pokemonBiosGetNicknamePtr(work0);
-                msgctrlSetValue(0x4D, work3);
-                msgctrlSetValue(0x32, work2);
-                msgctrlSetValue(0x33, work0);
-                winMsgOpen(2, 0x43DA, 1, 0);
-                winMsgClose(1);
+            case 16:
+                NpcEventTradeDone(base);
                 lbl_8047A42C = 17;
                 break;
-            }
             case 17:
                 stateFunctionEvolution();
                 break;
@@ -881,10 +938,12 @@ void fn_80031B4C(void) {
     }
     lbl_8047A409 = 1;
 }
+#if !defined(GS_NPC_EVENT_ONLY_80031B4C)
 #pragma pop
 #endif
 #endif
-#if !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
+#endif
+#if !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 
 /* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
 extern void fn_80112260(s32);
@@ -1066,7 +1125,7 @@ void fn_8003258C(void) {
 #endif
 
 #endif /* !GS_NPC_EVENT_ONLY_800301B0 */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 /* 0x800327FC | 0x6DC */
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern void GScharCpy(void* dst, const void* src);
@@ -1331,7 +1390,7 @@ void fn_800327FC(void)
 
 /* fn_80032ED8 and fn_800330B8 also build alone for the linked
  * gs_npc_event_candidate_80032ED8 unit. */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 /* 0x80032ED8 | 0x1E0 */
 extern u8*  fightEncountDataBiosGetPtr(s32);
 extern void fightEncountDataBiosSetTrainer(u8*, s32);
@@ -1619,7 +1678,7 @@ void fn_800330B8(s32 arg0, u8* arg1) {
 #endif
 
 #endif
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 
 /* ===== Phase 2 recovery stubs ===== */
 
@@ -2269,7 +2328,7 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
 
 /* fn_800301B0 and fn_800302D0 also build alone for the linked
  * gs_npc_event_candidate_800301B0 unit. */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 extern u8 lbl_803A3230[];
 extern u8 lbl_803A31E8[];
 extern u8 lbl_80314F98[];
