@@ -9548,8 +9548,8 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     s32 y;
     void* entry;
     u32 name;
-    u32 owner;
     u32 caption;
+    u32 owner;
     u32 msg;
     u32 tint;
     u16 id;
