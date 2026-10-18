@@ -25,10 +25,14 @@ extern u32 GSmsgGetRect(u32 id);
  * defined to build just that function:
  *   menuShop_candidate_8002A5B0.c -> fn_8002A618
  *   menuShop_candidate_8002AB00.c -> fn_8002AB00
- *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8 */
+ *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8
+ *   menuShop_candidate_8002B594.c -> fn_8002B594
+ *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002B594_ONLY) || \
+    defined(MENUSHOP_R40_8002B880_ONLY) || \
     defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
     defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
     defined(MENUSHOP_ISLAND_80029850_ONLY) || \
@@ -1436,6 +1440,8 @@ s32 fn_8002B40C(ShopAngleOwner* owner, ShopAngleDrawData* draw) {
 #pragma pop
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002B594_ONLY)
 /* fn_8002B594 - 0x8002B594 | size: 0x2ec */
 extern void fn_800CDBE0(void);
 extern void fn_800CE148(void);
@@ -1474,8 +1480,11 @@ asm void fn_8002B594(void) {
  * ENDIAN-QA: the asm uses the classic CW big-endian 0x4330/xoris double-word trick
  * to convert the two s16 fields to f32.  On x86 this is a plain (f32)(s16) cast.
  */
+#if !defined(MENUSHOP_CANDIDATE_8002B594_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
 {
     f32 thresholds[5];
@@ -1513,7 +1522,7 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
 
     segment = 0;
     while (segment < 4) {
-        if (thresholds[segment] <= pos && next_threshold[segment] > pos) {
+        if (thresholds[segment] <= pos && thresholds[segment + 1] > pos) {
             break;
         }
         segment++;
@@ -1559,13 +1568,16 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
         y = (s32)(height * lbl_8047B9A0 + radial);
     }
 
-    color = -0x100;
-    color |= (u8)color_byte;
+    color = (u8)color_byte | -0x100;
     windowDrawSprite2(x, y, 2, 2, color, ctx, sprite_id & 0xFFFF, 0);
 }
+#if !defined(MENUSHOP_CANDIDATE_8002B594_ONLY)
 #pragma pop
 #endif
+#endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_R40_8002B880_ONLY)
 /* fn_8002B880 - 0x8002B880 | size: 0x468 */
 extern void fn_800FE6D0(void);
 extern void spriteSetEnv(void);

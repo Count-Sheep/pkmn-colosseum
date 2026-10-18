@@ -10334,16 +10334,17 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuShop_candidate_8002B594.c",
                 constant_import=[
-                    {"symbol": "lbl_8047B988", "offset": 0, "expected": "40c90fdb"},
-                    {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
-                    {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
-                    {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047B998", "offset": 0, "expected": "4330000080000000"},
                 ],
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                # fn_8002B594 only (MENUSHOP_CANDIDATE_8002B594_ONLY carve). GC/2.0:
+                # retail's `li r0,-0x100; or` colour merge is what 2.0+ emits for
+                # `(u8)x | -0x100`; GC/1.3 folds it to oris/ori. Same compiler as its
+                # twin fn_800167D0 in gs_pokemon_summary.
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
