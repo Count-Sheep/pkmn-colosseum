@@ -4545,12 +4545,6 @@ void fn_80044630(void) {
             f32 tgt;
             f32 step;
             f32 nv;
-            f32 dlt;
-            f32 dstep;
-            f32 ncur;
-            f32 rem;
-            f32 arem;
-            f32 dtgt;
 
             /* ease A */
             tgt = *(f32*)(S + 0x50);
@@ -4607,38 +4601,8 @@ void fn_80044630(void) {
             }
 
             /* block D */
-            cur = *(f32*)(S + 0x1DC);
-            dtgt = *(f32*)(S + 0x1E0);
-            if (cur != dtgt) {
-                dlt = dtgt - cur;
-                dstep = lbl_8047BCC4 * dlt;
-                dstep = dstep * *(f32*)(S + 0x3C);
-                if (dstep > lbl_8047BC98)
-                    dstep = lbl_8047BC98;
-                if (dstep <= lbl_8047BCC8)
-                    dstep = lbl_8047BCC8;
-                ncur = *(f32*)(S + 0x1DC) + dstep;
-                dtgt = *(f32*)(S + 0x1E0);
-                rem = dtgt - ncur;
-                *(f32*)(S + 0x1DC) = ncur;
-                if (dstep > lbl_8047BC94) {
-                } else {
-                    dstep = -dstep;
-                }
-                if (rem > lbl_8047BC94)
-                    arem = rem;
-                else
-                    arem = -rem;
-                if (arem <= dstep) {
-                    *(f32*)(S + 0x1DC) = dtgt;
-                } else {
-                    if (rem <= lbl_8047BC94) {
-                        rem = -rem;
-                    }
-                    if (rem < lbl_8047BCBC) {
-                        *(f32*)(S + 0x1DC) = dtgt;
-                    }
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* converge */
