@@ -9174,8 +9174,8 @@ s32 fn_8003B85C(void* window, s32 enabled)
     extern u32 fn_800D3088(void);
     extern s32 fn_800D37CC(void);
     u16* keys;
-    s32 prevIndex;
     s32 held;
+    s32 prevIndex;
     s32 idx;
     u16 code;
     u16 species;
