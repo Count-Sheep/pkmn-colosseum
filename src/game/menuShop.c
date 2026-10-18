@@ -2117,8 +2117,16 @@ static inline u32 shopOpenItemList(ShopListMenu* params, u32 loc, u8 mode, u8 fl
     return *params->selection;
 }
 
+/* One world-map location: its name index, shop type and the start of its
+ * zero-terminated item list in lbl_80478E44. */
+typedef struct ShopMapEntry {
+    u8 name;
+    u8 type;
+    u16 itemList;
+} ShopMapEntry;
+
 /* Travel-dialog form of shopOpenItemList: reads the location entry through a
- * pointer, sets flag 1 and ignores the selection. */
+ * typed map pointer, sets flag 1 and ignores the selection. */
 /* RULE-EXCEPTION(user-approved): single-call inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline void shopOpenTravelList(ShopListMenu* params, u32 loc, u8 mode)
 {
@@ -2134,14 +2142,13 @@ static inline void shopOpenTravelList(ShopListMenu* params, u32 loc, u8 mode)
     u16* list;
     s32 count;
     u16* p;
-    u8* entry;
+    ShopMapEntry* map;
 
     lbl_8047A3F8 = 0;
     count = 0;
     params->selection = &lbl_8047A3F8;
-    entry = (u8*)lbl_80478E54;
-    entry += loc * 4;
-    list = (u16*)lbl_80478E44 + *(u16*)(entry + 2);
+    map = (ShopMapEntry*)lbl_80478E54;
+    list = (u16*)lbl_80478E44 + map[loc].itemList;
     p = list;
     while (*p != 0) {
         p++;
