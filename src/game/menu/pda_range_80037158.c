@@ -4857,6 +4857,12 @@ static inline u32 pdaLoadPokemon(s32 index)
     return 0;
 }
 
+/* Whether a memo entry ID has been seen (the high bit marks an unseen entry). */
+static inline BOOL pdaMemoSeen(u16 id)
+{
+    return (id & 0x8000) == 0;
+}
+
 /* As pdaLoadPokemon, but from an entry ID the caller already has in hand. */
 static inline u32 pdaLoadPokemonId(u32 id)
 {
@@ -5088,7 +5094,7 @@ u16 fn_8003D4C8(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 pdaLoadPokemonId(id);
                 if (*(s8*)((u8*)&lbl_803A6818 + 0x159) ==
                     pda_8003D4C8_Color(id)) {
@@ -6082,7 +6088,7 @@ void fn_8003DC54(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             u32 id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 pdaLoadPokemonId(id);
                 a = pdaGetTypeIcon(id, 0);
                 b = pdaGetTypeIcon(id, 1);
@@ -6100,7 +6106,7 @@ void fn_8003DC54(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             u32 id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 pdaLoadPokemonId(id);
                 a = pdaGetTypeIcon(id, 0);
                 b = pdaGetTypeIcon(id, 1);
@@ -6198,7 +6204,7 @@ void fn_8003E394(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             u16 id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 u16 key = pdaGetWeight(id);
                 ids[count] = id;
                 pairs[count].key = key;
@@ -6220,7 +6226,7 @@ void fn_8003E394(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             u16 id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 u16 key = pdaGetWeight(id);
                 ids[count] = id;
                 pairs[count].key = key;
@@ -6244,7 +6250,7 @@ void fn_8003E394(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             u16 id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 u16 key = pdaGetHeight(id);
                 ids[count] = id;
                 pairs[count].key = key;
@@ -6268,7 +6274,7 @@ void fn_8003E394(void)
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
             u16 id = lbl_8047A4E4[i];
-            if ((id & 0x8000) == 0) {
+            if (pdaMemoSeen(id)) {
                 u16 key = pdaGetHeight(id);
                 ids[count] = id;
                 pairs[count].key = key;
