@@ -460,11 +460,9 @@ extern void fn_8001E4B4(s32, s32, s32, s32, s32, s32);
 extern s32 sprintf(char*, const char*, ...);
 extern s32 fn_800FAEF8(s32, s32, s32, ...);
 extern u32 fn_801906A0(u32);
-extern u32 lbl_80478F98;
 extern u8 lbl_80478838[8];
 extern u8 lbl_803A19C8[];
 extern u8 lbl_80266688[];
-extern u32 lbl_80478F9C;
 extern u8 lbl_8047B6C8[3];
 typedef struct GsTaskFlagConfig {
     u32 count;
@@ -476,6 +474,9 @@ typedef struct GsTaskFlagDef {
     s16 next;
 } GsTaskFlagDef;
 
+extern GsTaskFlagConfig* lbl_80478F98;
+extern GsTaskFlagDef* lbl_80478F9C;
+
 static inline u16 gsTaskFlagGetId(s32 index) {
     s16 id;
     s32 i;
@@ -483,15 +484,15 @@ static inline u16 gsTaskFlagGetId(s32 index) {
     if (index < 0) {
         return 0;
     }
-    if ((u32)index >= ((GsTaskFlagConfig*)lbl_80478F98)->count) {
+    if ((u32)index >= lbl_80478F98->count) {
         return 0;
     }
-    id = ((GsTaskFlagConfig*)lbl_80478F98)->first;
+    id = lbl_80478F98->first;
     if (index != 0) {
         for (i = 0; i < index - 1; i++) {
-            id = ((GsTaskFlagDef*)lbl_80478F9C)[id].next;
+            id = lbl_80478F9C[id].next;
         }
-        id = ((GsTaskFlagDef*)lbl_80478F9C)[id].next;
+        id = lbl_80478F9C[id].next;
     }
     return id;
 }
@@ -521,7 +522,7 @@ void fn_80008868(u8* window)
     pageSize = (u8)menuDataBiosGetType(menuId);
     width = 0;
     width = 480;
-    config = (GsTaskFlagConfig*)lbl_80478F98;
+    config = lbl_80478F98;
     flagCount = config->count;
     visibleCount = flagCount;
     if (flagCount > pageSize) {
@@ -536,7 +537,7 @@ void fn_80008868(u8* window)
         fn_8001E4B4(center + 20, 33, center + 40, 33, center + 30, 23);
     }
 
-    config = (GsTaskFlagConfig*)lbl_80478F98;
+    config = lbl_80478F98;
     if ((s32)config->count - *(s16*)lbl_80478838 > pageSize) {
         center = width / 2;
         fn_8001E4B4(center + 20, rowHeight + 47, center + 40,
@@ -574,8 +575,6 @@ void fn_80008868(u8* window)
 extern u8* windowGetKeyInfo(void);
 extern void fn_80190528(u32);
 extern void fn_801903B0(u32);
-extern u32 lbl_80478F98;
-extern u32 lbl_80478F9C;
 typedef struct GsTaskFlagCursor {
     s16 top;
     s16 cursor;
@@ -588,15 +587,15 @@ static inline u16 gsTaskFlagGetLinkedId(s32 index) {
     if (index < 0) {
         return 0;
     }
-    if ((u32)index >= ((GsTaskFlagConfig*)lbl_80478F98)->count) {
+    if ((u32)index >= lbl_80478F98->count) {
         return 0;
     }
-    id = ((GsTaskFlagConfig*)lbl_80478F98)->first;
+    id = lbl_80478F98->first;
     if (index != 0) {
         for (i = 0; i < index - 1; i++) {
-            id = ((GsTaskFlagDef*)lbl_80478F9C)[id].next;
+            id = lbl_80478F9C[id].next;
         }
-        id = *(s16*)(lbl_80478F9C + id * 8 + 6);
+        id = lbl_80478F9C[id].next;
     }
     return id;
 }
@@ -614,7 +613,7 @@ void fn_80008C40(u8* window) {
 
     repeat = ((const u16*)windowGetKeyInfo())[3];
     trigger = ((const u16*)windowGetKeyInfo())[0];
-    count = (s16)((GsTaskFlagConfig*)lbl_80478F98)->count;
+    count = (s16)lbl_80478F98->count;
     page = menuDataBiosGetType(*(u32*)(window + 4));
     if (count < page) {
         page = count;
