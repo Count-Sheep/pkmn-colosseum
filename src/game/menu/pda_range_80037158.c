@@ -9393,8 +9393,8 @@ void fn_8003C7C0(void)
                     fn_80166AB8(0x24, 0, 0);
                     work = lbl_8047A4D0;
                     idx = *(s32*)&lbl_803A6748;
-                    entry = lbl_8047A4D4[(u16)idx].battleId;
                     species = lbl_8047A4D4[idx].field_00;
+                    entry = lbl_8047A4D4[(u16)idx].battleId;
                     rndId = lbl_8047A4D4[idx].battleId;
                     fn_801EE614(entry);
                     fn_801EE8F4(entry);
