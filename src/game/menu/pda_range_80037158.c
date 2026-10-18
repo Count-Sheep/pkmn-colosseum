@@ -8305,34 +8305,34 @@ s32 fn_8004B278(u8* work)
         menuItemBiosSetSelectFlag(0x438, 0);
     }
     *(f32*)(lbl_803A6A60 + 0x40) =
-        lbl_8047BDA8 * *(f32*)((u8*)&lbl_803A6A60 + 8) + *(f32*)(lbl_803A6A60 + 0x40);
-    if (*(f32*)(lbl_803A6A60 + 0x40) > lbl_8047BDA0) {
-        *(f32*)(lbl_803A6A60 + 0x40) = lbl_8047BDAC;
+        0.5f * *(f32*)((u8*)&lbl_803A6A60 + 8) + *(f32*)(lbl_803A6A60 + 0x40);
+    if (*(f32*)(lbl_803A6A60 + 0x40) > 1.0f) {
+        *(f32*)(lbl_803A6A60 + 0x40) = 0.0f;
     }
 
     if (*(f32*)(lbl_803A6A60 + 0x30) != *(f32*)(lbl_803A6A60 + 0x38)) {
         delta = *(f32*)(lbl_803A6A60 + 0x38) - *(f32*)(lbl_803A6A60 + 0x30);
-        moved = lbl_8047BDD8 * delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
-        if (moved > lbl_8047BDDC) {
-            moved = lbl_8047BDDC;
+        moved = 10.0f * delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
+        if (moved > 20.0f) {
+            moved = 20.0f;
         }
-        if (moved <= lbl_8047BDE0) {
-            moved = lbl_8047BDE0;
+        if (moved <= -20.0f) {
+            moved = -20.0f;
         }
         *(f32*)(lbl_803A6A60 + 0x30) = *(f32*)(lbl_803A6A60 + 0x30) + moved;
         rest = *(f32*)(lbl_803A6A60 + 0x38) - *(f32*)(lbl_803A6A60 + 0x30);
-        if (moved > lbl_8047BDAC) {
+        if (moved > 0.0f) {
         } else {
             moved = -moved;
         }
-        if ((rest > lbl_8047BDAC ? rest : -rest) <= moved) {
+        if ((rest > 0.0f ? rest : -rest) <= moved) {
             *(f32*)(lbl_803A6A60 + 0x30) = *(f32*)(lbl_803A6A60 + 0x38);
         } else {
-            if (rest > lbl_8047BDAC) {
+            if (rest > 0.0f) {
             } else {
                 rest = -rest;
             }
-            if (rest < lbl_8047BDA0) {
+            if (rest < 1.0f) {
                 *(f32*)(lbl_803A6A60 + 0x30) = *(f32*)(lbl_803A6A60 + 0x38);
             }
         }
@@ -8340,27 +8340,27 @@ s32 fn_8004B278(u8* work)
 
     if (*(f32*)(lbl_803A6A60 + 0x34) != *(f32*)(lbl_803A6A60 + 0x3c)) {
         delta = *(f32*)(lbl_803A6A60 + 0x3c) - *(f32*)(lbl_803A6A60 + 0x34);
-        moved = lbl_8047BDD8 * delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
-        if (moved > lbl_8047BDDC) {
-            moved = lbl_8047BDDC;
+        moved = 10.0f * delta * *(f32*)((u8*)&lbl_803A6A60 + 8);
+        if (moved > 20.0f) {
+            moved = 20.0f;
         }
-        if (moved <= lbl_8047BDE0) {
-            moved = lbl_8047BDE0;
+        if (moved <= -20.0f) {
+            moved = -20.0f;
         }
         *(f32*)(lbl_803A6A60 + 0x34) = *(f32*)(lbl_803A6A60 + 0x34) + moved;
         rest = *(f32*)(lbl_803A6A60 + 0x3c) - *(f32*)(lbl_803A6A60 + 0x34);
-        if (moved > lbl_8047BDAC) {
+        if (moved > 0.0f) {
         } else {
             moved = -moved;
         }
-        if ((rest > lbl_8047BDAC ? rest : -rest) <= moved) {
+        if ((rest > 0.0f ? rest : -rest) <= moved) {
             *(f32*)(lbl_803A6A60 + 0x34) = *(f32*)(lbl_803A6A60 + 0x3c);
         } else {
-            if (rest > lbl_8047BDAC) {
+            if (rest > 0.0f) {
             } else {
                 rest = -rest;
             }
-            if (rest < lbl_8047BDA0) {
+            if (rest < 1.0f) {
                 *(f32*)(lbl_803A6A60 + 0x34) = *(f32*)(lbl_803A6A60 + 0x3c);
             }
         }
@@ -8369,16 +8369,16 @@ s32 fn_8004B278(u8* work)
     switch (*(s8*)(work + 1)) {
     case 0:
         if (*(s8*)(work + 2) == 0) {
-            **(f32**)(data + 8) = lbl_8047BDAC;
+            **(f32**)(data + 8) = 0.0f;
             work[2] = 1;
         }
         break;
     case 2:
         p = *(f32**)(data + 8);
-        *p = *p + lbl_8047BDE4;
-        if (*p >= lbl_8047BDA0) {
+        *p = *p + 0.003125f;
+        if (*p >= 1.0f) {
             p = *(f32**)(data + 8);
-            *p = *p - lbl_8047BDA0;
+            *p = *p - 1.0f;
         }
         break;
     case 3:
@@ -8697,16 +8697,16 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         case 0:
             if (sprite->eventId == 0x6e3) {
                 sprite->field_50 = (s16)(s32)(
-                    lbl_8047BDB8 *
-                        (f32)sin(lbl_8047BDC8 *
-                                 (lbl_8047BDCC *
-                                  (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))) +
+                    4.0f *
+                        (f32)sin(3.1415927f *
+                                 (2.0f *
+                                  (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))) +
                     (f32)*(s16*)(row + 2));
                 wave[0].x = (s16)(s32)(
-                    lbl_8047BDB8 *
-                    (f32)sin(lbl_8047BDC8 *
-                             (lbl_8047BDCC *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))));
+                    4.0f *
+                    (f32)sin(3.1415927f *
+                             (2.0f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
                 wave[0].x = 0;
                 sprite->field_50 = *(s16*)(row + 2);
@@ -8716,16 +8716,16 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         case 1:
             if (sprite->eventId == 0x6e4) {
                 sprite->field_50 = (s16)(s32)(
-                    lbl_8047BDB8 *
-                        (f32)sin(lbl_8047BDC8 *
-                                 (lbl_8047BDCC *
-                                  (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))) +
+                    4.0f *
+                        (f32)sin(3.1415927f *
+                                 (2.0f *
+                                  (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))) +
                     (f32)*(s16*)(row + 2));
                 wave[0].y = (s16)(s32)(
-                    lbl_8047BDB8 *
-                    (f32)sin(lbl_8047BDC8 *
-                             (lbl_8047BDCC *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))));
+                    4.0f *
+                    (f32)sin(3.1415927f *
+                             (2.0f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
                 wave[0].y = 0;
                 sprite->field_50 = *(s16*)(row + 2);
@@ -8735,10 +8735,10 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         case 2:
             if (sprite->eventId == 0x6e5) {
                 wave[1].x = (s16)(s32)(
-                    lbl_8047BDB8 *
-                    (f32)sin(lbl_8047BDC8 *
-                             (lbl_8047BDCC *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))));
+                    4.0f *
+                    (f32)sin(3.1415927f *
+                             (2.0f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
                 wave[1].x = 0;
                 sprite->field_50 = *(s16*)(row + 2);
@@ -8748,16 +8748,16 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         case 3:
             if (sprite->eventId == 0x6e6) {
                 sprite->field_50 = (s16)(s32)(
-                    lbl_8047BDB8 *
-                        (f32)sin(lbl_8047BDC8 *
-                                 (lbl_8047BDCC *
-                                  (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))) +
+                    4.0f *
+                        (f32)sin(3.1415927f *
+                                 (2.0f *
+                                  (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))) +
                     (f32)*(s16*)(row + 2));
                 wave[1].y = (s16)(s32)(
-                    lbl_8047BDB8 *
-                    (f32)sin(lbl_8047BDC8 *
-                             (lbl_8047BDCC *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)))));
+                    4.0f *
+                    (f32)sin(3.1415927f *
+                             (2.0f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
                 wave[1].y = 0;
                 sprite->field_50 = *(s16*)(row + 2);
@@ -8851,7 +8851,7 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
     case 0x439:
     case 0x43a:
     case 0x777:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
@@ -8859,23 +8859,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->alpha = 0xff - fade;
         break;
     case 0x6ea:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                             (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                         lbl_804788D8 * lbl_8047BDAC);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                             (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                         lbl_804788D8 * 0.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -8883,23 +8883,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6eb:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDA0);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 1.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -8907,23 +8907,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6ec:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDCC);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 2.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -8931,23 +8931,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6ed:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDD4);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 3.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -8955,23 +8955,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6ee:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDB8);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 4.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -8979,23 +8979,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6ef:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                             (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                         lbl_804788D8 * lbl_8047BDAC);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                             (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                         lbl_804788D8 * 0.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -9003,23 +9003,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6f0:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDA0);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 1.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -9027,23 +9027,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6f1:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDCC);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 2.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -9051,23 +9051,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6f2:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDD4);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 3.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -9075,23 +9075,23 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
         sprite->colorB = (u8)(s32)pulse;
         break;
     case 0x6f3:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
         }
         sprite->alpha = 0xff - fade;
-        pulse = (f32)sin(lbl_8047BDC8 *
-                              (lbl_8047BDCC * *(f32*)(lbl_803A6A60 + 0x40)) +
-                          lbl_804788D8 * lbl_8047BDB8);
-        pulse = pulse + lbl_8047BDA0;
+        pulse = (f32)sin(3.1415927f *
+                              (2.0f * *(f32*)(lbl_803A6A60 + 0x40)) +
+                          lbl_804788D8 * 4.0f);
+        pulse = pulse + 1.0f;
         pulse = pulse * lbl_8047BDA8;
-        pulse = pulse * lbl_8047BDD0;
-        if (pulse > lbl_8047BDB0) {
-            pulse = lbl_8047BDB0;
+        pulse = pulse * 256.0f;
+        if (pulse > 255.0f) {
+            pulse = 255.0f;
         }
-        if (pulse < lbl_8047BDAC) {
-            pulse = lbl_8047BDAC;
+        if (pulse < 0.0f) {
+            pulse = 0.0f;
         }
         sprite->alpha = (u8)(s32)pulse;
         sprite->colorR = (u8)(s32)pulse;
@@ -9104,7 +9104,7 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
     case 0x6f4:
     case 0x6f5:
     case 0x6f6:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
@@ -9115,7 +9115,7 @@ void fn_8004A7A8(void* work, PdaSprite* sprite)
     case 0x6e4:
     case 0x6e5:
     case 0x6e6:
-        if (*(f32*)(lbl_803A6A60 + 0x30) > lbl_8047BDB0) {
+        if (*(f32*)(lbl_803A6A60 + 0x30) > 255.0f) {
             fade = 0xff;
         } else {
             fade = (s32)*(f32*)(lbl_803A6A60 + 0x30);
