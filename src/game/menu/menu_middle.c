@@ -4781,11 +4781,12 @@ void fn_8006FEE4(void* menu) {
     extern void winSetSequence(void* seq, u16 seqId);
     extern void fn_80070D84(void* menu, const void* table, s32 count);
     extern double fmod(double x, double y);
+    void* window;
     u32 ready;
+    s32 visible;
     s32 i;
     s32 j;
-    void* window;
-    s32 visible;
+    s32 k;
 
     if (*(s8*)((u8*)menu + 0x95) < 6) {
         *(s32*)&lbl_8047A5FC = *(s8*)((u8*)menu + 0x95);
@@ -4825,8 +4826,8 @@ void fn_8006FEE4(void* menu) {
     case 3:
         if (*(s8*)((u8*)menu + 2) == 0) {
             for (i = 0; i < 6U; i++) {
-                for (j = 0; j < 5U; j++) {
-                    winSetSequence((u8*)windowSearchItemID(menu, sMenuCBHookGridIds_802680E4[i][j]) + 0xC,
+                for (k = 0; k < 5U; k++) {
+                    winSetSequence((u8*)windowSearchItemID(menu, sMenuCBHookGridIds_802680E4[i][k]) + 0xC,
                                    sMenuCBHookSequences_8006E338[i / 2 + 3][1]);
                 }
             }
