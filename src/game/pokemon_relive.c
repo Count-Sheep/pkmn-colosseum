@@ -79,6 +79,7 @@ void fightTrainerAiWazaValueHimitunotikara(void* ctx, u32 param1, u32 param2, u3
 s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2, u32 param3);
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
+extern void reliveCeremonyAll(u32 pokemonIndex);
 
 #if defined(POKEMON_RELIVE_PREFIX_ONLY)
 /* Address: 0x8025DCBC | Size: 0x58 | Ghidra import */
@@ -453,7 +454,7 @@ void preReliveDisplayHokoraParticle(void)
 
 #endif
 
-#if defined(POKEMON_RELIVE_AFTER_PARTICLE_ONLY)
+#if defined(POKEMON_RELIVE_EXP_ONLY)
 /* Address: 0x8025E640 | Size: 0x37C | Ghidra import */
 typedef struct ReliveLevelUpStatus {
     u8 mode;
@@ -566,7 +567,9 @@ u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
     }
     return levelUp;
 }
+#endif
 
+#if defined(POKEMON_RELIVE_POST_CEREMONY_ONLY)
 #pragma push
 #pragma optimize_for_size off
 /* Address: 0x8025EF58 | Size: 0x354 | Ghidra import */
@@ -783,9 +786,8 @@ int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)
 #pragma pop
 #endif
 
-#if defined(POKEMON_RELIVE_AFTER_PARTICLE_ONLY)
+#if defined(POKEMON_RELIVE_CEREMONY_ONLY)
 #pragma push
-#pragma optimize_for_size off
 /* Address: 0x8025E9BC | Size: 0x390 | Ghidra import */
 void reliveCeremonyAll(u32 r3)
 
@@ -911,7 +913,9 @@ void reliveCeremonyAll(u32 r3)
   return;
 }
 #pragma pop
+#endif
 
+#if defined(POKEMON_RELIVE_POST_CEREMONY_ONLY)
 #pragma push
 #pragma optimize_for_size off
 /* Address: 0x8025ED4C | Ghidra import */

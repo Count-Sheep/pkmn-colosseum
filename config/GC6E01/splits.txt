@@ -6641,8 +6641,14 @@ game/pokemon_relive_before_particle.c:
 game/pokemon_relive_particle_exact.c:
 	.text       start:0x8025E534 end:0x8025E640
 
+game/pokemon_relive_exp_candidate.c:
+	.text       start:0x8025E640 end:0x8025E9BC
+
+game/pokemon_relive_ceremony_exact.c:
+	.text       start:0x8025E9BC end:0x8025ED4C
+
 game/pokemon_relive_after_particle.c:
-	.text       start:0x8025E640 end:0x8025F2AC
+	.text       start:0x8025ED4C end:0x8025F2AC
 
 game/pokemon_relive_suffix_exact.c:
 	.text       start:0x8025F2AC end:0x8025F2FC
