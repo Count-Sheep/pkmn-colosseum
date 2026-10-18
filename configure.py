@@ -9389,11 +9389,20 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # fn_800327FC only (GS_NPC_EVENT_ONLY_800327FC carve); its float
+            # literals are redirected to the retail-owned .sdata2 labels.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_npc_event_candidate_800327FC_o4s.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BA00", "offset": 0x00, "expected": "3e99999a"},
+                    {"symbol": "lbl_8047B9F8", "offset": 0x04, "expected": "00000000"},
+                    {"symbol": "lbl_8047BA18", "offset": 0x08, "expected": "3f800000"},
+                    {"symbol": "lbl_8047BA08", "offset": 0x10, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047BA10", "offset": 0x18, "expected": "4330000000000000"},
+                ],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             *[

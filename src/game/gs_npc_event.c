@@ -138,7 +138,7 @@ extern void  fn_800FB680(s32, s32, u32, u16);
  * Stubs for remaining GSnpcEvt functions (0x80031188-0x800330B8)
  * ========================================================================= */
 
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 /* 0x80031188 | 0xA0 */
 extern u8 lbl_803A2688[];
 #if 0
@@ -474,7 +474,7 @@ void fn_80031B10(void) {
 #endif
 
 #endif /* guard split */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 /* 0x80031B4C | 0x954 */
 extern void fn_801D036C(void);
 extern void fn_800849B4(void);
@@ -943,7 +943,7 @@ void fn_80031B4C(void) {
 #endif
 #endif
 #endif
-#if !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
+#if !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 
 /* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
 extern void fn_80112260(s32);
@@ -1127,6 +1127,11 @@ void fn_8003258C(void) {
 #endif /* !GS_NPC_EVENT_ONLY_800301B0 */
 #if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
 /* 0x800327FC | 0x6DC */
+#if defined(GS_NPC_EVENT_ONLY_800327FC)
+/* Declared in regions this carve leaves out. */
+extern void _threadSwitch(void);
+extern u8 lbl_803A3278[];
+#endif
 extern u32 _fadeEffectGetRandom__FUl(u32 range);
 extern void GScharCpy(void* dst, const void* src);
 extern u32 pokemonGetStatus(void*, u32, u32, u32);
@@ -1160,6 +1165,12 @@ typedef struct NpcEventRosterEntry {
     u8 data[0xCA];
 } NpcEventRosterEntry;
 
+/* The record's last 0x2A bytes (0xA0-0xC9) are copied to the display data
+ * as one halfword-aligned block. */
+typedef struct NpcEventRecordTail {
+    u16 data[21];
+} NpcEventRecordTail;
+
 typedef struct NpcEventDisplayData {
     u8 data[0xD0];
 } NpcEventDisplayData;
@@ -1192,6 +1203,7 @@ static inline NpcEventRosterEntry* NpcEventGetRoster(u32 index)
 
 #define NPC_EVENT_ROSTER(index) NpcEventGetRoster(index)
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_800327FC's party level step) - see docs/RULE_EXCEPTIONS.md */
 static inline u8 NpcEventGetPartyLevel(void)
 {
     extern u8 pokemonCheckValid(void*);
@@ -1213,6 +1225,7 @@ static inline u8 NpcEventGetPartyLevel(void)
     return best;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_800327FC's team level step) - see docs/RULE_EXCEPTIONS.md */
 static inline u8 NpcEventGetTeamLevel(s8 slot)
 {
     u8* team;
@@ -1234,6 +1247,7 @@ static inline u8 NpcEventGetTeamLevel(s8 slot)
     return best;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_800327FC's candidate selection step) - see docs/RULE_EXCEPTIONS.md */
 static inline s8 NpcEventSelectCandidate(void)
 {
     s32 scores[3];
@@ -1272,9 +1286,11 @@ static inline s8 NpcEventSelectCandidate(void)
     return selected;
 }
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(GS_NPC_EVENT_ONLY_800327FC)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_800327FC(void)
 {
     extern u8 pokemonCheckValid(void*);
@@ -1324,8 +1340,7 @@ void fn_800327FC(void)
         *(u16*)&display.data[0x7A] = *(u16*)&selected_record.data[0x74];
         *(NpcEventSetupData*)&display.data[0x7C] = *(NpcEventSetupData*)&selected_record.data[0x76];
         *(u16*)&display.data[0xA4] = *(u16*)&selected_record.data[0x9E];
-        *(u16*)&display.data[0xCE] = *(u16*)&selected_record.data[0xC8];
-        *(NpcEventSetupData*)&display.data[0xA6] = *(NpcEventSetupData*)&selected_record.data[0xA0];
+        *(NpcEventRecordTail*)&display.data[0xA6] = *(NpcEventRecordTail*)&selected_record.data[0xA0];
 
         lbl_8047A43C = 0;
         lbl_803A3278[0] = 0;
@@ -1382,7 +1397,9 @@ void fn_800327FC(void)
         break;
     }
 }
+#if !defined(GS_NPC_EVENT_ONLY_800327FC)
 #pragma pop
+#endif
 
 
 
@@ -1390,7 +1407,7 @@ void fn_800327FC(void)
 
 /* fn_80032ED8 and fn_800330B8 also build alone for the linked
  * gs_npc_event_candidate_80032ED8 unit. */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 /* 0x80032ED8 | 0x1E0 */
 extern u8*  fightEncountDataBiosGetPtr(s32);
 extern void fightEncountDataBiosSetTrainer(u8*, s32);
@@ -1678,7 +1695,7 @@ void fn_800330B8(s32 arg0, u8* arg1) {
 #endif
 
 #endif
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 
 /* ===== Phase 2 recovery stubs ===== */
 
@@ -2328,7 +2345,7 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
 
 /* fn_800301B0 and fn_800302D0 also build alone for the linked
  * gs_npc_event_candidate_800301B0 unit. */
-#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C)
+#if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 extern u8 lbl_803A3230[];
 extern u8 lbl_803A31E8[];
 extern u8 lbl_80314F98[];
