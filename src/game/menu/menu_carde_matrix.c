@@ -1250,7 +1250,7 @@ void fn_8007D978(MenuCardEWindow* window) {
             t = 1.0f;
             work->transitionActive = 0;
         } else {
-            t = work->transitionFrame * 0.0625f;
+            t = work->transitionFrame / 16.0f;
         }
     } else {
         work->entryIndex[0] = work->entryIndex[1];
@@ -1496,7 +1496,7 @@ void fn_8007D978(MenuCardEWindow* window) {
         switch (work->state) {
         case 1:
             work->cell[1][index]->color =
-                menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, work->stateFrame * 0.0625f);
+                menuCardELerpColor(0xFFFFFFFF, 0xFFFFFF00, work->stateFrame / 16.0f);
             winSpriteSetDisp(work->cellFront[1][index], 0);
             winSpriteSetDisp(work->cellBack[1][index], 0);
             if (work->stateFrame == 16) {
@@ -1519,10 +1519,10 @@ void fn_8007D978(MenuCardEWindow* window) {
             work->cursor->y = work->cell[1][index]->y;
             if (blink == 1) {
                 work->cursor->color =
-                    menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame * 0.0625f);
+                    menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame / 16.0f);
             } else {
                 work->cursor->color =
-                    menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, work->stateFrame * 0.0625f);
+                    menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, work->stateFrame / 16.0f);
             }
             if (work->stateFrame == 16) {
                 work->stateFrame = 0;
@@ -1535,7 +1535,7 @@ void fn_8007D978(MenuCardEWindow* window) {
             for (column = 0; column < entry->columns; column++) {
                 if (fn_80082EA4(entry, work->subIndex[1], row, column)[0xC] == 0) {
                     winSpriteSetDisp(work->cell[1][row * 6 + column], 1);
-                    phase = work->stateFrame * 0.03125f;
+                    phase = work->stateFrame / 32.0f;
                     if (phase < 1.0f) {
                         work->cell[1][row * 6 + column]->color =
                             menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, phase);
@@ -1555,7 +1555,7 @@ void fn_8007D978(MenuCardEWindow* window) {
             winSpriteSetDisp(work->cellBack[1][index], 0);
         case 8:
             work->cell[1][index]->color =
-                menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, work->stateFrame * 0.0625f);
+                menuCardELerpColor(0xFFFFFF00, 0xFFFFFFFF, work->stateFrame / 16.0f);
             if (work->stateFrame == 16) {
                 work->state = 9;
             }
