@@ -80,7 +80,7 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
 
-#if !defined(POKEMON_RELIVE_WAITTIME_ONLY)
+#if defined(POKEMON_RELIVE_PREFIX_ONLY)
 /* Address: 0x8025DCBC | Size: 0x58 | Ghidra import */
 void fn_8025DCBC(int *param)
 {
@@ -205,7 +205,9 @@ void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,
   return;
 }
 
-#if !defined(POKEMON_RELIVE_PREFIX_ONLY)
+#endif
+
+#if defined(POKEMON_RELIVE_BEFORE_PARTICLE_ONLY)
 /* Address: 0x8025DF38 | Size: 0x178 | Ghidra import */
 u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
 {
@@ -386,6 +388,9 @@ void fn_8025E1BC(float f1, float f2, float f3, float f4, float f5, float f6) {
 }
 #pragma pop
 
+#endif
+
+#if defined(POKEMON_RELIVE_PARTICLE_ONLY)
 /* Address: 0x8025E534 | Size: 0xC0 | Ghidra import */
 void _preReliveDisplayHokoraParticleThreadFunc__Fv(void)
 {
@@ -446,6 +451,9 @@ void preReliveDisplayHokoraParticle(void)
   }
 }
 
+#endif
+
+#if defined(POKEMON_RELIVE_AFTER_PARTICLE_ONLY)
 /* Address: 0x8025E640 | Size: 0x37C | Ghidra import */
 typedef struct ReliveLevelUpStatus {
     u8 mode;
@@ -707,7 +715,9 @@ void preReliveMain(void)
     }
 }
 #pragma pop
+#endif
 
+#if defined(POKEMON_RELIVE_BEFORE_PARTICLE_ONLY)
 #pragma push
 #pragma optimize_for_size off
 /* Address: 0x8025E3B0 | Size: 0x184 | Ghidra import */
@@ -771,6 +781,9 @@ int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)
   return (int)(signed char)iVar2;
 }
 #pragma pop
+#endif
+
+#if defined(POKEMON_RELIVE_AFTER_PARTICLE_ONLY)
 #pragma push
 #pragma optimize_for_size off
 /* Address: 0x8025E9BC | Size: 0x390 | Ghidra import */
@@ -981,12 +994,11 @@ void reliveMain(void)
 
 
 #endif
-#endif
 
 /* Address: 0x8025DC2C | Size: 0x90 | Ghidra import (PSQ removed) */
 
 
-#if !defined(POKEMON_RELIVE_PREFIX_ONLY)
+#if defined(POKEMON_RELIVE_WAITTIME_ONLY)
 void waitTime__Ff(float r3)
 
 {

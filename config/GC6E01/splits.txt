@@ -6635,8 +6635,14 @@ game/pokemon_relive_waitTime_exact.c:
 game/pokemon_relive_prefix_exact.c:
 	.text       start:0x8025DCBC end:0x8025DF38
 
-game/pokemon_relive.c:
-	.text       start:0x8025DF38 end:0x8025F2AC
+game/pokemon_relive_before_particle.c:
+	.text       start:0x8025DF38 end:0x8025E534
+
+game/pokemon_relive_particle_exact.c:
+	.text       start:0x8025E534 end:0x8025E640
+
+game/pokemon_relive_after_particle.c:
+	.text       start:0x8025E640 end:0x8025F2AC
 
 game/pokemon_relive_suffix_exact.c:
 	.text       start:0x8025F2AC end:0x8025F2FC
