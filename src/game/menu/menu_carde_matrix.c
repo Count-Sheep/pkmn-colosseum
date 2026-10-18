@@ -1165,6 +1165,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s16 stepX;
     s8 count;
     s32 held;
+    u16 key;
     s32 slot;
 
     work = menuCardEMatrixGetWork(window);
@@ -1234,9 +1235,8 @@ void fn_8007D978(MenuCardEWindow* window) {
         }
     }
 
-    held = windowGetKeyInfo()->held;
-    /* RULE-EXCEPTION(user-approved): codegen-only (u8) cast keeps the key truncation - see docs/RULE_EXCEPTIONS.md */
-    if ((work->lastKey & 0xF) != ((u8)held & 0xF)) {
+    key = held = windowGetKeyInfo()->held;
+    if ((work->lastKey & 0xF) != (key & 0xF)) {
         work->buzzed = 0;
     }
     work->lastKey = held;
