@@ -6178,30 +6178,43 @@ static inline u16 pdaCollectHeights(PdaSortPair* pairs, u16* ids)
     return count;
 }
 
-/* Reorder the memo index table for the active sort tab. */
-#pragma peephole off
-void fn_8003E394(void)
+/* Sort tab 1: order the seen entries by weight (the sort runs even for an empty list). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_SortWeight (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8003E394_SortWeight(void)
 {
     u16 j;
     u16 count;
     PdaSortPair* pairs;
     u16* ids;
 
+    pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
+    ids = (u16*)pdaAlloc(0x320, 0x20);
+    count = pdaCollectWeights(pairs, ids);
+    fn_8003F2DC((u8*)pairs, count, 1);
+    for (j = 0; j < count; j++) {
+        lbl_8047A4E4[j] = ids[pairs[j].index];
+    }
+    lbl_8047A4E8 = count;
+    pdaFree(pairs);
+    pdaFree(ids);
+}
+
+/* Reorder the memo index table for the active sort tab. */
+#pragma peephole off
+void fn_8003E394(void)
+{
+    u16 j;
+    u16 count;
+    /* RULE-EXCEPTION(user-approved): no-op store, NULL initialisers that every case overwrites (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+    u16* ids = NULL;
+    PdaSortPair* pairs = NULL;
+
     switch (*(s8*)((u8*)&lbl_803A6818 + 0x15c)) {
     case 0:
         fn_8003F040();
         break;
     case 1:
-        pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
-        ids = (u16*)pdaAlloc(0x320, 0x20);
-        count = pdaCollectWeights(pairs, ids);
-        fn_8003F2DC((u8*)pairs, count, 1);
-        for (j = 0; j < count; j++) {
-            lbl_8047A4E4[j] = ids[pairs[j].index];
-        }
-        lbl_8047A4E8 = count;
-        pdaFree(pairs);
-        pdaFree(ids);
+        pda_8003E394_SortWeight();
         break;
     case 2:
         pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
