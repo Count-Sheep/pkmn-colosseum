@@ -5823,9 +5823,9 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     s16 spotHeight;
     s32 pixelCount;
     s32 size;
+    s16 column;
     s16 row;
     s16 spot;
-    s16 column;
     s32 startPixel;
     s32 x;
     s32 y;
