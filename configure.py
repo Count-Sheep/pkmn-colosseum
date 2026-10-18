@@ -9014,7 +9014,7 @@ config.libs = [
             # .rodata pool off one base; the unit defines that pool and
             # TEMPORARY constant_import redirects it to retail lbl_80267EA8.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_r59_8006E338_o1.c",
                 mw_version="GC/2.0",
                 constant_import=[

@@ -13,17 +13,17 @@
     "named_units": 2113,
     "source_backed_units": 2112,
     "auto_code": 0,
-    "auto_data": 1399463,
+    "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2356480",
-    "matched_code_percent": 94.07331,
+    "matched_code": "2357600",
+    "matched_code_percent": 94.11803,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8581,
-    "matched_functions_percent": 98.89362,
-    "fuzzy_match_percent": 99.71412
+    "matched_functions": 8582,
+    "matched_functions_percent": 98.90515,
+    "fuzzy_match_percent": 99.71681
   },
   "unit_topology": [
     {
@@ -31,12 +31,12 @@
       "sections": [
         {
           "name": ".sbss2",
-          "size": 16,
+          "size": 8,
           "virtual_address": 2152195840
         }
       ],
       "total_code": 0,
-      "total_data": 16,
+      "total_data": 8,
       "total_functions": 0
     },
     {
@@ -5833,13 +5833,18 @@
       "name": "main/game/menu/menu_middle_r59_8006E338_o1",
       "sections": [
         {
+          "name": ".sbss2",
+          "size": 8,
+          "virtual_address": 2152195848
+        },
+        {
           "name": ".text",
           "size": 1120,
           "virtual_address": 2147935032
         }
       ],
       "total_code": 1120,
-      "total_data": 0,
+      "total_data": 8,
       "total_functions": 1
     },
     {

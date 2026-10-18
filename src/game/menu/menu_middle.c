@@ -3705,12 +3705,12 @@ typedef struct MenuMiddleStatus_8006E338 {
     u8 pad0[0x59A8];
     MenuMiddlePlayer_8006E338 players[4]; /* 0x59A8 */
 } MenuMiddleStatus_8006E338;
-extern MenuMiddleStatus_8006E338* savedataGetStatus(s32 idx, s32 type);
-extern void __assert(const char* file, s32 line, const char* expr);
 
 /* Index of the trainer whose controller maps to `port`. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper - see docs/RULE_EXCEPTIONS.md */
 static inline s32 fn_8006E338_FindPort(s32 port) {
+    extern MenuMiddleStatus_8006E338* savedataGetStatus(s32 idx, s32 type);
+    extern void __assert(const char* file, s32 line, const char* expr);
     s32 j;
     for (j = 0; j < 4; j++) {
         if (port == menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[j].controllerId)) {
@@ -3735,6 +3735,7 @@ static inline void fn_8006E338_SetIcon(void* widget, s32 id) {
 }
 
 void fn_8006E338(void* obj) {
+    extern MenuMiddleStatus_8006E338* savedataGetStatus(s32 idx, s32 type);
     extern void* windowSearchItemID(void* menu, s32 itemId);
     extern void winSetSequence(void* widget, s32 sequence);
     extern void* menuSpriteBiosGetPtr(s32 spriteId);
@@ -3744,7 +3745,6 @@ void fn_8006E338(void* obj) {
     u8 used[4] = {0, 0, 0, 0};
     void* playerWidgets[14];
     void* widgets[14];
-    s32 row;
     s32 port;
     s32 i;
     s32 col;
@@ -3782,7 +3782,7 @@ void fn_8006E338(void* obj) {
         }
     }
 
-    /* RULE-EXCEPTION(user-approved): scalar reuse - the trainer loop reuses the sequence loops' counter - see docs/RULE_EXCEPTIONS.md */
+    /* RULE-EXCEPTION(user-approved): scalar reuse - the sequence, trainer and port loops share one counter - see docs/RULE_EXCEPTIONS.md */
     for (i = 0; i < 4; i++) {
         port = menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[i].controllerId);
         if (port >= 0) {
@@ -3803,12 +3803,12 @@ void fn_8006E338(void* obj) {
         }
     }
 
-    for (row = 0; row < 4u; row++) {
+    for (i = 0; i < 4u; i++) {
         for (col = 0; col < 14u; col++) {
-            widgets[col] = windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[row][col]);
+            widgets[col] = windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[i][col]);
         }
-        if (used[row] != 0) {
-            j = fn_8006E338_FindPort(row);
+        if (used[i] != 0) {
+            j = fn_8006E338_FindPort(i);
             ready = savedataGetStatus(0, 0xE)->players[j].ready;
             MENU_MIDDLE_U32_004C(widgets[10])->unk_004C = ready ? 0 : 0x3F3F;
             MENU_MIDDLE_U32_004C(widgets[9])->unk_004C = ready ? 0 : 0x3F40;
