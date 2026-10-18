@@ -1317,9 +1317,10 @@ void fn_8007D978(MenuCardEWindow* window) {
         }
     }
 
-    entries[0] = menuCardEWorkEntry(work, 0);
-    entries[1] = menuCardEWorkEntry(work, 1);
     entryp = entries;
+    for (which = 0; which < 2; which++) {
+        entries[which] = menuCardEWorkEntry(work, which);
+    }
     rt = 1.0f - t;
     slideX = 48.0f * t;
     slideY = 32.0f * t;
