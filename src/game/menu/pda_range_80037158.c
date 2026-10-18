@@ -8040,6 +8040,35 @@ static inline void pda_80046168_ClearCries(void)
     }
 }
 
+/* 1 while any trail's cry is still playing. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; returning the flag gives retail's shared zero for the flag and the loop counter - see docs/RULE_EXCEPTIONS.md */
+static inline u8 pda_80046168_AnyPlaying(void)
+{
+    PdaCryTrail* t;
+    s32 i;
+    s32 playing;
+
+    t = (PdaCryTrail*)lbl_802E52C8;
+    playing = 0;
+    for (i = 0; i < 8; i++) {
+        if (t->data != NULL) {
+            switch (fn_801666BC(t->voice)) {
+            case 0:
+                break;
+            case 2:
+                playing = 1;
+                break;
+            case 4:
+                break;
+            default:
+                break;
+            }
+        }
+        t++;
+    }
+    return playing;
+}
+
 /* 1 when the stick or the cancel buttons leave the cry screen. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper; its early returns give retail's shared join for the cancel test - see docs/RULE_EXCEPTIONS.md */
 static inline u8 pda_80046168_StickCancel(void)
@@ -8079,10 +8108,7 @@ void fn_80046168(void)
 {
     extern void _threadSwitch(void);
     u8* S;
-    PdaCryTrail* t;
     s32 running;
-    s32 i;
-    s32 playing;
     u16 voice;
 
     running = 1;
@@ -8115,25 +8141,7 @@ void fn_80046168(void)
             }
             break;
         case 1:
-            t = (PdaCryTrail*)lbl_802E52C8;
-            playing = 0;
-            for (i = 0; i < 8; i++) {
-                if (t->data != NULL) {
-                    switch (fn_801666BC(t->voice)) {
-                    case 0:
-                        break;
-                    case 2:
-                        playing = 1;
-                        break;
-                    case 4:
-                        break;
-                    default:
-                        break;
-                    }
-                }
-                t++;
-            }
-            if ((u8)playing == 0 || pda_80046168_StickCancel() == 1) {
+            if (pda_80046168_AnyPlaying() == 0 || pda_80046168_StickCancel() == 1) {
                 menuCloseCustom(0x3e, 0, 1);
                 *(s32*)(S + 0x20) = 0;
             } else {
