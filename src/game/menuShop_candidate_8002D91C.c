@@ -80,15 +80,6 @@ static inline s32 shopNormalizeMenu83(s32 result)
     }
 }
 
-static inline u32 shopMemoryAlloc(void)
-{
-    return _toolentryAlloc__FUl(0x7198);
-}
-
-/* RULE-EXCEPTION(user-approved): lifetime optimization disabled for the
- * arrival-dialog register allocation; approved 2026-10-08. */
-#pragma push
-#pragma opt_lifetimes off
 void fn_8002D91C(u32 location_index)
 {
     ShopLocationEntry* location_entry;
@@ -103,8 +94,7 @@ void fn_8002D91C(u32 location_index)
     u8 text0;
 
     location = location_index;
-    location_entry = lbl_80478E54;
-    location_entry += location;
+    location_entry = &lbl_80478E54[location];
     state = (ShopTravelState*)&lbl_8047A3FC;
     state->location = location_index;
     state->active = 0;
@@ -140,7 +130,7 @@ void fn_8002D91C(u32 location_index)
         u32 message;
 
         done = 0;
-        memory = shopMemoryAlloc();
+        memory = _toolentryAlloc__FUl(0x7198);
         lbl_8047A3DC = fn_800E27B0(memory);
         message = fn_80029FAC(&text0, location, 0, -1);
         winMsgOpenWithSE(2, message, 1, 0, text0);
@@ -183,7 +173,6 @@ void fn_8002D91C(u32 location_index)
         floorSetFadeScript(0, 0);
     }
 }
-#pragma pop
 
 void menuShopOpen(u32 flag)
 {
