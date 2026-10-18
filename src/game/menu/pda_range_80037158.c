@@ -159,6 +159,7 @@ extern void winSpriteSetDisp(void* sprite, s32 disp);
 extern void fn_800FB680(s32 arg0, s32 arg1, s32 arg2, void* data);
 
 #if !defined(PDA_RANGE_EXACT_80037174_ONLY) && !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 void fn_80037158(void)
 {
 }
@@ -172,10 +173,12 @@ void fn_8003715C(void)
     /* RULE-EXCEPTION(user-approved): preserve retail's dead computation. */
     flag = 1 - flag;
 }
+#endif /* !PDA_80039128_ONLY */
 #endif
 
 #if !defined(PDA_RANGE_80037158_ONLY)
 #if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 void fn_80037174(void)
 {
     lbl_8047A470 = 0;
@@ -430,10 +433,12 @@ void fn_800376C8(void)
 }
 #pragma opt_propagation reset
 #pragma scheduling reset
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
 
 #if !defined(PDA_RANGE_EXACT_80037174_ONLY)
 #if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 /* Four copies of the same fade-in step, one per 0x18-byte record in
    lbl_803A654C. Two shapes here are load-bearing: 0.0f as a literal, because
    retail reloads the constant instead of reusing the compare's copy, and the
@@ -896,8 +901,10 @@ void fn_80038A00(void)
     lbl_8047A484 = lbl_8047BA58;
 }
 
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
 #if !defined(PDA_SAVE_80038A0C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 /* Re-seed the People screen's two 4-entry widget tables and reset the
    carousel angle back to the table's rest value. */
 static inline void pdaResetPeopleTables(u8* base, u8* tbl)
@@ -948,6 +955,7 @@ static inline void pdaResetPeopleTablesFirst(u8* base, u8* tbl)
     lbl_8047A47D = 0;
 }
 
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_SAVE_80038A0C_ONLY */
 static inline void pdaResetPeopleTablesSave(u8* base, u8* tbl)
 {
@@ -974,6 +982,7 @@ static inline void pdaResetPeopleTablesSave(u8* base, u8* tbl)
 }
 
 #if !defined(PDA_SAVE_80038A0C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 /* People screen driver: run the top-level menu, dispatch the four entries,
    and tear the menu down on exit. */
 #pragma peephole off
@@ -1088,8 +1097,10 @@ void fn_8003842C(void)
 }
 #pragma peephole reset
 
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_SAVE_80038A0C_ONLY */
 #if !defined(PDA_DRIVER_8003842C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 /* Prime the save-overwrite prompt with the current play time and the two
    hero-name message slots. */
 static inline void pdaFillSavePrompt(void)
@@ -1237,9 +1248,11 @@ s32 fn_80038A0C(void)
     return result;
 }
 #pragma peephole reset
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_DRIVER_8003842C_ONLY */
 
 #if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 s32 fn_80039004(PdaSprite* context, PdaSprite* sprite)
 {
     extern f32 lbl_803A65B0[][3];
@@ -9709,10 +9722,12 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
 }
 #pragma peephole reset
 
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
 #if !defined(PDA_DRIVER_8003842C_ONLY)
 extern u8 lbl_80267060[];
 extern u8 lbl_803A65B0[];
+#if !defined(PDA_80039128_ONLY)
 typedef struct PdaMenuRecord {
     s32 eventId;
     u8 pad04[0x10];
@@ -9758,9 +9773,11 @@ s32 fn_80038E74(void* work, PdaSprite* sprite)
     return 0;
 }
 #pragma peephole reset
+#endif /* !PDA_80039128_ONLY */
 #endif /* !PDA_DRIVER_8003842C_ONLY */
 
 #if !defined(PDA_SAVE_80038A0C_ONLY) && !defined(PDA_DRIVER_8003842C_ONLY)
+#if !defined(PDA_80039128_ONLY)
 extern u16 pcboxGetNbItemSlot(s32 box);
 extern u16 itemBiosGetItemDataId(void* item);
 extern void* itemDataBiosGetPtr(u16 id);
@@ -9847,13 +9864,31 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
 #pragma pop
 #pragma peephole reset
 
-extern f32 lbl_8047BA90;
-extern f32 lbl_8047BA94;
-extern f32 lbl_8047BA98;
+#endif /* !PDA_80039128_ONLY */
 extern f32 lbl_8047BAA8;
 
+/* Slide each of the eight main-menu buttons right and fade it in, clamping at
+   its record's target X and at full alpha. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its own loop counter numbers after the strength-reduced cursors, which gives retail's r5/r6/r7 - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_80039128_Slide(void)
+{
+    s32 i;
+
+    for (i = 0; i < 8; i++) {
+        if ((((f32*)lbl_803A65B0)[i * 3] += 13.333333f) > ((s32*)lbl_80267060)[i * 6 + 3]) {
+            ((f32*)lbl_803A65B0)[i * 3] = ((s32*)lbl_80267060)[i * 6 + 3];
+        }
+        if ((((f32*)lbl_803A65B0)[i * 3 + 2] += 8.333333f) > 255.0f) {
+            ((f32*)lbl_803A65B0)[i * 3 + 2] = 255.0f;
+        }
+    }
+}
+
 /* Seed and then advance the main-menu button slide-in animation. */
+#if !defined(PDA_80039128_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) for the shared-file compiles; the linked unit pda_candidate_80039128 uses -opt nopeephole - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
+#endif
 s32 fn_80039128(u8* work)
 {
     s32 i;
@@ -9870,25 +9905,7 @@ s32 fn_80039128(u8* work)
         }
         break;
     case 2:
-        {
-            s32* src;
-            f32* dst;
-            f32 v;
-            src = (s32*)lbl_80267060;
-            dst = (f32*)lbl_803A65B0;
-            for (i = 0; i < 8; src += 6, dst += 3, i++) {
-                v = dst[0] + lbl_8047BA90;
-                dst[0] = v;
-                if (v > (f32)src[3]) {
-                    dst[0] = (f32)src[3];
-                }
-                v = dst[2] + lbl_8047BA94;
-                dst[2] = v;
-                if (v > lbl_8047BA98) {
-                    dst[2] = lbl_8047BA98;
-                }
-            }
-        }
+        pda_80039128_Slide();
         break;
     case 3:
         if (*(s8*)(work + 2) == 0) {
@@ -9900,7 +9917,9 @@ s32 fn_80039128(u8* work)
     }
     return 0;
 }
+#if !defined(PDA_80039128_ONLY)
 #pragma peephole reset
+#endif
 #endif /* !PDA_SAVE_80038A0C_ONLY && !PDA_DRIVER_8003842C_ONLY */
 #endif /* !PDA_RANGE_EXACT_80037174_ONLY */
 #endif /* !PDA_RANGE_80037158_ONLY */

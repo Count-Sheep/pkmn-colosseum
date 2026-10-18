@@ -3482,11 +3482,18 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: retail shares the slide literals and the int-to-float bias.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_candidate_80039128.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BA90", "offset": 0, "expected": "41555555"},
+                    {"symbol": "lbl_8047BA94", "offset": 4, "expected": "41055555"},
+                    {"symbol": "lbl_8047BA98", "offset": 8, "expected": "437f0000"},
+                    {"symbol": "lbl_8047BAA0", "offset": 16, "expected": "4330000080000000"},
+                ],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
