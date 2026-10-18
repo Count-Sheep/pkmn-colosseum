@@ -467,12 +467,12 @@ s32 fn_800896E8(void* work, void* arg) {
     extern s32 fn_801CA5C4(s32 id, s32 a, s32 b);
     extern u8 fn_801EEAD0(u8 id);
     extern void fightTrainerPokemonDataBiosSetPokemonDataId(u8* pokemon, s32 id);
-    extern u8* fightTrainerPokemonDataBiosGetPtr(void);
+    extern u8* fightTrainerPokemonDataBiosGetPtr(u16 slot);
     extern void fn_801FCAFC(void* trainer, u8 value);
     extern void fn_801FCB40(void* trainer, u8 slot, u16 value);
     extern void fn_801FCB84(void* trainer, u16 value);
     extern void fn_801FCB94(void* trainer, u8 value);
-    extern void fn_801FCC3C(void* trainer);
+    extern u16 fn_801FCC3C(void* trainer);
     extern void fightTrainerDataBiosSetKindDataId(void* trainer, u8 value);
     extern void* fightTrainerDataBiosGetPtr(s32 id);
     extern void* fightEncountDataBiosGetPtr(s32 id);
@@ -518,9 +518,7 @@ s32 fn_800896E8(void* work, void* arg) {
         fn_801FCB40(pokemon, count, *(u16*)(p + 0x4126));
         p += 2;
     }
-    fn_801FCC3C(pokemon);
-
-    pokemon = fightTrainerPokemonDataBiosGetPtr();
+    pokemon = fightTrainerPokemonDataBiosGetPtr(fn_801FCC3C(pokemon));
     for (i = count = 0; i < 4; i++) {
         if (fn_80089978(pokemon, &((u8(*)[0x2A])&((GbaMiscContext*)ctx)->state_4000)[i][0x138]) == 1) {
             pokemon += 0x50;
