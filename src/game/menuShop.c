@@ -2472,6 +2472,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     u8 type;
     u8 kind;
     s32 done;
+    u32 item;
     s32 ok;
     u32 money;
     s32 cheapest;
@@ -2566,17 +2567,18 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     }
     kind = mode;
     while (done == 0) {
+    for (;;) {
         if ((s32)lbl_804788A8 != 0) {
             for (i = 0; i < 5; i++) {
                 *(s16*)(lbl_802E4F68 + i * 8 + 4) = *(s16*)(lbl_802EF0A8 + *(s32*)(lbl_802E4F68 + i * 8) * 0x1c + 4);
             }
             lbl_804788A8 = 0;
         }
-        done = shopOpenItemList(&params, mapIdx, mode, 0);
-        if ((u16)done == 0) {
-            goto confirm;
+        item = shopOpenItemList(&params, mapIdx, mode, 0);
+        if ((u16)item == 0) {
+            break;
         }
-        itemDataBiosGetPtr(done);
+        itemDataBiosGetPtr(item);
         n = (u16)itemDataBiosGetCoupon();
         if (n > 0) {
             n = (s32)shopGetMoney(type, &params.work) / n;
@@ -2590,9 +2592,9 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             fn_8002A1C4((u8*)mapIdx, 8, -1);
             continue;
         }
-        itemDataBiosGetPtr(done);
+        itemDataBiosGetPtr(item);
         price = itemDataBiosGetCoupon();
-        id = done;
+        id = item;
         lbl_8047A3E4 = fn_80029FAC(&se, mapIdx, 0xc, 0x2d, id, -1);
         if (n < 1) {
             qty = 0;
@@ -2628,7 +2630,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
         switch (type) {
         case 2:
-            room = pcboxGetItemCapacity(0, done) & 0xFFFF;
+            room = pcboxGetItemCapacity(0, item) & 0xFFFF;
             break;
         case 3:
             if (&params.work != NULL) {
@@ -2639,7 +2641,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
                 slot = (u8*)&params.work;
                 for (i = 0; i < count; i++, slot += 4) {
                     id = itemBiosGetItemDataId(slot);
-                    if (id == (u16)done) {
+                    if (id == (u16)item) {
                         room += (u16)(999 - itemBiosGetNum(slot));
                     } else if (id == 0) {
                         room += 999;
@@ -2650,7 +2652,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             }
             break;
         default:
-            room = heroItemCheckAddItemDataId(NULL, done);
+            room = heroItemCheckAddItemDataId(NULL, item);
             break;
         }
         if (room < qty) {
@@ -2658,7 +2660,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             continue;
         }
         fn_8002A1C4((u8*)mapIdx, 6, -1);
-        fn_80029EF4((void*)total, done, qty, mode, &params.work);
+        fn_80029EF4((void*)total, item, qty, mode, &params.work);
         fn_80166AB8(0x3cc, 0, 0);
         if ((u8)mode != 4) {
             continue;
@@ -2669,7 +2671,8 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         if (answer != -1 && answer != 1) {
             continue;
         }
-    confirm:
+        break;
+    }
         if (kind == 2 || kind == 3) {
             done = shopConfirmLeave(&params.work, mapIdx, mode);
         } else {
