@@ -9,12 +9,15 @@
  */
 #include "dolphin/types.h"
 
-#if !defined(CARDESAVEDATA_GRID_ONLY) && \
+/* Compiled on its own (the game/menu/cardesavedata.c unit), this file
+ * builds only fn_8007FDBC; the tail units define CARDESAVEDATA_ALL. */
+#if !defined(CARDESAVEDATA_ALL) && \
+    !defined(CARDESAVEDATA_GRID_ONLY) && \
     !defined(CARDESAVEDATA_DECODE_TU) && \
     !defined(CARDESAVEDATA_EXACT_8007FD64_ONLY) && \
     !defined(CARDESAVEDATA_EXACT_800849B4_ONLY) && \
     !defined(CARDESAVEDATA_EXACT_80084A8C_ONLY)
-#define CARDESAVEDATA_ALL
+#define CARDESAVEDATA_8007FDBC_ONLY
 #endif
 
 /* ===== External function declarations (fn_80084A8C only) ===== */
@@ -117,12 +120,12 @@ typedef struct MenuCardEItem {
 #define CARDE_CTX_U32(ctx, off) (*(u32*)((u8*)(ctx) + (off)))
 #define CARDE_CTX_S16(ctx, off) (*(s16*)((u8*)(ctx) + (off)))
 
-#if defined(CARDESAVEDATA_ALL)
-static void menuCardE_SetItem(void* ctx, u32 off, void* window, s32 id) {
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_8007FDBC_ONLY)
+static inline void menuCardE_SetItem(void* ctx, u32 off, void* window, s32 id) {
     CARDE_CTX_U32(ctx, off) = (u32)windowSearchItemID(window, id);
 }
 
-static void menuCardE_CopyRect(void* ctx, u32 dst, u32 itemOff) {
+static inline void menuCardE_CopyRect(void* ctx, u32 dst, u32 itemOff) {
     MenuCardEItem* item = (MenuCardEItem*)CARDE_CTX_U32(ctx, itemOff);
 
     CARDE_CTX_S16(ctx, dst + 0) = item->x;
@@ -2931,38 +2934,94 @@ s32 fn_80083BF8(void* arena)
     return count;
 }
 #pragma pop
+#endif
 
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_8007FDBC_ONLY)
+/* The menuCardE_Matrix.c TU's .rodata pool (retail lbl_80268B88): the
+ * item-id tables of the three matrix item groups (a 36-entry row each for
+ * the previous and the current entry), the cell and row-end sprite ids,
+ * then the assert file name. Retail addresses it off one base. */
+static const u16 sCardEMatrixIds0[2][36] = {
+    {
+        0x07A0, 0x07A1, 0x07A2, 0x07A3, 0x102E, 0x102F, 0x1030, 0x1031, 0x1032, 0x1033, 0x1034, 0x1035,
+        0x1036, 0x1037, 0x1038, 0x1039, 0x103A, 0x103B, 0x103C, 0x103D, 0x103E, 0x103F, 0x1040, 0x1041,
+        0x1042, 0x1043, 0x1044, 0x1045, 0x1046, 0x1047, 0x1048, 0x1049, 0x104A, 0x104B, 0x104C, 0x104D,
+    },
+    {
+        0x1127, 0x1128, 0x1129, 0x112A, 0x112B, 0x112C, 0x112D, 0x112E, 0x112F, 0x1130, 0x1131, 0x1132,
+        0x1133, 0x1134, 0x1135, 0x1136, 0x1137, 0x1138, 0x1139, 0x113A, 0x113B, 0x113C, 0x113D, 0x113E,
+        0x113F, 0x1140, 0x1141, 0x1142, 0x1143, 0x1144, 0x1145, 0x1146, 0x1147, 0x1148, 0x1149, 0x114A,
+    },
+};
+
+static const u16 sCardEMatrixIds1[2][36] = {
+    {
+        0x104E, 0x104F, 0x1050, 0x1051, 0x1052, 0x1053, 0x1054, 0x1055, 0x1056, 0x1057, 0x1058, 0x1059,
+        0x105A, 0x105B, 0x105C, 0x105D, 0x105E, 0x105F, 0x1060, 0x1061, 0x1062, 0x1063, 0x1064, 0x1065,
+        0x1066, 0x1067, 0x1068, 0x1069, 0x106A, 0x106B, 0x106C, 0x106D, 0x106E, 0x106F, 0x1070, 0x1071,
+    },
+    {
+        0x114B, 0x114C, 0x114D, 0x114E, 0x114F, 0x1150, 0x1151, 0x1152, 0x1153, 0x1154, 0x1155, 0x1156,
+        0x1157, 0x1158, 0x1159, 0x115A, 0x115B, 0x115C, 0x115D, 0x115E, 0x115F, 0x1160, 0x1161, 0x1162,
+        0x1163, 0x1164, 0x1165, 0x1166, 0x1167, 0x1168, 0x1169, 0x116A, 0x116B, 0x116C, 0x116D, 0x116E,
+    },
+};
+
+static const u16 sCardEMatrixIds2[2][36] = {
+    {
+        0x1072, 0x1073, 0x1074, 0x1075, 0x1076, 0x1077, 0x1078, 0x1079, 0x107A, 0x107B, 0x107C, 0x107D,
+        0x107E, 0x107F, 0x1080, 0x1081, 0x1082, 0x1083, 0x1084, 0x1085, 0x1086, 0x1087, 0x1088, 0x1089,
+        0x108A, 0x108B, 0x108C, 0x108D, 0x108E, 0x108F, 0x1090, 0x1091, 0x1092, 0x1093, 0x1094, 0x1095,
+    },
+    {
+        0x116F, 0x1170, 0x1171, 0x1172, 0x1173, 0x1174, 0x1175, 0x1176, 0x1177, 0x1178, 0x1179, 0x117A,
+        0x117B, 0x117C, 0x117D, 0x117E, 0x117F, 0x1180, 0x1181, 0x1182, 0x1183, 0x1184, 0x1185, 0x1186,
+        0x1187, 0x1188, 0x1189, 0x118A, 0x118B, 0x118C, 0x118D, 0x118E, 0x118F, 0x1190, 0x1191, 0x1192,
+    },
+};
+
+static const s32 sCardEMatrixCellSprites[8] = {
+    0x20A, 0x20C, 0x20E, 0x210, 0x212, 0x214, 0x216, 0x218,
+};
+
+static const s32 sCardEMatrixEndSprites[8] = {
+    0x20B, 0x20D, 0x20F, 0x211, 0x213, 0x215, 0x217, 0x219,
+};
+
+static const char sCardEMatrixFile[] = "menuCardE_Matrix.c";
+
+s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4);
 
 /* 0x8007FDBC | size: 0x554 */
 /* Both allocations assert on the same source line, so they share a helper. */
-static inline void* menuCardE_Alloc(u32 size, char* pool) {
+static inline void* menuCardE_Alloc(u32 size) {
     void* buf;
     u16 handle;
 
     handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
     if (handle == 0) {
-        __assert(pool + 0x1F0, 0x1A2, lbl_8047C140);
+        __assert(sCardEMatrixFile, 0x1A2, lbl_8047C140);
     }
     buf = fn_800E27B0(handle);
     memset(buf, 0, size);
     return buf;
 }
 
-static inline void menuCardE_Free(void* buf, char* pool) {
+static inline void menuCardE_Free(void* buf) {
     u16 handle;
 
     handle = fn_800E202C(buf);
     if (handle == 0) {
-        __assert(pool + 0x1F0, 0x1AB, lbl_8047C140);
+        __assert(sCardEMatrixFile, 0x1AB, lbl_8047C140);
     }
     fn_800E24B0(handle);
     fn_800E209C(handle);
 }
 
-static inline void menuCardE_FillEntries(u8* ctx, s32 count, char* table) {
+static inline void menuCardE_FillEntries(u8* ctx, s32 count) {
     s32 k;
 
-    CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4, table);
+    CARDE_CTX_U32(ctx, 0xB0) = (u32)menuCardE_Alloc(count * 4);
 
     for (k = 0; k < count; k++) {
         ((u32*)CARDE_CTX_U32(ctx, 0xB0))[k] =
@@ -2973,7 +3032,6 @@ static inline void menuCardE_FillEntries(u8* ctx, s32 count, char* table) {
 }
 
 void* fn_8007FDBC(void* window, const void* title) {
-    char* table;
     u16* rowIds0;
     u8* rowItems;
     u8* ctx;
@@ -2987,9 +3045,7 @@ void* fn_8007FDBC(void* window, const void* title) {
     s32 i;
     s32 j;
 
-    table = lbl_80268B88;
-
-    ctx = menuCardE_Alloc(0x4E8, table);
+    ctx = menuCardE_Alloc(0x4E8);
 
     if (title != 0) {
         GScharLenCpy(ctx, title, 0x50);
@@ -2999,13 +3055,13 @@ void* fn_8007FDBC(void* window, const void* title) {
     }
 
     if (CARDE_CTX_U32(ctx, 0xB0) != 0) {
-        menuCardE_Free((void*)CARDE_CTX_U32(ctx, 0xB0), table);
+        menuCardE_Free((void*)CARDE_CTX_U32(ctx, 0xB0));
         CARDE_CTX_U32(ctx, 0xB0) = 0;
     }
 
     count = CARDE_CTX_U32(ctx, 0xAC) = fn_80083BF8(0);
     if (count != 0) {
-        menuCardE_FillEntries(ctx, count, table);
+        menuCardE_FillEntries(ctx, count);
     }
 
     CARDE_CTX_U32(ctx, 0xA4) = (s32)CARDE_CTX_U32(ctx, 0xAC) != 0 ? 0 : -1;
@@ -3034,9 +3090,9 @@ void* fn_8007FDBC(void* window, const void* title) {
     menuCardE_SetItem(ctx, 0x16C, window, 0x826);
 
     rowCtx = ctx;
-    ids0 = (u16*)(table + 0);
-    ids1 = (u16*)(table + 0x90);
-    ids2 = (u16*)(table + 0x120);
+    ids0 = (u16*)sCardEMatrixIds0[0];
+    ids1 = (u16*)sCardEMatrixIds1[0];
+    ids2 = (u16*)sCardEMatrixIds2[0];
     for (i = 0; i < 0x24; i++) {
         rowIds0 = ids0;
         rowItems = rowCtx;
@@ -3080,8 +3136,9 @@ void* fn_8007FDBC(void* window, const void* title) {
 
     return ctx;
 }
+#endif
 
-
+#if defined(CARDESAVEDATA_ALL)
 /* 0x80084034 | size: 0x4 */
 void fn_80084034(void) {
 }
