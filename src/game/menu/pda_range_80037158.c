@@ -4161,11 +4161,6 @@ void fn_80044630(void) {
             f32 step;
             f32 cur;
             f32 tgt;
-            f32 delta;
-            f32 rem;
-            f32 acur;
-            f32 arem;
-            f32 astep;
             f32 px3;
             f32 px2;
             f32 px1;
@@ -4230,36 +4225,8 @@ void fn_80044630(void) {
             }
 
             /* ease block D */
-            acur = *(f32*)(S + 0x1DC);
-            tgt  = *(f32*)(S + 0x1E0);
-            if (acur != tgt) {
-                delta = tgt - acur;
-                astep = (lbl_8047BCC4 * delta) * *(f32*)(S + 0x3C);
-                if (astep > lbl_8047BC98)
-                    astep = lbl_8047BC98;
-                if (astep <= lbl_8047BCC8)
-                    astep = lbl_8047BCC8;
-                acur = *(f32*)(S + 0x1DC) + astep;
-                rem  = tgt - acur;
-                *(f32*)(S + 0x1DC) = acur;
-                if (astep > lbl_8047BC94) {
-                } else {
-                    astep = -astep;
-                }
-                if (rem > lbl_8047BC94)
-                    arem = rem;
-                else
-                    arem = -rem;
-                if (arem <= astep) {
-                    *(f32*)(S + 0x1DC) = tgt;
-                } else {
-                    if (rem > lbl_8047BC94)
-                        rem = rem;
-                    else
-                        rem = -rem;
-                    if (rem < lbl_8047BCBC)
-                        *(f32*)(S + 0x1DC) = tgt;
-                }
+            if (*(f32*)(S + 0x1DC) != *(f32*)(S + 0x1E0)) {
+                pda_80044630_Approach((f32*)(S + 0x1DC), (f32*)(S + 0x1E0), *(f32*)(S + 0x3C));
             }
 
             /* settle test */
