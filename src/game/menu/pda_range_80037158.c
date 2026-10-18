@@ -8184,16 +8184,16 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
 
     data = *(u8**)((u8*)work + 0x60);
     if (*(f32*)(G + 0x2c) != *(f32*)(G + 0x28)) {
-        step = *(f32*)(G + 8) / lbl_8047BDA8;
+        step = *(f32*)(G + 8) / 0.5f;
         if (*(f32*)(G + 0x2c) > *(f32*)(G + 0x28)) {
             *(f32*)(G + 0x28) = *(f32*)(G + 0x28) + step;
-            if (*(f32*)(G + 0x28) > lbl_8047BDA0) {
-                *(f32*)(G + 0x28) = lbl_8047BDA0;
+            if (*(f32*)(G + 0x28) > 1.0f) {
+                *(f32*)(G + 0x28) = 1.0f;
             }
         } else {
             *(f32*)(G + 0x28) = *(f32*)(G + 0x28) - step;
-            if (*(f32*)(G + 0x28) < lbl_8047BDAC) {
-                *(f32*)(G + 0x28) = lbl_8047BDAC;
+            if (*(f32*)(G + 0x28) < 0.0f) {
+                *(f32*)(G + 0x28) = 0.0f;
             }
         }
     }
@@ -8204,16 +8204,16 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
             lbl_803A6A60[0x49] = 0;
         }
         if (*(s8*)(lbl_803A6A60 + 1) >= 1) {
-            *(f32*)(G + 0x2c) = lbl_8047BDAC;
+            *(f32*)(G + 0x2c) = 0.0f;
             return 0;
         }
-        *(f32*)(G + 0x2c) = lbl_8047BDA0;
+        *(f32*)(G + 0x2c) = 1.0f;
     } else {
         if (lbl_803A6A60[0x49] != 1) {
             menuOffScreenSetDisp(1);
             lbl_803A6A60[0x49] = 1;
         }
-        *(f32*)(G + 0x2c) = lbl_8047BDA0;
+        *(f32*)(G + 0x2c) = 1.0f;
     }
 
     fn_800D88DC(1);
@@ -8221,7 +8221,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     fn_800D7820(lbl_80314E08);
     fn_800D6A00(4);
     fn_800D67BC(4);
-    alpha = (s32)(lbl_8047BDB0 * *(f32*)(G + 0x28));
+    alpha = (s32)(255.0f * *(f32*)(G + 0x28));
     fn_800D61E4(0, 0);
     color = (u8)alpha | 0x03140e00;
     fn_800D5BA0(0, color);
@@ -8238,7 +8238,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
         fn_800D888C(6);
         fn_800D7820(lbl_80314E08);
         fn_800D6A00(1);
-        fn_800D5648(lbl_8047BDA0);
+        fn_800D5648(1.0f);
         fn_800D67BC(2);
         fn_800D61E4(0, i);
         fn_800D5BA0(0, 0x00800080);
@@ -8248,14 +8248,14 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     }
 
     top = **(f32**)(data + 8);
-    kAlpha = lbl_8047BDB0;
-    kOne = lbl_8047BDA0;
-    kDiv = lbl_8047BDB4;
-    kMul = lbl_8047BDB8;
-    kScale = lbl_8047BDA4;
-    kMin = lbl_8047BDAC;
+    kAlpha = 255.0f;
+    kOne = 1.0f;
+    kDiv = 12.0f;
+    kMul = 4.0f;
+    kScale = 480.0f;
+    kMin = 0.0f;
     for (j = 0; j < 12; j++) {
-        alpha = (s32)(kAlpha * (kOne - (f32)j / kDiv));
+        alpha = (u8)(kAlpha * (kOne - (f32)j / kDiv));
         y = top - kMul * (f32)j / kScale;
         if (y < kMin) {
             y = y + kOne;
@@ -8265,7 +8265,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
         fn_800D888C(6);
         fn_800D7820(lbl_80314E08);
         fn_800D6A00(1);
-        fn_800D5648(lbl_8047BDA0);
+        fn_800D5648(1.0f);
         fn_800D67BC(2);
         fn_800D61E4(0, row);
         color = (u8)alpha | 0x00800000;
