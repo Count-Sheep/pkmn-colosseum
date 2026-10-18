@@ -14225,11 +14225,8 @@ void fn_8021D688(void)
     extern u32 fightPokemonGetPokemonPtr();
     extern u32 pokemonGetStatus();
     extern void pokemonSetStatus();
-  struct {
-    u32 value;
-  } context;
+  struct { u32 value; } context;
   u32 fightPokemon;
-  u32 pokemon;
   u32 waza;
   u16 savedStatus;
   u16 item;
@@ -14238,6 +14235,7 @@ void fn_8021D688(void)
   u32 effectTarget;
   s32 effectCount;
   s32 amount;
+  u32 pokemon;
   u16 i;
   ItemEffectRecord effects[33];
 
