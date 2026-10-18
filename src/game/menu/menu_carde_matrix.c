@@ -1075,6 +1075,13 @@ static inline u32 menuCardELerpColor(u32 to, u32 from, f32 t) {
     return result;
 }
 
+static inline MenuCardEMatrixWork* menuCardEMatrixGetWork(MenuCardEWindow* window) {
+    extern void* windowSearchID(s32 id);
+    extern MenuCardEMatrixWork** windowGetFreeWork(void* window);
+
+    return *windowGetFreeWork(window == NULL ? windowSearchID(0xA6) : window);
+}
+
 static inline void menuCardEBuzz(MenuCardEMatrixWork* work) {
     extern void fn_80166A28(s32 id);
 
@@ -1158,7 +1165,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s8 count;
     s32 held;
 
-    work = *windowGetFreeWork(window == NULL ? windowSearchID(0xA6) : window);
+    work = menuCardEMatrixGetWork(window);
     switch (window->state) {
     case 0:
         if (window->subState == 0) {
