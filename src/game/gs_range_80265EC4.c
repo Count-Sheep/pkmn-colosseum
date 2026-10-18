@@ -13,7 +13,7 @@
 #include "game/trainer.h"
 #include "game/pokemon.h"
 
-extern void* pokemonGetStatus();
+extern u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d);
 extern u32 savedataGetStatus();
 extern s8 fadeCheck(u32 wait);
 extern void fadeSet(f32 duration, u32 mode);
@@ -101,7 +101,7 @@ void fn_80265F94(int r3)
     void* data;
     u32 msg;
 
-    status = (u16)(int)pokemonGetStatus(0, 0xfa, 0x66, 0);
+    status = pokemonGetStatus(NULL, 0xfa, 0x66, 0);
     species = 0xFFFF;
     if (status != 0) {
         species = status;
