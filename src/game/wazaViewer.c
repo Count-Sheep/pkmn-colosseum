@@ -459,25 +459,25 @@ void fn_801D5A94(s32 slot) {
     extern void GSmodelSetPosition(void* model, WazaViewerVec* position);
 
     const u8* viewerData;
-    char* modelPath;
+    /* Paired paths keep the early animation path in retail's register. */
+    char* path[2];
     s32 modelSize;
     s32 animSize;
     void* effect;
-    char* animPath;
     int block;
     void* buf;
     WazaViewerVec rotation;
     WazaViewerVec position;
 
     viewerData = lbl_80279338;
-    modelPath = (char*)(lbl_804673F8 + 0x1C);
+    path[0] = (char*)(lbl_804673F8 + 0x1C);
     modelSize = 0;
     animSize = 0;
-    if (strlen(modelPath) != 0) {
-        modelSize = wazaViewerGetFilesize((const char*)viewerData, modelPath);
-        animPath = (char*)(lbl_804673F8 + 0x41C);
-        if (strlen(animPath) != 0) {
-            animSize = wazaViewerGetFilesize((const char*)viewerData, animPath);
+    if (strlen(path[0]) != 0) {
+        modelSize = wazaViewerGetFilesize((const char*)viewerData, path[0]);
+        path[1] = (char*)(lbl_804673F8 + 0x41C);
+        if (strlen(path[1]) != 0) {
+            animSize = wazaViewerGetFilesize((const char*)viewerData, path[1]);
         }
     }
 
@@ -494,7 +494,7 @@ void fn_801D5A94(s32 slot) {
     }
     *(u16*)(lbl_804673F8 + 0x660) = block;
     buf = *(void**)(lbl_804673F8 + 0x65C) = fn_800E27B0(block);
-    wazaViewerLoadFile((const char*)viewerData, modelPath, buf, modelSize, FALSE);
+    wazaViewerLoadFile((const char*)viewerData, path[0], buf, modelSize, FALSE);
     sequenceLoad(effect, *(void**)(lbl_804673F8 + 0x65C));
     *(s32*)(lbl_804673F8 + 0x04) = 1;
     fn_801DA4E8(effect, 1);
@@ -509,8 +509,8 @@ void fn_801D5A94(s32 slot) {
         if (block != 0) {
             *(u16*)(lbl_804673F8 + 0x668) = block;
             buf = *(void**)(lbl_804673F8 + 0x664) = fn_800E27B0(block);
-            animPath = (char*)(lbl_804673F8 + 0x41C);
-            wazaViewerLoadFile((const char*)viewerData, animPath, buf, animSize, FALSE);
+            path[1] = (char*)(lbl_804673F8 + 0x41C);
+            wazaViewerLoadFile((const char*)viewerData, path[1], buf, animSize, FALSE);
             if ((u8)fn_801DDB4C(effect, *(void**)(lbl_804673F8 + 0x664))) {
                 *(s32*)(lbl_804673F8 + 0x04) = 2;
             } else {
