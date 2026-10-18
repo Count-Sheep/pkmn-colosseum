@@ -85,7 +85,7 @@ void _wazaViewerUpdate(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_53D8_7E58) || defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) || defined(PR409_WAZA_VIEWER_EXACT_5DA0)
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_53D8_7E58) || defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) || defined(PR409_WAZA_VIEWER_EXACT_5DA0) || defined(PR409_WAZA_VIEWER_EXACT_624C) || defined(PR409_WAZA_VIEWER_EXACT_6E58)
 
 extern u8 lbl_80279338[];
 
@@ -229,7 +229,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  */
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0)
+#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
 #if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
@@ -290,7 +290,7 @@ void wazaViewerThread(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0)
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
 
 /**
  * fn_801D56B0 - Re-arm the viewer after a sequence file has been loaded:
@@ -641,7 +641,7 @@ void fn_801D5DA0(void) {
 #endif
 
 #if !defined(PR409_WAZA_VIEWER_EXACT_5DA0)
-#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_603C_SUFFIX)
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_603C_ONLY)
 /**
  * fn_801D603C - Move animation helper: hit effect rendering.
  * Address: 0x801D603C | Size: 0x210
@@ -722,6 +722,8 @@ void fn_801D603C(void) {
         break;
     }
 }
+
+#endif
 
 /**
  * wazaViewerSpawnAttacker - respawn the attacker-side effect from the work
@@ -832,6 +834,7 @@ static inline void wazaViewerSpawnTarget(u8* work, s32 mode) {
     *(void**)(lbl_804673F8 + 0x620) = effect;
 }
 
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_EXACT_624C)
 /**
  * fn_801D624C - Move animation mega-function.
  * Address: 0x801D624C | Size: 0x818
@@ -953,6 +956,9 @@ void fn_801D624C(void) {
     }
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_6A64_ONLY)
 /**
  * fn_801D6A64 - Move animation secondary mega-function.
  * Address: 0x801D6A64 | Size: 0x3F4
@@ -1041,6 +1047,9 @@ void fn_801D6A64(void) {
     }
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_EXACT_6E58)
 /**
  * fn_801D6E58 - Move animation tertiary mega-function.
  * Address: 0x801D6E58 | Size: 0x3D8
@@ -1254,6 +1263,7 @@ void fn_801D7230(void) {
 
 #endif
 
+#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
 /**
  * fn_801D744C - Move animation OR bits into lbl_804673F8+0xC.
  * Address: 0x801D744C | Size: 0x18
@@ -1635,6 +1645,8 @@ void fn_801D7B94(void* effect) {
         fn_800D6728();
     }
 }
+
+#endif
 
 #endif
 

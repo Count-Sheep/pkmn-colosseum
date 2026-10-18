@@ -2491,8 +2491,11 @@ config.libs = [
                             "game/wazaViewer_candidate_801D5464.c",
                             "game/wazaViewer_candidate_801D5A94.c",
                             "game/wazaViewer_candidate_801D56B0.c",
+                            "game/wazaViewer_candidate_801D6A64.c",
                             "game/wazaViewer_exact_801D5DA0.c",
                             "game/wazaViewer_exact_801D56B0.c",
+                            "game/wazaViewer_exact_801D624C.c",
+                            "game/wazaViewer_exact_801D6E58.c",
                         }
                         else "GC/1.3"
                     ),
@@ -2508,6 +2511,9 @@ config.libs = [
                     (CodeCandidate, "game/wazaViewer_candidate_801D5A94.c"),
                     (Matching, "game/wazaViewer_exact_801D5DA0.c"),
                     (CodeCandidate, "game/wazaViewer_candidate_801D56B0.c"),
+                    (Matching, "game/wazaViewer_exact_801D624C.c"),
+                    (CodeCandidate, "game/wazaViewer_candidate_801D6A64.c"),
+                    (Matching, "game/wazaViewer_exact_801D6E58.c"),
                     (Matching, "game/wazaViewer_exact_801D744C.c"),
                     (CodeCandidate, "game/wazaViewer_candidate_801D7464.c"),
                 ]

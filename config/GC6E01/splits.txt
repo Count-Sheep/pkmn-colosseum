@@ -5499,7 +5499,16 @@ game/wazaViewer_exact_801D5DA0.c:
 	.text       start:0x801D5DA0 end:0x801D603C
 
 game/wazaViewer_candidate_801D56B0.c:
-	.text       start:0x801D603C end:0x801D744C
+	.text       start:0x801D603C end:0x801D624C
+
+game/wazaViewer_exact_801D624C.c:
+	.text       start:0x801D624C end:0x801D6A64
+
+game/wazaViewer_candidate_801D6A64.c:
+	.text       start:0x801D6A64 end:0x801D6E58
+
+game/wazaViewer_exact_801D6E58.c:
+	.text       start:0x801D6E58 end:0x801D744C
 
 game/wazaViewer_exact_801D744C.c:
 	.text       start:0x801D744C end:0x801D7464
