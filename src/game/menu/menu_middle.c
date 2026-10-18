@@ -4808,7 +4808,7 @@ void fn_8006FEE4(void* menu) {
         MENU_MIDDLE_U32_004C(window)->unk_004C = sMenuCBHookSprites_80268070[i].spriteId;
     }
 
-    visible = (u8)ready == 0;
+    visible = !(u8)ready;
     for (i = 0; i < 5U; i++) {
         winSpriteSetDisp(windowSearchItemID(menu, sMenuCBHookHiddenIds_802680D8[i]), visible);
     }
