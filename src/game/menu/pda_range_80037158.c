@@ -6675,6 +6675,28 @@ static inline u32 pda_800411FC_LoadRnd(s32 index)
     return 0;
 }
 
+/* RULE-EXCEPTION(user-approved): scalar reuse - the dead index parameter carries the Pokemon seed, which numbers its web like retail's - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_800411FC_NameLoad(u32 index)
+{
+    u32 work = lbl_8047A4E0;
+    u32 species;
+    u32 trainerRnd;
+
+    if (work != 0) {
+        species = lbl_8047A4E4[index];
+        if (species >= 0x8000) {
+            species = species & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        index = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, index);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
 /* Whether the highlighted memo entry has actually been seen. */
 static inline u8 pdaEntrySeen(void)
 {
@@ -6687,7 +6709,7 @@ static inline u32 pdaCurrentNameMsg(s32 index)
     u32 work;
 
     if (lbl_8047A4E0 != 0) {
-        work = pdaLoadPokemonB(index);
+        work = pda_800411FC_NameLoad(index);
         if (work != 0) {
             return GSmsgGetGSchar((u32)pokemonDataBiosGetName(
                 pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work))));
