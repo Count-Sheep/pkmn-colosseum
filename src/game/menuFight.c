@@ -1119,10 +1119,11 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
     }
 
     case 0x124B: {
+        s16 w;
         s32 x;
-        x = (s16)((s16)(GSmsgGetRect(0x1A8) >> 16) + 2);
+        w = (s16)(GSmsgGetRect(0x1A8) >> 16) + 2;
         fn_800FB680(0, 0, color, 0x1A8);
-        x += (s16)((*(s16*)(sprite + 0x54) - x - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
+        x = w + (s16)((*(s16*)(sprite + 0x54) - w - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
         fn_800FB680(x, 0, color, 0x197);
         msgctrlSetValue(0x34, (s16)pokemonGetStatus(pokemon, 0, 0x83, 0));
         fn_800FBB34(0, 0, (s16)x, *(s16*)(sprite + 0x56), color, 0xDE);
