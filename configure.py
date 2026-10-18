@@ -2498,6 +2498,22 @@ config.libs = [
                     **(
                         {"constant_import": [{"symbol": "lbl_8047E328", "offset": 0, "expected": "4330000000000000"}]}
                         if path == "game/wazaViewer_exact_801D7464.c"
+                        else {
+                            # TEMPORARY constant_import: fn_801D7B94's float
+                            # literals, pooled in source order; retail shares
+                            # the named copies owned by the .sdata2 data unit.
+                            "constant_import": [
+                                {"symbol": "lbl_8047E318", "offset": 0x00, "expected": "3f000000"},
+                                {"symbol": "lbl_8047E330", "offset": 0x04, "expected": "3f400000"},
+                                {"symbol": "lbl_8047E30C", "offset": 0x08, "expected": "3f800000"},
+                                {"symbol": "lbl_8047E334", "offset": 0x0C, "expected": "3faaa993"},
+                                {"symbol": "lbl_8047E338", "offset": 0x10, "expected": "40000000"},
+                                {"symbol": "lbl_8047E33C", "offset": 0x14, "expected": "40800000"},
+                                {"symbol": "lbl_8047E340", "offset": 0x18, "expected": "43800000"},
+                                {"symbol": "lbl_8047E344", "offset": 0x1C, "expected": "437f0000"},
+                            ]
+                        }
+                        if path == "game/wazaViewer_candidate_801D7464.c"
                         else {}
                     ),
                     mw_version=(

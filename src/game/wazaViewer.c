@@ -1532,14 +1532,6 @@ void fn_801D7464(void) {
 void fn_801D7B94(void* effect) {
     extern u8 lbl_804673F8[];
     extern u8 lbl_80314638[];
-    extern const f32 lbl_8047E318;
-    extern const f32 lbl_8047E30C;
-    extern const f32 lbl_8047E330;
-    extern const f32 lbl_8047E334;
-    extern const f32 lbl_8047E338;
-    extern const f32 lbl_8047E33C;
-    extern const f32 lbl_8047E340;
-    extern const f32 lbl_8047E344;
     extern void _cameraLoadCameraMatrix__FP9_GScamera12GSgfxLayerID();
     extern void* GScameraGetActiveCamera(void);
     extern void GScameraGetPosition(void*, WazaViewerVec*);
@@ -1590,22 +1582,22 @@ void fn_801D7B94(void* effect) {
 
     switch (*(s32*)(data + 0x10)) {
     case -2:
-        aspect = lbl_8047E318;
+        aspect = 0.5f;
         break;
     case -1:
-        aspect = lbl_8047E330;
+        aspect = 0.75f;
         break;
     case 0:
-        aspect = lbl_8047E30C;
+        aspect = 1.0f;
         break;
     case 1:
-        aspect = lbl_8047E334;
+        aspect = 1.3333f;
         break;
     case 2:
-        aspect = lbl_8047E338;
+        aspect = 2.0f;
         break;
     case 3:
-        aspect = lbl_8047E33C;
+        aspect = 4.0f;
         break;
     }
 
@@ -1613,12 +1605,12 @@ void fn_801D7B94(void* effect) {
     fn_800DA2BC(1, 1, 1);
     fn_800DA1E8(0, 7, 0);
     fn_800DA028(0);
-    scale = lbl_8047E340 * aspect /
+    scale = 256.0f * aspect /
             (fov * fn_800E008C(&cameraPosition));
-    if (scale > lbl_8047E30C) {
-        scale = lbl_8047E30C;
+    if (scale > 1.0f) {
+        scale = 1.0f;
     }
-    fn_800B944C((s32)(lbl_8047E344 * scale), 5);
+    fn_800B944C((s32)(255.0f * scale), 5);
     fn_800D88DC(1);
     fn_800D888C(6);
     fn_800D7820(lbl_80314638);
