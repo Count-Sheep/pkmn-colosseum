@@ -128,6 +128,21 @@ static inline void pdaMailWaitModel(void* model)
     }
 }
 
+static inline void pdaMailWaitTransition(f32* transition, f32* target, f32 value)
+{
+    s32 waiting;
+
+    *target = value;
+    waiting = 1;
+    while (waiting) {
+        if (*transition == *target) {
+            waiting = 0;
+        } else {
+            _threadSwitch();
+        }
+    }
+}
+
 #pragma peephole off
 void fn_8004B7EC(void)
 {
@@ -215,15 +230,7 @@ void fn_8004B7EC(void)
 
         switch (phase) {
         case 0:
-            *transitionTarget = lbl_8047BDFC;
-            active = 1;
-            while (active) {
-                if (*transition == *transitionTarget) {
-                    active = 0;
-                } else {
-                    _threadSwitch();
-                }
-            }
+            pdaMailWaitTransition(transition, transitionTarget, lbl_8047BDFC);
             menuClose(0x97);
             menuCloseSync(0x97, 1);
             *config.message = 0x36B4;
@@ -232,15 +239,7 @@ void fn_8004B7EC(void)
             *transitionTarget = lbl_8047BDAC;
             break;
         case 1:
-            *transitionTarget = lbl_8047BDFC;
-            active = 1;
-            while (active) {
-                if (*transition == *transitionTarget) {
-                    active = 0;
-                } else {
-                    _threadSwitch();
-                }
-            }
+            pdaMailWaitTransition(transition, transitionTarget, lbl_8047BDFC);
             menuClose(0x97);
             menuCloseSync(0x97, 1);
             *config.message = 0x36B5;
@@ -249,15 +248,7 @@ void fn_8004B7EC(void)
             *transitionTarget = lbl_8047BDAC;
             break;
         case 2:
-            *transitionTarget = lbl_8047BDFC;
-            active = 1;
-            while (active) {
-                if (*transition == *transitionTarget) {
-                    active = 0;
-                } else {
-                    _threadSwitch();
-                }
-            }
+            pdaMailWaitTransition(transition, transitionTarget, lbl_8047BDFC);
             menuClose(0x97);
             menuCloseSync(0x97, 1);
             if (!fn_801902E0(0x3F0)) {
