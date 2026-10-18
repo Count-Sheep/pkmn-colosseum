@@ -1,3 +1,3 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
+/* GBA Pokemon record conversion, 0x8008AE18 - 0x8008BBDC. */
 #define GBA_MISC_8008AE18_ONLY
-#include "src/game/gba/gba_misc_candidate_8008ABE4_r42_8008AE18.c"
+#include "src/game/gba/gba_misc.c"

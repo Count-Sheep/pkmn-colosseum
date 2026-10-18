@@ -333,7 +333,8 @@ void fn_80092B2C(void);
 /* ===== Function implementations ===== */
 
 #if !defined(GBA_MISC_80089E20_ONLY) && !defined(GBA_MISC_80089F78_ONLY) && \
-    !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
+    !defined(GBA_MISC_8008AE18_ONLY) && \
+    !defined(GBA_MISC_8008BBDC_ONLY)
 
 #if !defined(GBA_MISC_80089B8C_ONLY)
 
@@ -752,7 +753,8 @@ s32 fn_80089D98(s32 r31) {
 #endif
 
 #if !defined(GBA_MISC_80089B8C_ONLY) && !defined(GBA_MISC_80089F78_ONLY) && \
-    !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
+    !defined(GBA_MISC_8008AE18_ONLY) && \
+    !defined(GBA_MISC_8008BBDC_ONLY)
 
 /* 0x80089E20 | size: 0x138 */
 s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
@@ -817,8 +819,8 @@ s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
 #if !defined(GBA_MISC_80089E20_ONLY) && \
     !defined(GBA_MISC_80089B8C_ONLY)
 
-#if !defined(GBA_MISC_80089F78_ONLY) && !defined(GBA_MISC_8008BBDC_ONLY) && \
-    !defined(GBA_MISC_8008AE18_ONLY)
+#if !defined(GBA_MISC_80089F78_ONLY) && !defined(GBA_MISC_8008AE18_ONLY) && \
+    !defined(GBA_MISC_8008BBDC_ONLY)
 
 /* 0x80089F58 | size: 0x8 */
 u32 fn_80089F58(u32 v) {
@@ -842,7 +844,8 @@ u32 fn_80089F70(u32 v) {
 
 #endif
 
-#if !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
+#if !defined(GBA_MISC_8008BBDC_ONLY)
+
 /*
  * Battle snapshot sent to the GBA when the player opens the GBA command
  * menu. Multi-byte fields are stored in the GBA's little-endian order.
@@ -897,6 +900,8 @@ typedef struct GbaBattleSnapshot {
 #define GBA_FORM_FROM_ZOKUSEI(z) ((z) == 0xA ? 1 : (z) == 0xB ? 2 : (z) == 0xF ? 3 : 0)
 #define GBA_SWITCH_MODE_FROM_TOKUSEI(t) ((t) == 0x17 ? 2 : (t) == 0x2A ? 3 : (t) == 0x47 ? 4 : 0)
 #define GBA_SWAP16(x) ((u16)(((x) << 8) | ((x) >> 8)))
+
+#if !defined(GBA_MISC_8008AE18_ONLY)
 
 /*
  * Build the battle snapshot for the GBA command menu, send it on the given
@@ -1167,11 +1172,13 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
         _threadSwitch();
     }
 }
-#endif
+
+#endif /* !GBA_MISC_8008AE18_ONLY */
+#endif /* !GBA_MISC_8008BBDC_ONLY */
 
 #if !defined(GBA_MISC_80089F78_ONLY)
 
-#if !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
+#if !defined(GBA_MISC_8008AE18_ONLY) && !defined(GBA_MISC_8008BBDC_ONLY)
 
 /* 0x8008A99C | size: 0x10 */
 s32 fn_8008A99C(void) {
@@ -1410,9 +1417,33 @@ void fn_8008AC34(void) {
     return;
 }
 
-#endif
+#endif /* !GBA_MISC_8008AE18_ONLY */
 
 #if !defined(GBA_MISC_8008BBDC_ONLY)
+
+/* RULE-EXCEPTION(user-approved): single-use inline copy of gbaPokemonConditonFromGC, which retail expands in fn_8008AE18 — see docs/RULE_EXCEPTIONS.md */
+static inline u16 fn_8008AE18_condition(void* pokemon) {
+    extern s16 fn_80121984(void* pokemon, s32 kind);
+    extern s8 fn_8012189C(void* pokemon, s32 kind);
+    extern u8 fn_80121ADC(void* pokemon, s32 kind);
+    u16 status = 0;
+
+    if (fn_80121ADC(pokemon, 4) != 0) {
+        status = (fn_80121984(pokemon, 4) << 8) | 0x80;
+    } else if (fn_80121ADC(pokemon, 5) != 0) {
+        status |= 0x40;
+    } else if (fn_80121ADC(pokemon, 7) != 0) {
+        status |= 0x20;
+    } else if (fn_80121ADC(pokemon, 6) != 0) {
+        status |= 0x10;
+    } else if (fn_80121ADC(pokemon, 3) != 0) {
+        status |= 0x08;
+    } else if (fn_80121ADC(pokemon, 8) != 0) {
+        status = (s16)fn_8012189C(pokemon, 8);
+    }
+    return status;
+}
+
 /* 0x8008AE18 | size: 0xDC4 */
 void fn_8008AE18(void* src, void* dst_) {
     extern u8 pokemonBiosGetEventGetFlag(void* pokemon);
@@ -1497,7 +1528,6 @@ void fn_8008AE18(void* src, void* dst_) {
     GbaPokemon* dst;
     u8 tmp[12];
     GbaPokemonMisc misc;
-    u32 personality;
     u32 order;
     u32 span;
     u16 status;
@@ -1623,25 +1653,7 @@ void fn_8008AE18(void* src, void* dst_) {
     misc.ribbons.amariRibbon = pokemonBiosGetAmariRibbon(src);
     misc.ribbons.eventGet = pokemonBiosGetEventGetFlag(src);
 
-    status = 0;
-    if (fn_80121ADC(src, 4) != 0) {
-        status = (fn_80121984(src, 4) << 8) | 0x80;
-    } else if (fn_80121ADC(src, 5) != 0) {
-        status |= 0x40;
-    } else if (fn_80121ADC(src, 7) != 0) {
-        status |= 0x20;
-    } else if (fn_80121ADC(src, 6) != 0) {
-        status |= 0x10;
-    } else if (fn_80121ADC(src, 3) != 0) {
-        status |= 0x8;
-    } else if (fn_80121ADC(src, 8) != 0) {
-        status = (s16)fn_8012189C(src, 8);
-    }
-    {
-        /* RULE-EXCEPTION(user-approved): widening copy so the status register is truncated in place — see docs/RULE_EXCEPTIONS.md */
-        u32 value = status;
-        dst->status = GbaSwap32(value) | (pokemonBiosGetConditionAmari(src) & 0xFFFFF000);
-    }
+    dst->status = GbaSwap32(fn_8008AE18_condition(src)) | (pokemonBiosGetConditionAmari(src) & 0xFFFFF000);
 
     dst->level = pokemonBiosGetLevel(src);
     dst->mailId = pokemonBiosGetMailId(src);
@@ -1666,8 +1678,8 @@ void fn_8008AE18(void* src, void* dst_) {
         ((u32*)&dst->species)[i] ^= (dst->personality ^ dst->otId);
     }
 
-    personality = GbaSwap32(dst->personality);
-    order = personality % 24;
+    order = GbaSwap32(dst->personality);
+    order = order % 24;
     if (order / 6 != 0) {
         span = (order / 6) * 12;
         memcpy(tmp, (u8*)&dst->species + span, 12);
@@ -1691,7 +1703,7 @@ void fn_8008AE18(void* src, void* dst_) {
     }
 }
 
-#endif
+#endif /* !GBA_MISC_8008BBDC_ONLY */
 
 #if !defined(GBA_MISC_8008AE18_ONLY)
 /* 0x8008BBDC | size: 0x9F4 */
@@ -1949,9 +1961,11 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     pokemonBiosSetSpeAtk(gc, GbaSwap16(src->speAtk));
     pokemonBiosSetSpeDef(gc, GbaSwap16(src->speDef));
 }
-#endif
 
-#if !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
+#endif /* !GBA_MISC_8008AE18_ONLY */
+
+#if !defined(GBA_MISC_8008AE18_ONLY) && !defined(GBA_MISC_8008BBDC_ONLY)
+
 /* 0x8008C5D4 | size: 0x128 */
 u16 gbaPokemonConditonFromGC(void* pokemon) {
     extern s16 fn_80121984(void* pokemon, s32 kind);
@@ -8997,7 +9011,8 @@ void fn_80092B2C(void) {
     return;
 }
 
-#endif /* !GBA_MISC_8008BBDC_ONLY */
+#endif /* !GBA_MISC_8008AE18_ONLY */
+
 #endif /* !GBA_MISC_80089F78_ONLY */
 
 #endif

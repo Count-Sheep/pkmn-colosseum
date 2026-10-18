@@ -8388,9 +8388,7 @@ config.libs = [
             ),
             *[
                 Object(
-                    Matching
-                    if path.endswith(("_8008C6FC_suffix.c", "_8008C5D4_o1.c"))
-                    else CodeCandidate,
+                    Matching,
                     path,
                     mw_version=(
                         "GC/1.3"
