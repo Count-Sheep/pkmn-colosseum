@@ -419,6 +419,66 @@ extern void fn_8018F4C8(void* info, s32 index, s32* motion, s32* out);
 extern void menuModelSetMotion(void* work, s32 motion);
 extern void fn_8010A010(void* work, u32 id);
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper; the camera reset is a shared block of the original file (fn_80044630 repeats it), and inlining it numbers its locals after the outer function's, which gives retail's registers for the anim and camera handles - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_80048918_ResetCamera(const PdaCamPresets* presets)
+{
+    void* h;
+    void* anim;
+    void* cam;
+    u8* saved;
+    void* res;
+    f32 persp0;
+    f32 persp1;
+    f32 persp2;
+    f32 persp3;
+    PdaVec3 target;
+    PdaVec3 pos;
+    PdaVec3 rot;
+
+    h = *(void**)((u8*)&lbl_803A6818 + 0x10c);
+    fn_801CB954(h, 0);
+    res = GSresGetResource((u32)fn_80113F48(), (u32)h);
+    if (res != NULL) {
+        GSmodelSetVisibility(res, 0);
+    }
+    fn_801CB9D8(h);
+    *(f32*)((u8*)&lbl_803A6818 + 0x6c) = lbl_8047BC94;
+    *(f32*)((u8*)&lbl_803A6818 + 0x70) = lbl_8047BC94;
+    *(f32*)((u8*)&lbl_803A6818 + 0x74) = lbl_8047BC94;
+    *(f32*)((u8*)&lbl_803A6818 + 0x64) = lbl_8047BCF0;
+    anim = *(void**)((u8*)&lbl_803A6818 + 0x10c) = fn_801CBA0C(0xd171000);
+    res = GSresGetResource((u32)fn_80113F48(), (u32)anim);
+    *(void**)((u8*)&lbl_803A6818 + 0x110) = res;
+    GSmodelSetAnimRate(res, lbl_8047BD18);
+    target = presets->cams[0].target;
+    pos = presets->cams[0].pos;
+    cam = GSresGetResource(0x17, 0xd731800);
+    *(void**)((u8*)&lbl_803A6818 + 0x114) = cam;
+    GScameraGetPosition(cam, &pos);
+    GScameraGetRotation(cam, &rot);
+    target.x = *(f32*)((u8*)cam + 0x100);
+    target.y = *(f32*)((u8*)cam + 0x104);
+    target.z = *(f32*)((u8*)cam + 0x108);
+    GScameraGetPerspective(cam, &persp0, &persp1, &persp2, &persp3);
+    saved = (u8*)&lbl_803A6818 + 0x218;
+    GSvecCopy(saved, &pos);
+    GSvecCopy(saved + 0xc, &target);
+    *(f32*)(saved + 0x18) = persp0;
+    *(f32*)(saved + 0x1c) = persp1;
+    *(f32*)(saved + 0x20) = persp2;
+    *(f32*)(saved + 0x24) = persp3;
+    GScameraSetPerspective(cam, persp0, persp1, persp2, persp3);
+    GSvecCopy((u8*)&lbl_803A6818 + 0x118, &pos);
+    GSvecCopy((u8*)&lbl_803A6818 + 0x124, &rot);
+    GSvecCopy((u8*)&lbl_803A6818 + 0x130, &target);
+    *(f32*)((u8*)&lbl_803A6818 + 0x13c) = persp0;
+    *(f32*)((u8*)&lbl_803A6818 + 0x140) = persp1;
+    *(f32*)((u8*)&lbl_803A6818 + 0x144) = persp2;
+    *(f32*)((u8*)&lbl_803A6818 + 0x148) = persp3;
+    cameraPlayAnime(0x17, 0xd731800, 0, 1);
+    GSscene_SetMode(4);
+}
+
 static inline void* pdaAlloc(s32 size, s32 align)
 {
     u32 h = fn_800E2C04(size, align);
@@ -531,66 +591,15 @@ void fn_80048918(void)
 {
     extern u16 memoDataGetCount(s32 a);
     const PdaCamPresets* presets = &lbl_80267150;
-    PdaVec3 rot;
-    PdaVec3 pos;
-    PdaVec3 target;
     s32 motion;
-    f32 persp3;
-    f32 persp2;
-    f32 persp1;
-    f32 persp0;
-    void* res;
-    void* cam;
-    void* anim;
     u16 total;
-    u8* saved;
     u32 pokemon;
 
     menuOffScreenSetDisp(0);
     *(s32*)((u8*)&lbl_803A6818 + 0x110) = 0;
     *(s32*)((u8*)&lbl_803A6818 + 0x114) = 0;
     *(s32*)((u8*)&lbl_803A6818 + 0x10c) = 0;
-    fn_801CB954(NULL, 0);
-    res = GSresGetResource((u32)fn_80113F48(), 0);
-    if (res != NULL) {
-        GSmodelSetVisibility(res, 0);
-    }
-    fn_801CB9D8(NULL);
-    *(f32*)((u8*)&lbl_803A6818 + 0x6c) = lbl_8047BC94;
-    *(f32*)((u8*)&lbl_803A6818 + 0x70) = lbl_8047BC94;
-    *(f32*)((u8*)&lbl_803A6818 + 0x74) = lbl_8047BC94;
-    *(f32*)((u8*)&lbl_803A6818 + 0x64) = lbl_8047BCF0;
-    anim = *(void**)((u8*)&lbl_803A6818 + 0x10c) = fn_801CBA0C(0xd171000);
-    res = GSresGetResource((u32)fn_80113F48(), (u32)anim);
-    *(void**)((u8*)&lbl_803A6818 + 0x110) = res;
-    GSmodelSetAnimRate(res, lbl_8047BD18);
-    target = presets->cams[0].target;
-    pos = presets->cams[0].pos;
-    cam = GSresGetResource(0x17, 0xd731800);
-    *(void**)((u8*)&lbl_803A6818 + 0x114) = cam;
-    GScameraGetPosition(cam, &pos);
-    GScameraGetRotation(cam, &rot);
-    target.x = *(f32*)((u8*)cam + 0x100);
-    target.y = *(f32*)((u8*)cam + 0x104);
-    target.z = *(f32*)((u8*)cam + 0x108);
-    GScameraGetPerspective(cam, &persp0, &persp1, &persp2, &persp3);
-    saved = (u8*)&lbl_803A6818 + 0x218;
-    GSvecCopy(saved, &pos);
-    GSvecCopy(saved + 0xc, &target);
-    *(f32*)(saved + 0x18) = persp0;
-    *(f32*)(saved + 0x1c) = persp1;
-    *(f32*)(saved + 0x20) = persp2;
-    *(f32*)(saved + 0x24) = persp3;
-    GScameraSetPerspective(cam, persp0, persp1, persp2, persp3);
-    GSvecCopy((u8*)&lbl_803A6818 + 0x118, &pos);
-    GSvecCopy((u8*)&lbl_803A6818 + 0x124, &rot);
-    GSvecCopy((u8*)&lbl_803A6818 + 0x130, &target);
-    *(f32*)((u8*)&lbl_803A6818 + 0x13c) = persp0;
-    *(f32*)((u8*)&lbl_803A6818 + 0x140) = persp1;
-    *(f32*)((u8*)&lbl_803A6818 + 0x144) = persp2;
-    *(f32*)((u8*)&lbl_803A6818 + 0x148) = persp3;
-    cameraPlayAnime(0x17, 0xd731800, 0, 1);
-    GSscene_SetMode(4);
+    pda_80048918_ResetCamera(presets);
     *(s32*)((u8*)&lbl_803A6818 + 0x78) = 0;
     menuModelInit((u8*)&lbl_803A6818 + 0x7c, 0x280, 0x1e0);
     menuModelInit((u8*)&lbl_803A6818 + 0xc4, 0x280, 0x1e0);
