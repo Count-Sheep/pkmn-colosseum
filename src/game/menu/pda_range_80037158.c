@@ -6706,7 +6706,7 @@ static inline u16 pdaCurrentHeight(void)
     void* data;
 
     if (lbl_8047A4E0 != 0) {
-        work = pda_800411FC_Load(lbl_803A6818.currentIndex);
+        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
@@ -6726,7 +6726,7 @@ static inline u16 pdaCurrentWeight(void)
     void* data;
 
     if (lbl_8047A4E0 != 0) {
-        work = pda_800411FC_Load(lbl_803A6818.currentIndex);
+        work = pdaLoadPokemonB(lbl_803A6818.currentIndex);
         if (work != 0) {
             data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
             if (data != NULL) {
