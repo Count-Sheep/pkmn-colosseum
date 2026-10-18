@@ -8021,11 +8021,11 @@ static inline void pdaPushCry(void* data, u32 voice)
     PDA_CRY(i).field_20 = lbl_8047BD18;
     for (j = i - 1; j >= 0; j--) {
         PDA_CRY(j).offset = (s32)((f32)PDA_CRY(j).offset + PDA_CRY(j).speed);
-        PDA_CRY(j).field_20 = PDA_CRY(j).field_20 + lbl_8047BD1C;
+        PDA_CRY(j).field_20 += lbl_8047BD1C;
     }
     for (j = 7; j > lbl_8047A4EC; j--) {
         PDA_CRY(j).offset = (s32)((f32)PDA_CRY(j).offset + PDA_CRY(j).speed);
-        PDA_CRY(j).field_20 = PDA_CRY(j).field_20 + lbl_8047BD1C;
+        PDA_CRY(j).field_20 += lbl_8047BD1C;
     }
 }
 
