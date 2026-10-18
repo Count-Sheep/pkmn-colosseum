@@ -504,7 +504,6 @@ void fn_80008868(u8* window)
 {
     GsTaskFlagConfig* config;
     s32 flagCount;
-    u16 flagId;
     s32 right;
     volatile s32 width;
     s32 pageSize;
@@ -554,10 +553,8 @@ void fn_80008868(u8* window)
         }
 
         flagIndex = row + *(s16*)lbl_80478838;
-        flagId = gsTaskFlagGetId(flagIndex);
-
         sprintf((char*)lbl_803A19C8, (const char*)lbl_80266688, flagIndex,
-                (u16)flagId);
+                gsTaskFlagGetId(flagIndex));
         fn_800FAEF8(30, rowY, color, lbl_803A19C8);
 
         fn_800FAEF8(right + 30, rowY, color, lbl_8047B6C8,
