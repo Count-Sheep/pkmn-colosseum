@@ -465,6 +465,7 @@ void fn_801D5A94(s32 slot) {
     s32 animSize;
     void* effect;
     int block;
+    u16 modelBlock;
     void* buf;
     WazaViewerVec rotation;
     WazaViewerVec position;
@@ -488,12 +489,12 @@ void fn_801D5A94(s32 slot) {
     if (modelSize == 0) {
         return;
     }
-    block = fn_800E2C04((modelSize + 0x1F) & ~0x1F, 0x20);
-    if (block == 0) {
+    modelBlock = fn_800E2C04((modelSize + 0x1F) & ~0x1F, 0x20);
+    if (modelBlock == 0) {
         return;
     }
-    *(u16*)(lbl_804673F8 + 0x660) = block;
-    buf = *(void**)(lbl_804673F8 + 0x65C) = fn_800E27B0(block);
+    *(u16*)(lbl_804673F8 + 0x660) = modelBlock;
+    buf = *(void**)(lbl_804673F8 + 0x65C) = fn_800E27B0(modelBlock);
     wazaViewerLoadFile((const char*)viewerData, path[0], buf, modelSize, FALSE);
     sequenceLoad(effect, *(void**)(lbl_804673F8 + 0x65C));
     *(s32*)(lbl_804673F8 + 0x04) = 1;
