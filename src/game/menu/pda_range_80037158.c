@@ -8462,31 +8462,35 @@ void fn_8004A47C(void)
     wide = lbl_8026719C;
     narrow = lbl_802671B4;
     if (fn_801902E0(0x3f0) != 0) {
-        *(s16*)(lbl_802EF0A8 + 0xc148) = wide.v[0];
-        *(s16*)(lbl_802EF0A8 + 0xc164) = wide.v[1];
-        *(s16*)(lbl_802EF0A8 + 0xc180) = wide.v[2];
-        *(s16*)(lbl_802EF0A8 + 0xce30) = wide.v[3];
-        *(s16*)(lbl_802EF0A8 + 0xce4c) = wide.v[4];
-        *(s16*)(lbl_802EF0A8 + 0xce68) = wide.v[5];
-        *(s16*)(lbl_802EF0A8 + 0xce84) = wide.v[6];
-        *(s16*)(lbl_802EF0A8 + 0xcea0) = wide.v[7];
-        *(s16*)(lbl_802EF0A8 + 0xcebc) = wide.v[8];
-        *(s16*)(lbl_802EF0A8 + 0xced8) = wide.v[9];
-        *(s16*)(lbl_802EF0A8 + 0xcef4) = wide.v[10];
-        *(s16*)(lbl_802EF0A8 + 0xcf10) = wide.v[11];
+        PdaMenuItem* items = (PdaMenuItem*)lbl_802EF0A8 + 0x6e7;
+
+        items[0].y = wide.v[0];
+        items[1].y = wide.v[1];
+        items[2].y = wide.v[2];
+        items[0x76].y = wide.v[3];
+        items[0x77].y = wide.v[4];
+        items[0x78].y = wide.v[5];
+        items[0x79].y = wide.v[6];
+        items[0x7a].y = wide.v[7];
+        items[0x7b].y = wide.v[8];
+        items[0x7c].y = wide.v[9];
+        items[0x7d].y = wide.v[10];
+        items[0x7e].y = wide.v[11];
     } else {
-        *(s16*)(lbl_802EF0A8 + 0xc148) = narrow.v[0];
-        *(s16*)(lbl_802EF0A8 + 0xc164) = narrow.v[1];
-        *(s16*)(lbl_802EF0A8 + 0xc180) = narrow.v[2];
-        *(s16*)(lbl_802EF0A8 + 0xce30) = narrow.v[3];
-        *(s16*)(lbl_802EF0A8 + 0xce4c) = narrow.v[4];
-        *(s16*)(lbl_802EF0A8 + 0xce68) = narrow.v[5];
-        *(s16*)(lbl_802EF0A8 + 0xce84) = narrow.v[6];
-        *(s16*)(lbl_802EF0A8 + 0xcea0) = narrow.v[7];
-        *(s16*)(lbl_802EF0A8 + 0xcebc) = narrow.v[8];
-        *(s16*)(lbl_802EF0A8 + 0xced8) = narrow.v[9];
-        *(s16*)(lbl_802EF0A8 + 0xcef4) = narrow.v[10];
-        *(s16*)(lbl_802EF0A8 + 0xcf10) = narrow.v[11];
+        PdaMenuItem* items = (PdaMenuItem*)lbl_802EF0A8 + 0x6e7;
+
+        items[0].y = narrow.v[0];
+        items[1].y = narrow.v[1];
+        items[2].y = narrow.v[2];
+        items[0x76].y = narrow.v[3];
+        items[0x77].y = narrow.v[4];
+        items[0x78].y = narrow.v[5];
+        items[0x79].y = narrow.v[6];
+        items[0x7a].y = narrow.v[7];
+        items[0x7b].y = narrow.v[8];
+        items[0x7c].y = narrow.v[9];
+        items[0x7d].y = narrow.v[10];
+        items[0x7e].y = narrow.v[11];
     }
 
     botWide[0] = lbl_8047BD88;
@@ -8494,15 +8498,19 @@ void fn_8004A47C(void)
     botNarrow[0] = lbl_8047BD90;
     botNarrow[1] = lbl_8047BD94;
     if (fn_801902E0(0x3f0) != 0) {
-        *(s16*)(lbl_802EF0A8 + 0xc0d8) = botWide[0].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0xc0f4) = botWide[0].y - 6;
-        *(s16*)(lbl_802EF0A8 + 0xc110) = botWide[1].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0xc12c) = botWide[1].y - 6;
+        PdaMenuItem* items = (PdaMenuItem*)lbl_802EF0A8 + 0x6e3;
+
+        items[0].y = botWide[0].x - 6;
+        items[1].y = botWide[0].y - 6;
+        items[2].y = botWide[1].x - 6;
+        items[3].y = botWide[1].y - 6;
     } else {
-        *(s16*)(lbl_802EF0A8 + 0xc0d8) = botNarrow[0].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0xc0f4) = botNarrow[0].y - 6;
-        *(s16*)(lbl_802EF0A8 + 0xc110) = botNarrow[1].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0xc12c) = botNarrow[1].y - 6;
+        PdaMenuItem* items = (PdaMenuItem*)lbl_802EF0A8 + 0x6e3;
+
+        items[0].y = botNarrow[0].x - 6;
+        items[1].y = botNarrow[0].y - 6;
+        items[2].y = botNarrow[1].x - 6;
+        items[3].y = botNarrow[1].y - 6;
     }
 }
 #pragma peephole reset
