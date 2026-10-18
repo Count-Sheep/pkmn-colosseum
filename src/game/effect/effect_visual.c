@@ -5813,6 +5813,8 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     extern void* memcpy(void* dst, const void* src, u32 size);
     extern const u8 lbl_80478BA8[4][2];
     extern const char lbl_802730B8[];
+    u16* output;
+    u16* source;
     void* outputTexture;
     u16* outputPixels;
     u16* sourcePixels;
@@ -5831,8 +5833,6 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     s32 y;
     s16 outputIndex;
     s16 sourceIndex;
-    u16* source;
-    u16* output;
 
     sourcePixels = NULL;
     baseWidth = GStextureGetXsize(baseTexture);
