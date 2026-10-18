@@ -6016,6 +6016,7 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+                constant_import=[{"symbol": "lbl_8047BF60", "offset": 0, "expected": "00000000"}],
             Object(
                 Matching,
                 "game/menu/menuCB_BattleStart_exact_80060D70.c",
