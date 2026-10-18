@@ -29,7 +29,8 @@
     !defined(FIGHT_RANGE_8021B910_ONLY) && \
     !defined(FIGHT_RANGE_802230BC_ONLY) && \
     !defined(FIGHT_RANGE_80224158_ONLY) && \
-    !defined(FIGHT_RANGE_80213A78_ONLY)
+    !defined(FIGHT_RANGE_80213A78_ONLY) && \
+    !defined(FIGHT_RANGE_80220868_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -14845,6 +14846,10 @@ void fn_8021F664(void)
 }
 void fn_8021FAD4(void);
 /* body moved to fight_range_8021FAD4.c: fn_8021FAD4 */
+#endif /* FIGHT_RANGE_ALL */
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80220868_ONLY)
 void fn_80220868(void)
 {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -14887,28 +14892,27 @@ void fn_80220868(void)
             currentMask = (u8)mask;
             if ((currentMask & 1) != 0) {
                 switch ((u8)bitIndex) {
-                case 0:
+                case 1:
                     statusId = 0xe6;
                     break;
-                case 1:
+                case 2:
                     statusId = 0xe7;
                     break;
-                case 2:
+                case 3:
                     statusId = 0xea;
                     break;
-                case 3:
+                case 4:
                     statusId = 0xe8;
                     break;
-                case 4:
+                case 5:
                     statusId = 0xe9;
                     break;
-                case 5:
+                case 6:
                     statusId = 0xeb;
                     break;
-                case 6:
+                case 7:
                     statusId = 0xec;
                     break;
-                case 7:
                 default:
                     statusId = 0;
                     break;
@@ -14953,28 +14957,27 @@ void fn_80220868(void)
             currentMask = (u8)mask;
             if ((currentMask & 1) != 0) {
                 switch ((u8)bitIndex) {
-                case 0:
+                case 1:
                     statusId = 0xe6;
                     break;
-                case 1:
+                case 2:
                     statusId = 0xe7;
                     break;
-                case 2:
+                case 3:
                     statusId = 0xea;
                     break;
-                case 3:
+                case 4:
                     statusId = 0xe8;
                     break;
-                case 4:
+                case 5:
                     statusId = 0xe9;
                     break;
-                case 5:
+                case 6:
                     statusId = 0xeb;
                     break;
-                case 6:
+                case 7:
                     statusId = 0xec;
                     break;
-                case 7:
                 default:
                     statusId = 0;
                     break;
@@ -15018,8 +15021,7 @@ advance:
 done:
     return;
 }
-#endif
-#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80220868_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_80220B8C_ONLY)
 #define fn_801F025C fightTargetGetPtrAsNowFightType
