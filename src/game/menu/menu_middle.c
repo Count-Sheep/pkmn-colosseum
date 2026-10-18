@@ -3963,18 +3963,18 @@ void fn_8006EFF8(void* arg0) {
     extern void* itemDataBiosGetPtr(u16 item);
     extern u32 itemDataBiosGetName(void* item);
     extern void fn_801081F8(void* menu, u16 itemId, u16 sequence);
-    u8* menu;
-    u8* owned;
     Entry_8006EFF8* entries;
-    void* nameWidget;
-    void* ownedWidget;
-    void* iconWidget;
-    void* cursorWidget;
-    u32 i;
-    s32 index;
-    u16 item;
-    u8* node;
     u16 sequence;
+    u8* node;
+    u16 item;
+    void* cursorWidget;
+    u8* owned;
+    u8* menu;
+    s32 index;
+    void* nameWidget;
+    u32 i;
+    void* iconWidget;
+    void* ownedWidget;
 
     menu = arg0;
     owned = windowGetParam(menu, 0);
