@@ -4858,21 +4858,22 @@ static inline u32 pdaLoadPokemon(s32 index)
 }
 
 /* As pdaLoadPokemon, but from an entry ID the caller already has in hand. */
-static inline u32 pdaLoadPokemonId(u16 id)
+static inline u32 pdaLoadPokemonId(u32 id)
 {
-    u32 work = lbl_8047A4E0;
-    u32 species = id;
+    u32 work;
     u32 rnd;
+    u32 species = id;
+    u32 trainerRnd;
 
-    if (work != 0) {
+    if ((work = lbl_8047A4E0) != 0) {
         if (id >= 0x8000) {
             species = id & 0x3fff;
         }
         pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
         rnd = memoDataGetPokemonRndFromID(0, species);
-        species = memoDataGetPokemonTrainerRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
         pokemonBiosSetRnd(work, rnd);
-        pokemonBiosSetCatchTrainerRnd(work, species);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
         return lbl_8047A4E0;
     }
     return 0;
@@ -5049,7 +5050,7 @@ s32 fn_8003D1FC(void)
 
 /* Color variant of the memo entry; bails out before loading when no work slot exists. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D4C8_Color (fn_8003D4C8) - see docs/RULE_EXCEPTIONS.md */
-static inline u8 pda_8003D4C8_Color(u16 id)
+static inline u8 pda_8003D4C8_Color(u32 id)
 {
     u32 work = lbl_8047A4E0;
     void* data;
@@ -5084,7 +5085,7 @@ u16 fn_8003D4C8(void)
     if (*(s8*)((u8*)&lbl_803A6818 + 0x159) != 0) {
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
+            u32 id = lbl_8047A4E4[i];
             if ((id & 0x8000) == 0) {
                 pdaLoadPokemonId(id);
                 if (*(s8*)((u8*)&lbl_803A6818 + 0x159) ==
@@ -5151,11 +5152,11 @@ void fn_8003D8CC(void)
     PdaKanaGroup* group;
     s32 tab;
     s32 n;
-    u16 i;
     u16 j;
-    u16 k;
-    u16 count;
     u16 total;
+    u16 i;
+    u16 id;
+    u16 count;
 
     tab = *(s8*)((u8*)&lbl_803A6818 + 0x158);
     if (tab == 0) {
@@ -5174,8 +5175,7 @@ void fn_8003D8CC(void)
     count = group->count;
     total = 0;
     for (i = 0; i < lbl_8047A4E8; i++) {
-        u16 id = lbl_8047A4E4[i];
-        pdaLoadPokemonId(id);
+        pdaLoadPokemonId(id = lbl_8047A4E4[i]);
         if ((u32)fn_800F96E4((u8*)nameBuf, 0x100, (u8*)pdaGetPokemonName(id)) !=
             0) {
             for (j = 0; j < count; j++) {
@@ -6037,9 +6037,9 @@ u8 fn_800484A4(u8* work)
 }
 
 /* Icon index of one of a memo entry's two types. */
-static inline u16 pdaGetTypeIcon(u16 id, s32 slot)
+static inline u16 pdaGetTypeIcon(u32 id, s32 slot)
 {
-    u16 type = pokemonGetStatus(
+    u32 type = (u16)pokemonGetStatus(
         0, (u16)pokemonGetStatus(pdaLoadPokemonId(id), 0, 0x6e, 0), 0x16, slot);
 
     if (type >= 9) {
@@ -6079,13 +6079,14 @@ void fn_8003DC54(void)
     if (single == 0) {
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
+            u32 id = lbl_8047A4E4[i];
             if ((id & 0x8000) == 0) {
                 pdaLoadPokemonId(id);
                 a = pdaGetTypeIcon(id, 0);
                 b = pdaGetTypeIcon(id, 1);
                 if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
-                    buf1[count++] = id;
+                    buf1[count] = id;
+                    count++;
                 }
             }
         }
@@ -6096,13 +6097,14 @@ void fn_8003DC54(void)
     } else {
         count = 0;
         for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
+            u32 id = lbl_8047A4E4[i];
             if ((id & 0x8000) == 0) {
                 pdaLoadPokemonId(id);
                 a = pdaGetTypeIcon(id, 0);
                 b = pdaGetTypeIcon(id, 1);
                 if (type0 == a || type0 == b) {
-                    buf0[count++] = id;
+                    buf0[count] = id;
+                    count++;
                 }
             }
         }
