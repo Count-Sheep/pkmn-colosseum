@@ -2172,7 +2172,7 @@ s32 fn_8003CE1C(s32 index)
 
 
 #pragma peephole off
-void fn_8003D818(void)
+s32 fn_8003D818(void)
 {
     extern u16* lbl_8047A4E4;
     extern u16 lbl_8047A4E8;
@@ -2201,7 +2201,7 @@ void fn_8003D818(void)
     work[0x15a] = 0;
     work[0x15c] = 0;
     fn_8003E394();
-    lbl_803A6818.field_10 = lbl_8047A4E8;
+    return lbl_803A6818.field_10 = lbl_8047A4E8;
 }
 #pragma peephole reset
 
