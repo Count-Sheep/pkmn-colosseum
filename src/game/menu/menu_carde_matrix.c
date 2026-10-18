@@ -52,7 +52,7 @@ typedef struct MenuCardEMatrixTable {
     s32 sprites[2][8]; /* [0] cells, [1] row ends */
 } MenuCardEMatrixTable;
 
-#if defined(MENU_CARDE_MATRIX_TU)
+#if defined(MENU_CARDE_MATRIX_TU) || defined(MENU_CARDE_MATRIX_POOL)
 /* The TU's own .rodata (0x80268B88): the item-id tables of the three
  * matrix item groups (a 36-entry row each for the previous and the
  * current entry), then the sprite ids for cells and row ends. Kept as
@@ -104,13 +104,16 @@ static const s32 sCardEMatrixEndSprites[8] = {
     0x20B, 0x20D, 0x20F, 0x211, 0x213, 0x215, 0x217, 0x219,
 };
 
+#define CARDE_MATRIX_IDS(group) ((u16*)sCardEMatrixIds##group[0])
+#define CARDE_MATRIX_CELL_SPRITES sCardEMatrixCellSprites
+#define CARDE_MATRIX_END_SPRITES sCardEMatrixEndSprites
+#endif
+
+#if defined(MENU_CARDE_MATRIX_TU)
 #define CARDE_MATRIX_FILE "menuCardE_Matrix.c"
 #define CARDE_MATRIX_SERIES_N "i < cem->m_seriesN"
 #define CARDE_MATRIX_ANIMATING "!cem->m_isAnimating"
 #define CARDE_MATRIX_ANIM_CUR "s[ANIM_cur]"
-#define CARDE_MATRIX_IDS(group) ((u16*)sCardEMatrixIds##group[0])
-#define CARDE_MATRIX_CELL_SPRITES sCardEMatrixCellSprites
-#define CARDE_MATRIX_END_SPRITES sCardEMatrixEndSprites
 
 extern void GScharLenCpy(void*, const void*, u32);
 extern void qsort(void*, u32, u32, s32 (*)(u32, u32));
@@ -198,9 +201,11 @@ extern u8 lbl_80268DB4[];
 #define CARDE_MATRIX_SERIES_N lbl_80268D8C
 #define CARDE_MATRIX_ANIMATING lbl_80268DA0
 #define CARDE_MATRIX_ANIM_CUR lbl_80268DB4
+#if !defined(MENU_CARDE_MATRIX_POOL)
 #define CARDE_MATRIX_IDS(group) (table->ids[group][0])
 #define CARDE_MATRIX_CELL_SPRITES (table->sprites[0])
 #define CARDE_MATRIX_END_SPRITES ((s32*)((u8*)table + 0x1D0))
+#endif
 #endif
 
 /* ===== Forward declarations ===== */
@@ -635,9 +640,6 @@ void fn_8007CB54(u32 arg) {
 
 /* 0x8007CBB4 | size: 0x948 */
 #if defined(MENU_CARDE_MATRIX_8007CBB4_ACTIVE)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 #define menuCardEDigits ((u16*)&lbl_8047A658)
 typedef struct MenuCardEMatrixItem {
     u8 unk_00[6];
@@ -662,7 +664,7 @@ typedef struct MenuCardEMatrixCell {
     u16 value;
 } MenuCardEMatrixCell;
 
-static inline s32 menuCardEFindItemId(u16* ids, u16 id) {
+static inline s32 menuCardEFindItemId(const u16* ids, u16 id) {
     s32 i;
 
     for (i = 0; i < 36; i++) {
@@ -682,7 +684,7 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
     extern u8* fn_80082FE4(MenuCardEEntry* entry, u8 layer);
     extern MenuCardEMatrixCell* fn_80082EA4(MenuCardEEntry* entry, u8 layer, s8 row, s8 column);
     MenuCardEMatrixSprite* sprite;
-#if !defined(MENU_CARDE_MATRIX_TU)
+#if !defined(MENU_CARDE_MATRIX_TU) && !defined(MENU_CARDE_MATRIX_POOL)
     MenuCardEMatrixTable* table;
 #endif
     MenuCardEMatrixContext* context;
@@ -690,7 +692,6 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
     s32 group;
     s32 index;
     MenuCardEEntry* entry;
-    u16* ids;
     s8 column;
     s32 which;
     u8 layer;
@@ -698,7 +699,7 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
     MenuCardEMatrixCell* cell;
     u16 value;
 
-#if !defined(MENU_CARDE_MATRIX_TU)
+#if !defined(MENU_CARDE_MATRIX_TU) && !defined(MENU_CARDE_MATRIX_POOL)
     table = &lbl_80268B88;
 #endif
     if (window == NULL) {
@@ -714,23 +715,22 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
         return;
     }
 
-    ids = CARDE_MATRIX_IDS(0);
-    if ((index = menuCardEFindItemId(ids, item->id)) >= 0) {
+    if ((index = menuCardEFindItemId(sCardEMatrixIds0[0], item->id)) >= 0) {
         which = 0;
         group = 0;
-    } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(sCardEMatrixIds0[1], item->id)) >= 0) {
         which = 1;
         group = 0;
-    } else if ((index = menuCardEFindItemId(ids = CARDE_MATRIX_IDS(2), item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(sCardEMatrixIds2[0], item->id)) >= 0) {
         which = 0;
         group = 1;
-    } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(sCardEMatrixIds2[1], item->id)) >= 0) {
         which = 1;
         group = 1;
-    } else if ((index = menuCardEFindItemId(ids = CARDE_MATRIX_IDS(1), item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(sCardEMatrixIds1[0], item->id)) >= 0) {
         which = 0;
         group = 2;
-    } else if ((index = menuCardEFindItemId(ids + 36, item->id)) >= 0) {
+    } else if ((index = menuCardEFindItemId(sCardEMatrixIds1[1], item->id)) >= 0) {
         which = 1;
         group = 2;
     } else {
@@ -808,7 +808,6 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
         item->spriteRect[3] = sprite->rect[3];
     }
 }
-#pragma pop
 
 /* 0x8007D4FC | size: 0x68 */
 #endif
