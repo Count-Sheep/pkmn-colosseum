@@ -3007,17 +3007,6 @@ static inline void* menuCardE_Alloc(u32 size) {
     return buf;
 }
 
-static inline void menuCardE_Free(void* buf) {
-    u16 handle;
-
-    handle = fn_800E202C(buf);
-    if (handle == 0) {
-        __assert(sCardEMatrixFile, 0x1AB, lbl_8047C140);
-    }
-    fn_800E24B0(handle);
-    fn_800E209C(handle);
-}
-
 static inline void menuCardE_FillEntries(u8* ctx, s32 count) {
     s32 k;
 
@@ -3032,6 +3021,7 @@ static inline void menuCardE_FillEntries(u8* ctx, s32 count) {
 }
 
 void* fn_8007FDBC(void* window, const void* title) {
+    u16 handle;
     u16* rowIds0;
     u8* rowItems;
     u8* ctx;
@@ -3055,7 +3045,12 @@ void* fn_8007FDBC(void* window, const void* title) {
     }
 
     if (CARDE_CTX_U32(ctx, 0xB0) != 0) {
-        menuCardE_Free((void*)CARDE_CTX_U32(ctx, 0xB0));
+        handle = fn_800E202C((void*)CARDE_CTX_U32(ctx, 0xB0));
+        if (handle == 0) {
+            __assert(sCardEMatrixFile, 0x1AB, lbl_8047C140);
+        }
+        fn_800E24B0(handle);
+        fn_800E209C(handle);
         CARDE_CTX_U32(ctx, 0xB0) = 0;
     }
 
