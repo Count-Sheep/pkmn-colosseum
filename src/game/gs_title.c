@@ -3138,7 +3138,7 @@ extern u8 lbl_80266DB0[];
 extern u8 lbl_80266D78[];
 extern s32 fn_80023968(u32, u32*);
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80021B14) || \
-    defined(GS_TITLE_RANGE_8002217C)
+    defined(GS_TITLE_CANDIDATE_80022478)
 /* Healing-item result: when the item took effect, set *arg1 from the item
  * id and return 0; otherwise return 1. Shared by fn_80021B14 and
  * fn_80022478. */

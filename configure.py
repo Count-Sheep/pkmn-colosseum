@@ -10507,19 +10507,19 @@ config.libs = [
             Object(
                 Matching,
                 "game/gs_title_candidate_8002217C.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gs_title_candidate_80022478.c",
                 jump_table_import={
                     "symbol": "jumptable_802E4F00",
                     "function": "fn_80022478",
                     "owner": "game/data/data_802E4DB0_prefix.c",
                     "owner_offset": 0x150,
                 },
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
-                progress_category="game",
-            ),
-            Object(
-                CodeCandidate,
-                "game/gs_title_candidate_80022478.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
@@ -10532,7 +10532,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_title_candidate_80022834.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
