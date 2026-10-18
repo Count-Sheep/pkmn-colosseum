@@ -1974,8 +1974,8 @@ static inline u32 menuGbaCrcRoll(u32 crc) {
 }
 
 static inline u32 menuGbaCountLowBits(u32 value) {
-    u32 count = 0;
     u32 i;
+    u32 count = 0;
 
     for (i = 0; i < 32; i++) {
         if ((value & 1) != 0) {
@@ -1987,8 +1987,8 @@ static inline u32 menuGbaCountLowBits(u32 value) {
 }
 
 static inline u32 menuGbaCountHighBits(u32 value) {
-    u32 count = 0;
     u32 i;
+    u32 count = 0;
 
     for (i = 0; i < 24; i++) {
         if ((value & 0x80000000) != 0) {
