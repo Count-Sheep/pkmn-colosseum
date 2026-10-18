@@ -85,7 +85,7 @@ void _wazaViewerUpdate(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_53D8_7E58) || defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) || defined(PR409_WAZA_VIEWER_EXACT_5DA0) || defined(PR409_WAZA_VIEWER_EXACT_624C) || defined(PR409_WAZA_VIEWER_EXACT_6E58)
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_53D8_7E58) || defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) || defined(PR409_WAZA_VIEWER_EXACT_5DA0) || defined(PR409_WAZA_VIEWER_EXACT_624C) || defined(PR409_WAZA_VIEWER_EXACT_6E58) || defined(PR409_WAZA_VIEWER_EXACT_7464)
 
 extern u8 lbl_80279338[];
 
@@ -229,7 +229,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  */
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
+#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
 #if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
@@ -290,7 +290,7 @@ void wazaViewerThread(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
 
 /**
  * fn_801D56B0 - Re-arm the viewer after a sequence file has been loaded:
@@ -1263,7 +1263,7 @@ void fn_801D7230(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
+#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
 /**
  * fn_801D744C - Move animation OR bits into lbl_804673F8+0xC.
  * Address: 0x801D744C | Size: 0x18
@@ -1273,6 +1273,9 @@ void fn_801D744C(u32 bits) {
     *(u32*)(lbl_804673F8 + 0x0C) |= bits;
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58)
 /* =========================================================================
  * CORE WAZA SEQUENCE FUNCTIONS (0x801D7464 - 0x801D9E34)
  *
@@ -1287,6 +1290,7 @@ void fn_801D744C(u32 bits) {
  * Loads all entries (particle, model, camera, sound) for a move's animation.
  * Referenced by battle_logic.c.
  */
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_EXACT_7464)
 void fn_801D7464(void) {
     extern u8 lbl_804673F8[];
     extern u8 lbl_803725A0[];
@@ -1514,6 +1518,9 @@ void fn_801D7464(void) {
     }
 }
 
+#endif
+
+#if !defined(PR409_WAZA_VIEWER_SPLIT) || defined(PR409_WAZA_VIEWER_7B94_ONLY)
 /**
  * fn_801D7B94 / wazaSequenceUpdate - Per-frame waza sequence update.
  * Address: 0x801D7B94 | Size: 0x2C4
@@ -1645,6 +1652,8 @@ void fn_801D7B94(void* effect) {
         fn_800D6728();
     }
 }
+
+#endif
 
 #endif
 

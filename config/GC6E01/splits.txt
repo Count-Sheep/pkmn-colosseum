@@ -5513,8 +5513,11 @@ game/wazaViewer_exact_801D6E58.c:
 game/wazaViewer_exact_801D744C.c:
 	.text       start:0x801D744C end:0x801D7464
 
+game/wazaViewer_exact_801D7464.c:
+	.text       start:0x801D7464 end:0x801D7B94
+
 game/wazaViewer_candidate_801D7464.c:
-	.text       start:0x801D7464 end:0x801D7E58
+	.text       start:0x801D7B94 end:0x801D7E58
 
 game/wazaSequenceEntry_r56_801D7E58_o1.c:
 	.text       start:0x801D7E58 end:0x801D81CC

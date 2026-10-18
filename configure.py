@@ -2484,6 +2484,11 @@ config.libs = [
                 Object(
                     status,
                     path,
+                    **(
+                        {"constant_import": [{"symbol": "lbl_8047E328", "offset": 0, "expected": "4330000000000000"}]}
+                        if path == "game/wazaViewer_exact_801D7464.c"
+                        else {}
+                    ),
                     mw_version=(
                         "GC/1.3.2"
                         if path
@@ -2496,6 +2501,7 @@ config.libs = [
                             "game/wazaViewer_exact_801D56B0.c",
                             "game/wazaViewer_exact_801D624C.c",
                             "game/wazaViewer_exact_801D6E58.c",
+                            "game/wazaViewer_exact_801D7464.c",
                         }
                         else "GC/1.3"
                     ),
@@ -2515,6 +2521,7 @@ config.libs = [
                     (CodeCandidate, "game/wazaViewer_candidate_801D6A64.c"),
                     (Matching, "game/wazaViewer_exact_801D6E58.c"),
                     (Matching, "game/wazaViewer_exact_801D744C.c"),
+                    (Matching, "game/wazaViewer_exact_801D7464.c"),
                     (CodeCandidate, "game/wazaViewer_candidate_801D7464.c"),
                 ]
             ],
