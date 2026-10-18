@@ -2386,7 +2386,7 @@ extern u8 lbl_803A6A60[];
 extern PdaListEntry* lbl_8047A4D4;
 extern u32 lbl_8047A4D0;
 extern u32 lbl_8047A4D8;
-extern u32 lbl_8047A4DC;
+extern s32 lbl_8047A4DC;
 extern u32 lbl_8047A4E0;
 extern u16* lbl_8047A4E4;
 extern u16 lbl_8047A4E8;
@@ -9093,7 +9093,7 @@ extern f32 lbl_8047BAD0;
 extern f32 lbl_8047BAD4;
 extern f32 lbl_8047BAD8;
 extern u32 lbl_8047A4D0;
-extern u32 lbl_8047A4DC;
+extern s32 lbl_8047A4DC;
 extern void fn_801EEDEC(u16 id, s32 flag);
 extern void pokemonBiosSetDarkpokemonDataId(u32 work, s32 id);
 extern void pokemonBiosSetDp(u32 work, s32 dp);
@@ -9188,7 +9188,7 @@ s32 fn_8003B85C(void* window, s32 enabled)
     }
     if ((code & 2) != 0) {
         if (lbl_8047A4DC != 0) {
-            if (*(s32*)&lbl_803A6748 < (s32)lbl_8047A4DC - 1) {
+            if (*(s32*)&lbl_803A6748 < lbl_8047A4DC - 1) {
                 if (enabled != 0) {
                     fn_801EEDEC(lbl_8047A4D4[*(s32*)&lbl_803A6748].battleId, 0);
                 }
@@ -9367,7 +9367,7 @@ void fn_8003C7C0(void)
     *(u32*)((u8*)&lbl_803A6748 + 0x98) =
         pokemonCreateRndFit(lbl_803A6610, -1, -1, 0, 0);
     *(f32*)((u8*)&lbl_803A6748 + 0x28) = lbl_8047BAC4;
-    if ((s32)lbl_8047A4DC >= 10) {
+    if (lbl_8047A4DC >= 10) {
         *(s32*)((u8*)&lbl_803A6748 + 0xc) = 10;
     } else {
         *(s32*)((u8*)&lbl_803A6748 + 0xc) = lbl_8047A4DC;
