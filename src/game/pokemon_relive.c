@@ -708,31 +708,6 @@ void preReliveMain(void)
 }
 #pragma pop
 
-#if 0
-asm void preReliveInit(void) {
-#include "src/game/colosseum_battle_fn_8025F2AC.inc"
-}
-#else
-void preReliveInit(void) {
-  u32 *p = &lbl_8047B668;
-  p[0] = 0xFFFFFFFF;
-  p[1] = 0xFFFFFFFF;
-}
-#endif
-
-/* Address: 0x8025F2C0 | Size: 0x3C | Ghidra import */
-void preReliveSetParameter(int r3,u32 r4)
-
-{
-    extern u32 lbl_8047B668;
-    u32 *p = &lbl_8047B668;
-    p[0] = r3;
-    p[1] = r4;
-  if ((r3 == 0) || (r3 == 1)) {
-    preReliveMain();
-  }
-  return;
-}
 #pragma push
 #pragma optimize_for_size off
 /* Address: 0x8025E3B0 | Size: 0x184 | Ghidra import */
