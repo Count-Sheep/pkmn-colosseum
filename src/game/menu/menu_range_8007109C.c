@@ -2203,15 +2203,14 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                         final_word = value | 0xBB000000;
                         OSReport(strings + 0x100,
                                  candidate, final_word);
-                        break;
+                        goto found;
                     }
                     candidate += 0x01000000;
                 }
-                if (offset >= 0x100) {
-                    OSReport(strings + 0x130, final_word,
-                             rolling_crc);
-                    final_word = 0;
-                }
+                OSReport(strings + 0x130, final_word,
+                         rolling_crc);
+                final_word = 0;
+            found:
                 if (final_word == 0) {
                     return 0x12;
                 }
@@ -2240,12 +2239,12 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
 
     timeout = OS_TIMER_CLOCK;
     start = OSGetTick();
-    do {
+    for (;;) {
         if (OSGetTick() - start > timeout) {
             return 0x15;
         }
         if (fn_800D0F44(channel) != 0x40000) {
-            return 0;
+            break;
         }
         if (lbl_803B6E18[channel].func != NULL) {
             lbl_803B6E18[channel].func(channel,
@@ -2254,7 +2253,8 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if (lbl_803B6E08[channel] != 0) {
             return 0x3E8;
         }
-    } while (1);
+    }
+    return 0;
 }
 
 
