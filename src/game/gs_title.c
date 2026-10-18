@@ -3775,6 +3775,46 @@ extern void fn_80121B4C(s32, s32);
 extern void pokemonAddDpFormPokemonDpFilterId(s32, s32, s32);
 extern u8 lbl_80266C30[];
 extern u32 lbl_8047B8A0;
+/* Pokémon data pointer of a party Pokémon, or 0 when the slot is empty or
+ * invalid. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper, register-only evidence - see docs/RULE_EXCEPTIONS.md */
+static inline void* gsTitlePokemonDataPtr(u32 target) {
+    extern void pokemonBiosGetPokemonDataId(s32);
+    extern void* pokemonDataBiosGetPtr(void);
+
+    if (target == 0) {
+        return 0;
+    }
+    if ((u8)pokemonCheckValid(target) == 0) {
+        return 0;
+    }
+    pokemonBiosGetPokemonDataId(target);
+    return pokemonDataBiosGetPtr();
+}
+
+/* Starts the Pokémon's cry and returns its voice id (0 without data). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper, register-only evidence - see docs/RULE_EXCEPTIONS.md */
+static inline s32 gsTitlePlayPokemonVoice(void* bios) {
+    extern u16 pokemonDataBiosGetVoice(void*);
+    s32 voice;
+
+    if (bios == 0) {
+        return 0;
+    }
+    voice = pokemonDataBiosGetVoice(bios);
+    fn_80166A28(voice);
+    return voice;
+}
+
+/* Yields to other threads for the given number of frames. */
+static inline void gsTitleWaitFrames(s32 frames) {
+    s32 wait;
+
+    for (wait = 0; wait < frames; wait += fn_800D3088()) {
+        _threadSwitch();
+    }
+}
+
 s32 fn_80022B3C(s32 arg0, s32 arg1) {
     typedef struct TitleItemMessage {
         u16 item;
@@ -3792,8 +3832,6 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     TitleItemMessageTable table;
     s32 i;
     s32 entryOffset;
-    u32 target;
-    s32 wait;
     s32 voice;
     void* bios;
     s32 j;
@@ -3823,36 +3861,20 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     if (gamedatasaveGetStatus(0, 9) == 0) {
         for (j = 0; j < 2; j++) {
             fn_800F78A4(1, 0, 0xFF, 0x15, 0);
-            for (wait = 0; wait < 0x3C; wait += fn_800D3088()) {
-                _threadSwitch();
-            }
+            gsTitleWaitFrames(0x3C);
         }
         fn_800F78A4(1, 0, 0xFF, 0x30, 0);
-        for (wait = 0; wait < 0x60; wait += fn_800D3088()) {
-            _threadSwitch();
-        }
+        gsTitleWaitFrames(0x60);
     }
 
-    target = pokemon;
-    if (target == 0) {
-        bios = 0;
-    } else if ((u8)pokemonCheckValid(target) == 0) {
-        bios = 0;
-    } else {
-        pokemonBiosGetPokemonDataId(target);
-        bios = pokemonDataBiosGetPtr();
-    }
-    if (bios == 0) {
-        voice = 0;
-    } else {
-        voice = pokemonDataBiosGetVoice(bios);
-        fn_80166A28(voice);
-    }
+    bios = gsTitlePokemonDataPtr(pokemon);
+    voice = gsTitlePlayPokemonVoice(bios);
     while (fn_801666BC(voice) == 2) {
         _threadSwitch();
     }
 
-    msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
+    nickname = pokemonBiosGetNicknamePtr(pokemon);
+    msgctrlSetValue(0x32, nickname);
     winMsgOpen(2, 0x3AF7, 1, 0);
     winMsgClose(1);
     if ((u8)fn_80121ADC(pokemon, 0x3E) != 0) {
@@ -3862,7 +3884,8 @@ s32 fn_80022B3C(s32 arg0, s32 arg1) {
     }
     if (pokemonGetDp((void*)pokemon) > *(f32*)&lbl_8047B8A0) {
         pokemonAddDpFormPokemonDpFilterId(pokemon, (u16)arg0, 4);
-        msgctrlSetValue(0x32, pokemonBiosGetNicknamePtr(pokemon));
+        nickname = pokemonBiosGetNicknamePtr(pokemon);
+        msgctrlSetValue(0x32, nickname);
         winMsgOpen(2, *(u32*)((u8*)&table.entry[0].dpMessage + entryOffset), 1, 0);
         winMsgClose(1);
     }
