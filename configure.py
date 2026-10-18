@@ -6010,14 +6010,14 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart_candidate_80060A28.c",
                 # TEMPORARY constant_import: retail shares the TU's literal pool.
                 constant_import=[
-                    {"symbol": "lbl_8047BF94", "offset": 0, "expected": "41200000"},
-                    {"symbol": "lbl_8047BF98", "offset": 4, "expected": "41a00000"},
-                    {"symbol": "lbl_8047BF9C", "offset": 8, "expected": "c1a00000"},
-                    {"symbol": "lbl_8047BF60", "offset": 12, "expected": "00000000"},
+                    {"symbol": "lbl_8047BF60", "offset": 0, "expected": "00000000"},
+                    {"symbol": "lbl_8047BF94", "offset": 4, "expected": "41200000"},
+                    {"symbol": "lbl_8047BF98", "offset": 8, "expected": "41a00000"},
+                    {"symbol": "lbl_8047BF9C", "offset": 12, "expected": "c1a00000"},
                     {"symbol": "lbl_8047BF90", "offset": 16, "expected": "3f800000"},
                 ],
                 mw_version="GC/2.0",

@@ -1109,55 +1109,52 @@ static inline void battleStartInterpolate(f32* current, f32* target, f32 delta)
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80060A28_ONLY)
 void fn_80060A28(void)
 {
-    extern const f32 lbl_8047BF60;
-    MenuCBBattleStartState* state;
     MenuCBBattleStartPlayerView* view;
     MenuCBBattleStartPosition* position;
     s32 player;
     s32 slot;
     s32 index;
 
-    state = &lbl_803A9A60;
     for (player = 0; player < 4; player++) {
-        view = &state->players[player].view;
+        view = &lbl_803A9A60.players[player].view;
         for (slot = 0; slot < 6; slot++) {
-            if (lbl_8047BF60 != view->position[slot]) {
-                view->position[slot] -= state->deltaTime;
-                if (view->position[slot] < lbl_8047BF60) {
-                    view->position[slot] = lbl_8047BF60;
+            if (0.0f != view->position[slot]) {
+                view->position[slot] -= lbl_803A9A60.deltaTime;
+                if (view->position[slot] < 0.0f) {
+                    view->position[slot] = 0.0f;
                 }
             } else if (view->side[slot] != view->alpha[slot]) {
                 battleStartInterpolate(&view->side[slot], &view->alpha[slot],
-                                       state->deltaTime);
+                                       lbl_803A9A60.deltaTime);
             }
         }
     }
 
     for (player = 0; player < 4; player++) {
-        position = &state->trainerPositions[player];
-        if (lbl_8047BF60 != position->x) {
-            position->x -= state->deltaTime;
-            if (position->x < lbl_8047BF60) {
-                position->x = lbl_8047BF60;
+        position = &lbl_803A9A60.trainerPositions[player];
+        if (0.0f != position->x) {
+            position->x -= lbl_803A9A60.deltaTime;
+            if (position->x < 0.0f) {
+                position->x = 0.0f;
             }
         } else if (position->y != position->z) {
             battleStartInterpolate(&position->y, &position->z,
-                                   state->deltaTime);
+                                   lbl_803A9A60.deltaTime);
         }
     }
 
     for (index = 0; index < 2; index++) {
-        if (lbl_8047BF60 != state->transitions.active[index]) {
+        if (0.0f != lbl_803A9A60.transitions.active[index]) {
             /* Retail decrements the slot-indexed entry (slot is 6 here). */
-            lbl_803A9A60.transitions.active[slot] -= state->deltaTime;
-            if (lbl_803A9A60.transitions.active[slot] < lbl_8047BF60) {
-                lbl_803A9A60.transitions.active[slot] = lbl_8047BF60;
+            lbl_803A9A60.transitions.active[slot] -= lbl_803A9A60.deltaTime;
+            if (lbl_803A9A60.transitions.active[slot] < 0.0f) {
+                lbl_803A9A60.transitions.active[slot] = 0.0f;
             }
-        } else if (state->transitions.current[index] !=
-                   state->transitions.target[index]) {
-            battleStartInterpolate(&state->transitions.current[index],
-                                   &state->transitions.target[index],
-                                   state->deltaTime);
+        } else if (lbl_803A9A60.transitions.current[index] !=
+                   lbl_803A9A60.transitions.target[index]) {
+            battleStartInterpolate(&lbl_803A9A60.transitions.current[index],
+                                   &lbl_803A9A60.transitions.target[index],
+                                   lbl_803A9A60.deltaTime);
         }
     }
 }
