@@ -2381,6 +2381,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     s32 answer;
     s32 room;
     s32 ret;
+    ShopWork* work;
     u8* slot;
     u8 name;
     u8 se;
@@ -2414,8 +2415,9 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     done = 0;
     switch (type) {
     case 2:
-        fn_80142A88(&params.work, 0xeb);
-        fn_80142A88(params.work.head + 0x3ac, 0xeb);
+        work = &params.work;
+        fn_80142A88(work, 0xeb);
+        fn_80142A88(work->head + 0x3ac, 0xeb);
         params.work.credit0 = 0;
         params.work.credit1 = 0;
         params.work.exitFlag = 0;
@@ -2519,19 +2521,22 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
         switch (type) {
         case 2:
-            room = (u16)pcboxGetItemCapacity(0, done);
+            room = pcboxGetItemCapacity(0, done) & 0xFFFF;
             break;
         case 3:
             if (&params.work != NULL) {
+                u16 id;
+                s32 count;
                 room = 0;
+                count = params.work.count;
                 slot = (u8*)&params.work;
-                for (i = 0; i < params.work.count; i++) {
-                    if (itemBiosGetItemDataId(slot) == (u16)done) {
+                for (i = 0; i < count; i++, slot += 4) {
+                    id = itemBiosGetItemDataId(slot);
+                    if (id == (u16)done) {
                         room += (u16)(999 - itemBiosGetNum(slot));
-                    } else if (itemBiosGetItemDataId(slot) == 0) {
+                    } else if (id == 0) {
                         room += 999;
                     }
-                    slot += 4;
                 }
             } else {
                 room = 0;
