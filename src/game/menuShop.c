@@ -27,13 +27,15 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_candidate_8002AB00.c -> fn_8002AB00
  *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8
  *   menuShop_candidate_8002B594.c -> fn_8002B594
- *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880 */
+ *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880
+ *   menuShop_candidate_8002C284.c -> fn_8002C284 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002B594_ONLY) || \
     defined(MENUSHOP_R40_8002B880_ONLY) || \
     defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002C284_ONLY) || \
     defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
     defined(MENUSHOP_ISLAND_80029850_ONLY) || \
     defined(MENUSHOP_ISLAND_80029EF4_ONLY)
@@ -2061,7 +2063,8 @@ s32 fn_8002C0E4(u8* self)
 #endif
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_8002CE6C_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002C284_ONLY)
 /* Opens the shop item list (menu 0x60) for location `loc`; returns the
  * chosen item id, or 0 if the menu was cancelled. */
 typedef struct ShopWork {
@@ -2174,7 +2177,7 @@ static inline void shopOpenTravelList(ShopListMenu* params, u32 loc, u8 mode)
 }
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002C284_ONLY)
 /* fn_8002C284 - 0x8002C284 | size: 0x184 */
 extern void menuCloseCustom(void);
 extern u32 lbl_804788A8;
@@ -2196,9 +2199,11 @@ asm void fn_8002C284(void) {
  * loc_idx: world-map location index (indexes into lbl_80478E54 table)
  * mode:    dialog mode; 0x02 or 0x03 = skip the format-text preamble call
  */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENUSHOP_CANDIDATE_8002C284_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_8002C284(u32 loc_idx, u8 mode)
 {
     extern void   fn_8002A1C4(u8* r3, s32 r4, s32 r5, ...); /* GSmap_FormatText2 */
@@ -2236,9 +2241,13 @@ void fn_8002C284(u32 loc_idx, u8 mode)
     shopOpenTravelList(&params, loc_idx, mode);
     menuCloseCustom(0x60, 0, 1);
 }
+#if !defined(MENUSHOP_CANDIDATE_8002C284_ONLY)
 #pragma pop
 #endif
+#endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 /* fn_8002C408 - 0x8002C408 | size: 0xa64 */
 extern void savedataGetStatus(void);
 extern void pcboxGetItemCapacity(void);

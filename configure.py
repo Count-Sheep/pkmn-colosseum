@@ -8269,8 +8269,17 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuShop_candidate_8002C284.c",
+                # fn_8002C284 only (MENUSHOP_CANDIDATE_8002C284_ONLY carve); the
+                # unit-level -opt nopeephole replaces the file's local pragma.
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menuShop_candidate_8002C408.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
@@ -10336,13 +10345,13 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menuShop_candidate_8002B1A0.c",
+                # Whole-file compile: the pool also holds fn_8002B880's float
+                # literals (0x18-0x34), mapped as in its linked carve.
                 constant_import=[
                     {"symbol": "lbl_8047B988", "offset": 0, "expected": "40c90fdb"},
                     {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
                     {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
                     {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
-                    # fn_8002B880's float literals (it builds alone, linked, in
-                    # menuShop_r40_8002B880_gc125n).
                     {"symbol": "lbl_8047B9A4", "offset": 0x18, "expected": "40000000"},
                     {"symbol": "lbl_8047B9A0", "offset": 0x1C, "expected": "3f000000"},
                     {"symbol": "lbl_8047B978", "offset": 0x20, "expected": "437f0000"},
