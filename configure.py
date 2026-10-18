@@ -11353,6 +11353,11 @@ config.libs = [
             ),
             Object(
                 Matching,
+                "dolphin/os/OSReset_prefix_exact.c",
+                progress_category="sdk",
+            ),
+            Object(
+                Matching,
                 "dolphin/os/OSReset_exact.c",
                 progress_category="sdk",
             ),

@@ -59,7 +59,7 @@ typedef struct OSResetFunctionQueue {
     OSResetFunctionInfo* tail;
 } OSResetFunctionQueue;
 
-#if defined(OSRESET_SUFFIX)
+#if defined(OSRESET_SUFFIX) || defined(OSRESET_PREFIX_REBOOT) || defined(OSRESET_PREFIX_EXACT)
 #define ResetFunctionQueue (*(OSResetFunctionQueue*)&ResetFunctionQueue_8047A738)
 #else
 static OSResetFunctionQueue ResetFunctionQueue;
@@ -123,7 +123,7 @@ volatile u16 __VIRegs[59] AT_ADDRESS(0xCC002000);
 #if defined(OSRESET_SUFFIX)
 static inline int CallResetFunctions(int final);
 extern void Reset_8009FF50(u32 resetCode);
-#elif defined(OSRESET_PREFIX)
+#elif defined(OSRESET_PREFIX_EXACT)
 s32 fn_8009FEBC(s32 final);
 #else
 static int CallResetFunctions(int final);
@@ -139,7 +139,7 @@ static inline BOOL IsStreamEnabled(void) {
     return FALSE;
 }
 
-#if !defined(OSRESET_SUFFIX)
+#if !defined(OSRESET_SUFFIX) && !defined(OSRESET_PREFIX_EXACT)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -220,15 +220,18 @@ void __OSReboot(u32 resetCode, u32 bootDol) {
     fn_8009FADC((void*)0x81300000);
 }
 #pragma pop
+#endif
 
+#if !defined(OSRESET_SUFFIX) && !defined(OSRESET_PREFIX_REBOOT)
 void OSRegisterResetFunction(OSResetFunctionInfo* info) {
     ENQUEUE_INFO_PRIO(info, &ResetFunctionQueue);
 }
 #endif
 
+#if !defined(OSRESET_PREFIX_REBOOT)
 #if defined(OSRESET_SUFFIX)
 static inline int CallResetFunctions(int final) {
-#elif defined(OSRESET_PREFIX)
+#elif defined(OSRESET_PREFIX_EXACT)
 s32 fn_8009FEBC(s32 final) {
 #else
 static int CallResetFunctions(int final) {
@@ -251,8 +254,9 @@ static int CallResetFunctions(int final) {
     }
     return 1;
 }
+#endif
 
-#if !defined(OSRESET_PREFIX) && !defined(OSRESET_SUFFIX)
+#if !defined(OSRESET_PREFIX_REBOOT) && !defined(OSRESET_PREFIX_EXACT) && !defined(OSRESET_SUFFIX)
 static asm void Reset(u32 resetCode) {
     nofralloc
     b       _skip1
@@ -295,7 +299,7 @@ _hang2:
 }
 #endif
 
-#if !defined(OSRESET_PREFIX)
+#if !defined(OSRESET_PREFIX_REBOOT) && !defined(OSRESET_PREFIX_EXACT)
 static inline void CancelThreads(void) {
     OSThread* thread;
     OSThread* next;
