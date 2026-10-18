@@ -1676,8 +1676,14 @@ game/gbaCommunication_candidate_80091DA4.c:
 game/gbaCommunication_exact_80092FC8.c:
 	.text       start:0x80092FC8 end:0x800937F4
 
-game/gbaCommunication_candidate_800937F4.c:
-	.text       start:0x800937F4 end:0x80093F2C
+game/gbaCommunication_exact_800937F4.c:
+	.text       start:0x800937F4 end:0x80093B04
+
+game/gbaCommunication_exact_80093B04.c:
+	.text       start:0x80093B04 end:0x80093B4C
+
+game/gbaCommunication_candidate_80093B4C.c:
+	.text       start:0x80093B4C end:0x80093F2C
 
 game/gbaCommunication_exact_80093F2C.c:
 	.text       start:0x80093F2C end:0x80094650

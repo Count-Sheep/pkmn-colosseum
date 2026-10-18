@@ -1,0 +1,3 @@
+#define GBA_COMMUNICATION_REMAINDER_80092FC8
+#define GBA_COMMUNICATION_EXACT_800937F4_ONLY
+#include "src/game/gbaCommunication.c"

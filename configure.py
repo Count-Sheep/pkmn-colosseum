@@ -4015,8 +4015,31 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
+                Matching,
+                "game/gbaCommunication_exact_800937F4.c",
+                constant_import=[
+                    {"symbol": "lbl_8047C1F8", "offset": 0, "expected": "4330000000000000"},
+                ],
+                jump_table_import={
+                    "symbol": "jumptable_802EECF0",
+                    "function": "fn_800937F4",
+                    "owner": "game/data/data_802EEB78.c",
+                    "owner_offset": 0x178,
+                },
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/gbaCommunication_exact_80093B04.c",
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
                 CodeCandidate,
-                "game/gbaCommunication_candidate_800937F4.c",
+                "game/gbaCommunication_candidate_80093B4C.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",

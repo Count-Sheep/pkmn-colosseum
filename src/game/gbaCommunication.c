@@ -110,7 +110,8 @@ extern u8 menuSubGetPokemonSexForDisp(void* pokemon);
 
 #if !defined(GBA_COMMUNICATION_DECLS_ONLY)
 
-#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY) && \
+    !defined(GBA_COMMUNICATION_EXACT_800937F4_ONLY)
 
 typedef struct RibbonSpriteInfo {
     u16 spriteId;
@@ -1773,6 +1774,8 @@ s32 fn_800937F4(void* arg0)
 }
 #pragma pop
 
+#if !defined(GBA_COMMUNICATION_EXACT_800937F4_ONLY)
+
 /* 0x80093B04 | size: 0x48 */
 void fn_80093B04(u32 a, u32 b) {
     u32 r31;
@@ -2865,9 +2868,11 @@ s32 fn_80097F08(u32 arg0, u32 arg1, u32 arg2) {
 /* PPCMfmsr .. PPCMtwpar (0x80097FFC - 0x800980E0) are the SDK PPCArch.c
  * primitives; they link from dolphin/os/PPCArch.c. */
 
+#endif /* GBA_COMMUNICATION_EXACT_800937F4_ONLY */
 #endif
 
-#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY) && \
+    !defined(GBA_COMMUNICATION_EXACT_800937F4_ONLY)
 
 /* 0x80092E38: defined in gbaCommunication_candidate_80091DA4.c. */
 
