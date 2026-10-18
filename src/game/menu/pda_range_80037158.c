@@ -3905,8 +3905,7 @@ void fn_80044630(void) {
                     *(f32*)(S + 0x74) = lbl_8047BC94;
                     *(f32*)(S + 0x64) = lbl_8047BCF0;
 
-                    cam = fn_801CBA0C(0x0D181000);
-                    *(void**)(S + 0x10C) = cam;
+                    cam = *(void**)(S + 0x10C) = fn_801CBA0C(0x0D181000);
                     GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), cam),
                                        lbl_8047BD18);
                     GSmodelSet60fpsAnimFlag(*(void**)(S + 0x110), 1);
@@ -4085,8 +4084,7 @@ void fn_80044630(void) {
                 *(f32*)(S + 0x74) = lbl_8047BC94;
                 *(f32*)(S + 0x64) = lbl_8047BCF0;
 
-                h = fn_801CBA0C(0x0D171000);
-                *(void**)(S + 0x10C) = h;
+                h = *(void**)(S + 0x10C) = fn_801CBA0C(0x0D171000);
                 GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h),
                                    lbl_8047BD18);
 
@@ -4263,8 +4261,7 @@ void fn_80044630(void) {
                 *(f32*)(S + 0x74) = lbl_8047BC94;
                 *(f32*)(S + 0x64) = lbl_8047BCF0;
 
-                h = fn_801CBA0C(0x0D171000);
-                *(void**)(S + 0x10C) = h;
+                h = *(void**)(S + 0x10C) = fn_801CBA0C(0x0D171000);
                 GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h),
                                    lbl_8047BD18);
 
@@ -4416,8 +4413,7 @@ void fn_80044630(void) {
                     *(f32*)(S + 0x74) = lbl_8047BC94;
                     *(f32*)(S + 0x64) = lbl_8047BCF0;
 
-                    h = fn_801CBA0C(0x0D171000);
-                    *(void**)(S + 0x10C) = h;
+                    h = *(void**)(S + 0x10C) = fn_801CBA0C(0x0D171000);
 
                     GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h),
                                        lbl_8047BD18);
