@@ -8992,7 +8992,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_r50_8006EFF8_gc20_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=[

@@ -40,6 +40,7 @@
     !defined(MENU_MIDDLE_EXACT_8006D940_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006DC28_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E9A4_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006EFF8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006F284_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006F720_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006FBFC_ONLY) && \
@@ -3947,7 +3948,10 @@ normal:
     menuCursorNormal(menu);
 }
 
+#endif
 
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006EFF8_ONLY)
 /* 0x8006EFF8 | size: 0x28C */
 void fn_8006EFF8(void* menu) {
     typedef struct Entry_8006EFF8 {

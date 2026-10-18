@@ -1,2 +1,2 @@
-/* Score instrumentation only; not evidence of a retail TU boundary. */
-#include "src/game/menu/menu_middle_candidate_8006EE7C.c"
+#define MENU_MIDDLE_EXACT_8006EFF8_ONLY
+#include "src/game/menu/menu_middle.c"
