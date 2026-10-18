@@ -3793,8 +3793,9 @@ void fn_8006E338(void* obj) {
             for (col = 0; col < 14u; col++) {
                 playerWidgets[col] = windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[port][col]);
             }
-            fn_8006E338_SetIcon(playerWidgets[4], (s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[i]) != 0 ? 0x2B2 : 0x2AE);
-            fn_80071318(playerWidgets[5], menuSpriteBiosGetPtr(((u16*)&lbl_8047C058)[i]));
+            sprite = menuSpriteBiosGetPtr((s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[i]) != 0 ? 0x2B2 : 0x2AE);
+            fn_80071318(playerWidgets[4], sprite);
+            fn_8006E338_SetIcon(playerWidgets[5], ((u16*)&lbl_8047C058)[i]);
             color = sMenuCBHookTrainerColors_8006E338[i];
             w0 = playerWidgets[0];
             w1 = playerWidgets[1];
