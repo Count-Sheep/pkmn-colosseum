@@ -11346,7 +11346,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_carde_matrix_candidate_8007CBB4.c",
                 mw_version="GC/2.0",
                 # TEMPORARY constant_import: the unit's Card-E matrix tables

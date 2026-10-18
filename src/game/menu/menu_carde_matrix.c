@@ -782,10 +782,10 @@ void fn_8007CBB4(void* window, MenuCardEMatrixItem* item) {
             if (cell->valid != 0) {
                 item->msgId = 0xE5;
                 value = cell->value;
-                menuCardEDigits[3] = 0;
                 menuCardEDigits[0] = '0' + (value / 100) % 10;
                 menuCardEDigits[1] = '0' + (value / 10) % 10;
                 menuCardEDigits[2] = '0' + value % 10;
+                menuCardEDigits[3] = 0;
                 msgctrlSetValue(0x37, menuCardEDigits);
             }
             break;
