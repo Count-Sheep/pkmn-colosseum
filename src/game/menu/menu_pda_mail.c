@@ -153,8 +153,8 @@ void fn_8004B7EC(void)
     register f32* transition = &state->transition;
     s32 phase = 0;
     s32 active;
-    void* model;
     void* light;
+    void* model;
 
     state->exiting = 0;
     state->selection = 0;
