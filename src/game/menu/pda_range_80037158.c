@@ -3125,9 +3125,9 @@ void fn_8003CF38(void)
     }
     for (i = 0; i < (s32)lbl_8047A4DC; i++) {
         lbl_8047A4D4[i].field_00 =
-            ((PdaListEntry*)(sortEntries + i * 8 + 4))->field_00;
+            ((PdaListEntry*)((u8*)lbl_8047A4D8 + i * 8 + 4))->field_00;
         lbl_8047A4D4[i].battleId =
-            ((PdaListEntry*)(sortEntries + i * 8 + 4))->battleId;
+            ((PdaListEntry*)((u8*)lbl_8047A4D8 + i * 8 + 4))->battleId;
     }
 
     handle = fn_800E202C(lbl_8047A4D8);
