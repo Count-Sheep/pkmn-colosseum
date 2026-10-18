@@ -6484,7 +6484,6 @@ config.libs = [
                     (Matching, "game/menu/menu_exact_80075A34.c"),
                     (Matching, "game/menu/menu_candidate_80075DC8.c"),
                     (Matching, "game/menu/menu_exact_80075EE0.c"),
-                    (CodeCandidate, "game/menu/menu_candidate_80076054.c"),
                     (Matching, "game/menu/menu_exact_80076334.c"),
                     (CodeCandidate, "game/menu/menu_candidate_80076A8C.c"),
                     (Matching, "game/menu/menu_exact_80076F2C.c"),
@@ -6492,6 +6491,30 @@ config.libs = [
                     (Matching, "game/menu/menu_exact_80077A5C.c"),
                 ]
             ],
+            # Linked carve 0x80076054-0x80076334 (MENU_80076054_ONLY). GC/1.3.2
+            # with read-only strings pools the menuCB_Rule.c tables and assert
+            # strings off one base as retail does; the pool is retail
+            # lbl_80268940 (rodata_8026860C.c), so the import checks its bytes
+            # and retargets the relocations there.
+            Object(
+                Matching,
+                "game/menu/menu_candidate_80076054.c",
+                # TEMPORARY constant_import: the carve's read-only pool is
+                # retail lbl_80268940 + 0x0..0x135 (rule presets, error table,
+                # assert file and condition strings).
+                constant_import=[
+                    {"symbol": "lbl_80268940", "section": ".rodata", "offset": 0, "expected": (
+                        "0001006402580001000000000101000001010001ffc4ffec00000000000000000000000000000000000000000000000000000000000000000000000000000000"
+                        "000000000000000000000000000000000000000000010032012c0006000000000000000001010001ffc4ffec0000000000000000000000000000000000000000"
+                        "000000000000000000000000000000000000000000000000000000000000000000000000000000000001006402580006000000000000000001010001ffc4ffec"
+                        "00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044254427"
+                        "44284429442a44bf6d656e7543425f52756c652e63000000302026262273706563696669656420696e76616c6964206172672e2200"
+                    )},
+                ],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-rostr"],
+                progress_category="game",
+            ),
             # Linked carve 0x80077ED4-0x800798E8 (MENU_R47_80077ED4_ONLY): owns
             # fn_80078D5C's switch table and the shared int->float biases.
             Object(

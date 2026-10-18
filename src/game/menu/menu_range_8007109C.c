@@ -18,7 +18,9 @@
  * build only their own run of functions. */
 #if defined(MENU_R56B_8007109C_ONLY) || defined(MENU_R47_80077ED4_ONLY) || \
     defined(MENU_R47_80079C1C_ONLY) || defined(MENU_80075390_ONLY) || \
-    defined(MENU_R56B_80071398_ONLY) || defined(MENU_80073E8C_ONLY)
+    defined(MENU_R56B_80071398_ONLY) || defined(MENU_80073E8C_ONLY) || \
+    defined(MENU_80076054_ONLY) || defined(MENU_80076A8C_ONLY) || \
+    defined(MENU_800776E4_ONLY)
 #define MENU_RANGE_CARVE 1
 #endif
 
@@ -820,7 +822,9 @@ s32 fn_80074324(s32 arg0) {
     return fn_80074360(arg0);
 }
 
+#endif /* !MENU_RANGE_CARVE */
 
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_80076A8C_ONLY)
 /* Empty-slot test as used inside the party-rule loops: the null flag is
  * kept in a register so the following usability test can reuse it. */
 static inline s32 menuRulePokemonIsBlank(void* pokemon)
@@ -937,7 +941,9 @@ u8 fn_80076A8C(void* hero, void* pokemon, const u8* rule, s32 mode)
 
     return 0;
 }
+#endif /* !MENU_RANGE_CARVE || MENU_80076A8C_ONLY */
 
+#if !defined(MENU_RANGE_CARVE)
 /* Check the whole party against the selected party rule. */
 u8 fn_80076F2C(void* hero, const u8* rule, s32 mode)
 {
@@ -1197,7 +1203,14 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
 
 
 #endif /* !MENU_RANGE_CARVE || MENU_80073E8C_ONLY */
-#if !defined(MENU_RANGE_CARVE)
+#if defined(MENU_80076054_ONLY) || defined(MENU_800776E4_ONLY)
+/* File-scope declarations the linked carves need from the excluded part. */
+extern void __assert(const char* file, u32 line, const char* msg);
+extern u8 fn_80076398(void* pokemon, s32 check);
+#endif /* MENU_80076054_ONLY || MENU_800776E4_ONLY */
+
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_80076054_ONLY) || \
+    defined(MENU_800776E4_ONLY)
 extern u32 lbl_80478928;
 extern u16 lbl_802EE458[];
 
@@ -1310,17 +1323,65 @@ static inline u8 menuRuleCheckSlotMode(void* pokemon, const s16* levels,
     }
     return menuRuleCheckPresentPokemonMode(pokemon, levels, mode, file, cond);
 }
+#endif /* !MENU_RANGE_CARVE || MENU_80076054_ONLY || MENU_800776E4_ONLY */
 
-/* Return the message id of the first party or rule check that fails.
- * Retail addresses the error table and assert strings off one base
- * (lbl_80268940, the module's pooled rodata) and indexes the table as
- * lhzx (base + 0xFC), i*2. Indexing a struct member array keeps the
- * base + 0xFC add; the remaining difference is operand order (MWCC adds
- * 0xFC to i*2 first), likely because retail owns the table as a static. */
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_80076054_ONLY)
+/* Return the message id of the first party or rule check that fails. */
+#if defined(MENU_80076054_ONLY)
+/* The linked carve rebuilds the menuCB_Rule.c read-only pool (retail
+ * lbl_80268940: the three rule presets, the error-message table and the
+ * assert strings) as the TU's own objects, so GC/1.3.2 addresses them off
+ * one pool base as retail does (addi base,0xFC; lhzx for the table). The
+ * constant_import in configure.py checks the bytes and points the
+ * relocations back at lbl_80268940, which rodata_8026860C.c owns. */
+/* RULE-EXCEPTION(user-approved): verified shared-pool import of retail lbl_80268940 - see docs/RULE_EXCEPTIONS.md */
+static const u8 menuRulePresets[3][0x54] = {
+    {
+        0x00, 0x01, 0x00, 0x64, 0x02, 0x58, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+        0x01, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0xFF, 0xC4, 0xFF, 0xEC,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    },
+    {
+        0x00, 0x01, 0x00, 0x32, 0x01, 0x2C, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0xFF, 0xC4, 0xFF, 0xEC,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    },
+    {
+        0x00, 0x01, 0x00, 0x64, 0x02, 0x58, 0x00, 0x06, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x01, 0xFF, 0xC4, 0xFF, 0xEC,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    },
+};
+static const u16 menuRuleErrorMessages[6] = {
+    0x4425, 0x4427, 0x4428, 0x4429, 0x442A, 0x44BF,
+};
+#define MENU_RULE_ERROR_MESSAGE(text, i) menuRuleErrorMessages[i]
+#define MENU_RULE_ASSERT_FILE(text) "menuCB_Rule.c"
+#define MENU_RULE_ASSERT_COND(text) "0 &&\"specified invalid arg.\""
+#else
+/* Retail addresses the error table and assert strings off one base
+ * (lbl_80268940, the module's pooled rodata). */
 typedef struct MenuRuleText {
     u8 pad_000[0xFC];
     u16 errorMessages[6];
 } MenuRuleText;
+#define MENU_RULE_ERROR_MESSAGE(text, i) \
+    (((const MenuRuleText*)(text))->errorMessages[i])
+#define MENU_RULE_ASSERT_FILE(text) ((const char*)((text) + 0x108))
+#define MENU_RULE_ASSERT_COND(text) ((const char*)((text) + 0x118))
+#endif
 
 s32 fn_80076054(void* hero, const u8* battleRules)
 {
@@ -1337,7 +1398,7 @@ s32 fn_80076054(void* hero, const u8* battleRules)
     for (error = 0; error < 6; error++) {
         for (slot = 0; slot < 6; slot++) {
             if (fn_80076398(heroBiosGetPokemonPtr(hero, (u16)slot), error) == 0) {
-                return ((const MenuRuleText*)text)->errorMessages[error];
+                return MENU_RULE_ERROR_MESSAGE(text, error);
             }
         }
     }
@@ -1351,8 +1412,8 @@ s32 fn_80076054(void* hero, const u8* battleRules)
             if (menuRuleCheckSlotMode(
                     heroBiosGetPokemonPtr(hero, (u16)ruleSlot),
                     (const s16*)battleRules, mode,
-                    (const char*)(text + 0x108),
-                    (const char*)(text + 0x118)) == 0) {
+                    MENU_RULE_ASSERT_FILE(text),
+                    MENU_RULE_ASSERT_COND(text)) == 0) {
                 return lbl_8047C0D0[mode];
             }
         }
@@ -1365,7 +1426,9 @@ s32 fn_80076054(void* hero, const u8* battleRules)
     }
     return 0;
 }
+#endif /* !MENU_RANGE_CARVE || MENU_80076054_ONLY */
 
+#if !defined(MENU_RANGE_CARVE)
 /* menuCBRule_CheckPokemonErrorAll (0x80076334): require every party member to
  * pass the per-slot error check. */
 u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
@@ -1379,7 +1442,9 @@ u8 menuCBRule_CheckPokemonErrorAll(void* pokemon) {
     }
     return 1;
 }
+#endif /* !MENU_RANGE_CARVE */
 
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_800776E4_ONLY)
 /* Check every whole-party rule. */
 static inline u8 menuRuleCheckPartyAllModes(void* hero, const u8* rule)
 {
@@ -1393,7 +1458,9 @@ static inline u8 menuRuleCheckPartyAllModes(void* hero, const u8* rule)
     }
     return 1;
 }
+#endif /* !MENU_RANGE_CARVE || MENU_800776E4_ONLY */
 
+#if !defined(MENU_RANGE_CARVE)
 /* Validate every party member against the active battle rule. */
 u8 fn_800767B8(void* hero, const u8* rule)
 {
@@ -1430,7 +1497,9 @@ pokemon_checked:
     }
     return partyCount > 0;
 }
+#endif /* !MENU_RANGE_CARVE */
 
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_800776E4_ONLY)
 /* Inlined copy of fn_800767B8 used by fn_800776E4. */
 /* RULE-EXCEPTION(user-approved): inline helper duplicating a real function's body — see docs/RULE_EXCEPTIONS.md */
 static inline u8 menuRuleCheckParty(void* hero, const u8* rule)
@@ -1469,6 +1538,20 @@ pokemon_checked:
     return partyCount > 0;
 }
 
+/* Inlined copy of menuCBRule_CheckPokemonErrorAll used by fn_800776E4. */
+/* RULE-EXCEPTION(user-approved): inline helper duplicating a real function's body - see docs/RULE_EXCEPTIONS.md */
+static inline u8 menuRulePokemonHasNoError(void* pokemon)
+{
+    s32 i;
+
+    for (i = 0; i < 6; i++) {
+        if (fn_80076398(pokemon, i) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 /* Check every party slot for Pokemon errors. */
 static inline u8 menuRulePartyHasNoPokemonError(void* hero)
 {
@@ -1478,7 +1561,7 @@ static inline u8 menuRulePartyHasNoPokemonError(void* hero)
 
     for (slot = 0; (u16)slot < 6; slot++) {
         pokemon = heroBiosGetPokemonPtr(hero, slot);
-        if (menuCBRule_CheckPokemonErrorAll(pokemon) == 0) {
+        if (menuRulePokemonHasNoError(pokemon) == 0) {
             return 0;
         }
     }
@@ -1493,7 +1576,9 @@ u8 fn_800776E4(void* hero)
     return menuRulePartyHasNoPokemonError(hero) &&
            menuRuleCheckParty(hero, fn_8006B420());
 }
+#endif /* !MENU_RANGE_CARVE || MENU_800776E4_ONLY */
 
+#if !defined(MENU_RANGE_CARVE)
 /* fn_80077A5C (0x80077A5C): accept an empty slot or a zero species value. */
 u8 fn_80077A5C(void* pokemon) {
     extern s32 pokemonGetStatus(void* pokemon, s32 index, s32 field, s32 subindex);
