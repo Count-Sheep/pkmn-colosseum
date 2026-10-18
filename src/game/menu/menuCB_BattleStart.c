@@ -27,7 +27,8 @@
     defined(MENUCB_BATTLESTART_80062284_ONLY) || \
     defined(MENUCB_BATTLESTART_800626CC_ONLY) || \
     defined(MENUCB_BATTLESTART_80062834_ONLY) || \
-    defined(MENUCB_BATTLESTART_8005DFC8_ONLY)
+    defined(MENUCB_BATTLESTART_8005DFC8_ONLY) || \
+    defined(MENUCB_BATTLESTART_8005FFE4_ONLY)
 #define MENUCB_BATTLESTART_SPLIT_UNIT
 #endif
 
@@ -703,7 +704,7 @@ typedef struct MenuCBBattleStartOrderTable {
     MenuCBBattleStartOrderRow row[6];
 } MenuCBBattleStartOrderTable;
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005FFE4_ONLY)
 void _menuCBBattleStartSetIndex__Fv(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);

@@ -10,7 +10,10 @@ literal section, so the unit no longer allocates its own copy.  No code bytes
 change.  Remove it when the original source files are merged back into one
 translation unit.
 
-Only the layout "the listed literals are the whole section" is supported.
+Only the layout "the listed literals are the whole section" is supported.  A
+compiler literal may be covered by several consecutive entries when retail
+labels its words separately (an 8-byte aggregate initialiser read as two
+4-byte words); each reference is then retargeted to the entry it points into.
 Anything else fails loudly and leaves the object untouched.
 
 A .rodata entry is a string pool (MWCC -rostr): the unit's whole .rodata,
@@ -224,12 +227,21 @@ def import_constants(path, literals):
             owner.setdefault(id(pool), index)
             removed_symbols.add(index)
             continue
-        matches = [e for e in literals if e["section"] == section_name and
-                   e["offset"] == symbol["value"] and len(e["expected"]) == symbol["size"]]
-        if kind != STT_OBJECT or len(matches) != 1 or id(matches[0]) in owner:
+        # One literal per compiler object, or several that tile it exactly
+        # (retail labels an 8-byte aggregate initialiser as two 4-byte words).
+        start, end = symbol["value"], symbol["value"] + symbol["size"]
+        matches = sorted((e for e in literals if e["section"] == section_name and
+                          start <= e["offset"] < end), key=lambda e: e["offset"])
+        cursor = start
+        for entry in matches:
+            if entry["offset"] != cursor or id(entry) in owner:
+                break
+            cursor += len(entry["expected"])
+        if kind != STT_OBJECT or not matches or cursor != end:
             raise ValueError(f"{symbol['name']} in {section_name} does not match one "
-                             "registered literal")
-        owner[id(matches[0])] = index
+                             "registered literal or an exact tiling of registered literals")
+        for entry in matches:
+            owner[id(entry)] = index
         removed_symbols.add(index)
     for entry in literals:
         if id(entry) not in owner:
