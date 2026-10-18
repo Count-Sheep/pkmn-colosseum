@@ -143,6 +143,7 @@ s32 fn_80041E48(void* work, s32 mode)
 
     (void)work;
     (void)mode;
+    /* RULE-EXCEPTION(user-approved): codegen-only mask - & 0xffff on the u16 key read gives retail's clrlwi before each key test (fn_80041E48) - see docs/RULE_EXCEPTIONS.md */
     keys = *(u16*)(lbl_803A67FC + 6) & 0xffff;
     dt = (f32)fn_800D3088() / (f32)fn_800D37CC();
     G(0x3c) = dt;
