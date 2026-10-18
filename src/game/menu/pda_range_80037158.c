@@ -3087,12 +3087,12 @@ void fn_8003CF38(void)
     extern u8 fn_801EE8F4(u16 id);
     extern u16 fn_801EE614(u16 id);
     u8 temporary[8];
-    u8* sortEntries;
-    u8* lower;
-    s32 i;
     s32 gap;
-    s32 count;
+    u8* lower;
     s32 j;
+    u8* sortEntries;
+    s32 i;
+    s32 count;
     u32 allocation;
     u32 handle;
 
