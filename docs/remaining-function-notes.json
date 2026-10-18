@@ -371,5 +371,12 @@
     "remaining_diff": "None in the linked middle unit. The flanking _sysvarsProcessData__FP16sysvarsFuncEntryPc and fn_80034FB4 remain nonexact.",
     "pipeline_action": "When carving an exact block, suppress unused out-of-line inline helpers, import byte-verified shared conversion constants, and import an interior retail-owned jump table only after its entire byte span and relocation list match. A text-only 100% score is insufficient.",
     "rejected_probes": "The first carve emitted a 0xCC-byte unused wait helper, a private 0x58-byte switch table, and two private double constants; the DOL hash failed. Splitting the retail .data owner around its 4-byte-aligned table shifted later sections despite 100% section scores. Both failed layouts were replaced by verified imports."
+  },
+
+  "evolutionDemo": {
+    "best_local_change": "2026-10-18: evolutionGetPokemonData holds the pointer in a named local before returning it (99.28% -> 99.33%); before is now r31.",
+    "remaining_diff": "Registers only: after/wait swap (r30/r29), state r22 vs r19, first r23 vs r22, the hoisted kind base r24 vs r23, loop-1 model r18 vs r24, trigger r19 vs r24, the move ids and late voices r19 vs r18, and the 0x4330 bias register.",
+    "pipeline_action": "GC/2.6 replays the unit exactly (kaisi_model capture.py; model.py reproduces every colour). The replay says retail needs (a) state numbered below skipped (declare state after skipped) and (b) two more kept (coalesced) copies whose live range covers the loop-1 seqUpdate model load to its fn_801DA94C call, without adding more than one in the fade loop. Kept copies only appeared for call results held in a named local and then moved (argument/return), or multi-definition returns.",
+    "rejected_probes": "No graph change from: getSeqModel with a local or ternary, id/model through extra inlines, seq parameters, function-level model/id, playing type/return forms, fn_801DA94C/9E8/8C4 prototype changes, skip-check inline, time/wait casts, voice wrapper layers, GC/1.3-2.6, -O4,p/s, -inline variants. Direct model/id expressions in seqUpdate let CSE merge the two slwi (code change). Linking also needs a carve that drops evolutionStart/evolutionOpen/evolution with evolutionWazaLearn emitted first (retail order), and a constant_import for lbl_8047E6B8 (the 0x43300000 bias)."
   }
 }
