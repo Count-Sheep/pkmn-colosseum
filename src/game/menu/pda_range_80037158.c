@@ -3075,6 +3075,11 @@ static inline void* pdaAlloc(s32 size, s32 align)
     return NULL;
 }
 
+typedef struct PdaSortEntry {
+    s32 key;
+    PdaListEntry entry;
+} PdaSortEntry;
+
 #pragma peephole off
 void fn_8003CF38(void)
 {
@@ -3109,11 +3114,10 @@ void fn_8003CF38(void)
              fn_801EE614(i + 1) != 0)) {
             lbl_8047A4D4[count].field_00 = value;
             lbl_8047A4D4[count].battleId = (u16)(i + 1);
-            *(u32*)((u8*)lbl_8047A4D8 + count * 8) =
-                fn_801EE0BC();
-            ((PdaListEntry*)((u8*)lbl_8047A4D8 + count * 8 + 4))->field_00 =
+            ((PdaSortEntry*)lbl_8047A4D8)[count].key = fn_801EE0BC();
+            ((PdaSortEntry*)lbl_8047A4D8)[count].entry.field_00 =
                 lbl_8047A4D4[count].field_00;
-            ((PdaListEntry*)((u8*)lbl_8047A4D8 + count * 8 + 4))->battleId =
+            ((PdaSortEntry*)lbl_8047A4D8)[count].entry.battleId =
                 lbl_8047A4D4[count].battleId;
             count++;
         }
@@ -3137,10 +3141,8 @@ void fn_8003CF38(void)
         }
     }
     for (i = 0; i < (s32)lbl_8047A4DC; i++) {
-        lbl_8047A4D4[i].field_00 =
-            ((PdaListEntry*)((u8*)lbl_8047A4D8 + i * 8 + 4))->field_00;
-        lbl_8047A4D4[i].battleId =
-            ((PdaListEntry*)((u8*)lbl_8047A4D8 + i * 8 + 4))->battleId;
+        lbl_8047A4D4[i].field_00 = ((PdaSortEntry*)lbl_8047A4D8)[i].entry.field_00;
+        lbl_8047A4D4[i].battleId = ((PdaSortEntry*)lbl_8047A4D8)[i].entry.battleId;
     }
 
     handle = fn_800E202C(lbl_8047A4D8);
@@ -9646,9 +9648,9 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
             msgctrlSetValue(0x37, msg);
             y = (s32)rowY;
             fn_800FB680(0, y, tint | alphaSprite->alphaByte, (void*)0xe7);
-            msgctrlSetValue(0x37, owner);
-            fn_800FB680(0x89, y, tint | alphaSprite->alphaByte, (void*)0xe7);
             msgctrlSetValue(0x37, caption);
+            fn_800FB680(0x89, y, tint | alphaSprite->alphaByte, (void*)0xe7);
+            msgctrlSetValue(0x37, owner);
             fn_800FB680(0x13d, y, tint | alphaSprite->alphaByte, (void*)0xe7);
         }
         rowY = rowY + stride;
