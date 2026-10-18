@@ -87,7 +87,7 @@ static inline void menuPokemonChangeAlert(u32 msgId) {
 #if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002EE74_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY) || \
-    defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY)
+    defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define MENU_POKEMON_CHANGE_EXACT_ISLAND
 #endif
@@ -736,7 +736,8 @@ void fn_8002E460(void* dst) {
 
 #endif
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY) || \
+    defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY)
 
 /* Whether `party` has another Pokemon, besides slot `exclude`, that can
  * stay behind (healthy, not an egg, event flag set, nonzero 0x83). */
@@ -766,19 +767,20 @@ static inline u8 menuPokemonChangeHasOther(void* hero, s32 exclude) {
 }
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY)
 /* 0x8002EA5C | size: 0x418
  * Picks the selected party Pokemon as the one to trade, refusing it when its
  * held item cannot be traded or when no other Pokemon could stay behind. */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY)
+/* RULE-EXCEPTION(user-approved): local peephole-control pragma for whole-file compiles; linked carve uses unit-level -opt nopeephole - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_8002EA5C(void) {
     extern u8 lbl_803A2688[];
     extern u32 lbl_8047A428;
     extern u32 lbl_8047A420;
     extern u32 lbl_8047A42C;
-    extern const f32 lbl_8047B9D0;
     extern void* heroGetStatus(void* hero, u32 selector, u16 index);
     extern u16 pokemonBiosGetItemDataId(void* pokemon);
     extern void* itemDataBiosGetPtr(u16 id);
@@ -821,13 +823,15 @@ void fn_8002EA5C(void) {
         return;
     }
     lbl_8047A420 = lbl_8047A428;
-    menuPokemonChangeWait(lbl_8047B9D0);
-    fadeSet(lbl_8047B9D0, 3);
+    menuPokemonChangeWait(0.3f);
+    fadeSet(0.3f, 3);
     fadeCheck(1);
     menuClose(0xD9);
     lbl_8047A42C = 0xC;
 }
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY)
 #pragma pop
+#endif
 
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002EE74_ONLY)
