@@ -454,7 +454,7 @@ extern u8 lbl_8047A286;
 
 /* 0x80008868 | 0x3D8 */
 #if !defined(GS_TASK_RANGE_SPLIT) || defined(GS_TASK_RANGE_RESIDUAL_80008868)
-extern u32 menuDataBiosGetType(u32);
+extern u8 menuDataBiosGetType(u32);
 extern void fn_8001EA98(s32, s32, s32, s32);
 extern void fn_8001E4B4(s32, s32, s32, s32, s32, s32);
 extern s32 sprintf(char*, const char*, ...);
@@ -519,7 +519,7 @@ void fn_80008868(u8* window)
 
     menuId = *(u32*)(window + 4);
     rowY = 40;
-    pageSize = (u8)menuDataBiosGetType(menuId);
+    pageSize = menuDataBiosGetType(menuId);
     width = 0;
     width = 480;
     config = lbl_80478F98;
@@ -580,31 +580,10 @@ typedef struct GsTaskFlagCursor {
     s16 cursor;
 } GsTaskFlagCursor;
 
-static inline u16 gsTaskFlagGetLinkedId(s32 index) {
-    s16 id;
-    s32 i;
-
-    if (index < 0) {
-        return 0;
-    }
-    if ((u32)index >= lbl_80478F98->count) {
-        return 0;
-    }
-    id = lbl_80478F98->first;
-    if (index != 0) {
-        for (i = 0; i < index - 1; i++) {
-            id = lbl_80478F9C[id].next;
-        }
-        id = lbl_80478F9C[id].next;
-    }
-    return id;
-}
-
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void fn_80008C40(u8* window) {
-    extern u8 menuDataBiosGetType(u32);
     u16 repeat;
     u16 trigger;
     s16 count;
@@ -650,13 +629,13 @@ void fn_80008C40(u8* window) {
     }
 
     if (trigger & 0x80) {
-        fn_80190528(gsTaskFlagGetLinkedId(pos.top + pos.cursor));
+        fn_80190528(gsTaskFlagGetId(pos.top + pos.cursor));
     } else if (trigger & 0x40) {
-        fn_801903B0(gsTaskFlagGetLinkedId(pos.top + pos.cursor));
+        fn_801903B0(gsTaskFlagGetId(pos.top + pos.cursor));
     }
 
     *(GsTaskFlagCursor*)lbl_80478838 = pos;
-    *(u32*)(window + 0x80) = gsTaskFlagGetLinkedId(pos.top + pos.cursor);
+    *(u32*)(window + 0x80) = gsTaskFlagGetId(pos.top + pos.cursor);
 }
 #pragma pop
 #endif /* GS_TASK_RANGE_RESIDUAL_80008868 */
