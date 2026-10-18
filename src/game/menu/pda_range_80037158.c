@@ -9376,8 +9376,6 @@ void fn_8003C7C0(void)
     f32 step;
     u8 shadow;
     u8 snagged;
-    f32 baseX;
-    f32 baseY;
     f32 cur;
 
     state = 0;
@@ -9405,12 +9403,10 @@ void fn_8003C7C0(void)
     }
     model = (u8*)&lbl_803A6748 + 0x4c;
     *(s32*)((u8*)&lbl_803A6748 + 0x10) = lbl_8047A4DC;
-    baseX = *(s16*)(lbl_802EF0A8 + 0x509e);
-    baseY = *(s16*)(lbl_802EF0A8 + 0x50a0);
-    *(f32*)((u8*)&lbl_803A6748 + 0x2c) = baseX;
-    *(f32*)((u8*)&lbl_803A6748 + 0x34) = baseX;
-    *(f32*)((u8*)&lbl_803A6748 + 0x30) = baseY;
-    *(f32*)((u8*)&lbl_803A6748 + 0x38) = baseY;
+    *(f32*)((u8*)&lbl_803A6748 + 0x34) = *(f32*)((u8*)&lbl_803A6748 + 0x2c) =
+        *(s16*)(lbl_802EF0A8 + 0x509e);
+    *(f32*)((u8*)&lbl_803A6748 + 0x38) = *(f32*)((u8*)&lbl_803A6748 + 0x30) =
+        *(s16*)(lbl_802EF0A8 + 0x50a0);
     menuModelInit(model, *(s16*)(lbl_802EF0A8 + 0x17ca6),
                   *(s16*)(lbl_802EF0A8 + 0x17ca8));
 
