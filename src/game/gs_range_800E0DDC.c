@@ -483,6 +483,7 @@ static inline GSMemHandle* gsMemFindHandle(u8* data) {
     return NULL;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper; passing the table bounds keeps retail's top/bottom copies - see docs/RULE_EXCEPTIONS.md */
 static inline GSMemHandle* gsMemFindHandleIn(GSMemHandle* top, GSMemHandle* bottom, u8* data) {
     GSMemHandle* handle;
 
@@ -644,30 +645,31 @@ static inline u16 gsMemChecksum(GSMemHandle* handle) {
 u32 fn_800E1544(void)
 {
     extern const char lbl_80270BB8[];
-    GSMemHandle* desc;
+    s32 i;
     u8* destination;
-    GSMemHandle** entry;
-    u8 wasHead;
-    u32 sum;
-    u8* source;
-    u32 total;
-    GSMemHandle* top;
-    GSFreeBlock* fresh;
-    GSMemHandle* bottom;
-    GSFreeBlock* freed;
-    u32 oldLargest;
     GSFreeBlock* before;
-    u32 size;
-    GSFreeBlock* prev;
-    s32 count;
+    GSMemHandle** entry;
+    u32 remaining;
+    u32 sum;
+    GSMemHandle* saved;
     GSFreeBlock* scan;
+    u8 wasHead;
+    GSFreeBlock* prev;
+    GSMemHandle* desc;
     GSMemHandle* candidates[4];
+    GSFreeBlock* fresh;
+    u32 oldLargest;
+    s32 count;
+    u32 size;
     GSFreeBlock* block;
     s32 j;
-    s32 i;
+    GSMemHandle* bottom;
+    GSFreeBlock* freed;
+    GSMemHandle* top;
+    u8* data;
+    u8* source;
+    u32 total;
     GSFreeBlock* next;
-    GSMemHandle* saved;
-    u32 remaining;
 
     oldLargest = gsMemLargestFree();
     block = (GSFreeBlock*)lbl_8047AB30;
@@ -675,9 +677,10 @@ u32 fn_800E1544(void)
         while (block != NULL) {
             size = block->size;
             bottom = (GSMemHandle*)lbl_8047AB38;
-            if ((u8*)block + size != (u8*)bottom) {
+            data = (u8*)block + size;
+            if (data != (u8*)bottom) {
             top = (GSMemHandle*)lbl_8047AB34;
-            desc = gsMemFindHandleIn(top, bottom, (u8*)block + size);
+            desc = gsMemFindHandleIn(top, bottom, data);
             if (desc == NULL) {
                 GSlogWrite(lbl_80270BB8);
                 return 0;
