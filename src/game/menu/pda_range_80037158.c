@@ -4239,78 +4239,78 @@ void fn_80044630(void) {
             }
 
             /* settle test */
-            if (*(f32*)(S + 0x50) != *(f32*)(S + 0x4C)) {
+            if (*(f32*)(S + 0x50) == *(f32*)(S + 0x4C)) {
+
+                *(s32*)(S + 0x1C) = 0;
+                menuCloseCustom(0xa1, 0, 1);
+                menuCloseCustom(0x96, 0, 1);
+                menuCloseCustom(0xa2, 0, 1);
+
+                h = *(void**)(S + 0x10C);
+                fn_801CB954(h, 0);
+                {
+                    void* rv = GSresGetResource(fn_80113F48(), h);
+                    if (rv != 0)
+                        GSmodelSetVisibility(rv, 0);
+                }
+
+                /* .L_800453AC camera-setup */
+                fn_801CB9D8(h);
+                *(f32*)(S + 0x6C) = lbl_8047BC94;
+                *(f32*)(S + 0x70) = lbl_8047BC94;
+                *(f32*)(S + 0x74) = lbl_8047BC94;
+                *(f32*)(S + 0x64) = lbl_8047BCF0;
+
+                h = fn_801CBA0C(0x0D171000);
+                *(void**)(S + 0x10C) = h;
+                *(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h);
+                GSmodelSetAnimRate(lbl_8047BD18);
+
+                ((u32*)mtx)[0] = ((const u32*)tbl)[0];
+                ((u32*)mtx)[1] = ((const u32*)tbl)[1];
+                ((u32*)mtx)[2] = ((const u32*)tbl)[2];
+                ((u32*)pos)[0] = ((const u32*)tbl)[3];
+                ((u32*)pos)[1] = ((const u32*)tbl)[4];
+                ((u32*)pos)[2] = ((const u32*)tbl)[5];
+                h = GSresGetResource(0x17, 0x0D731800);
+                *(void**)(S + 0x114) = h;
+
+                GScameraGetPosition(h, pos);
+                GScameraGetRotation(h, rot);
+
+                mtx[0] = *(f32*)((u8*)h + 0x100);
+                mtx[1] = *(f32*)((u8*)h + 0x104);
+                mtx[2] = *(f32*)((u8*)h + 0x108);
+                GScameraGetPerspective(h, &px0, &px1, &px2, &px3);
+
+                GSvecCopy(S218, pos);
+                GSvecCopy(S218 + 0xC, mtx);
+
+                *(f32*)(S218 + 0x18) = px0;
+                *(f32*)(S218 + 0x1C) = px1;
+                *(f32*)(S218 + 0x20) = px2;
+                *(f32*)(S218 + 0x24) = px3;
+                GScameraSetPerspective(h, px0, px1, px2, px3);
+
+                GSvecCopy(S118, pos);
+                GSvecCopy(S124, rot);
+                GSvecCopy(S130, mtx);
+
+                *(f32*)(S + 0x13C) = px0;
+                *(f32*)(S + 0x140) = px1;
+                *(f32*)(S + 0x144) = px2;
+                *(f32*)(S + 0x148) = px3;
+
+                cameraPlayAnime(0x17, 0x0D731800, 0, 1);
+                GSscene_SetMode(4);
+
+                *(s32*)(S + 0x78) = 0;
+                *(s32*)(S + 0x14) = 0;
+                *(f32*)(S + 0x50) = lbl_8047BCBC;
+                *(f32*)(S + 0x58) = lbl_8047BC94;
+            } else {
                 _threadSwitch();
-                continue;
             }
-
-            *(s32*)(S + 0x1C) = 0;
-            menuCloseCustom(0xa1, 0, 1);
-            menuCloseCustom(0x96, 0, 1);
-            menuCloseCustom(0xa2, 0, 1);
-
-            h = *(void**)(S + 0x10C);
-            fn_801CB954(h, 0);
-            {
-                void* rv = GSresGetResource(fn_80113F48(), h);
-                if (rv != 0)
-                    GSmodelSetVisibility(rv, 0);
-            }
-
-            /* .L_800453AC camera-setup */
-            fn_801CB9D8(h);
-            *(f32*)(S + 0x6C) = lbl_8047BC94;
-            *(f32*)(S + 0x70) = lbl_8047BC94;
-            *(f32*)(S + 0x74) = lbl_8047BC94;
-            *(f32*)(S + 0x64) = lbl_8047BCF0;
-
-            h = fn_801CBA0C(0x0D171000);
-            *(void**)(S + 0x10C) = h;
-            *(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h);
-            GSmodelSetAnimRate(lbl_8047BD18);
-
-            ((u32*)mtx)[0] = ((const u32*)tbl)[0];
-            ((u32*)mtx)[1] = ((const u32*)tbl)[1];
-            ((u32*)mtx)[2] = ((const u32*)tbl)[2];
-            ((u32*)pos)[0] = ((const u32*)tbl)[3];
-            ((u32*)pos)[1] = ((const u32*)tbl)[4];
-            ((u32*)pos)[2] = ((const u32*)tbl)[5];
-            h = GSresGetResource(0x17, 0x0D731800);
-            *(void**)(S + 0x114) = h;
-
-            GScameraGetPosition(h, pos);
-            GScameraGetRotation(h, rot);
-
-            mtx[0] = *(f32*)((u8*)h + 0x100);
-            mtx[1] = *(f32*)((u8*)h + 0x104);
-            mtx[2] = *(f32*)((u8*)h + 0x108);
-            GScameraGetPerspective(h, &px0, &px1, &px2, &px3);
-
-            GSvecCopy(S218, pos);
-            GSvecCopy(S218 + 0xC, mtx);
-
-            *(f32*)(S218 + 0x18) = px0;
-            *(f32*)(S218 + 0x1C) = px1;
-            *(f32*)(S218 + 0x20) = px2;
-            *(f32*)(S218 + 0x24) = px3;
-            GScameraSetPerspective(h, px0, px1, px2, px3);
-
-            GSvecCopy(S118, pos);
-            GSvecCopy(S124, rot);
-            GSvecCopy(S130, mtx);
-
-            *(f32*)(S + 0x13C) = px0;
-            *(f32*)(S + 0x140) = px1;
-            *(f32*)(S + 0x144) = px2;
-            *(f32*)(S + 0x148) = px3;
-
-            cameraPlayAnime(0x17, 0x0D731800, 0, 1);
-            GSscene_SetMode(4);
-
-            *(s32*)(S + 0x78) = 0;
-            *(s32*)(S + 0x14) = 0;
-            *(f32*)(S + 0x50) = lbl_8047BCBC;
-            *(f32*)(S + 0x58) = lbl_8047BC94;
             continue;
         }
 
