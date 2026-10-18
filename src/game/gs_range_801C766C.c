@@ -213,23 +213,23 @@ static inline u8 fieldSegmentBlocked(const Vec3* from, const Vec3* to,
 static inline u8 fieldPlaneCrossed(const Vec3* fromPtr, const Vec3* toPtr,
                                    const Vec3* lineStart, const Vec3* lineEnd)
 {
-    Vec3 from = *fromPtr;
-    Vec3 to = *toPtr;
-    Vec3 flatTo = to;
-    Vec3 fullDirection;
-    Vec3 flatDirection;
+    Vec3 points[3];
+    Vec3 directions[2];
     Vec3 planeHit;
     Vec3 planeNormal;
     f32 planeT;
 
-    flatTo.y = lbl_8047E100;
-    fn_800E0168(&fullDirection, &from, &to);
-    fn_800E0060(&fullDirection, &fullDirection);
-    fn_800E0168(&flatDirection, &from, &flatTo);
-    fn_800E0060(&flatDirection, &flatDirection);
-    fn_800DFFCC(&planeNormal, &fullDirection, &flatDirection);
-    if (GScolsys2UtilGetCpPlaneLine(&planeHit, &planeT, &planeNormal, &from,
-                                    lineStart, lineEnd) == 0) {
+    points[0] = *fromPtr;
+    points[1] = *toPtr;
+    points[2] = points[1];
+    points[2].y = lbl_8047E100;
+    fn_800E0168(&directions[0], &points[0], &points[1]);
+    fn_800E0060(&directions[0], &directions[0]);
+    fn_800E0168(&directions[1], &points[0], &points[2]);
+    fn_800E0060(&directions[1], &directions[1]);
+    fn_800DFFCC(&planeNormal, &directions[0], &directions[1]);
+    if (GScolsys2UtilGetCpPlaneLine(&planeHit, &planeT, &planeNormal,
+                                    &points[0], lineStart, lineEnd) == 0) {
         return 0;
     }
     if (planeT < lbl_8047E114 || planeT > lbl_8047E100) {
