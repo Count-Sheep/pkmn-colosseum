@@ -452,6 +452,7 @@ static inline u32 pdaLoadPokemon(s32 index)
 }
 
 /* Point the rig's light from beside the camera at the model. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its locals are numbered and placed at the second inlining depth, which gives retail's stack layout for the light colour and position - see docs/RULE_EXCEPTIONS.md */
 static inline void pda_80048918_SetLight(PdaVec3* pos, PdaVec3* target, const PdaCamPresets* presets)
 {
     PdaVec3 color;
@@ -518,6 +519,7 @@ static inline u8 fn_8003D1FC_setup(u8* sub, const PdaCamPresets* presets)
     return 1;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its scratch out-slot is placed below the other inline locals as in retail - see docs/RULE_EXCEPTIONS.md */
 static inline void pda_80048918_GetMotion(u32 id, s32* motion)
 {
     s32 out8;
