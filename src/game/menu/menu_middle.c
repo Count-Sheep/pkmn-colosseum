@@ -3744,7 +3744,6 @@ void fn_8006E338(void* obj) {
     u8 used[4] = {0, 0, 0, 0};
     void* playerWidgets[14];
     void* widgets[14];
-    s32 notReady;
     s32 row;
     s32 port;
     s32 i;
@@ -3807,7 +3806,6 @@ void fn_8006E338(void* obj) {
         }
     }
 
-    notReady = allReady == 0;
     for (row = 0; row < 4u; row++) {
         for (col = 0; col < 14u; col++) {
             widgets[col] = windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[row][col]);
@@ -3817,11 +3815,11 @@ void fn_8006E338(void* obj) {
             ready = savedataGetStatus(0, 0xE)->players[j].ready;
             MENU_MIDDLE_U32_004C(widgets[10])->unk_004C = ready ? 0 : 0x3F3F;
             MENU_MIDDLE_U32_004C(widgets[9])->unk_004C = ready ? 0 : 0x3F40;
-            winSpriteSetDisp(widgets[2], notReady);
+            winSpriteSetDisp(widgets[2], !allReady);
             hidden = ready == 0;
             winSpriteSetDisp(widgets[8], hidden);
             winSpriteSetDisp(widgets[7], hidden);
-            winSpriteSetDisp(widgets[13], ready != 0 && notReady != 0);
+            winSpriteSetDisp(widgets[13], ready && !allReady);
         } else {
             for (col = 0; col < 14u; col++) {
                 winSpriteSetDisp(widgets[col], 0);
