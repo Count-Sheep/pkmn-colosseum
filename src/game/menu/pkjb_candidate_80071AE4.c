@@ -13,7 +13,7 @@
  */
 #include "game/menu/pkjb_uploader_shared.h"
 
-s32 fn_80071EA4(s32 chan, u32* data);
+s32 fn_80071EA4(s32 chan, u8* data);
 
 static inline s32 pkjbSendBlockIdle(s32 chan, const u32* data, s32 size)
 {
@@ -111,7 +111,7 @@ s32 fn_80071AE4(s32 chan, const u32* data)
 }
 
 /* 0x80071E34 | 0x70: fn_80071EA4 with the key state held. */
-s32 fn_80071E34(s32 chan, u32* data)
+s32 fn_80071E34(s32 chan, u8* data)
 {
     s32 key;
     s32 result;
@@ -123,7 +123,7 @@ s32 fn_80071E34(s32 chan, u32* data)
     return result;
 }
 
-static inline s32 pkjbRecvBlock(s32 chan, u32* data, s32 size)
+static inline s32 pkjbRecvBlock(s32 chan, u8* data, s32 size)
 {
     u32 word;
     u8 length;
@@ -135,7 +135,7 @@ static inline s32 pkjbRecvBlock(s32 chan, u32* data, s32 size)
         if (result != 0) {
             return result;
         }
-        *(u32*)((u8*)data + offset) = word;
+        *(u32*)(data + offset) = word;
         if (lbl_803B6E08[chan] != 0) {
             return 1000;
         }
@@ -144,7 +144,7 @@ static inline s32 pkjbRecvBlock(s32 chan, u32* data, s32 size)
 }
 
 /* 0x80071EA4 | 0x3FC: command 0x33, receive a 16-byte header and its body. */
-s32 fn_80071EA4(s32 chan, u32* data)
+s32 fn_80071EA4(s32 chan, u8* data)
 {
     u32 response;
     s32 result;
@@ -165,8 +165,8 @@ s32 fn_80071EA4(s32 chan, u32* data)
     if (result != 0) {
         return result + 15;
     }
-    size = (pkjbSwap32(data[3]) & 0xFFFF) * 4;
-    result = pkjbRecvBlock(chan, data + 4, size);
+    size = (pkjbSwap32(*(u32*)(data + 12)) & 0xFFFF) * 4;
+    result = pkjbRecvBlock(chan, data + 16, size);
     if (result != 0) {
         return result + 18;
     }
