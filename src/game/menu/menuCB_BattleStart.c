@@ -716,20 +716,20 @@ void _menuCBBattleStartSetIndex__Fv(void)
     u16 count[4] = { 6, 6, 6, 6 };
     MenuCBBattleStartOrderRow* order;
     s32 player;
+    s32 i;
     u16 slot;
     u16 n;
 
-    order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
     for (player = 0; player < 4; player++) {
         for (slot = 0; slot < 6; slot++) {
-            order[player].slot[slot] = slot;
+            ((MenuCBBattleStartOrderRow*)lbl_803A9E40)[player].slot[slot] = slot;
         }
     }
 
     switch (lbl_803A9A60.status) {
     case 0:
-        for (player = 0; player < 4; player++) {
-            count[player] = toolentryTaisenGetPokemonNum(player);
+        for (i = 0; i < 4; i++) {
+            count[i] = toolentryTaisenGetPokemonNum(i);
         }
         break;
     case 1:
@@ -744,9 +744,10 @@ void _menuCBBattleStartSetIndex__Fv(void)
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
         for (player = 0; player < 2; player++, order++) {
             MenuCBBattleStartOrderTable table = lbl_80267AF8;
-            s32 row = count[player] - 1;
+            MenuCBBattleStartOrderRow* src = table.row;
 
-            *order = table.row[row];
+            src += count[player] - 1;
+            *order = *src;
         }
         break;
     }
@@ -754,9 +755,10 @@ void _menuCBBattleStartSetIndex__Fv(void)
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
         for (player = 0; player < 2; player++, order++) {
             MenuCBBattleStartOrderTable table = lbl_80267B88;
-            s32 row = count[player] - 1;
+            MenuCBBattleStartOrderRow* src = table.row;
 
-            *order = table.row[row];
+            src += count[player] - 1;
+            *order = *src;
         }
         break;
     }
