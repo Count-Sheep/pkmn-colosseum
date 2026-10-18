@@ -229,7 +229,7 @@ static inline void wazaViewerPollCommand(const char* messages) {
  */
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
+#if !defined(PR409_WAZA_VIEWER_EXACT_56B0_5A94) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464) && !defined(PR409_WAZA_VIEWER_FN_ONLY)
 #if !defined(PR409_WAZA_VIEWER_THREAD_ONLY)
 void _wazaViewerInitialize(void) {
     extern struct GSmodel* GSresGetResource(u32 group, u32 handle);
@@ -290,7 +290,7 @@ void wazaViewerThread(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
+#if !defined(PR409_WAZA_VIEWER_THREAD_ONLY) && !defined(PR409_WAZA_VIEWER_EXACT_5DA0) && !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464) && !defined(PR409_WAZA_VIEWER_FN_ONLY)
 
 /**
  * fn_801D56B0 - Re-arm the viewer after a sequence file has been loaded:
@@ -459,26 +459,23 @@ void fn_801D5A94(s32 slot) {
     extern void GSmodelSetPosition(void* model, WazaViewerVec* position);
 
     const u8* viewerData;
-    /* Paired paths keep the early animation path in retail's register. */
-    char* path[2];
     s32 modelSize;
     s32 animSize;
     void* effect;
-    int block;
+    u16 block;
     u16 modelBlock;
     void* buf;
+    void* animBuf;
     WazaViewerVec rotation;
     WazaViewerVec position;
 
     viewerData = lbl_80279338;
-    path[0] = (char*)(lbl_804673F8 + 0x1C);
     modelSize = 0;
     animSize = 0;
-    if (strlen(path[0]) != 0) {
-        modelSize = wazaViewerGetFilesize((const char*)viewerData, path[0]);
-        path[1] = (char*)(lbl_804673F8 + 0x41C);
-        if (strlen(path[1]) != 0) {
-            animSize = wazaViewerGetFilesize((const char*)viewerData, path[1]);
+    if (strlen((char*)(lbl_804673F8 + 0x1C)) != 0) {
+        modelSize = wazaViewerGetFilesize((const char*)viewerData, (char*)(lbl_804673F8 + 0x1C));
+        if (strlen((char*)(lbl_804673F8 + 0x41C)) != 0) {
+            animSize = wazaViewerGetFilesize((const char*)viewerData, (char*)(lbl_804673F8 + 0x41C));
         }
     }
 
@@ -495,7 +492,7 @@ void fn_801D5A94(s32 slot) {
     }
     *(u16*)(lbl_804673F8 + 0x660) = modelBlock;
     buf = *(void**)(lbl_804673F8 + 0x65C) = fn_800E27B0(modelBlock);
-    wazaViewerLoadFile((const char*)viewerData, path[0], buf, modelSize, FALSE);
+    wazaViewerLoadFile((const char*)viewerData, (char*)(lbl_804673F8 + 0x1C), buf, modelSize, FALSE);
     sequenceLoad(effect, *(void**)(lbl_804673F8 + 0x65C));
     *(s32*)(lbl_804673F8 + 0x04) = 1;
     fn_801DA4E8(effect, 1);
@@ -509,9 +506,10 @@ void fn_801D5A94(s32 slot) {
         block = fn_800E2C04((animSize + 0x1F) & ~0x1F, 0x20);
         if (block != 0) {
             *(u16*)(lbl_804673F8 + 0x668) = block;
-            buf = *(void**)(lbl_804673F8 + 0x664) = fn_800E27B0(block);
-            path[1] = (char*)(lbl_804673F8 + 0x41C);
-            wazaViewerLoadFile((const char*)viewerData, path[1], buf, animSize, FALSE);
+            /* RULE-EXCEPTION(user-approved): pointer carrier for the allocator result, chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+            animBuf = fn_800E27B0(block);
+            buf = *(void**)(lbl_804673F8 + 0x664) = animBuf;
+            wazaViewerLoadFile((const char*)viewerData, (char*)(lbl_804673F8 + 0x41C), buf, animSize, FALSE);
             if ((u8)fn_801DDB4C(effect, *(void**)(lbl_804673F8 + 0x664))) {
                 *(s32*)(lbl_804673F8 + 0x04) = 2;
             } else {
@@ -1264,7 +1262,7 @@ void fn_801D7230(void) {
 
 #endif
 
-#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464)
+#if !defined(PR409_WAZA_VIEWER_EXACT_624C) && !defined(PR409_WAZA_VIEWER_EXACT_6E58) && !defined(PR409_WAZA_VIEWER_EXACT_7464) && !defined(PR409_WAZA_VIEWER_FN_ONLY)
 /**
  * fn_801D744C - Move animation OR bits into lbl_804673F8+0xC.
  * Address: 0x801D744C | Size: 0x18
