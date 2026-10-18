@@ -998,10 +998,10 @@ void fn_80062334(void)
     rev = reverse;
 
     for (player = 0; player < 4; player++) {
-        view = &state->players[player].view;
+        view = &lbl_803A9A60.players[player].view;
         if (battleType == 2) {
             for (slot = 0; slot < 6; slot++) {
-                switch (state->status) {
+                switch (lbl_803A9A60.status) {
                 case 0:
                     view->header.marker[slot] = 3;
                     view->reset[slot] = lbl_8047BF60;
@@ -1024,7 +1024,7 @@ void fn_80062334(void)
         } else {
             for (slot = 0; slot < 6; slot++) {
                 destination = orderGroups[player][slot];
-                switch (state->status) {
+                switch (lbl_803A9A60.status) {
                 case 0:
                     view->header.marker[slot] = 3;
                     view->reset[slot] = lbl_8047BF60;
@@ -1048,7 +1048,7 @@ void fn_80062334(void)
     }
 
     for (player = 0; player < 4; player++) {
-        position = &state->trainerPositions[player];
+        position = &lbl_803A9A60.trainerPositions[player];
         if (battleType == 2) {
             if (player < 2) {
                 position->y = lbl_8047BFBC;
