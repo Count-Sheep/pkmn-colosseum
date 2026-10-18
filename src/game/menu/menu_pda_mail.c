@@ -117,6 +117,32 @@ typedef struct PdaMailAttachmentConfig {
 } PdaMailAttachmentConfig;
 
 #ifndef MENU_PDA_MAIL_PARTIAL
+/* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004B7EC) - see docs/RULE_EXCEPTIONS.md */
+static inline void pdaMailWaitModel(void* model)
+{
+    if (model == 0) {
+        return;
+    }
+    while (GSmodelIsAnimating(model) != 0) {
+        _threadSwitch();
+    }
+}
+
+static inline void pdaMailWaitTransition(f32* transition, f32* target, f32 value)
+{
+    s32 waiting;
+
+    *target = value;
+    waiting = 1;
+    while (waiting) {
+        if (*transition == *target) {
+            waiting = 0;
+        } else {
+            _threadSwitch();
+        }
+    }
+}
+
 #pragma peephole off
 void fn_8004B7EC(void)
 {
@@ -134,9 +160,9 @@ void fn_8004B7EC(void)
     state->selection = 0;
     state->savedSelection = 0;
     state->menuBusy = 0;
-    state->angles[0] = lbl_8047BDAC;
-    state->angles[1] = lbl_8047BDAC;
     state->angles[2] = lbl_8047BDAC;
+    state->angles[1] = lbl_8047BDAC;
+    state->angles[0] = lbl_8047BDAC;
     state->field2C = lbl_8047BDA0;
     state->field28 = lbl_8047BDA0;
     *transition = lbl_8047BDF4;
@@ -165,11 +191,7 @@ void fn_8004B7EC(void)
     GSlightStartAnimation(light);
     GSmodelStartAnimation(model);
     fn_80166AB8(0x448, 0, 0);
-    if (model != 0) {
-        while (GSmodelIsAnimating(model)) {
-            _threadSwitch();
-        }
-    }
+    pdaMailWaitModel(model);
     GSmodelStopAnimation(model);
     cameraWaitSyncAnime(1);
     GSlightSetActive(light, 0);
@@ -202,21 +224,13 @@ void fn_8004B7EC(void)
         } else {
             phase = ((s8*)lbl_803A6A60)[0];
         }
-        lbl_803A6A60[0] = (s8) phase;
+        ((s8*)lbl_803A6A60)[0] = phase;
         active = 1;
         state->menuBusy = active;
 
         switch (phase) {
         case 0:
-            *transitionTarget = lbl_8047BDFC;
-            active = 1;
-            while (active) {
-                if (*transition == *transitionTarget) {
-                    active = 0;
-                } else {
-                    _threadSwitch();
-                }
-            }
+            pdaMailWaitTransition(transition, transitionTarget, lbl_8047BDFC);
             menuClose(0x97);
             menuCloseSync(0x97, 1);
             *config.message = 0x36B4;
@@ -225,15 +239,7 @@ void fn_8004B7EC(void)
             *transitionTarget = lbl_8047BDAC;
             break;
         case 1:
-            *transitionTarget = lbl_8047BDFC;
-            active = 1;
-            while (active) {
-                if (*transition == *transitionTarget) {
-                    active = 0;
-                } else {
-                    _threadSwitch();
-                }
-            }
+            pdaMailWaitTransition(transition, transitionTarget, lbl_8047BDFC);
             menuClose(0x97);
             menuCloseSync(0x97, 1);
             *config.message = 0x36B5;
@@ -242,15 +248,7 @@ void fn_8004B7EC(void)
             *transitionTarget = lbl_8047BDAC;
             break;
         case 2:
-            *transitionTarget = lbl_8047BDFC;
-            active = 1;
-            while (active) {
-                if (*transition == *transitionTarget) {
-                    active = 0;
-                } else {
-                    _threadSwitch();
-                }
-            }
+            pdaMailWaitTransition(transition, transitionTarget, lbl_8047BDFC);
             menuClose(0x97);
             menuCloseSync(0x97, 1);
             if (!fn_801902E0(0x3F0)) {
@@ -272,7 +270,7 @@ void fn_8004B7EC(void)
 
     phase = 0;
     active = 1;
-    while (active) {
+    do {
         switch (phase) {
         case 0:
             if (!fadeCheck(0)) {
@@ -285,7 +283,7 @@ void fn_8004B7EC(void)
             active = 0;
             break;
         }
-    }
+    } while (active);
 
     if (state->offscreenHidden != 1) {
         menuOffScreenSetDisp(1);
@@ -300,7 +298,7 @@ void fn_8004B7EC(void)
 
     phase = 0;
     active = 1;
-    while (active) {
+    do {
         switch (phase) {
         case 0:
             fadeSet(2, lbl_8047BDA8);
@@ -317,7 +315,7 @@ void fn_8004B7EC(void)
             active = 0;
             break;
         }
-    }
+    } while (active);
     fn_800FF660();
     floorSetFadeScript(0, 0);
 }
