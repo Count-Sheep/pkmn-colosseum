@@ -8405,6 +8405,14 @@ typedef struct PdaPairS16 {
     s16 y;
 } PdaPairS16;
 
+/* lbl_802EF0A8 menu item records, 0x1C bytes each. */
+typedef struct PdaMenuItem {
+    s16 id;
+    s16 x;
+    s16 y;
+    u8 pad06[0x16];
+} PdaMenuItem;
+
 typedef struct PdaSpan12 {
     s16 v[12];
 } PdaSpan12;
@@ -8436,15 +8444,19 @@ void fn_8004A47C(void)
     topNarrow[0] = lbl_8047BD80;
     topNarrow[1] = lbl_8047BD84;
     if (fn_801902E0(0x3f0) != 0) {
-        *(s16*)(lbl_802EF0A8 + 0x7608) = topWide[0].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0x7624) = topWide[0].y - 6;
-        *(s16*)(lbl_802EF0A8 + 0x7640) = topWide[1].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0x765c) = topWide[1].y - 6;
+        PdaMenuItem* items = (PdaMenuItem*)lbl_802EF0A8;
+
+        items[0x437].y = topWide[0].x - 6;
+        items[0x438].y = topWide[0].y - 6;
+        items[0x439].y = topWide[1].x - 6;
+        items[0x43a].y = topWide[1].y - 6;
     } else {
-        *(s16*)(lbl_802EF0A8 + 0x7608) = topNarrow[0].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0x7624) = topNarrow[0].y - 6;
-        *(s16*)(lbl_802EF0A8 + 0x7640) = topNarrow[1].x - 6;
-        *(s16*)(lbl_802EF0A8 + 0x765c) = topNarrow[1].y - 6;
+        PdaMenuItem* items = (PdaMenuItem*)lbl_802EF0A8;
+
+        items[0x437].y = topNarrow[0].x - 6;
+        items[0x438].y = topNarrow[0].y - 6;
+        items[0x439].y = topNarrow[1].x - 6;
+        items[0x43a].y = topNarrow[1].y - 6;
     }
 
     wide = lbl_8026719C;
