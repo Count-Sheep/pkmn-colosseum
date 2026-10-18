@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2211
+    "total_units": 2213
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2113,
-    "source_backed_units": 2112,
+    "named_units": 2115,
+    "source_backed_units": 2114,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2372716",
-    "matched_code_percent": 94.72147,
+    "matched_code": "2380964",
+    "matched_code_percent": 95.05074,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8595,
-    "matched_functions_percent": 99.05498,
-    "fuzzy_match_percent": 99.75732
+    "matched_functions": 8602,
+    "matched_functions_percent": 99.13564,
+    "fuzzy_match_percent": 99.81561
   },
   "unit_topology": [
     {
@@ -3666,13 +3666,39 @@
       "sections": [
         {
           "name": ".text",
-          "size": 7700,
+          "size": 848,
           "virtual_address": 2147734728
         }
       ],
-      "total_code": 7700,
+      "total_code": 848,
       "total_data": 0,
-      "total_functions": 6
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/menu/pda_exact_8003D818",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 180,
+          "virtual_address": 2147735576
+        }
+      ],
+      "total_code": 180,
+      "total_data": 0,
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/menu/pda_candidate_8003B814_r46_8003D8CC",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 6672,
+          "virtual_address": 2147735756
+        }
+      ],
+      "total_code": 6672,
+      "total_data": 0,
+      "total_functions": 4
     },
     {
       "name": "main/game/menu/pda_exact_8003F2DC",
@@ -3714,7 +3740,7 @@
       "total_functions": 4
     },
     {
-      "name": "main/game/menu/pda_candidate_800411FC",
+      "name": "main/game/menu/pda_exact_800411FC",
       "sections": [
         {
           "name": ".text",
