@@ -50,7 +50,7 @@ static inline void* npcEventGetPokemon(u8* npc, s32 column)
 
     switch (kind) {
     case 1:
-        pokemon = (void*)heroGetStatus(NULL, 3, (u16)lbl_8047A424);
+        pokemon = (void*)heroGetStatus(NULL, 3, lbl_8047A424 & 0xffff);
         break;
     case 2:
         pokemon = (void*)heroGetStatus(lbl_803A2688, 3, (u16)lbl_8047A420);
