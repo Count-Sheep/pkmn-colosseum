@@ -4041,12 +4041,20 @@ void fn_8006EFF8(void* arg0) {
 }
 
 
+/* winSpriteSetDisp with the visibility flag narrowed to a byte first;
+ * winSpriteSetDisp itself takes a u32. */
+/* RULE-EXCEPTION(user-approved): inline helper, register-only evidence - see docs/RULE_EXCEPTIONS.md */
+static inline void fn_8006F284_setDisp(void* sprite, u8 visible) {
+    extern void winSpriteSetDisp(void* node, u32 enable);
+
+    winSpriteSetDisp(sprite, visible);
+}
+
 /* 0x8006F284 | size: 0x49C */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_8006F284(void* menu) {
     extern void* windowSearchItemID(void* menu, s32 itemId);
-    extern void winSpriteSetDisp(void* widget, u8 flag);
     extern void menuItemBiosSetSelectFlag(s32 itemId, u8 flag);
     extern void windowCreateCursorSprite(void* menu);
     extern void fn_801081F8(void* menu, u16 itemId, u16 sequence);
@@ -4059,12 +4067,12 @@ void fn_8006F284(void* menu) {
         u8 pad;
         s8 cursor;
     } CursorArg_8006F284;
-    u8 val16Valid;
-    u8 sel11;
     u8 locked;
+    u8 sel11;
+    u8 val14Valid;
     s32 selected;
     Param_8006BB34* param;
-    u8 val14Valid;
+    u8 val16Valid;
     u8 sel12;
     u8* data;
     Entry_8006F284* entries;
@@ -4072,6 +4080,7 @@ void fn_8006F284(void* menu) {
     void* widget;
     void* sprite;
     u32 i;
+    u8 unlocked;
     u8 sel13;
 
     data = lbl_80267EA8;
@@ -4079,7 +4088,6 @@ void fn_8006F284(void* menu) {
     case 0: {
         CursorArg_8006F284 src;
         CursorArg_8006F284 arg;
-        u8 unlocked;
 
         entries = (Entry_8006F284*)(data + 0x4EC);
         for (i = 0; i < 16; i++) {
@@ -4139,7 +4147,7 @@ void fn_8006F284(void* menu) {
     itemIds = (u16*)(data + 0x4E0);
     for (i = 0; i < 5; i++) {
         widget = windowSearchItemID(menu, itemIds[i]);
-        winSpriteSetDisp(widget, selected == (s32)i && fn_80077BD0() == 0);
+        fn_8006F284_setDisp(widget, selected == (s32)i && fn_80077BD0() == 0);
         if (*(void**)((u8*)widget + 0xC) != menuSeqBiosGetPtr(0x191)) {
             fn_801081F8(menu, itemIds[i], 0x191);
         }
@@ -4153,34 +4161,34 @@ void fn_8006F284(void* menu) {
     sel12 = param->sel12;
     sel13 = param->sel13;
 
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA06), sel11);
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA07), sel11 == 0);
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA08), sel12);
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA09), sel12 == 0);
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA0A), sel13);
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA0B), sel13 == 0);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA06), sel11);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA07), sel11 == 0);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA08), sel12);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA09), sel12 == 0);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA0A), sel13);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA0B), sel13 == 0);
 
     sprite = windowSearchItemID(menu, 0x11A2);
-    winSpriteSetDisp(sprite, val14Valid != 0 &&
+    fn_8006F284_setDisp(sprite, val14Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xA0C &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xA0D);
-    winSpriteSetDisp(windowSearchItemID(menu, 0x11A3), val14Valid == 0);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0x11A3), val14Valid == 0);
     sprite = windowSearchItemID(menu, 0x11A4);
-    winSpriteSetDisp(sprite, val16Valid != 0 &&
+    fn_8006F284_setDisp(sprite, val16Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xE34 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xE33);
-    winSpriteSetDisp(windowSearchItemID(menu, 0x11A5), val16Valid == 0);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0x11A5), val16Valid == 0);
 
-    winSpriteSetDisp(windowSearchItemID(menu, 0xA16), locked);
-    winSpriteSetDisp(windowSearchItemID(menu, 0xD9F), locked);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xA16), locked);
+    fn_8006F284_setDisp(windowSearchItemID(menu, 0xD9F), locked);
     sprite = windowSearchItemID(menu, 0xA15);
     MENU_MIDDLE_U32_004C(sprite)->unk_004C = locked ? 0x3D7A : 0x3D79;
 
     sprite = windowSearchItemID(menu, 0x11A6);
-    winSpriteSetDisp(sprite, locked != 0 && val14Valid != 0 &&
+    fn_8006F284_setDisp(sprite, locked != 0 && val14Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) == 0x9FA);
     sprite = windowSearchItemID(menu, 0x11A7);
-    winSpriteSetDisp(sprite, locked != 0 && val16Valid != 0 &&
+    fn_8006F284_setDisp(sprite, locked != 0 && val16Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) == 0x9FB);
 
     fn_80070D84(menu, (MenuMiddleEntry*)(data + 0x56C), 2);
