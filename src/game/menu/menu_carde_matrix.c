@@ -1141,7 +1141,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     f32 rt;
     f32 t;
     u32 from;
-    u32 to;
+    MenuCardEEntry** entryp;
     u32 color;
     s32 which;
     s32 j;
@@ -1158,7 +1158,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s16 baseX;
     s16 baseY;
     s16 stepY;
-    MenuCardEEntry** entryp;
+    u32 to;
     s8 row;
     s8 column;
     s16 stepX;
@@ -1318,8 +1318,8 @@ void fn_8007D978(MenuCardEWindow* window) {
     }
 
     entryp = entries;
-    for (which = 0; which < 2; which++) {
-        entries[which] = menuCardEWorkEntry(work, which);
+    for (i = 0; i < 2; i++) {
+        entries[i] = menuCardEWorkEntry(work, i);
     }
     rt = 1.0f - t;
     slideX = 48.0f * t;
