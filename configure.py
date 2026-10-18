@@ -3786,7 +3786,7 @@ config.libs = [
                 CodeCandidate,
                 "game/menu/pda_candidate_8003B814_r46_800473E0.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # TEMPORARY constant_import: retail shares the int-to-float bias.
