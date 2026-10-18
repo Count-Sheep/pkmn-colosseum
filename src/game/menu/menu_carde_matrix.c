@@ -454,44 +454,68 @@ static inline void menuCardEMatrixFindCard(MenuCardEMatrixContext* context) {
     }
 }
 
-/* Allocate, fill and sort the context's entry-pointer array. */
-static inline void menuCardEMatrixFillEntries(MenuCardEMatrixContext* context,
-                                              s32 count) {
-    extern MenuCardEEntry* fn_80083AF4(void* arena, s32 index);
-    extern void qsort(void* base, u32 count, u32 size, s32 (*compare)(const void*, const void*));
-    extern s32 menuCardE_CompareEntryPtrs(const void* a, const void* b);
+/* Allocate a zeroed, 32-byte aligned arena block for count entry pointers. */
+static inline MenuCardEEntry** menuCardEMatrixAlloc(s32 count) {
     extern u16 fn_800E2C04(u32 size, u32 align);
     extern void* fn_800E27B0(u16 handle);
-    MenuCardEEntry** entries;
+    MenuCardEEntry** buf;
     u32 size;
     u16 handle;
-    s32 k;
 
     size = count * 4;
     handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
     if (handle == 0) {
         __assert(CARDE_MATRIX_FILE, 0x1A2, &lbl_8047C140);
     }
-    entries = fn_800E27B0(handle);
-    memset(entries, 0, size);
-    context->entries = entries;
+    buf = fn_800E27B0(handle);
+    memset(buf, 0, size);
+    return buf;
+}
+
+/* Allocate, fill and sort the context's entry-pointer array. */
+static inline void menuCardEMatrixFillEntries(MenuCardEMatrixContext* context,
+                                              s32 count) {
+    extern MenuCardEEntry* fn_80083AF4(void* arena, s32 index);
+    extern void qsort(void* base, u32 count, u32 size, s32 (*compare)(const void*, const void*));
+    extern s32 menuCardE_CompareEntryPtrs(const void* a, const void* b);
+    s32 k;
+
+    context->entries = menuCardEMatrixAlloc(count);
     for (k = 0; k < count; k++) {
         context->entries[k] = fn_80083AF4(NULL, k);
     }
     qsort(context->entries, count, 4, menuCardE_CompareEntryPtrs);
 }
 
+/* Step the current sub-selection down to the nearest one the current
+ * entry accepts. */
+static inline void menuCardEMatrixReselectSub(MenuCardEMatrixContext* context) {
+    extern u8 fn_80082A88(MenuCardEEntry* entry, u8 subIndex);
+    u8 subIndex;
+    MenuCardEEntry* entry;
+
+    if (context->entryCount <= 0 || context->currentEntryIndex < 0) {
+        entry = NULL;
+    } else {
+        entry = context->entries[context->currentEntryIndex];
+    }
+    if (entry != NULL) {
+        for (subIndex = context->currentSubIndex; (s8)subIndex > 0; subIndex--) {
+            if (fn_80082A88(entry, subIndex) != 0) {
+                break;
+            }
+        }
+        context->currentSubIndex = subIndex;
+    }
+}
 #endif
 #if defined(MENU_CARDE_R48_8007C7EC_O2_ACTIVE)
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
+/* Built with the unit flag -opt nopeephole (configure.py). */
 void fn_8007C7EC(void) {
     extern void* windowSearchID(s32 id);
     extern MenuCardEMatrixContext** windowGetFreeWork(void* window);
     extern s32 fn_80083BF8(void* arena);
     extern MenuCardEEntry* fn_80083AF4(void* arena, s32 index);
-    extern u8 fn_80082A88(MenuCardEEntry* entry, u8 subIndex);
     extern void qsort(void* base, u32 count, u32 size, s32 (*compare)(const void*, const void*));
     extern s32 menuCardE_CompareEntryPtrs(const void* a, const void* b);
     extern u16 fn_800E2C04(u32 size, u32 align);
@@ -501,8 +525,6 @@ void fn_8007C7EC(void) {
     extern void fn_800E209C(u16 handle);
     MenuCardEMatrixContext* context;
     s32 savedIndex;
-    u8 subIndex;
-    MenuCardEEntry* entry;
 #if !defined(MENU_CARDE_MATRIX_TU)
     u16 handle;
 #endif
@@ -551,19 +573,7 @@ void fn_8007C7EC(void) {
     }
     context->prevEntryIndex = context->currentEntryIndex;
 
-    if (context->entryCount <= 0 || context->currentEntryIndex < 0) {
-        entry = NULL;
-    } else {
-        entry = context->entries[context->currentEntryIndex];
-    }
-    if (entry != NULL) {
-        for (subIndex = context->currentSubIndex; (s8)subIndex > 0; subIndex--) {
-            if (fn_80082A88(entry, subIndex) != 0) {
-                break;
-            }
-        }
-        context->currentSubIndex = subIndex;
-    }
+    menuCardEMatrixReselectSub(context);
 
     if (context->currentEntryIndex == context->prevEntryIndex &&
         (s8)context->currentSubIndex == (s8)context->prevSubIndex) {
@@ -573,7 +583,6 @@ void fn_8007C7EC(void) {
     context->transitionFrame = 0;
     menuCardEWaitTransition();
 }
-#pragma pop
 #endif
 
 /* 0x8007CAB0 | size: 0xA4 */
