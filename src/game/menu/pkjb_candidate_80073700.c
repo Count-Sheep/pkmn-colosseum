@@ -2,7 +2,7 @@
  * @file pkjb_candidate_80073700.c
  * @brief pkjb_uploader.c carve, 0x80073700 - 0x80073990 (candidate).
  *
- * fn_80073700 is 97.3%: the code is right, but retail walks the output
+ * fn_80073700 is 98.5%: the code is right, but retail walks the output
  * through a copy of the data pointer (made in the loop preheader, after the
  * offset is zeroed) and keeps the parameter in r30, so chan and the hoisted
  * values land one register off. Neither an explicit pointer nor an
@@ -10,6 +10,11 @@
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
  */
 #include "game/menu/pkjb_uploader_shared.h"
+
+static inline u32 pkjbTransferTimeout(void)
+{
+    return OSMillisecondsToTicks(100);
+}
 
 /* 0x80073700 | 0x290: command 0x99, receive 0x278 bytes. */
 s32 fn_80073700(s32 chan, u32* data)
@@ -34,7 +39,7 @@ s32 fn_80073700(s32 chan, u32* data)
     }
     for (offset = 0; offset < 0x278; offset += 4, data++) {
         start = OSGetTick();
-        timeout = OSMillisecondsToTicks(100);
+        timeout = pkjbTransferTimeout();
         start = OSGetTick();
         for (;;) {
             if (OSGetTick() - start > timeout) {
