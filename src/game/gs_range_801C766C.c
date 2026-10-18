@@ -241,23 +241,25 @@ static inline u8 fieldPlaneCrossed(const Vec3* fromPtr, const Vec3* toPtr,
 static inline void fieldBuildRing(DistanceSortEntry* entries,
                                   const Vec3* center, const Vec3* origin)
 {
+    DistanceSortEntry* entry;
     Vec3 offset;
     f32 angle;
     s32 i;
 
-    for (i = 0; i < 8; i++) {
+    entry = entries;
+    for (i = 0; i < 8; i++, entry++) {
         angle = (f32)i * lbl_8047E10C;
-        entries[i].index = i;
+        entry->index = i;
         offset.x = lbl_8047E110 * (f32)cos(angle);
         offset.y = lbl_8047E114;
         offset.z = lbl_8047E110 * (f32)sin(angle);
-        GSvecAdd(&entries[i].pos, &offset, center);
-        if (fn_8010F320(center, &entries[i].pos, 0, lbl_8047E118) != 0) {
-            entries[i].blocked = 1;
+        GSvecAdd(&entry->pos, &offset, center);
+        if (fn_8010F320(center, &entry->pos, 0, lbl_8047E118) != 0) {
+            entry->blocked = 1;
         } else {
-            entries[i].blocked = 0;
+            entry->blocked = 0;
         }
-        entries[i].distance = GSvecDistance(&entries[i].pos, origin);
+        entry->distance = GSvecDistance(&entry->pos, origin);
     }
     qsort(entries, 8, sizeof(DistanceSortEntry), _fnDistanceSortFunc__FPCvPCv);
 }
