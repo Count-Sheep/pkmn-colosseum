@@ -13,20 +13,20 @@
 #include "game/trainer.h"
 #include "game/pokemon.h"
 
-extern void* pokemonGetStatus();
+extern u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d);
 extern u32 savedataGetStatus();
-extern int fadeCheck();
-extern int fadeSet();
-extern void _threadSwitch();
-extern void msgctrlSetValue();
-extern void winMsgOpenField();
-extern void winMsgCloseField();
-extern void fn_801DB088();
+extern s8 fadeCheck(u8 wait);
+extern void fadeSet(u16 type, f32 duration);
+extern void _threadSwitch(void);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 winMsgOpenField(u32 message, u32 wait, u8 pause);
+extern void winMsgCloseField(u32 wait);
+extern void fn_801DB088(void);
 extern void* fn_801DE190(u16 index, void* model, u8 variant);
-extern void fn_801DDD28();
-extern void fn_801DA4E8();
-extern void fn_801DA9E8();
-extern u8 fn_801DA94C();
+extern BOOL fn_801DDD28(void* owner, u16 group, u16 index, u8 variant);
+extern void fn_801DA4E8(void* effect, u32 visible);
+extern void fn_801DA9E8(void* sequence, u16 moveID, u16 variant);
+extern u8 fn_801DA94C(void* obj, u16 search_key1, u16 search_key2);
 extern void floorSetFadeScript();
 
 #if !defined(GS_RANGE_80265EC4_SPLIT) || defined(GS_RANGE_80265EC4_PREFIX)
@@ -65,110 +65,102 @@ void exribbonInit(u8* data)
 #endif
 
 #if !defined(GS_RANGE_80265EC4_SPLIT) || defined(GS_RANGE_80265F94_SUFFIX)
-/* Address: 0x80265F94 | Size: 0x2BC | Ghidra import */
-void fn_80265F94(int r3)
+extern s8 winMsgCheck(void);
 
+static inline u8 fn_80265F94_msgOpen(void)
 {
-    extern s8 winMsgCheck();
-    extern u16 pokemonDataBiosGetVoice();
-    extern void* pokemonDataBiosGetPtr();
-    extern int fn_801666BC();
-    extern int fn_80166A28();
-    extern u16 lbl_8047E6F8;
-    extern f32 lbl_8047E6FC;
-  u16 uVar1;
-  u32 uVar2;
+    if (winMsgCheck() == 1) {
+        return 1;
+    }
+    return 0;
+}
 
-  u16 sVar6;
-  u16 sVar7;
-  u32 uVar3;
-  s8 cVar9;
-  u8 effectStatus;
-  int iVar4;
-  void* pokemonData;
-  u16 uVar8;
-  u32 uVar5;
+static inline void fn_80265F94_update(void* model, u16 id)
+{
+    fn_801DB088();
+    if (fn_801DA94C(model, id, 4) == 0) {
+        fn_801DA9E8(model, id, 4);
+    }
+    _threadSwitch();
+}
 
-  sVar6 = (u16)(int)pokemonGetStatus(0,0xfa,0x66,0);
-  sVar7 = 0xFFFF;
-  if ((u16)sVar6 != 0) {
-    sVar7 = sVar6;
-  }
-  uVar3 = (u32)fn_801DE190(sVar7,0,0);
-  fn_801DDD28(uVar3,lbl_8047E6F8,4,0);
-  fn_801DA4E8(uVar3,1);
-  uVar1 = lbl_8047E6F8;
-  fn_801DA9E8(uVar3,uVar1,4);
-  fadeSet((double)lbl_8047E6FC,2);
-  while (cVar9 = fadeCheck(0), cVar9 != '\0') {
-    fn_801DB088();
-    effectStatus = fn_801DA94C(uVar3,uVar1,4);
-    if (effectStatus == '\0') {
-      fn_801DA9E8(uVar3,uVar1,4);
+extern const u16 lbl_8047E6F8;
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper; returning the model through it gives retail's register order - see docs/RULE_EXCEPTIONS.md */
+static inline void* fn_80265F94_create(u16 species)
+{
+    void* model = fn_801DE190(species, NULL, 0);
+    fn_801DDD28(model, lbl_8047E6F8, 4, 0);
+    fn_801DA4E8(model, 1);
+    return model;
+}
+
+/* Address: 0x80265F94 | Size: 0x2BC */
+void fn_80265F94(int r3)
+{
+    extern u16 pokemonDataBiosGetVoice(u8* data);
+    extern void* pokemonDataBiosGetPtr(u16 species);
+    extern s32 fn_801666BC(u16 voice);
+    extern void fn_80166A28(u16 voice);
+    extern const f32 lbl_8047E6FC;
+    u16 voice;
+    void* model;
+    u16 status;
+    u16 id;
+    u16 species;
+    u8* data;
+    u32 msg;
+
+    status = pokemonGetStatus(NULL, 0xfa, 0x66, 0);
+    species = 0xFFFF;
+    if (status != 0) {
+        species = status;
     }
-    _threadSwitch();
-  }
-  pokemonData = pokemonDataBiosGetPtr(0xfa);
-  if (pokemonData == 0) {
-    uVar8 = 0;
-  }
-  else {
-    uVar8 = pokemonDataBiosGetVoice();
-    fn_80166A28(uVar8);
-  }
-  while (iVar4 = fn_801666BC(uVar8), iVar4 == 2) {
-    fn_801DB088();
-    effectStatus = fn_801DA94C(uVar3,uVar1,4);
-    if (effectStatus == '\0') {
-      fn_801DA9E8(uVar3,uVar1,4);
+    model = fn_80265F94_create(species);
+    id = lbl_8047E6F8;
+    fn_801DA9E8(model, id, 4);
+    fadeSet(2, lbl_8047E6FC);
+    while (fadeCheck(0) != 0) {
+        fn_80265F94_update(model, id);
     }
-    _threadSwitch();
-  }
-  winMsgOpenField(0x44ba,0,0);
-  while (cVar9 = winMsgCheck(), uVar2 = __cntlzw(1 - cVar9),
-         (uVar2 >> 5 & 0xff) != 0) {
-    fn_801DB088();
-    effectStatus = fn_801DA94C(uVar3,uVar1,4);
-    if (effectStatus == '\0') {
-      fn_801DA9E8(uVar3,uVar1,4);
+    data = pokemonDataBiosGetPtr(0xfa);
+    if (data == NULL) {
+        voice = 0;
+    } else {
+        /* RULE-EXCEPTION(user-approved): no-op (u16) cast on the u16 result makes the truncation into voice explicit, as retail's clrlwi - see docs/RULE_EXCEPTIONS.md */
+        voice = (u16)pokemonDataBiosGetVoice(data);
+        fn_80166A28(voice);
     }
-    _threadSwitch();
-  }
-  winMsgCloseField(1);
-  switch (r3) {
-  case 0:
-    msgctrlSetValue(0x5d,0x3d2);
-    uVar5 = 0x44bc;
-    break;
-  case 1:
-    msgctrlSetValue(0x5d,0x3d2);
-    uVar5 = 0x44bb;
-    break;
-  default:
-    uVar5 = 0x44b9;
-    break;
-  }
-  winMsgOpenField(uVar5,0,0);
-  while (cVar9 = winMsgCheck(), uVar2 = __cntlzw(1 - cVar9),
-         (uVar2 >> 5 & 0xff) != 0) {
-    fn_801DB088();
-    effectStatus = fn_801DA94C(uVar3,uVar1,4);
-    if (effectStatus == '\0') {
-      fn_801DA9E8(uVar3,uVar1,4);
+    while (fn_801666BC(voice) == 2) {
+        fn_80265F94_update(model, id);
     }
-    _threadSwitch();
-  }
-  winMsgCloseField(1);
-  fadeSet((double)lbl_8047E6FC,3);
-  while (cVar9 = fadeCheck(0), cVar9 != '\0') {
-    fn_801DB088();
-    effectStatus = fn_801DA94C(uVar3,uVar1,4);
-    if (effectStatus == '\0') {
-      fn_801DA9E8(uVar3,uVar1,4);
+    winMsgOpenField(0x44ba, 0, 0);
+    while (fn_80265F94_msgOpen()) {
+        fn_80265F94_update(model, id);
     }
-    _threadSwitch();
-  }
-  return;
+    winMsgCloseField(1);
+    switch (r3) {
+    case 0:
+        msgctrlSetValue(0x5d, 0x3d2);
+        msg = 0x44bc;
+        break;
+    case 1:
+        msgctrlSetValue(0x5d, 0x3d2);
+        msg = 0x44bb;
+        break;
+    default:
+        msg = 0x44b9;
+        break;
+    }
+    winMsgOpenField(msg, 0, 0);
+    while (fn_80265F94_msgOpen()) {
+        fn_80265F94_update(model, id);
+    }
+    winMsgCloseField(1);
+    fadeSet(3, lbl_8047E6FC);
+    while (fadeCheck(0) != 0) {
+        fn_80265F94_update(model, id);
+    }
 }
 
 #endif
