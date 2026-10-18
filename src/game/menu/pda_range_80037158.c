@@ -9430,6 +9430,46 @@ extern void* fightTrainerPokemonDataBiosGetPtr(void* data);
 extern void* fightTrainerPokemonDataBiosGetNickname(void* entry);
 extern u8 fightTrainerPokemonDataBiosGetDarkPokemonFlag(void* entry);
 
+/* The owner caption of a party entry's battle: the trainer-kind or species
+ * caption chosen by the entry's variant, or 0 without a battle list. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003C2B8_OwnerText (fn_8003C2B8) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003C2B8_OwnerText(s32 off, u8* slot)
+{
+    u16 kind;
+    u32 caption;
+    u32 text;
+    u8 special;
+    u16 trainerId;
+
+    special = 0;
+    if (lbl_8047A4D0 != 0) {
+        kind = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
+        caption = fn_801EE544(kind, slot);
+        switch (*slot) {
+        case 0:
+            caption = 0x371f;
+            break;
+        case 1:
+        case 2:
+            if (kind == 0x43) {
+                caption = 0x12b0;
+            } else if ((trainerId = fn_801EEFAC(kind, 0)) == 9) {
+                text = fn_801EE328(kind);
+                special = 1;
+            } else {
+                caption = fn_801FCC7C(fightTrainerDataBiosGetPtr(trainerId));
+            }
+            break;
+        }
+        if (special != 0) {
+            return text;
+        }
+        text = GSmsgGetGSchar(caption);
+        return text;
+    }
+    return 0;
+}
+
 /* Draw one row per party entry: nickname, owner and battle caption. */
 #pragma peephole off
 void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
@@ -9438,17 +9478,14 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     void* entry;
     u32 name;
     u32 owner;
-    u32 text;
     u32 caption;
     u32 msg;
     u32 tint;
     u16 id;
-    u16 kind;
     s32 i;
     s32 off;
     s32 mode;
     u8* slot;
-    u32 special;
     void* nick;
     u16 trainerId;
     u8 registered;
@@ -9502,36 +9539,8 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
             if (name == 0) {
                 msg = GSmsgGetGSchar(1);
             }
-            /* RULE-EXCEPTION(user-approved): scalar reuse; the special-caption flag is reused as the owner text once tested, and its byte test is a codegen-only (u8) cast - see docs/RULE_EXCEPTIONS.md */
-            special = 0;
-            if (lbl_8047A4D0 != 0) {
-                kind = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
-                caption = fn_801EE544(kind, slot);
-                switch (*slot) {
-                case 0:
-                    caption = 0x371f;
-                    break;
-                case 1:
-                case 2:
-                    if (kind == 0x43) {
-                        caption = 0x12b0;
-                    } else if ((trainerId = fn_801EEFAC(kind, 0)) == 9) {
-                        text = fn_801EE328(kind);
-                        special = 1;
-                    } else {
-                        caption = fn_801FCC7C(fightTrainerDataBiosGetPtr(trainerId));
-                    }
-                    break;
-                }
-                if ((u8)special != 0) {
-                    special = text;
-                } else {
-                    text = GSmsgGetGSchar(caption);
-                    special = text;
-                }
-            }
-            owner = special;
-            if (special == 0) {
+            owner = pda_8003C2B8_OwnerText(off, slot);
+            if (owner == 0) {
                 owner = GSmsgGetGSchar(1);
             }
             caption = fn_8003CE1C(i);
