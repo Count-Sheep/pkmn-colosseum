@@ -10969,7 +10969,7 @@ void fn_80213E94(void)
   itemGetStatus(itemPtr,0,0x20,0);
   ballId = itemGetStatus(itemPtr,0,0x1e,0);
   target = fightTargetGetPtrAsNowFightType(0x12,0);
-  pokemon = fightOutPokemonGetPokemonPtr();
+  pokemon = fightOutPokemonGetPokemonPtr(target);
   species = pokemonGetStatus(pokemon,0,0xc3,0);
   catchRate = pokemonGetStatus(pokemon,0,0x6e,0);
   level = figthOutPokemonGetLevel(target);
