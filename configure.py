@@ -3317,8 +3317,23 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_candidate_800379E8.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BA60", "offset": 0, "expected": "40c90fdb"},
+                    {"symbol": "lbl_8047BA58", "offset": 4, "expected": "00000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/menu/pda_candidate_80037F40.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BA60", "offset": 0, "expected": "40c90fdb"},
+                    {"symbol": "lbl_8047BA58", "offset": 4, "expected": "00000000"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
