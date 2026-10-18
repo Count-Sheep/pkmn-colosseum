@@ -6642,8 +6642,9 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_candidate_801C7730.c",
                 constant_import=[
                     {"symbol": "lbl_8047E100", "offset": 0, "expected": "3f800000"},

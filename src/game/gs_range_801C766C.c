@@ -318,12 +318,13 @@ s32 fn_801C7730(s32 side, s32 slot)
     Vec3 origin = lbl_802758A0;
     Vec3 partner, requested;
     s32 floorId2, resId2, floorId, resId;
-    DistanceSortEntry* entry;
     void* person;
     void* info;
     f32 radius;
+    DistanceSortEntry* entry;
     s32 i, k, wanted;
     u8 done;
+    DistanceSortEntry* alt;
 
     if (heroMoveGetResID(&floorId, &resId, 1) == 0) {
         return 0;
@@ -381,17 +382,17 @@ s32 fn_801C7730(s32 side, s32 slot)
             if (entry->index == 1 || entry->index == 7) {
                 wanted = 0;
             }
-            entry = entries;
+            alt = entries;
             for (k = 0; k < 8; k++) {
-                if (entry->index == wanted) {
+                if (alt->index == wanted) {
                     break;
                 }
-                entry++;
+                alt++;
             }
-            if (entry->blocked == 0 &&
-                fieldSegmentBlocked(&partner, &requested, &entry->pos,
+            if (alt->blocked == 0 &&
+                fieldSegmentBlocked(&partner, &requested, &alt->pos,
                                     lbl_8047E118) == 0) {
-                fn_8018AACC(floorId, resId, 1, &entry->pos);
+                fn_8018AACC(floorId, resId, 1, &alt->pos);
                 done = fieldWaitPartnerMove();
             }
         }
