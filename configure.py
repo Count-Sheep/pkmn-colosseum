@@ -3961,7 +3961,7 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/cardesavedata.c",
-                mw_version="GC/1.3",
+                mw_version="GC/2.0",
                 # TEMPORARY constant_import: fn_8007FDBC defines the
                 # menuCardE_Matrix.c TU's .rodata pool (item-id tables, sprite
                 # ids, assert file name) as its own objects, addressed off one
