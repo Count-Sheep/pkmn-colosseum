@@ -12359,16 +12359,6 @@ config.libs = [
             ),
             Object(
                 Matching,
-                "game/data/data_8039A088.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
-                "game/data/data_8039A0F0.c",
-                progress_category="game",
-            ),
-            Object(
-                Matching,
                 "game/data/data_8039A648.c",
                 progress_category="game",
             ),
