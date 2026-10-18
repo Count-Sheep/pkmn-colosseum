@@ -80,6 +80,7 @@ s32 fightTrainerAiSelectIrekaeDasuFightPokemon(void* ctx, u32 param1, u32 param2
 u32 fightTrainerAiWazaHit045(void* trainerCtx, u32 trainerSlot, u32 resultSlot, u32 resultType);
 u32 fightMenuFightTrainerGcHeroOpenMenu(void* ctx, u32 param1, u32 param2);
 
+#if !defined(POKEMON_RELIVE_WAITTIME_ONLY)
 /* Address: 0x8025DCBC | Size: 0x58 | Ghidra import */
 void fn_8025DCBC(int *param)
 {
@@ -95,7 +96,6 @@ void fn_8025DCBC(int *param)
 /* Address: 0x8025DD14 | Size: 0x98 | Ghidra import */
 #pragma push
 #pragma use_lmw_stmw off
-#pragma optimize_for_size off
 void fn_8025DD14(int *r3)
 {
     extern int fn_801653BC();
@@ -205,6 +205,7 @@ void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,
   return;
 }
 
+#if !defined(POKEMON_RELIVE_PREFIX_ONLY)
 /* Address: 0x8025DF38 | Size: 0x178 | Ghidra import */
 u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
 {
@@ -1004,9 +1005,13 @@ void reliveMain(void)
 #pragma pop
 
 
+#endif
+#endif
+
 /* Address: 0x8025DC2C | Size: 0x90 | Ghidra import (PSQ removed) */
 
 
+#if !defined(POKEMON_RELIVE_PREFIX_ONLY)
 void waitTime__Ff(float r3)
 
 {
@@ -1028,3 +1033,4 @@ void waitTime__Ff(float r3)
 
   return;
 }
+#endif

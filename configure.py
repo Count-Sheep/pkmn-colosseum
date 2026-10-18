@@ -7831,6 +7831,23 @@ config.libs = [
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            Object(
+                Matching,
+                "game/pokemon_relive_waitTime_exact.c",
+                constant_import=[
+                    {"symbol": "lbl_8047E668", "offset": 0, "expected": "4330000000000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/pokemon_relive_prefix_exact.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-O4,p", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             # Dolphin SDK GBA library: GC/1.2.5n with the base SDK flags.
             *[
                 Object(status, path, mw_version="GC/1.2.5n", progress_category="sdk")
