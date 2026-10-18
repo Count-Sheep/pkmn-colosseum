@@ -703,8 +703,8 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   u32 trigger;
   u32 held;
   BOOL playing;
-  BOOL first;
   int state;
+  BOOL first;
   u32 time;
   BOOL skipped;
   int wait;
