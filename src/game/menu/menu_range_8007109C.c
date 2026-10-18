@@ -825,56 +825,45 @@ s32 fn_80074324(s32 arg0) {
 #endif /* !MENU_RANGE_CARVE */
 
 #if !defined(MENU_RANGE_CARVE) || defined(MENU_80076A8C_ONLY)
-/* Empty-slot test as used inside the party-rule loops: the null flag is
- * kept in a register so the following usability test can reuse it. */
-static inline s32 menuRulePokemonIsBlank(void* pokemon)
-{
-    extern s32 pokemonGetStatus(void*, s32, s32, s32);
-    s32 is_null;
-    s32 blank;
-
-    is_null = pokemon == 0;
-    blank = 0;
-    if (is_null == 0) {
-        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
-            goto pokemon_present;
-        }
-    }
-    blank = 1;
-pokemon_present:
-    return blank;
-}
-
-/* An egg or an invalid Pokemon cannot take part in a rule check. */
-static inline u8 menuRulePokemonIsUnusable(void* pokemon)
-{
-    extern u8 pokemonBiosGetTamagoFlag(void*);
-    extern u8 pokemonCheckValid(void*);
-    s32 unusable;
-
-    if (menuRulePokemonIsBlank(pokemon)) {
-        return 0;
-    }
-    unusable = 0;
-    if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
-        if (pokemonCheckValid(pokemon) != 0) {
-            goto pokemon_usable;
-        }
-    }
-    unusable = 1;
-pokemon_usable:
-    return unusable;
-}
-
-/* Check party-rule constraints for the selected Pokemon. */
+/* Check party-rule constraints for the selected Pokemon.
+ * Each empty-slot/usability check keeps its slot's null flag in a named local
+ * shared by the two tests, as fn_80076F2C does. The locals are declared in
+ * the order that gives retail's callee-saved register assignment. */
 u8 fn_80076A8C(void* hero, void* pokemon, const u8* rule, s32 mode)
 {
     extern u8 fn_80076F2C(void* hero, const u8* rule, s32 mode);
     extern void* heroBiosGetPokemonPtr(void* hero, u16 slot);
     extern u16 pokemonBiosGetPokemonDataId(void*);
     extern u16 pokemonBiosGetItemDataId(void*);
-    void* candidate;
-    s32 i;
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    extern u8 pokemonBiosGetTamagoFlag(void*);
+    extern u8 pokemonCheckValid(void*);
+    s32 other_item_rejected;
+    s32 self_species_blank;
+    s32 other_item_is_null;
+    s32 other_item_unusable;
+    u8 self_item_result;
+    s32 other_species_blank;
+    s32 self_item_blank;
+    s32 self_item_is_null;
+    s32 self_item_unusable;
+    s32 self_species_is_null;
+    u8 other_item_result;
+    s32 other_species_is_null;
+    u32 self_species_id;
+    u32 other_species_id;
+    s32 self_species_rejected;
+    s32 self_species_unusable;
+    s32 self_item_rejected;
+    s32 species_slot;
+    s32 item_slot;
+    void* species_candidate;
+    u8 self_species_result;
+    s32 other_species_unusable;
+    void* item_candidate;
+    s32 other_item_blank;
+    s32 other_species_rejected;
+    u8 other_species_result;
 
     switch (mode) {
     case 0:
@@ -884,23 +873,87 @@ u8 fn_80076A8C(void* hero, void* pokemon, const u8* rule, s32 mode)
         if (rule[0xC] != 0) {
             return 1;
         }
-        if (menuRulePokemonIsBlank(pokemon) ||
-            menuRulePokemonIsUnusable(pokemon)) {
+        self_species_is_null = pokemon == 0;
+        self_species_blank = 0;
+        if (self_species_is_null == 0) {
+            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+                goto pokemon_present_a;
+            }
+        }
+        self_species_blank = 1;
+pokemon_present_a:
+        if (self_species_blank != 0) {
+            goto pokemon_rejected_a;
+        }
+        self_species_rejected = 0;
+        if (self_species_is_null == 0) {
+            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+                goto pokemon_valid_a;
+            }
+        }
+        self_species_rejected = 1;
+pokemon_valid_a:
+        if (self_species_rejected != 0) {
+            self_species_result = 0;
+        } else {
+            self_species_unusable = 0;
+            if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
+                if (pokemonCheckValid(pokemon) != 0) {
+                    goto pokemon_usable_a;
+                }
+            }
+            self_species_unusable = 1;
+pokemon_usable_a:
+            self_species_result = self_species_unusable;
+        }
+        if (self_species_result != 0) {
+pokemon_rejected_a:
             return 1;
         }
-        for (i = 0; i < 6; i++) {
-            candidate = heroBiosGetPokemonPtr(hero, (u16)i);
-            if (candidate == pokemon) {
+        for (species_slot = 0; species_slot < 6; species_slot++) {
+            species_candidate = heroBiosGetPokemonPtr(hero, (u16)species_slot);
+            if (species_candidate == pokemon) {
                 continue;
             }
-            if (menuRulePokemonIsBlank(candidate)) {
+            other_species_is_null = species_candidate == 0;
+            other_species_blank = 0;
+            if (other_species_is_null == 0) {
+                if (pokemonGetStatus(species_candidate, 0, 0x6E, 0) != 0) {
+                    goto other_present_a;
+                }
+            }
+            other_species_blank = 1;
+other_present_a:
+            if (other_species_blank != 0) {
                 continue;
             }
-            if (menuRulePokemonIsUnusable(candidate)) {
+            other_species_rejected = 0;
+            if (other_species_is_null == 0) {
+                if (pokemonGetStatus(species_candidate, 0, 0x6E, 0) != 0) {
+                    goto other_valid_a;
+                }
+            }
+            other_species_rejected = 1;
+other_valid_a:
+            if (other_species_rejected != 0) {
+                other_species_result = 0;
+            } else {
+                other_species_unusable = 0;
+                if (pokemonBiosGetTamagoFlag(species_candidate) == 0) {
+                    if (pokemonCheckValid(species_candidate) != 0) {
+                        goto other_usable_a;
+                    }
+                }
+                other_species_unusable = 1;
+other_usable_a:
+                other_species_result = other_species_unusable;
+            }
+            if (other_species_result != 0) {
                 continue;
             }
-            if (pokemonBiosGetPokemonDataId(candidate) ==
-                pokemonBiosGetPokemonDataId(pokemon)) {
+            self_species_id = pokemonBiosGetPokemonDataId(pokemon);
+            other_species_id = pokemonBiosGetPokemonDataId(species_candidate);
+            if (other_species_id == self_species_id) {
                 return 0;
             }
         }
@@ -910,25 +963,88 @@ u8 fn_80076A8C(void* hero, void* pokemon, const u8* rule, s32 mode)
         if (rule[0xD] != 0) {
             return 1;
         }
-        if (menuRulePokemonIsBlank(pokemon) ||
-            menuRulePokemonIsUnusable(pokemon)) {
+        self_item_is_null = pokemon == 0;
+        self_item_blank = 0;
+        if (self_item_is_null == 0) {
+            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+                goto pokemon_present_b;
+            }
+        }
+        self_item_blank = 1;
+pokemon_present_b:
+        if (self_item_blank != 0) {
+            goto pokemon_rejected_b;
+        }
+        self_item_rejected = 0;
+        if (self_item_is_null == 0) {
+            if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+                goto pokemon_valid_b;
+            }
+        }
+        self_item_rejected = 1;
+pokemon_valid_b:
+        if (self_item_rejected != 0) {
+            self_item_result = 0;
+        } else {
+            self_item_unusable = 0;
+            if (pokemonBiosGetTamagoFlag(pokemon) == 0) {
+                if (pokemonCheckValid(pokemon) != 0) {
+                    goto pokemon_usable_b;
+                }
+            }
+            self_item_unusable = 1;
+pokemon_usable_b:
+            self_item_result = self_item_unusable;
+        }
+        if (self_item_result != 0) {
+pokemon_rejected_b:
             return 1;
         }
         if (pokemonBiosGetItemDataId(pokemon) == 0) {
             return 1;
         }
-        for (i = 0; i < 6; i++) {
-            candidate = heroBiosGetPokemonPtr(hero, (u16)i);
-            if (candidate == pokemon) {
+        for (item_slot = 0; item_slot < 6; item_slot++) {
+            item_candidate = heroBiosGetPokemonPtr(hero, (u16)item_slot);
+            if (item_candidate == pokemon) {
                 continue;
             }
-            if (menuRulePokemonIsBlank(candidate)) {
+            other_item_is_null = item_candidate == 0;
+            other_item_blank = 0;
+            if (other_item_is_null == 0) {
+                if (pokemonGetStatus(item_candidate, 0, 0x6E, 0) != 0) {
+                    goto other_present_b;
+                }
+            }
+            other_item_blank = 1;
+other_present_b:
+            if (other_item_blank != 0) {
                 continue;
             }
-            if (menuRulePokemonIsUnusable(candidate)) {
+            other_item_rejected = 0;
+            if (other_item_is_null == 0) {
+                if (pokemonGetStatus(item_candidate, 0, 0x6E, 0) != 0) {
+                    goto other_valid_b;
+                }
+            }
+            other_item_rejected = 1;
+other_valid_b:
+            if (other_item_rejected != 0) {
+                other_item_result = 0;
+            } else {
+                other_item_unusable = 0;
+                if (pokemonBiosGetTamagoFlag(item_candidate) == 0) {
+                    if (pokemonCheckValid(item_candidate) != 0) {
+                        goto other_usable_b;
+                    }
+                }
+                other_item_unusable = 1;
+other_usable_b:
+                other_item_result = other_item_unusable;
+            }
+            if (other_item_result != 0) {
                 continue;
             }
-            if (pokemonBiosGetItemDataId(candidate) ==
+            if (pokemonBiosGetItemDataId(item_candidate) ==
                 pokemonBiosGetItemDataId(pokemon)) {
                 return 0;
             }
