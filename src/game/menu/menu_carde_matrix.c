@@ -1054,18 +1054,24 @@ typedef struct MenuCardEMatrixWork {
     MenuCardESprite* subArrow[2];       /* 0x4E0 */
 } MenuCardEMatrixWork;
 
-static inline u32 menuCardELerpColor(u32 to, u32 from, f32 t) {
-    u32 result;
+typedef union MenuCardEColorWord {
+    u32 word;
+    MenuCardEColor rgba;
+} MenuCardEColorWord;
 
-    ((MenuCardEColor*)&result)->r =
-        (((MenuCardEColor*)&to)->r - ((MenuCardEColor*)&from)->r) * t + ((MenuCardEColor*)&from)->r;
-    ((MenuCardEColor*)&result)->g =
-        (((MenuCardEColor*)&to)->g - ((MenuCardEColor*)&from)->g) * t + ((MenuCardEColor*)&from)->g;
-    ((MenuCardEColor*)&result)->b =
-        (((MenuCardEColor*)&to)->b - ((MenuCardEColor*)&from)->b) * t + ((MenuCardEColor*)&from)->b;
-    ((MenuCardEColor*)&result)->a =
-        (((MenuCardEColor*)&to)->a - ((MenuCardEColor*)&from)->a) * t + ((MenuCardEColor*)&from)->a;
-    return result;
+static inline u32 menuCardELerpColor(u32 to, u32 from, f32 t) {
+    MenuCardEColorWord src;
+    MenuCardEColorWord dst;
+    MenuCardEColorWord result;
+
+    src.word = from;
+    dst.word = to;
+
+    result.rgba.r = (dst.rgba.r - src.rgba.r) * t + src.rgba.r;
+    result.rgba.g = (dst.rgba.g - src.rgba.g) * t + src.rgba.g;
+    result.rgba.b = (dst.rgba.b - src.rgba.b) * t + src.rgba.b;
+    result.rgba.a = (dst.rgba.a - src.rgba.a) * t + src.rgba.a;
+    return result.word;
 }
 
 /* RULE-EXCEPTION(user-approved): single-use inline helper (work-area getter) for the entry copy - see docs/RULE_EXCEPTIONS.md */
