@@ -208,7 +208,7 @@ void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,
 
 #endif
 
-#if defined(POKEMON_RELIVE_BEFORE_PARTICLE_ONLY)
+#if defined(POKEMON_RELIVE_PRE_SEQUENCE_ONLY)
 /* Address: 0x8025DF38 | Size: 0x178 | Ghidra import */
 u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
 {
@@ -275,7 +275,9 @@ u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
     }
     return 1;
 }
+#endif
 
+#if defined(POKEMON_RELIVE_SEQUENCE_EXACT_ONLY)
 /* Address: 0x8025E0B0 | Size: 0x10C | Ghidra import */
 u32 loadSequence(int *r3,u32 r4,u16 *r5,int r6)
 
@@ -339,7 +341,6 @@ static inline u32 *validptr_8025E1BC(u32 *p) {
 }
 
 #pragma push
-#pragma optimize_for_size off
 void fn_8025E1BC(float f1, float f2, float f3, float f4, float f5, float f6) {
   extern u32 lbl_8047B658;
   extern u16 lbl_80478DA0;
@@ -720,9 +721,8 @@ void preReliveMain(void)
 #pragma pop
 #endif
 
-#if defined(POKEMON_RELIVE_BEFORE_PARTICLE_ONLY)
+#if defined(POKEMON_RELIVE_SEQUENCE_EXACT_ONLY)
 #pragma push
-#pragma optimize_for_size off
 /* Address: 0x8025E3B0 | Size: 0x184 | Ghidra import */
 
 int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)

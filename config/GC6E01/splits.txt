@@ -6636,7 +6636,10 @@ game/pokemon_relive_prefix_exact.c:
 	.text       start:0x8025DCBC end:0x8025DF38
 
 game/pokemon_relive_before_particle.c:
-	.text       start:0x8025DF38 end:0x8025E534
+	.text       start:0x8025DF38 end:0x8025E0B0
+
+game/pokemon_relive_sequence_exact.c:
+	.text       start:0x8025E0B0 end:0x8025E534
 
 game/pokemon_relive_particle_exact.c:
 	.text       start:0x8025E534 end:0x8025E640

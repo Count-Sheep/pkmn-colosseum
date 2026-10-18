@@ -1,2 +1,2 @@
-#define POKEMON_RELIVE_BEFORE_PARTICLE_ONLY
+#define POKEMON_RELIVE_PRE_SEQUENCE_ONLY
 #include "src/game/pokemon_relive.c"
