@@ -1142,6 +1142,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s32 j;
     s32 i;
     u32 k;
+    s32 mark;
     u32 gridFrom;
     u32 gridTo;
     u32 tabFrom;
@@ -1391,8 +1392,8 @@ void fn_8007D978(MenuCardEWindow* window) {
     /* Layer marks of both entries. */
     for (which = 0; which < 2; which++) {
         if ((work->transitionActive != 0 || which != 0) && entryp[which] != NULL) {
-            for (i = 0; i < entryp[which]->layerCount; i++) {
-                if (i == work->subIndex[which]) {
+            for (mark = 0; mark < entryp[which]->layerCount; mark++) {
+                if (mark == work->subIndex[which]) {
                     from = 0xFFFFFFFF;
                 } else {
                     from = 0x024F84FF;
@@ -1406,8 +1407,8 @@ void fn_8007D978(MenuCardEWindow* window) {
                     from &= 0xFFFFFF00;
                     break;
                 }
-                winSpriteSetDisp(work->layerMark[which][i], 1);
-                work->layerMark[which][i]->color = menuCardELerpColor(to, from, t);
+                winSpriteSetDisp(work->layerMark[which][mark], 1);
+                work->layerMark[which][mark]->color = menuCardELerpColor(to, from, t);
             }
         }
     }
