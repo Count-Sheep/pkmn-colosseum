@@ -67,11 +67,11 @@ void fn_800473E0(PdaStatLine* p)
     count = (u8)num;
     p->count = (f32)count;
     if (p->segments < (s32)count) {
-        p->segments = p->segments + 1;
+        p->segments++;
     } else if (p->wait < (s32)count) {
-        p->wait = p->wait + 1;
+        p->wait++;
     } else if (p->wait < (s32)count + 30) {
-        p->wait = p->wait + 1;
+        p->wait++;
         if (p->lifted < (f32)count) {
             p->lifted = p->lifted + p->speed;
         }

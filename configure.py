@@ -3909,7 +3909,7 @@ config.libs = [
             ),
             # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_candidate_8003B814_r46_800473E0.c",
                 constant_import=[{"symbol": "lbl_8047BCBC", "offset": 0, "expected": "3f800000"},
                                  {"symbol": "lbl_8047BC94", "offset": 4, "expected": "00000000"},
