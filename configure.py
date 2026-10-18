@@ -1392,9 +1392,20 @@ config.libs = [
                     (Matching, "effect_visual_exact_8013FBE0"),
                     (Matching, "effect_visual_candidate_8013FF0C"),
                     (Matching, "effect_visual_exact_80140138"),
-                    (CodeCandidate, "effect_visual_candidate_801402AC"),
                 ]
             ],
+            # TEMPORARY constant_import
+            Object(
+                CodeCandidate,
+                "game/effect/effect_visual_candidate_801402AC.c",
+                constant_import=[
+                    {"symbol": "lbl_8047D340", "offset": 0, "expected": "4059999a"},
+                    {"symbol": "lbl_8047D348", "offset": 8, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/effect/effect_visual_candidate_8013E8A4.c",

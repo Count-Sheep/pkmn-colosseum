@@ -5833,8 +5833,6 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     s32 y;
     s16 outputIndex;
     s16 sourceIndex;
-    s32 sourceRowOffset;
-    s32 outputRowOffset;
     u16* source;
     u16* output;
 
@@ -5881,10 +5879,9 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
         y = lbl_80478BA8[spot][1] + (s32)(3.4f * yOffset);
         x = lbl_80478BA8[spot][0] + (s32)(3.4f * xOffset);
         startPixel = (s16)(y * baseWidth + x);
-        sourceRowOffset = outputRowOffset = 0;
         for (row = 0; row < spotHeight; row++) {
-            outputIndex = startPixel + outputRowOffset;
-            sourceIndex = sourceRowOffset;
+            outputIndex = startPixel + row * baseWidth;
+            sourceIndex = row * spotWidth;
             if (outputIndex >= 0) {
                 output = outputPixels + outputIndex;
                 if (output <= lastOutputPixel) {
@@ -5899,8 +5896,6 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
                     }
                 }
             }
-            sourceRowOffset += spotWidth;
-            outputRowOffset += baseWidth;
         }
     }
 
