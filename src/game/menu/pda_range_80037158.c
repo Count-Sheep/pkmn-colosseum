@@ -5210,18 +5210,16 @@ void fn_8003D8CC(void)
     PdaNameEntry tbl[15];
     u16 out[500];
     PdaKanaGroup* group;
-    s32 tab;
     u16 j;
     u16 total;
     u16 i;
     u16 id;
     u16 count;
 
-    tab = *(s8*)((u8*)&lbl_803A6818 + 0x158);
-    if (tab == 0) {
+    if (*(s8*)((u8*)&lbl_803A6818 + 0x158) == 0) {
         return;
     }
-    group = pda_8003D8CC_KanaSetup(tbl, tab);
+    group = pda_8003D8CC_KanaSetup(tbl, *(s8*)((u8*)&lbl_803A6818 + 0x158));
     count = group->count;
     total = 0;
     for (i = 0; i < lbl_8047A4E8; i++) {
