@@ -8,7 +8,7 @@
 #include "dolphin/types.h"
 
 extern u32 lbl_8047AE84;
-extern u32 lbl_8047AEA8;
+extern u16* lbl_8047AEA8;
 extern u16 lbl_80427030[];
 extern u16 lbl_80427050[];
 
@@ -29,27 +29,27 @@ void msgctrlTime(void)
 
     if (hours >= 100) {
         glyph = _msgctrlMakeDigit__FPUslUll(lbl_80427030, 0x10, hours / 100, 0);
-        lbl_8047AEA8 = (u32)glyph;
+        lbl_8047AEA8 = glyph;
         lbl_80427050[i++] = *glyph;
         hours = hours % 100;
     }
 
     glyph = _msgctrlMakeDigit__FPUslUll(lbl_80427030, 0x10, hours / 10, 0);
-    lbl_8047AEA8 = (u32)glyph;
+    lbl_8047AEA8 = glyph;
     lbl_80427050[i++] = *glyph;
 
     glyph = _msgctrlMakeDigit__FPUslUll(lbl_80427030, 0x10, hours % 10, 0);
-    lbl_8047AEA8 = (u32)glyph;
+    lbl_8047AEA8 = glyph;
     lbl_80427050[i++] = *glyph;
 
     lbl_80427050[i++] = ':';
 
     glyph = _msgctrlMakeDigit__FPUslUll(lbl_80427030, 0x10, minutes / 10, 0);
-    lbl_8047AEA8 = (u32)glyph;
+    lbl_8047AEA8 = glyph;
     lbl_80427050[i++] = *glyph;
 
     glyph = _msgctrlMakeDigit__FPUslUll(lbl_80427030, 0x10, minutes % 10, 0);
-    lbl_8047AEA8 = (u32)glyph;
+    lbl_8047AEA8 = glyph;
     lbl_80427050[i++] = *glyph;
     lbl_80427050[i] = 0;
 }
