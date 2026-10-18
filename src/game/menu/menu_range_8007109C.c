@@ -2276,11 +2276,11 @@ static inline u32 gbaBootClassify(GbaBootContext* context, u32 response,
 }
 
 static inline u32 gbaBootCrc(u32 crc, u8* data, u32 length) {
-    u32 i;
+    u32 i = 0;
 
-    for (i = 0; i < length; i++) {
-        crc = (crc >> 8) ^ lbl_803FAEF8[(crc ^ data[i]) & 0xFF];
-    }
+    do {
+        crc = (crc >> 8) ^ lbl_803FAEF8[(crc ^ data[i++]) & 0xFF];
+    } while (i != length);
     return crc;
 }
 
@@ -2491,7 +2491,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                             &gba_status) != 0) {
                     GBA_BOOT_FAIL(context, 9);
                 }
-                context->reply[offset >> 2] =
+                *(u32*)((u8*)context->reply + offset) =
                     recv_word ^ context->challenge;
             }
 
@@ -2507,7 +2507,6 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                 GBA_BOOT_FAIL(context, 7);
             }
 
-            crc_byte = candidate;
             decrypt_word = gbaBootCrc(0xAA478422, &crc_byte, 1);
             decrypt_word = GBA_BOOT_BSWAP(decrypt_word);
             for (i = 0; i < 0x40F; i++) {
