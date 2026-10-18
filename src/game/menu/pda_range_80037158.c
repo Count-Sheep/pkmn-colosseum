@@ -9575,7 +9575,6 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     u32 name;
     u32 owner;
     u32 text;
-    u32 ownerText;
     u32 caption;
     u32 msg;
     u32 tint;
@@ -9585,7 +9584,7 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     s32 off;
     s32 mode;
     u8* slot;
-    u8 special;
+    u32 special;
     void* nick;
     u16 trainerId;
     u8 registered;
@@ -9606,11 +9605,9 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     slot = (u8*)&lbl_803A6748 + 0x94;
     firstX = *(f32*)((u8*)&lbl_803A6748 + 0x14);
     rowY = *(f32*)((u8*)&lbl_803A6748 + 0x18);
-    i = 0;
-    off = 0;
     shifted = lbl_8047BAC8 + (firstX - lbl_8047BAF8 - lbl_8047BAFC);
     stride = lbl_8047BAD8;
-    for (i = 0; i < (s32)lbl_8047A4DC; i++) {
+    for (i = 0, off = 0; i < (s32)lbl_8047A4DC; i++) {
         if (i >= *(s32*)((u8*)&lbl_803A6748 + 0x8) - 1 &&
             i <= *(s32*)((u8*)&lbl_803A6748 + 0xc) + 1) {
             id = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
@@ -9641,8 +9638,8 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
             if (name == 0) {
                 msg = GSmsgGetGSchar(1);
             }
+            /* RULE-EXCEPTION(user-approved): scalar reuse; the special-caption flag is reused as the owner text once tested, and its byte test is a codegen-only (u8) cast - see docs/RULE_EXCEPTIONS.md */
             special = 0;
-            ownerText = 0;
             if (lbl_8047A4D0 != 0) {
                 kind = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
                 caption = fn_801EE544(kind, slot);
@@ -9662,15 +9659,15 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
                     }
                     break;
                 }
-                if (special != 0) {
-                    ownerText = text;
+                if ((u8)special != 0) {
+                    special = text;
                 } else {
                     text = GSmsgGetGSchar(caption);
-                    ownerText = text;
+                    special = text;
                 }
             }
-            owner = ownerText;
-            if (ownerText == 0) {
+            owner = special;
+            if (special == 0) {
                 owner = GSmsgGetGSchar(1);
             }
             caption = fn_8003CE1C(i);
