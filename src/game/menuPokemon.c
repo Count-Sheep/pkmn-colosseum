@@ -25,7 +25,7 @@
     defined(MENU_POKEMON_ISLAND_800194D0_ONLY) || defined(MENU_POKEMON_SUB_ONLY) || \
     defined(MENU_POKEMON_8001C7B8_ONLY) || defined(MENU_POKEMON_80018A68_ONLY) || \
     defined(MENU_POKEMON_800181C4_ONLY) || defined(MENU_POKEMON_800194E4_ONLY) || \
-    defined(MENU_POKEMON_80019754_ONLY)
+    defined(MENU_POKEMON_80019754_ONLY) || defined(MENU_POKEMON_800192A8_ONLY)
 #define MENU_POKEMON_CARVE_ONLY
 #endif
 
@@ -1539,7 +1539,7 @@ s32 fn_80019204(u8* a, u8* b) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CARVE_ONLY)
+#if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_800192A8_ONLY)
 /* fn_800192A8 - 0x800192A8 | size: 0x228 */
 extern u32 itemDataBiosGetName(u32 a);
 extern void fn_800FB680();
@@ -1557,7 +1557,46 @@ asm void fn_800192A8(void) {
 #include "src/game/gs_pcbox_fn_800192A8.inc"
 }
 #else
+/* Shows how many of slot `i`'s held item the hero carries: the bag pocket's
+ * count, then the summed stack sizes of the matching entries. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its locals are numbered after the caller's temporaries, which gives retail's register colouring - see docs/RULE_EXCEPTIONS.md */
+static inline void menuPokemonShowItemCount(u8* data, s32 i) {
+    extern void* itemDataBiosGetPtr();
+    extern void* heroItemGetItemKindToItemAryPtr();
+    extern void msgctrlSetValue();
+    extern u32 itemGetStatus();
+    extern u32 itemDataBiosGetKind(void* item);
+    extern u8 fn_801429E8(void* item);
+    extern u16 itemBiosGetNum(void* item);
+    u16 total;
+    u16 count;
+    u32 item;
+    s16 width;
+    u8* entry;
+    s32 n;
+    u32 sum;
+
+    heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(itemDataBiosGetPtr(*(u16*)(data + 4 + i * 2))), 0, &count, 0, 0);
+    msgctrlSetValue(0x34, count);
+    width = (s16)(GSmsgGetRect(0xCA) >> 16);
+    width += (s16)(GSmsgGetRect(0x12E) >> 16);
+    fn_800FB680(0xC3 - width, 0, -1, 0x12E);
+
+    item = *(u16*)(data + 4 + i * 2);
+    sum = 0;
+    entry = heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(itemDataBiosGetPtr(item)), &total, 0, 0, 0);
+    for (n = 0; n < total; n++, entry += 4) {
+        if (fn_801429E8(entry) != 0 && itemGetStatus(entry, 0, 0x1B, 0) == item) {
+            sum += itemBiosGetNum(entry);
+        }
+    }
+    msgctrlSetValue(0x34, sum);
+    fn_800FB680(0xC3 - (s16)(GSmsgGetRect(0xCA) >> 16), 0, -1, 0xCA);
+}
+
+#if !defined(MENU_POKEMON_800192A8_ONLY)
 #pragma optimization_level 4
+#endif
 s32 fn_800192A8(u8* a, u8* b) {
     extern void* itemDataBiosGetPtr();
     extern void* heroItemGetItemKindToItemAryPtr();
@@ -1566,15 +1605,8 @@ s32 fn_800192A8(u8* a, u8* b) {
     extern u32 itemDataBiosGetName(void* item);
     extern u32 itemDataBiosGetKind(void* item);
     s32 slots[4];
-    u16 count;
-    u16 total;
     u8* data;
-    u32 sum;
-    s16 width;
     u32 name;
-    u16 item;
-    u8* entry;
-    s32 n;
     s32 i;
 
     data = *(u8**)(a + 0x60);
@@ -1595,22 +1627,7 @@ s32 fn_800192A8(u8* a, u8* b) {
     }
     fn_800FB680(0, 0, -1, name);
     if (*(u16*)(data + 4 + i * 2) != 0) {
-        heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(itemDataBiosGetPtr(*(u16*)(data + 4 + i * 2))), 0, &count, 0, 0);
-        msgctrlSetValue(0x34, count);
-        width = (s16)(GSmsgGetRect(0xCA) >> 16);
-        width += (s16)(GSmsgGetRect(0x12E) >> 16);
-        fn_800FB680(0xC3 - width, 0, -1, 0x12E);
-
-        item = *(u16*)(data + 4 + i * 2);
-        sum = 0;
-        entry = heroItemGetItemKindToItemAryPtr(0, itemDataBiosGetKind(itemDataBiosGetPtr(item)), &total, 0, 0, 0);
-        for (n = 0; n < total; n++, entry += 4) {
-            if (fn_801429E8(entry) != 0 && itemGetStatus(entry, 0, 0x1B, 0) == item) {
-                sum += itemBiosGetNum(entry);
-            }
-        }
-        msgctrlSetValue(0x34, sum);
-        fn_800FB680(0xC3 - (s16)(GSmsgGetRect(0xCA) >> 16), 0, -1, 0xCA);
+        menuPokemonShowItemCount(data, i);
     }
     return 0;
 }
