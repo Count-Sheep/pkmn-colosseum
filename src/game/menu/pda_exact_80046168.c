@@ -155,6 +155,7 @@ static inline void pdaPushCry(void* data, u32 voice)
 {
     s32 i;
     s32 j;
+    u32 head;
 
     lbl_8047A4EC = lbl_8047A4EC + 1;
     if (lbl_8047A4EC >= 8) {
@@ -173,7 +174,8 @@ static inline void pdaPushCry(void* data, u32 voice)
         PDA_CRY(j).offset = (s32)((f32)PDA_CRY(j).offset + PDA_CRY(j).speed);
         PDA_CRY(j).field_20 += lbl_8047BD1C;
     }
-    for (j = 7; j > lbl_8047A4EC; j--) {
+    head = lbl_8047A4EC;
+    for (j = 7; j > head; j--) {
         PDA_CRY(j).offset = (s32)((f32)PDA_CRY(j).offset + PDA_CRY(j).speed);
         PDA_CRY(j).field_20 += lbl_8047BD1C;
     }
