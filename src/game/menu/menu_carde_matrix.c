@@ -1127,7 +1127,6 @@ void fn_8007D978(MenuCardEWindow* window) {
     MenuCardEWindow* other;
     MenuCardESprite* sprite;
     u8* layer;
-    f32 phase;
     f32 slideX;
     f32 slideY;
     f32 slideXr;
@@ -1531,18 +1530,15 @@ void fn_8007D978(MenuCardEWindow* window) {
             break;
         case 6:
             row = index / 6;
-            entry = entries[1];
-            for (column = 0; column < entry->columns; column++) {
-                if (fn_80082EA4(entry, work->subIndex[1], row, column)[0xC] == 0) {
+            for (column = 0; column < entries[1]->columns; column++) {
+                if (fn_80082EA4(entries[1], work->subIndex[1], row, column)[0xC] == 0) {
                     winSpriteSetDisp(work->cell[1][row * 6 + column], 1);
-                    phase = work->stateFrame / 32.0f;
-                    if (phase < 1.0f) {
+                    if (work->stateFrame / 32.0f < 1.0f) {
                         work->cell[1][row * 6 + column]->color =
-                            menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, phase);
+                            menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame / 32.0f);
                     } else {
-                        phase -= 1.0f;
                         work->cell[1][row * 6 + column]->color =
-                            menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, phase);
+                            menuCardELerpColor(0xFFFFFF00, 0xFFFFFF77, work->stateFrame / 32.0f - 1.0f);
                     }
                 }
             }
