@@ -720,9 +720,10 @@ void _menuCBBattleStartSetIndex__Fv(void)
     u16 slot;
     u16 n;
 
-    for (player = 0; player < 4; player++) {
+    order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
+    for (player = 0; player < 4; player++, order++) {
         for (slot = 0; slot < 6; slot++) {
-            ((MenuCBBattleStartOrderRow*)lbl_803A9E40)[player].slot[slot] = slot;
+            order->slot[slot] = slot;
         }
     }
 
