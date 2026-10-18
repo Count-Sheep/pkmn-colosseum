@@ -1331,8 +1331,8 @@ void fn_8007D978(MenuCardEWindow* window) {
     for (which = 0; which < 2; which++) {
         gridFrom = 0xFFFFFFFF;
         gridTo = 0xFFFFFFFF;
-        stepY = work->rect[0][2];
         stepX = work->rect[0][3];
+        stepY = work->rect[0][2];
         if (entryp[which] != NULL && (work->transitionActive != 0 || which != 0)) {
             baseX = work->rect[0][0] + (stepX * (5 - entryp[which]->columns)) / 2;
             baseY = work->rect[0][1] + (stepY * (6 - entryp[which]->sortGroup)) / 2;
