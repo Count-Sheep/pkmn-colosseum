@@ -5074,8 +5074,10 @@ static inline s32 gbaConvGridSearch(GbaConvSpeciesGrid grid, u16 id) {
     s32 col;
 
     for (row = 0; row < 3; row++) {
+        /* RULE-EXCEPTION(user-approved): carrier copy of the grid per row - see docs/RULE_EXCEPTIONS.md */
         GbaConvSpeciesGrid g = grid;
         for (col = 0; col < 3; col++) {
+            /* RULE-EXCEPTION(user-approved): carrier copy of the grid per column - see docs/RULE_EXCEPTIONS.md */
             GbaConvSpeciesGrid h = g;
             if (gbaConvGridAt(h, row, col) == id) {
                 return 1;
@@ -5129,6 +5131,7 @@ u32 fn_800884BC(u16 a, u16 b, u16 c) {
     state->ids[1] = b;
     state->ids[2] = c;
     /* lbl_8026F488 starts with the 3x3 grid {{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}. */
+    /* RULE-EXCEPTION(user-approved): typed view of the retail rodata blob lbl_8026F488 - see docs/RULE_EXCEPTIONS.md */
     grid = *(const GbaConvSpeciesGrid*)lbl_8026F488;
     for (i = 0; i < 3; i++) {
         if (!gbaConvGridHas(grid, state->ids[i])) {
