@@ -14235,30 +14235,30 @@ void fn_8021D688(void)
     extern u32 fightPokemonGetPokemonPtr();
     extern u32 pokemonGetStatus();
     extern void pokemonSetStatus();
-  struct { u32 value; } context;
+  u32 context;
+  u32 fightPokemonId;
+  u32 pokemon;
   u32 fightPokemon;
   u32 waza;
-  u16 savedStatus;
-  u16 item;
-  u32 itemParam;
+  u32 item;
   u8 category;
-  u32 effectTarget;
   s32 effectCount;
+  u32 effectTarget;
   s32 amount;
-  u32 pokemon;
   u16 i;
+  u16 savedStatus;
   ItemEffectRecord effects[33];
 
   amount = 0;
-  context.value = fightTargetGetPtrAsNowFightType(0x11,0);
-  waza = pokemonGetStatus(context.value,0,0xd9,0);
-  fightPokemon = pokemonGetStatus(context.value,0,0xd6,0);
-  pokemon = pokemonGetStatus(context.value,0,0xd5,0);
-  fightPokemon = fightPokemonGetPokemonPtr(fightPokemon);
+  context = fightTargetGetPtrAsNowFightType(0x11,0);
+  waza = pokemonGetStatus(context,0,0xd9,0);
+  fightPokemonId = pokemonGetStatus(context,0,0xd6,0);
+  pokemon = pokemonGetStatus(context,0,0xd5,0);
+  fightPokemon = fightPokemonGetPokemonPtr(fightPokemonId);
   savedStatus = pokemonGetStatus(fightPokemon,0,0x83,0);
-  item = itemGetStatus(pokemonGetStatus(context.value,0,0xe5,0),0,0x1e,0);
+  item = itemGetStatus(pokemonGetStatus(context,0,0xe5,0),0,0x1e,0) & 0xffff;
   category = fn_8021D688_itemType(item);
-  effectTarget = pokemonGetStatus(context.value,0,0xee,0);
+  effectTarget = pokemonGetStatus(context,0,0xee,0);
   effectCount = fn_80144574(effects,0,pokemon,item,0);
   if ((category == 1) || (category == 2)) {
     for (i = 0; (s32)i < (s16)effectCount; i++) {
