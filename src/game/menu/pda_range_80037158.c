@@ -5272,11 +5272,11 @@ void fn_800439BC(void* scene)
     s8 x;
     s8 y;
     f32 ang;
+    s32 i;
     u16 buttons;
     u16 held;
     u16 trig;
     u32 raw;
-    s32 i;
     u8* work = (u8*)scene;
 
     buttons = 0;
