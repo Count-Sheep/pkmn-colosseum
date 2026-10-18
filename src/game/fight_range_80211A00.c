@@ -14015,11 +14015,36 @@ extern void* lbl_8047B64C;
 u32 fn_8022B2CC();
 extern u32 itemGetStatus();
 #endif
-/* RULE-EXCEPTION(user-approved): single-use inline helper - fn_8021D40C's side lookup returns through an inline so the call result coalesces straight into side (retail `mr r29,r3`, no r0 carrier copy) - see docs/RULE_EXCEPTIONS.md */
-static inline u32 fn_8021D40C_side(u32 pokemon)
+/* The live Follow Me user (side joutai 0x4d) on the side that
+ * fightTargetGetPtrAsNowFightType(3, attacker) returns, or 0; the same
+ * inline as in fn_8022B2CC and fn_80219838. */
+static inline u32 fightGetFollowMeTarget(u32 attacker)
 {
     extern u32 fightTargetGetPtrAsNowFightType();
-    return fightTargetGetPtrAsNowFightType(3, pokemon);
+    extern u32 fightFloorGetStatus();
+    extern u8 fightSideIsJoutaiDataId();
+    extern u32 fightSideGetJoutaiUserFightTargetId();
+    extern u32 fightTargetGetRelativeHostSideFightTargetIdToTragetPtr();
+    extern u8 fightOutPokemonCheckFightOut();
+    u32 userId;
+    u32 side;
+    u32 target;
+    u32 redirected;
+    u16 floor;
+
+    side = fightTargetGetPtrAsNowFightType(3, attacker);
+    floor = fightFloorGetStatus(0, 0, 0x14, 0);
+    redirected = 0;
+    if (fightSideIsJoutaiDataId(side, 0x4d) == 1) {
+        userId = fightSideGetJoutaiUserFightTargetId(side, 0x4d);
+        if ((userId & 0xffff) != 0) {
+            target = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(userId, floor);
+            if (target != 0 && fightOutPokemonCheckFightOut(target) == 1) {
+                redirected = target;
+            }
+        }
+    }
+    return redirected;
 }
 #if !defined(FIGHT_RANGE_8021D40C_ONLY)
 #pragma optimize_for_size on
@@ -14044,19 +14069,14 @@ void fn_8021D40C(void)
     extern s8 pokemonSearchWazaDataId();
     extern s32 pokemonGetStatus();
     extern void fn_80265598();
-    u32 target;
-    u16 floor2;
-    u32 side;
     u32 trainer;
-    u32 redirected;
-    u32 targetId;
     u32 ctx;
     s32 otherMove;
     u16 floorStatus;
     u32 target3;
     u32 pokemon;
     u32 outPokemon;
-    u32 defender;
+    u32 target;
     u32 moveId;
 
     floorStatus = fightFloorGetStatus(0, 0, 0x14, 0);
@@ -14069,26 +14089,18 @@ void fn_8021D40C(void)
         break;
     case 1: {
 
+        /* Magic Coat (pokeemerald VARIOUS_SET_MAGIC_COAT_TARGET): the
+         * target becomes the attacker (0x36), then the new target (0x43) is
+         * a Follow Me user on its side or the bouncing Pokemon. */
         fightTargetGetPtrAsNowFightType(0x11, 0);
-        defender = fightTargetGetPtrAsNowFightType(0x12, 0);
-        fightFloorSetStatus(0, 0, 0x36, 0, defender);
-        side = fn_8021D40C_side(defender);
-        floor2 = fightFloorGetStatus(0, 0, 0x14, 0);
-        redirected = 0;
-        if (fightSideIsJoutaiDataId(side, 0x4d) == 1) {
-            targetId = fightSideGetJoutaiUserFightTargetId(side, 0x4d);
-            if ((u16)targetId != 0) {
-                target = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-                    targetId, floor2);
-                if (target != 0 && fightOutPokemonCheckFightOut(target) == 1) {
-                    redirected = target;
-                }
-            }
+        target = fightTargetGetPtrAsNowFightType(0x12, 0);
+        fightFloorSetStatus(0, 0, 0x36, 0, target);
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the redirected target is stored back into `target` (dead after the 0x36 store) instead of its own local, so it shares retail's r28 - see docs/RULE_EXCEPTIONS.md */
+        target = fightGetFollowMeTarget(target);
+        if (target == 0) {
+            target = ctx;
         }
-        if (redirected == 0) {
-            redirected = ctx;
-        }
-        fightFloorSetStatus(0, 0, 0x43, 0, redirected);
+        fightFloorSetStatus(0, 0, 0x43, 0, target);
         break;
     }
     case 3: {
