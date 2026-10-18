@@ -87,7 +87,7 @@ static inline void menuPokemonChangeAlert(u32 msgId) {
 #if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002EE74_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY) || \
-    defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY)
+    defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define MENU_POKEMON_CHANGE_EXACT_ISLAND
 #endif
@@ -407,7 +407,7 @@ void stateFunctionExChangeMain(void) {
 
 #endif
 
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY)
 
 /* One row of the change menu's item table (lbl_80266E90). */
 typedef struct PokemonChangeMenuEntry {
@@ -425,9 +425,11 @@ typedef struct PokemonChangeQueue {
 
 /* 0x8002FC58 | size: 0x518
  * Builds and runs the Pokemon-change selection menu (0xD9). */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_8002FC58(void) {
     extern void* savedataGetStatus(s32 side, s32 slotType);
     extern void* heroBiosGetPokemonPtr(void* hero, u16 index);
@@ -566,7 +568,9 @@ void fn_8002FC58(void) {
         break;
     }
 }
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY)
 #pragma pop
+#endif
 
 
 #endif

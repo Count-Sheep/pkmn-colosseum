@@ -10489,11 +10489,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # fn_8002FC58 only (MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY carve).
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemonChange_candidate_8002FC58.c",
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
