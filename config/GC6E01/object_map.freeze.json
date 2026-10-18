@@ -17,13 +17,13 @@
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2357600",
-    "matched_code_percent": 94.11803,
+    "matched_code": "2362332",
+    "matched_code_percent": 94.30693,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8582,
-    "matched_functions_percent": 98.90515,
-    "fuzzy_match_percent": 99.71681
+    "matched_functions": 8586,
+    "matched_functions_percent": 98.95125,
+    "fuzzy_match_percent": 99.73613
   },
   "unit_topology": [
     {
