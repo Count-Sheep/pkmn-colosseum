@@ -613,13 +613,18 @@ static inline u16 menuPokemonGetBagItemNum(u8* items, u16* count, s32 slot) {
     extern u16 itemBiosGetNum(void* item);
     s32 i;
     s32 validIndex;
+    u16 num;
 
     validIndex = -1;
     for (i = 0; i < *count; i++, items += 4) {
         if (fn_801429E8(items)) {
             validIndex++;
             if (validIndex >= slot) {
-                return itemBiosGetNum(items);
+                /* RULE-EXCEPTION(user-approved): scalar carrier - the count is
+                 * held in a named local before it is returned, chosen for
+                 * register allocation (fn_800181C4) - see docs/RULE_EXCEPTIONS.md */
+                num = itemBiosGetNum(items);
+                return num;
             }
         }
     }
@@ -628,6 +633,28 @@ static inline u16 menuPokemonGetBagItemNum(u8* items, u16* count, s32 slot) {
 
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_800181C4_ONLY)
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_800181C4) - the
+ * quantity menu's open/close/choice, with the parent window id in a named
+ * local, as in the event-side copy fn_80013A18 - see docs/RULE_EXCEPTIONS.md */
+static inline s32 menuPokemonSelectQuantity(s32 menuId, s32* columns, MenuPokemonQuantityArgs* args) {
+    extern s32 windowGetActiveID(void);
+    extern s32 menuOpenCustom(s32 menuId, s32 parent, void* args, s32, s32, s32, ...);
+    extern void menuClose(s32 menuId);
+    extern void menuCloseSync(s32 menuId, s32 wait);
+    extern s32 lbl_8047A2FC;
+    s32 menuResult;
+    s32 parent;
+
+    parent = windowGetActiveID();
+    menuResult = menuOpenCustom(menuId, parent, columns, 0, 1, 1, args);
+    menuClose(menuId);
+    menuCloseSync(menuId, 1);
+    if (menuResult == -1) {
+        return -1;
+    }
+    return lbl_8047A2FC;
+}
+
 #if !defined(MENU_POKEMON_800181C4_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma (the MENU_POKEMON_800181C4_ONLY carve uses the unit's -opt nopeephole instead) — see docs/RULE_EXCEPTIONS.md */
 #pragma push
@@ -667,19 +694,18 @@ s32 fn_800181C4(page, itemId, itemSlot)
     /* RULE-EXCEPTION(user-approved): declaration order and the named row
      * offset chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     u8* items;
-    s32 menuResult;
     s32 selected;
     s32 half;
     u16 total;
     u16 count;
-    u32 context;
-    s32 offset;
-    s32* kind;
     MenuPokemonQuantityArgs args;
+    s32 digits;
     s32 menuId;
     s32 price;
-    s32 digits;
     s32 item;
+    s32* kind;
+    s32 offset;
+    u32 context;
     s32 saleValue;
     s32 quantity;
     s32 columns;
@@ -751,14 +777,7 @@ s32 fn_800181C4(page, itemId, itemSlot)
         args.unitPrice = half;
         lbl_8047A2FC = 1;
 
-        menuResult = menuOpenCustom(menuId, windowGetActiveID(), &columns, 0, 1, 1, &args);
-        menuClose(menuId);
-        menuCloseSync(menuId, 1);
-        if (menuResult == -1) {
-            selected = -1;
-        } else {
-            selected = lbl_8047A2FC;
-        }
+        selected = menuPokemonSelectQuantity(menuId, &columns, &args);
     }
     if (selected < 0) {
         return 0;
