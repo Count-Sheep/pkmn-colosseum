@@ -370,14 +370,15 @@ s32 fn_801C7730(s32 side, s32 slot)
         }
 
         fn_80183350(floorId, resId);
-        fn_8018AACC(floorId, resId, 1, &entries[i].pos);
+        entry = &entries[i];
+        fn_8018AACC(floorId, resId, 1, &entry->pos);
         done = fieldWaitPartnerMove();
-        if (done == 0 && (entries[i].index & 1) != 0) {
+        if (done == 0 && (entry->index & 1) != 0) {
             wanted = -1;
-            if (entries[i].index == 3 || entries[i].index == 5) {
+            if (entry->index == 3 || entry->index == 5) {
                 wanted = 4;
             }
-            if (entries[i].index == 1 || entries[i].index == 7) {
+            if (entry->index == 1 || entry->index == 7) {
                 wanted = 0;
             }
             entry = entries;
