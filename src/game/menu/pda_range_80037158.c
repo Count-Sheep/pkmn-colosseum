@@ -8111,9 +8111,9 @@ void fn_80046168(void)
                     y = fn_800F7A7C(1, 0);
                     if ((y < 0 ? -y : y) > 0x20 || (x < 0 ? -x : x) > 0x20) {
                         ang = atan2(y, x);
-                        if (pdaFabs(ang) < lbl_8047BCFC) {
+                        if (pda_800439BC_Fabs(ang) < lbl_8047BCFC) {
                             cancel = 1;
-                        } else if (pdaFabs(ang) > lbl_8047BD00) {
+                        } else if (pda_800439BC_Fabs(ang) > lbl_8047BD00) {
                             cancel = 1;
                         } else {
                             cancel = 0;
