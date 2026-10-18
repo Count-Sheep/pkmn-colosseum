@@ -28,7 +28,8 @@
     !defined(FIGHT_RANGE_802274F0_ONLY) && \
     !defined(FIGHT_RANGE_8021B910_ONLY) && \
     !defined(FIGHT_RANGE_802230BC_ONLY) && \
-    !defined(FIGHT_RANGE_80224158_ONLY)
+    !defined(FIGHT_RANGE_80224158_ONLY) && \
+    !defined(FIGHT_RANGE_80213A78_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -10058,7 +10059,7 @@ s32 fightSeqGetItemType(u16 itemId) {
 #endif
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY) || \
-    defined(FIGHT_RANGE_EXACT_80213A78_ONLY)
+    defined(FIGHT_RANGE_EXACT_80213A78_ONLY) || defined(FIGHT_RANGE_80213A78_ONLY)
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY)
 void fn_802128D0(u32 r3, u32 r4)
 
@@ -10907,8 +10908,10 @@ void fn_80213A78(void)
   return;
 }
 #endif
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80213A78_ONLY)
 #if defined(FIGHT_RANGE_ALL)
 #pragma optimize_for_size on
+#endif
 void fn_80213E94(void)
 
 {
@@ -11106,6 +11109,8 @@ void fn_80213E94(void)
   fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,4,local_58);
   return;
 }
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80213A78_ONLY */
+#if defined(FIGHT_RANGE_ALL)
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F4C14 fightFloorSetStatus
 #pragma optimize_for_size on
