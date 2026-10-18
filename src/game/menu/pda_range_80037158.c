@@ -4001,12 +4001,12 @@ void fn_80044630(void) {
 
                     *(f32*)(S + 0x50) = lbl_8047BCBC;
                     *(f32*)(S + 0x58) = lbl_8047BC94;
-                    continue;
+                    break;
                 }
             } else {
                 _threadSwitch();
             }
-            continue;
+            break;
         }
 
         case 8: {   /* .L_80044DA0 */
@@ -4301,7 +4301,7 @@ void fn_80044630(void) {
             } else {
                 _threadSwitch();
             }
-            continue;
+            break;
         }
 
         case 0xA: {   /* .L_80045550 */
@@ -4451,12 +4451,12 @@ void fn_80044630(void) {
                     *(f32*)(S + 0x50) = lbl_8047BCBC;
                     *(f32*)(S + 0x58) = lbl_8047BC94;
 
-                    continue;
+                    break;
                 }
             } else {
                 _threadSwitch();
             }
-            continue;
+            break;
         }
 
         case 7: {   /* .L_80045918 */
