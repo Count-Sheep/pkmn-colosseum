@@ -28,7 +28,7 @@ extern void __assert();
 extern void* memset(void* dst, int val, u32 size);
 
 /* ===== SDA globals ===== */
-extern u8 lbl_8047A658;
+extern u16 lbl_8047A658[4];
 extern const u32 lbl_8047C130[2];
 extern const u32 lbl_8047C138[2];
 extern u8 lbl_8047C140;
@@ -640,7 +640,7 @@ void fn_8007CB54(u32 arg) {
 
 /* 0x8007CBB4 | size: 0x948 */
 #if defined(MENU_CARDE_MATRIX_8007CBB4_ACTIVE)
-#define menuCardEDigits ((u16*)&lbl_8047A658)
+#define menuCardEDigits lbl_8047A658
 typedef struct MenuCardEMatrixItem {
     u8 unk_00[6];
     s16 id;
