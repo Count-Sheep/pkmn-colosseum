@@ -8254,6 +8254,25 @@ static inline void pda_800495C8_RowLine(PdaSprite* sprite, f32 y, s32 alpha)
     pda_800495C8_Scanline(sprite, row, alpha);
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_800495C8_Panel (fn_800495C8) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_800495C8_Panel(PdaSprite* sprite, s32 alpha)
+{
+    extern void fn_800D5BA0(s32 index, u32 color);
+    extern void fn_800D61E4(s16 x, s16 y);
+    u32 color;
+
+    fn_800D61E4(0, 0);
+    color = (u8)alpha | 0x03140e00;
+    fn_800D5BA0(0, color);
+    fn_800D61E4(sprite->x, 0);
+    fn_800D5BA0(0, color);
+    fn_800D61E4(0, sprite->y);
+    fn_800D5BA0(0, color);
+    fn_800D61E4(sprite->x, sprite->y);
+    fn_800D5BA0(0, color);
+    fn_800D6728();
+}
+
 /* Mail-list backdrop: fade panel, scanlines, and the sheared page edge. */
 #pragma peephole off
 s32 fn_800495C8(void* work, PdaSprite* sprite)
@@ -8266,7 +8285,6 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     f32 top;
     f32 y;
     u8 fade;
-    u32 color;
     s32 j;
     s32 i;
     s32 alpha;
@@ -8312,16 +8330,7 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     fn_800D6A00(4);
     fn_800D67BC(4);
     alpha = (s32)(255.0f * *(f32*)(G + 0x28));
-    fn_800D61E4(0, 0);
-    color = (u8)alpha | 0x03140e00;
-    fn_800D5BA0(0, color);
-    fn_800D61E4(sprite->x, 0);
-    fn_800D5BA0(0, color);
-    fn_800D61E4(0, sprite->y);
-    fn_800D5BA0(0, color);
-    fn_800D61E4(sprite->x, sprite->y);
-    fn_800D5BA0(0, color);
-    fn_800D6728();
+    pda_800495C8_Panel(sprite, alpha);
 
     for (i = 0; i < 0x1e0; i += 4) {
         pda_800495C8_Scanline(sprite, i, 0x80);
