@@ -5182,26 +5182,13 @@ static inline void* pdaGetPokemonName(u16 id)
     return NULL;
 }
 
-/* Filter the memo index table down to the active kana-row tab. */
-#pragma peephole off
-void fn_8003D8CC(void)
+/* Fill the kana-row table with the first characters of tab's row. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D8CC_KanaSetup (fn_8003D8CC) - see docs/RULE_EXCEPTIONS.md */
+static inline PdaKanaGroup* pda_8003D8CC_KanaSetup(PdaNameEntry* tbl, s32 tab)
 {
-    u16 nameBuf[0x80];
-    PdaNameEntry tbl[15];
-    u16 out[500];
     PdaKanaGroup* group;
-    s32 tab;
     s32 n;
-    u16 j;
-    u16 total;
-    u16 i;
-    u16 id;
-    u16 count;
 
-    tab = *(s8*)((u8*)&lbl_803A6818 + 0x158);
-    if (tab == 0) {
-        return;
-    }
     for (n = 0; n < 15; n++) {
         tbl[n].used = 0;
     }
@@ -5212,6 +5199,29 @@ void fn_8003D8CC(void)
             GScharMakeFromSJIS(tbl[n].text, group->words[n]);
         }
     }
+    return group;
+}
+
+/* Filter the memo index table down to the active kana-row tab. */
+#pragma peephole off
+void fn_8003D8CC(void)
+{
+    u16 nameBuf[0x80];
+    PdaNameEntry tbl[15];
+    u16 out[500];
+    PdaKanaGroup* group;
+    s32 tab;
+    u16 j;
+    u16 total;
+    u16 i;
+    u16 id;
+    u16 count;
+
+    tab = *(s8*)((u8*)&lbl_803A6818 + 0x158);
+    if (tab == 0) {
+        return;
+    }
+    group = pda_8003D8CC_KanaSetup(tbl, tab);
     count = group->count;
     total = 0;
     for (i = 0; i < lbl_8047A4E8; i++) {
