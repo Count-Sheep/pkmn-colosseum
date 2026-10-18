@@ -988,8 +988,7 @@ void fn_8007D89C(void* window, u8* param) {
 #endif
 
 #if defined(MENU_CARDE_MATRIX_8007D978_ACTIVE)
-#pragma push
-#pragma peephole off
+/* Built with the unit flag -opt nopeephole (configure.py). */
 typedef struct MenuCardEColor {
     u8 r;
     u8 g;
@@ -1580,7 +1579,6 @@ void fn_8007D978(MenuCardEWindow* window) {
         }
     }
 }
-#pragma pop
 #endif
 
 #if defined(MENU_CARDE_MATRIX_TU)
