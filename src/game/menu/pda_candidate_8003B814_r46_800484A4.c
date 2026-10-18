@@ -289,7 +289,6 @@ extern void GSlightSetTarget(void* light, void* target);
 extern void GSlightSetActive(void* light, s32 active);
 extern u8 lbl_802E543C[];
 extern u8 lbl_802E5448[];
-extern u8 lbl_80267180[];
 extern f32 lbl_8047BC9C;
 extern u8 fn_80047CC0(u8* work);
 extern u8 fn_800478B4(void* work, void* sub);
@@ -394,8 +393,14 @@ extern void GSmodelDestroyLinkedParticles(void* model);
 typedef struct PdaCamBlock {
     f32 v[6];
 } PdaCamBlock;
+
+typedef struct PdaCamPresets {
+    PdaCamBlock cams[2];
+    PdaVec3 lightColor;
+} PdaCamPresets;
+
+extern const PdaCamPresets lbl_80267150;
 extern f32 lbl_8047BCCC;
-extern const f32 lbl_80267150[];
 extern void menuOffScreenSetDisp(s32 disp);
 extern void fn_801CB954(void* h, s32 b);
 extern void fn_801CB9D8(void* h);
@@ -445,7 +450,7 @@ static inline u32 pdaLoadPokemon(s32 index)
     return 0;
 }
 
-static inline u8 fn_8003D1FC_setup(u8* sub)
+static inline u8 fn_8003D1FC_setup(u8* sub, const PdaCamPresets* presets)
 {
     void* model;
     void* cam;
@@ -484,7 +489,7 @@ static inline u8 fn_8003D1FC_setup(u8* sub)
     GScameraSetPerspective(*(void**)((u8*)&lbl_803A6818 + 0xfc), persp0, persp1, persp2,
                            persp3);
     GScameraLookAt(*(void**)((u8*)&lbl_803A6818 + 0xfc), lbl_802E543C, lbl_802E5448);
-    color = *(PdaVec3*)lbl_80267180;
+    color = presets->lightColor;
     memcpy(&lightPos, &pos, 12);
     lightPos.x = lightPos.x - lbl_8047BC98;
     lightPos.y = lightPos.y + lbl_8047BC9C;
@@ -508,9 +513,9 @@ static inline u8 fn_8003D1FC_setup(u8* sub)
 void fn_80048918(void)
 {
     extern u16 memoDataGetCount(s32 a);
-    const PdaCamBlock* tbl = (const PdaCamBlock*)lbl_80267150;
-    PdaVec3 rot;
+    const PdaCamPresets* presets = &lbl_80267150;
     PdaCamBlock blk;
+    PdaVec3 rot;
     s32 motion;
     f32 persp3;
     f32 persp2;
@@ -546,7 +551,7 @@ void fn_80048918(void)
     res = GSresGetResource((u32)fn_80113F48(), (u32)anim);
     *(void**)((u8*)&lbl_803A6818 + 0x110) = res;
     GSmodelSetAnimRate(res, lbl_8047BD18);
-    blk = *tbl;
+    blk = presets->cams[0];
     cam = GSresGetResource(0x17, 0xd731800);
     *(void**)((u8*)&lbl_803A6818 + 0x114) = cam;
     GScameraGetPosition(cam, &blk.v[3]);
@@ -650,7 +655,7 @@ void fn_80048918(void)
             break;
         case 5:
             *((u8*)&lbl_803A6818 + 0x214) = fn_800478B4((u8*)&lbl_803A6818 + 0x7c, (u8*)&lbl_803A6818 + 0xc4);
-            *((u8*)&lbl_803A6818 + 0x214) = fn_8003D1FC_setup((u8*)&lbl_803A6818 + 0xc4);
+            *((u8*)&lbl_803A6818 + 0x214) = fn_8003D1FC_setup((u8*)&lbl_803A6818 + 0xc4, presets);
             break;
         default:
             break;
@@ -671,7 +676,7 @@ void fn_80048918(void)
         break;
     case 5:
         *((u8*)&lbl_803A6818 + 0x214) = fn_800478B4((u8*)&lbl_803A6818 + 0x7c, (u8*)&lbl_803A6818 + 0xc4);
-        *((u8*)&lbl_803A6818 + 0x214) = fn_8003D1FC_setup((u8*)&lbl_803A6818 + 0xc4);
+        *((u8*)&lbl_803A6818 + 0x214) = fn_8003D1FC_setup((u8*)&lbl_803A6818 + 0xc4, presets);
         break;
     default:
         break;
