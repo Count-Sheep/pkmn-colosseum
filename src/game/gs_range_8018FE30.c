@@ -188,25 +188,58 @@ static inline s32 flagMemberSlot(s32 i)
     return -1;
 }
 
+static inline void flagSetPartyMembers(u8 members)
+{
+    extern u8 (*lbl_80478EE4)[2];
+    s32 i;
+    s32 slot;
+
+    fn_8012F1FC(0);
+    fn_8012F40C(0);
+    heroMoveDismissMember(1);
+    for (i = 0; i < 2; i++) {
+        slot = flagMemberSlot(i);
+        if (slot >= 0 && lbl_80478EE4[members][i] != 0) {
+            fn_8012F1FC(slot);
+        }
+    }
+}
+
+static inline void flagApplyEvent(u32 event)
+{
+    extern FlagSceneEntry* lbl_80478EFC;
+    u8 members;
+    u32 floorId;
+
+    members = lbl_80478EFC[event].memberFlags;
+    if (members != 0) {
+        flagSetPartyMembers(members);
+    }
+
+    heroBiosSetPokedoru(savedataGetStatus(0, 2), lbl_80478EFC[event].pokedoru);
+    floorId = lbl_80478EFC[event].floorId;
+    if (floorId == 0) {
+        floorId = fn_800FF56C();
+    }
+    floorChangePos(floorId, 0, lbl_80478EFC[event].posX,
+                   lbl_80478EFC[event].posY, lbl_80478EFC[event].posZ);
+}
+
 void fn_8018FE30(int flagId)
 {
     extern FlagConfig* lbl_80478F98;
     extern u32* lbl_80478ED4;
     extern FlagItemSwap* lbl_80478EF4;
-    extern u8 (*lbl_80478EE4)[2];
-    extern FlagSceneEntry* lbl_80478EFC;
     int current;
-    u32 event;
-    u8 members;
-    s32 i;
-    s32 slot;
+    u32 target;
     u8 itemSwap;
-    u32 floorId;
 
     if (flagId < 0) {
         return;
     }
 
+    /* RULE-EXCEPTION(user-approved): u32 carrier of flagId for the unsigned chain compare and the u32 table indexes - see docs/RULE_EXCEPTIONS.md */
+    target = flagId;
     for (current = flagId; current != -1;
          current = lbl_80478F9C[current].next) {
         if (lbl_80478F9C[current].initialValue != 0) {
@@ -215,9 +248,10 @@ void fn_8018FE30(int flagId)
     }
 
     current = lbl_80478F98->head;
-    while (current != flagId && current != -1) {
+    while (current != target && current != -1) {
         if (lbl_80478F9C[current].initialValue != 0) {
-            _flagSet(current, lbl_80478ED4[lbl_80478F9C[current].initialValue]);
+            /* RULE-EXCEPTION(user-approved): codegen-only (u32) argument cast keeps the inlined flagId parameter in its own register - see docs/RULE_EXCEPTIONS.md */
+            _flagSet((u32)current, lbl_80478ED4[lbl_80478F9C[current].initialValue]);
         }
         itemSwap = lbl_80478F9C[current].itemSwap;
         if (itemSwap != 0) {
@@ -227,34 +261,14 @@ void fn_8018FE30(int flagId)
         current = lbl_80478F9C[current].next;
     }
 
-    itemSwap = lbl_80478F9C[flagId].itemSwap;
+    itemSwap = lbl_80478F9C[target].itemSwap;
     if (itemSwap != 0) {
         heroItemDecItemDataId(0, lbl_80478EF4[itemSwap].removeItem, 1, -1);
         heroItemAddItemDataId(0, lbl_80478EF4[itemSwap].addItem, 1, -1);
     }
 
     if (lbl_80478F9C[current].event != 0) {
-        event = lbl_80478F9C[flagId].event;
-        members = lbl_80478EFC[event].memberFlags;
-        if (members != 0) {
-            fn_8012F1FC(0);
-            fn_8012F40C(0);
-            heroMoveDismissMember(1);
-            for (i = 0; i < 2; i++) {
-                slot = flagMemberSlot(i);
-                if (slot >= 0 && lbl_80478EE4[members][i] != 0) {
-                    fn_8012F1FC(slot);
-                }
-            }
-        }
-
-        heroBiosSetPokedoru(savedataGetStatus(0, 2), lbl_80478EFC[event].pokedoru);
-        floorId = lbl_80478EFC[event].floorId;
-        if (floorId == 0) {
-            floorId = fn_800FF56C();
-        }
-        floorChangePos(floorId, 0, lbl_80478EFC[event].posX,
-                       lbl_80478EFC[event].posY, lbl_80478EFC[event].posZ);
+        flagApplyEvent(lbl_80478F9C[target].event);
     }
 }
 #endif
