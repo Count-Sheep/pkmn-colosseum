@@ -622,13 +622,16 @@ extern u16 pokemonDataBiosGetVoice();
 
 static inline u32 evolutionGetPokemonData(u32 pkm)
 {
+  u32 data;
+
   if (pkm == 0) {
     return 0;
   }
   if (!pokemonCheckValid(pkm)) {
     return 0;
   }
-  return pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(pkm));
+  data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(pkm));
+  return data;
 }
 
 static inline u32 evolutionPlayVoice(u32 pkm)
