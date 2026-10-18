@@ -6172,10 +6172,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_r57_800643D4_prefix.c",
                 mw_version="GC/2.0",
                 extra_cflags=[
+                    "-opt nopeephole",
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",

@@ -97,9 +97,36 @@ extern u8 lbl_802EF0A8[];
 
 /* Reintroduced from the previous campaign's ui_core.c through this range's
  * active dtk split. Retail preserves the mask-building operations emitted
- * with peephole optimization disabled. */
-#pragma push
-#pragma peephole off
+ * with peephole optimization disabled (unit flag -opt nopeephole). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for case 0xB38; its pokemon parameter is coloured before the shared Pokemon-pointer webs, giving retail r31 - see docs/RULE_EXCEPTIONS.md */
+static inline void fn_800643D4_DrawNameAndSex(u8* ctx, void* pokemon)
+{
+    u32 t;
+    u32 snd;
+    s32 mask = -0x100;
+    t = pokemonBiosGetNicknamePtr(pokemon);
+    if (t == 0) {
+        t = GSmsgGetGSchar(1);
+    }
+    msgctrlSetValue(0x37, t);
+    fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xe7);
+    switch ((u8) menuSubGetPokemonSexForDisp(pokemon)) {
+    case 0:
+        snd = 0xd67;
+        break;
+    case 1:
+        snd = 0xd68;
+        break;
+    case 2:
+    default:
+        snd = 0;
+        break;
+    }
+    if (snd != 0) {
+        msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
+        fn_800FB680(0x5a, 0, (ctx[0x8b] | mask), 0xcf);
+    }
+}
 void fn_800643D4(u8* ctx, UICmdMsg* msg)
 {
     s32 h;
@@ -107,36 +134,9 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
     s32 idx;
 
     switch (msg->cmd) {
-    case 0xB38: {
-        void* q;
-        u32 t;
-        u32 snd;
-        s32 mask = -0x100;
-        q = (void*) toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
-        t = pokemonBiosGetNicknamePtr(q);
-        if (t == 0) {
-            t = GSmsgGetGSchar(1);
-        }
-        msgctrlSetValue(0x37, t);
-        fn_800FB680(0, 0, (ctx[0x8b] | mask), 0xe7);
-        switch ((u8) menuSubGetPokemonSexForDisp(q)) {
-        case 0:
-            snd = 0xd67;
-            break;
-        case 1:
-            snd = 0xd68;
-            break;
-        case 2:
-        default:
-            snd = 0;
-            break;
-        }
-        if (snd != 0) {
-            msgctrlSetValue(0x37, GSmsgGetGSchar(snd));
-            fn_800FB680(0x5a, 0, (ctx[0x8b] | mask), 0xcf);
-        }
+    case 0xB38:
+        fn_800643D4_DrawNameAndSex(ctx, (void*) toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]));
         break;
-    }
     case 0xB39: {
         s32 mask = -0x100;
         h = toolentryTaisenGetPokemonPtr(0, ((u32*) lbl_803A9F08)[3]);
@@ -696,7 +696,6 @@ void fn_800643D4(u8* ctx, UICmdMsg* msg)
     }
     }
 }
-#pragma pop
 #endif
 
 #if defined(MENUCB_RANGE_RESIDUAL_EMPTY_ONLY)
