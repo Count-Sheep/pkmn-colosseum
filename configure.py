@@ -6012,7 +6012,14 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menuCB_BattleStart_candidate_80060A28.c",
-                constant_import=[{"symbol": "lbl_8047BF60", "offset": 0, "expected": "00000000"}],
+                # TEMPORARY constant_import: retail shares the TU's literal pool.
+                constant_import=[
+                    {"symbol": "lbl_8047BF94", "offset": 0, "expected": "41200000"},
+                    {"symbol": "lbl_8047BF98", "offset": 4, "expected": "41a00000"},
+                    {"symbol": "lbl_8047BF9C", "offset": 8, "expected": "c1a00000"},
+                    {"symbol": "lbl_8047BF60", "offset": 12, "expected": "00000000"},
+                    {"symbol": "lbl_8047BF90", "offset": 16, "expected": "3f800000"},
+                ],
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",

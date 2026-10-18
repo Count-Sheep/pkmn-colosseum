@@ -1086,27 +1086,22 @@ void fn_80062334(void)
 
 static inline void battleStartInterpolate(f32* current, f32* target, f32 delta)
 {
-    extern const f32 lbl_8047BF60;
-    extern const f32 lbl_8047BF90;
-    extern const f32 lbl_8047BF94;
-    extern const f32 lbl_8047BF98;
-    extern const f32 lbl_8047BF9C;
     f32 step;
     f32 distance;
 
-    step = lbl_8047BF94 * (*target - *current);
-    step *= delta;
-    if (step > lbl_8047BF98) {
-        step = lbl_8047BF98;
+    step = *target - *current;
+    step = 10.0f * step * delta;
+    if (step > 20.0f) {
+        step = 20.0f;
     }
-    if (step <= lbl_8047BF9C) {
-        step = lbl_8047BF9C;
+    if (step <= -20.0f) {
+        step = -20.0f;
     }
 
     *current += step;
     distance = *target - *current;
     if (battleStartAbs(distance) <= battleStartAbs(step) ||
-        battleStartAbs(distance) < lbl_8047BF90) {
+        battleStartAbs(distance) < 1.0f) {
         *current = *target;
     }
 }
