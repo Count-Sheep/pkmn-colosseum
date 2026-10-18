@@ -7083,11 +7083,17 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/fight_range_80213A78.c",
                 constant_import=[
                     {"symbol": "lbl_8047E610", "offset": 0, "expected": "4330000000000000"},
                 ],
+                jump_table_import={
+                    "symbol": "jumptable_80399FF4",
+                    "function": "fn_80213E94",
+                    "owner": "game/data/data_8038FFFC.c",
+                    "owner_offset": 0x9FF8,
+                },
                 mw_version="GC/2.0",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
