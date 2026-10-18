@@ -6655,6 +6655,26 @@ static inline u32 pda_800411FC_Load(s32 index)
     return 0;
 }
 
+/* pda_800411FC_Load with the Pokemon seed held in a local. */
+static inline u32 pda_800411FC_LoadRnd(s32 index)
+{
+    u32 work = lbl_8047A4E0;
+    u32 species;
+    u32 rnd;
+
+    if (work != 0) {
+        species = lbl_8047A4E4[index];
+        if (species >= 0x8000) {
+            species = species & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        pda_800411FC_Seeds(work, memoDataGetPokemonTrainerRndFromID(0, species), rnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
 /* Whether the highlighted memo entry has actually been seen. */
 static inline u8 pdaEntrySeen(void)
 {
@@ -6688,6 +6708,19 @@ static inline void* pdaCurrentData(void)
 static inline u16 pda_800411FC_Ability(s32 slot)
 {
     return pokemonDataBiosGetTokuseiDataId(pdaCurrentData(), slot);
+}
+
+/* Bios record for the highlighted entry, via pda_800411FC_LoadRnd. */
+static inline void* pda_800411FC_Data0(void)
+{
+    return pokemonDataBiosGetPtr(
+        pokemonBiosGetPokemonDataId(pda_800411FC_LoadRnd(lbl_803A6818.currentIndex)));
+}
+
+/* First ability ID of the highlighted entry. */
+static inline u16 pda_800411FC_Ability0(void)
+{
+    return pokemonDataBiosGetTokuseiDataId(pda_800411FC_Data0(), 0);
 }
 
 /* Type-name message of the highlighted entry, 0 when unavailable. */
@@ -6767,7 +6800,7 @@ void fn_800411FC(PdaSprite* alphaSprite, PdaEvent* event)
     layout = lbl_802EF0A8;
 
     if (pdaEntrySeen() != 0) {
-        tokusei0 = pda_800411FC_Ability(0);
+        tokusei0 = pda_800411FC_Ability0();
         msg = GSmsgGetGSchar((u32)pokemonTokuseiDataBiosGetName(
             pokemonTokuseiDataBiosGetPtr(tokusei0)));
         msgctrlSetValue(0x37, msg);
