@@ -1,23 +1,17 @@
 /**
  * @file pkjb_candidate_80073700.c
- * @brief pkjb_uploader.c carve, 0x80073700 - 0x80073990 (candidate).
+ * @brief pkjb_uploader.c carve, 0x80073700 - 0x80073990.
  *
- * fn_80073700 is 98.5%: the code is right, but retail walks the output
- * through a copy of the data pointer (made in the loop preheader, after the
- * offset is zeroed) and keeps the parameter in r30, so chan and the hoisted
- * values land one register off. Neither an explicit pointer nor an
- * offset-indexed store reproduces that copy here.
+ * The receive buffer is a byte buffer (the caller, gbaCommunication.c,
+ * passes a u8[0x278]) filled one word at a time at a byte offset. Retail
+ * strength-reduces that store into a pointer walk, whose start is the
+ * copy of the buffer pointer made in the loop preheader.
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
  */
 #include "game/menu/pkjb_uploader_shared.h"
 
-static inline u32 pkjbTransferTimeout(void)
-{
-    return OSMillisecondsToTicks(100);
-}
-
 /* 0x80073700 | 0x290: command 0x99, receive 0x278 bytes. */
-s32 fn_80073700(s32 chan, u32* data)
+s32 fn_80073700(s32 chan, u8* data)
 {
     u32 response;
     u8 status;
@@ -37,9 +31,8 @@ s32 fn_80073700(s32 chan, u32* data)
     if ((response >> 24) != 0x99) {
         return 15;
     }
-    for (offset = 0; offset < 0x278; offset += 4, data++) {
-        start = OSGetTick();
-        timeout = pkjbTransferTimeout();
+    for (offset = 0; offset < 0x278; offset += 4) {
+        timeout = OSMillisecondsToTicks(100);
         start = OSGetTick();
         for (;;) {
             if (OSGetTick() - start > timeout) {
@@ -61,7 +54,7 @@ s32 fn_80073700(s32 chan, u32* data)
         if (GBARead(chan, (u8*)&response, &status) != 0) {
             return 18;
         }
-        *data = response;
+        *(u32*)(data + offset) = response;
         if (lbl_803B6E08[chan] != 0) {
             return 1000;
         }

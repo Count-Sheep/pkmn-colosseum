@@ -6,10 +6,10 @@
  */
 #include "game/menu/pkjb_uploader_shared.h"
 
-s32 fn_80073700(s32 chan, u32* data);
+s32 fn_80073700(s32 chan, u8* data);
 
 /* 0x80073690 | 0x70: fn_80073700 with the key state held. */
-s32 fn_80073690(s32 chan, u32* data)
+s32 fn_80073690(s32 chan, u8* data)
 {
     s32 key;
     s32 result;

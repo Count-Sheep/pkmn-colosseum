@@ -6433,7 +6433,7 @@ config.libs = [
                     (Matching, "game/menu/pkjb_exact_80073034.c"),
                     (Matching, "game/menu/pkjb_candidate_800733D0.c"),
                     (Matching, "game/menu/pkjb_exact_80073690.c"),
-                    (CodeCandidate, "game/menu/pkjb_candidate_80073700.c"),
+                    (Matching, "game/menu/pkjb_candidate_80073700.c"),
                     (Matching, "game/menu/pkjb_exact_80073990.c"),
                     (Matching, "game/menu/menu_candidate_80074324.c"),
                     (CodeCandidate, "game/menu/menu_candidate_8007480C_gc125n.c"),
