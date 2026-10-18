@@ -3137,6 +3137,31 @@ extern u8 lbl_80478890[8];
 extern u8 lbl_80266DB0[];
 extern u8 lbl_80266D78[];
 extern s32 fn_80023968(u32, u32*);
+#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80021B14) || \
+    defined(GS_TITLE_RANGE_8002217C)
+/* Healing-item result: when the item took effect, set *arg1 from the item
+ * id and return 0; otherwise return 1. Shared by fn_80021B14 and
+ * fn_80022478. */
+/* RULE-EXCEPTION(user-approved): inline helper, register-only evidence - see docs/RULE_EXCEPTIONS.md */
+static inline s32 gsTitleRecoverItemResult(s32 slot, s16 effect_count, u32 arg0, u32* arg1) {
+    if (slot >= 0 && effect_count > 0) {
+        switch (arg0) {
+        case 0x27:
+        case 0x28:
+        case 0x29:
+        case 0x2A:
+        case 0x2B:
+            *arg1 = 0;
+            break;
+        default:
+            *arg1 = 1;
+            break;
+        }
+        return 0;
+    }
+    return 1;
+}
+#endif
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80021B14)
 s32 fn_80021B14(u32 arg0, u32* arg1) {
     typedef struct TitleEffectEntry {
@@ -3159,7 +3184,7 @@ s32 fn_80021B14(u32 arg0, u32* arg1) {
     extern s32 fn_800141BC(void*, s32);
     extern u8 fn_80121ADC(s32, s32);
     u8 item_param[0x10];
-    u8 result;
+    s32 result;
 
     itemParamConvertOrigFormat(item_param, lbl_80478890);
     switch ((s32)itemParamGetRecoverType(item_param)) {
@@ -3290,32 +3315,19 @@ s32 fn_80021B14(u32 arg0, u32* arg1) {
             }
         }
         fn_80014198(slot);
-        if (slot >= 0 && (s16)effect_count > 0) {
-            switch (arg0) {
-            case 0x27:
-            case 0x28:
-            case 0x29:
-            case 0x2A:
-            case 0x2B:
-                *arg1 = 0;
-                break;
-            default:
-                *arg1 = 1;
-                break;
-            }
-            result = 0;
-        } else {
-            result = 1;
-        }
-        return result;
+        result = gsTitleRecoverItemResult(slot, effect_count, arg0, arg1);
+        break;
     }
     case 21:
-        return fn_80023968(arg0, arg1);
+        result = fn_80023968(arg0, arg1);
+        break;
     default:
         winMsgOpen(2, 0x426A, 1, 0);
         winMsgClose(1);
-        return 1;
+        result = 1;
+        break;
     }
+    return result;
 }
 #endif
 
@@ -3497,7 +3509,7 @@ s32 fn_80022478(u32 arg0, u32* arg1) {
     s32 slot;
     TitleBgmList bgm;
     s32 i;
-    u8 result;
+    s32 result;
 
     itemParamConvertOrigFormat(item_param, lbl_80478888);
     switch (itemParamGetRecoverType(item_param)) {
@@ -3541,38 +3553,28 @@ s32 fn_80022478(u32 arg0, u32* arg1) {
             }
         }
         fn_80014198(slot);
-        if (slot >= 0 && effect_count > 0) {
-            switch (arg0) {
-            case 0x27:
-            case 0x28:
-            case 0x29:
-            case 0x2A:
-            case 0x2B:
-                *arg1 = 0;
-                break;
-            default:
-                *arg1 = 1;
-                break;
-            }
-            result = 0;
-        } else {
-            result = 1;
-        }
-        return result;
+        result = gsTitleRecoverItemResult(slot, effect_count, arg0, arg1);
+        break;
     case 1:
-        return fn_80023760(arg0, arg1);
+        result = fn_80023760(arg0, arg1);
+        break;
     case 2:
-        return fn_800232F0(arg0, arg1);
+        result = fn_800232F0(arg0, arg1);
+        break;
     case 19:
     case 20:
-        return fn_80023068(arg0, arg1);
+        result = fn_80023068(arg0, arg1);
+        break;
     case 21:
-        return fn_80023968(arg0, arg1);
+        result = fn_80023968(arg0, arg1);
+        break;
     default:
         winMsgOpen(2, 0x426A, 1, 0);
         winMsgClose(1);
-        return 1;
+        result = 1;
+        break;
     }
+    return result;
 }
 #endif
 
