@@ -138,6 +138,7 @@ void fn_80093B4C(s32 context, void* widget)
     u8* sprite;
     s32 row;
     s32 ribbon;
+    s32* ribbonKind;
 
     if (windowSearchID(0x53) == 0) {
         return;
@@ -169,7 +170,8 @@ void fn_80093B4C(s32 context, void* widget)
         }
 
         fn_800FAEF8(0x78, 0xC8, 0x80FFFF, lbl_8026F5E4, ribbon);
-        switch (lbl_802EED44[ribbon].ribbon) {
+        ribbonKind = &lbl_802EED44[ribbon].ribbon;
+        switch (*ribbonKind) {
         case 0:
         case 1:
         case 2:
@@ -177,7 +179,7 @@ void fn_80093B4C(s32 context, void* widget)
         case 4:
         case 5:
         case 6:
-            value = exribbonGetNo(lbl_802EED44[ribbon].ribbon);
+            value = exribbonGetNo(*ribbonKind);
             if (value != 0) {
                 resource = *(s32*)((u8*)lbl_802EEEC4 + (value - 1) * 4);
             } else {
