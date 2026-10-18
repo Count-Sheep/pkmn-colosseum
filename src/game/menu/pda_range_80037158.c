@@ -9835,7 +9835,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
             continue;
         }
         y = rowY - yAdj;
-        itemId = pdaBoxItemId(index);
+        itemId = pdaBoxItemIdFirst(index);
         name = itemDataBiosGetName(itemDataBiosGetPtr(itemId));
         if (name != NULL) {
             fn_800FB680(0, y, (s32)sprite, name);
