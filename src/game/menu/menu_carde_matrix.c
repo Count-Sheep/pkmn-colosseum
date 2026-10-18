@@ -1148,6 +1148,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     u32 tabTo;
     s32 index;
     s32 dir;
+    s32 blink;
     s16 baseX;
     s16 baseY;
     s16 stepX;
@@ -1488,7 +1489,7 @@ void fn_8007D978(MenuCardEWindow* window) {
 
     /* Selected-cell animation. */
     if (work->transitionActive == 0) {
-        dir = -1;
+        blink = -1;
         index = work->gridIndex;
         work->stateFrame++;
         switch (work->state) {
@@ -1503,19 +1504,19 @@ void fn_8007D978(MenuCardEWindow* window) {
             }
             break;
         case 2:
-            dir = 1;
+            blink = 1;
         case 3:
             winSpriteSetDisp(work->cellFront[1][index], 0);
             winSpriteSetDisp(work->cellBack[1][index], 0);
             goto blink;
         case 4:
-            dir = 1;
+            blink = 1;
         case 5:
         blink:
             winSpriteSetDisp(work->cursor, 1);
             work->cursor->x = work->cell[1][index]->x;
             work->cursor->y = work->cell[1][index]->y;
-            if (dir == 1) {
+            if (blink == 1) {
                 work->cursor->color =
                     menuCardELerpColor(0xFFFFFF77, 0xFFFFFF00, work->stateFrame * 0.0625f);
             } else {
@@ -1524,7 +1525,7 @@ void fn_8007D978(MenuCardEWindow* window) {
             }
             if (work->stateFrame == 16) {
                 work->stateFrame = 0;
-                work->state += dir;
+                work->state += blink;
             }
             break;
         case 6:
