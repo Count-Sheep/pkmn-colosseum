@@ -416,18 +416,6 @@ typedef struct PokemonChangeMenuEntry {
     u16 itemId;
 } PokemonChangeMenuEntry;
 
-/* Whether a party Pokemon may be picked for a trade. */
-static inline u8 menuPokemonChangeCanSelect(void* pokemon) {
-    extern u8 pokemonCheckValid(void* pokemon);
-    extern u8 menuCBRule_CheckPokemonEventFlag(void* pokemon);
-    u8 selectable = 0;
-
-    if (pokemonCheckValid(pokemon) != 0 && menuCBRule_CheckPokemonEventFlag(pokemon) == 1) {
-        selectable = 1;
-    }
-    return selectable;
-}
-
 /* 0x8002FC58 | size: 0x518
  * Builds and runs the Pokemon-change selection menu (0xD9). */
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
@@ -465,6 +453,8 @@ void fn_8002FC58(void) {
     s32 selected;
     s32 result;
     s32 item;
+    void* member;
+    u8 selectable;
 
     cursor = count = 0;
     party = savedataGetStatus(0, 2);
@@ -485,12 +475,42 @@ void fn_8002FC58(void) {
     lbl_803A2650[13] = NULL;
     fn_8010B01C(0, fn_80030170);
     save = savedataGetStatus(0, 2);
-    menuItemBiosSetSelectFlag(0x1005, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 0)));
-    menuItemBiosSetSelectFlag(0x1002, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 1)));
-    menuItemBiosSetSelectFlag(0x1004, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 2)));
-    menuItemBiosSetSelectFlag(0x1001, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 3)));
-    menuItemBiosSetSelectFlag(0x1003, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 4)));
-    menuItemBiosSetSelectFlag(0x1000, menuPokemonChangeCanSelect(heroBiosGetPokemonPtr(save, 5)));
+    member = heroBiosGetPokemonPtr(save, 0);
+    selectable = 0;
+    if (pokemonCheckValid(member) != 0 && menuCBRule_CheckPokemonEventFlag(member) == 1) {
+        selectable = 1;
+    }
+    menuItemBiosSetSelectFlag(0x1005, selectable);
+    member = heroBiosGetPokemonPtr(save, 1);
+    selectable = 0;
+    if (pokemonCheckValid(member) != 0 && menuCBRule_CheckPokemonEventFlag(member) == 1) {
+        selectable = 1;
+    }
+    menuItemBiosSetSelectFlag(0x1002, selectable);
+    member = heroBiosGetPokemonPtr(save, 2);
+    selectable = 0;
+    if (pokemonCheckValid(member) != 0 && menuCBRule_CheckPokemonEventFlag(member) == 1) {
+        selectable = 1;
+    }
+    menuItemBiosSetSelectFlag(0x1004, selectable);
+    member = heroBiosGetPokemonPtr(save, 3);
+    selectable = 0;
+    if (pokemonCheckValid(member) != 0 && menuCBRule_CheckPokemonEventFlag(member) == 1) {
+        selectable = 1;
+    }
+    menuItemBiosSetSelectFlag(0x1001, selectable);
+    member = heroBiosGetPokemonPtr(save, 4);
+    selectable = 0;
+    if (pokemonCheckValid(member) != 0 && menuCBRule_CheckPokemonEventFlag(member) == 1) {
+        selectable = 1;
+    }
+    menuItemBiosSetSelectFlag(0x1003, selectable);
+    member = heroBiosGetPokemonPtr(save, 5);
+    selectable = 0;
+    if (pokemonCheckValid(member) != 0 && menuCBRule_CheckPokemonEventFlag(member) == 1) {
+        selectable = 1;
+    }
+    menuItemBiosSetSelectFlag(0x1000, selectable);
     menuItemBiosSetSelectFlag(0xFFF, 0);
     menuItemBiosSetSelectFlag(0xFFC, 0);
     menuItemBiosSetSelectFlag(0xFFE, 0);
