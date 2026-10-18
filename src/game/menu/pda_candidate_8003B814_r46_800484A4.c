@@ -391,7 +391,8 @@ extern void menuModelFree(void* work);
 extern void fn_80109C88(void* work, u32 pokemon);
 extern void GSmodelDestroyLinkedParticles(void* model);
 typedef struct PdaCamBlock {
-    f32 v[6];
+    PdaVec3 target;
+    PdaVec3 pos;
 } PdaCamBlock;
 
 typedef struct PdaCamPresets {
@@ -514,8 +515,9 @@ void fn_80048918(void)
 {
     extern u16 memoDataGetCount(s32 a);
     const PdaCamPresets* presets = &lbl_80267150;
-    PdaCamBlock blk;
     PdaVec3 rot;
+    PdaVec3 pos;
+    PdaVec3 target;
     s32 motion;
     f32 persp3;
     f32 persp2;
@@ -525,11 +527,11 @@ void fn_80048918(void)
     void* res;
     void* cam;
     void* anim;
-    u32 pokemon;
+    f32 cbc;
     u16 total;
     u8* saved;
     f32 cf0;
-    f32 cbc;
+    u32 pokemon;
     f32 c94;
 
     menuOffScreenSetDisp(0);
@@ -551,26 +553,27 @@ void fn_80048918(void)
     res = GSresGetResource((u32)fn_80113F48(), (u32)anim);
     *(void**)((u8*)&lbl_803A6818 + 0x110) = res;
     GSmodelSetAnimRate(res, lbl_8047BD18);
-    blk = presets->cams[0];
+    target = presets->cams[0].target;
+    pos = presets->cams[0].pos;
     cam = GSresGetResource(0x17, 0xd731800);
     *(void**)((u8*)&lbl_803A6818 + 0x114) = cam;
-    GScameraGetPosition(cam, &blk.v[3]);
+    GScameraGetPosition(cam, &pos);
     GScameraGetRotation(cam, &rot);
-    blk.v[0] = *(f32*)((u8*)cam + 0x100);
-    blk.v[1] = *(f32*)((u8*)cam + 0x104);
-    blk.v[2] = *(f32*)((u8*)cam + 0x108);
+    target.x = *(f32*)((u8*)cam + 0x100);
+    target.y = *(f32*)((u8*)cam + 0x104);
+    target.z = *(f32*)((u8*)cam + 0x108);
     GScameraGetPerspective(cam, &persp0, &persp1, &persp2, &persp3);
     saved = (u8*)&lbl_803A6818 + 0x218;
-    GSvecCopy(saved, &blk.v[3]);
-    GSvecCopy(saved + 0xc, &blk.v[0]);
+    GSvecCopy(saved, &pos);
+    GSvecCopy(saved + 0xc, &target);
     *(f32*)(saved + 0x18) = persp0;
     *(f32*)(saved + 0x1c) = persp1;
     *(f32*)(saved + 0x20) = persp2;
     *(f32*)(saved + 0x24) = persp3;
     GScameraSetPerspective(cam, persp0, persp1, persp2, persp3);
-    GSvecCopy((u8*)&lbl_803A6818 + 0x118, &blk.v[3]);
+    GSvecCopy((u8*)&lbl_803A6818 + 0x118, &pos);
     GSvecCopy((u8*)&lbl_803A6818 + 0x124, &rot);
-    GSvecCopy((u8*)&lbl_803A6818 + 0x130, &blk.v[0]);
+    GSvecCopy((u8*)&lbl_803A6818 + 0x130, &target);
     *(f32*)((u8*)&lbl_803A6818 + 0x13c) = persp0;
     *(f32*)((u8*)&lbl_803A6818 + 0x140) = persp1;
     *(f32*)((u8*)&lbl_803A6818 + 0x144) = persp2;
