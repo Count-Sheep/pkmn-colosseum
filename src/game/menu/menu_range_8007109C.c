@@ -1500,18 +1500,49 @@ pokemon_checked:
 #endif /* !MENU_RANGE_CARVE */
 
 #if !defined(MENU_RANGE_CARVE) || defined(MENU_800776E4_ONLY)
-/* Inlined copy of fn_800767B8 used by fn_800776E4. */
-/* RULE-EXCEPTION(user-approved): inline helper duplicating a real function's body — see docs/RULE_EXCEPTIONS.md */
-static inline u8 menuRuleCheckParty(void* hero, const u8* rule)
+/* menuRuleCheckPokemonMode with the empty-slot null test hoisted out to the
+ * caller: retail computes `pokemon == 0` once before fn_800776E4's mode loop
+ * and keeps it in the first callee-saved register. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper taking a precomputed null flag - see docs/RULE_EXCEPTIONS.md */
+static inline u8 menuRuleCheckPokemonModeNullFlag(void* pokemon, s32 is_null,
+                                                  const s16* levels, s32 mode)
+{
+    extern s32 pokemonGetStatus(void*, s32, s32, s32);
+    s32 blank;
+
+    blank = 0;
+    if (is_null == 0) {
+        if (pokemonGetStatus(pokemon, 0, 0x6E, 0) != 0) {
+            goto pokemon_present;
+        }
+    }
+    blank = 1;
+pokemon_present:
+    if (blank != 0) {
+        return 1;
+    }
+    return menuRuleCheckPresentPokemonMode(pokemon, levels, mode,
+                                           (const char*)lbl_80268A48,
+                                           (const char*)lbl_80268A58);
+}
+
+/* Inlined copy of fn_800767B8 used by fn_800776E4; the rule pointer is
+ * fetched here so it is numbered with the other party-check locals. */
+/* RULE-EXCEPTION(user-approved): inline helper duplicating a real function's body - see docs/RULE_EXCEPTIONS.md */
+static inline u8 menuRuleCheckParty(void* hero)
 {
     extern void* heroBiosGetPokemonPtr(void* hero, u16 slot);
     extern u8 pokemonCheckValid(void* pokemon);
+    extern u8* fn_8006B420(void);
+    s32 mode;
+    const u8* rule;
     s32 slot;
     s32 partyCount;
     void* pokemon;
-    s32 mode;
+    s32 is_null;
     u8 valid;
 
+    rule = fn_8006B420();
     partyCount = 0;
     if (menuRuleCheckPartyAllModes(hero, rule) == 0) {
         return 0;
@@ -1520,9 +1551,12 @@ static inline u8 menuRuleCheckParty(void* hero, const u8* rule)
     for (slot = 0; slot < 6; slot++) {
         pokemon = heroBiosGetPokemonPtr(hero, (u16)slot);
         if (pokemon != 0 && pokemonCheckValid(pokemon) != 0) {
+            /* RULE-EXCEPTION(user-approved): loop-invariant null flag computed once before the mode loop - see docs/RULE_EXCEPTIONS.md */
+            is_null = pokemon == 0;
             for (mode = 0; mode < 3; mode++) {
-                if (menuRuleCheckPokemonMode(pokemon, (const s16*)rule,
-                                             mode) == 0) {
+                if (menuRuleCheckPokemonModeNullFlag(pokemon, is_null,
+                                                     (const s16*)rule,
+                                                     mode) == 0) {
                     valid = 0;
                     goto pokemon_checked;
                 }
@@ -1571,10 +1605,8 @@ static inline u8 menuRulePartyHasNoPokemonError(void* hero)
 /* Check every party slot for Pokemon errors, then the active battle rule. */
 u8 fn_800776E4(void* hero)
 {
-    extern u8* fn_8006B420(void);
-
     return menuRulePartyHasNoPokemonError(hero) &&
-           menuRuleCheckParty(hero, fn_8006B420());
+           menuRuleCheckParty(hero);
 }
 #endif /* !MENU_RANGE_CARVE || MENU_800776E4_ONLY */
 
