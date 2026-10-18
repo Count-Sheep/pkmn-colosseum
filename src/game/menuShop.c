@@ -2310,6 +2310,113 @@ static inline u32 shopGetMoney(u8 mode, ShopWork* work)
     }
 }
 
+/* Asks whether to leave the shop of type `mode`; a PC-box shop (3) that
+ * changed its stock writes the stock back first. Returns 1 to leave. */
+static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
+{
+    extern u32   savedataGetStatus(u8* obj, u16 sel);
+    extern void  heroSetStatus(u8* ptr, u32 selector, u32 value);
+    extern u16   itemBiosGetItemDataId(void* slot);
+    extern u16   itemBiosGetNum(void* slot);
+    extern void  fn_8002A1C4(u8* idx, s32 msgId, s32 term, ...);
+    extern u32   fn_80029FAC(u8* idx, s32 a, s32 b, s32 c, ...);
+    extern void  winMsgOpenWithSE(s32 a, u32 str, s32 c, s32 d, u8 e);
+    extern s8    menuSubOpenYesNo(s32 a, s32 b, s32 c, s32 d);
+    extern void  winMsgClose(s32 slot);
+    extern s32   fn_801D0748(u32 a, u32 b, u32 c);
+    extern void  fn_80093574(s32 a);
+    extern void  fn_80092C90(s32 a, void* list, s32 c);
+    extern s32   fn_80093610(s32 a);
+    extern void  fn_80093698(s32 a);
+    extern void* memcpy(void* dst, const void* src, u32 n);
+    extern void* memset(void* dst, int v, u32 n);
+    extern u32 lbl_8047A3DC;
+    extern u32 lbl_8047A3D8;
+    extern u32 lbl_80478E54;
+    extern u32 lbl_80478E4C;
+    s32 answer;
+    s32 i;
+    u16 id;
+    u8* slot;
+    u8 name;
+    u8 se;
+    struct {
+        u32 credit0;
+        u32 credit1;
+        u32 field764;
+        u16 zero;
+        u16 count;
+        struct {
+            u16 id;
+            u16 num;
+        } items[50];
+    } inv;
+
+    if (work->exitFlag == 0) {
+        winMsgOpenWithSE(2, fn_80029FAC(&se, mapIdx, 0xd, -1), 1, 0, se);
+        answer = menuSubOpenYesNo(0, -1, -1, 0);
+        winMsgClose(1);
+        if (answer == 1 || answer == -1) {
+            return 0;
+        }
+        if ((u8)mode == 3) {
+            fn_8002A1C4((u8*)mapIdx, 0xe, -1);
+        }
+        return 1;
+    }
+    winMsgOpenWithSE(2, fn_80029FAC(&se, mapIdx, 0xf, -1), 1, 0, se);
+    answer = menuSubOpenYesNo(0, -1, -1, 0);
+    winMsgClose(1);
+    if (answer == 1 || answer == -1) {
+        return 0;
+    }
+    if ((u8)mode == 3) {
+        name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
+        winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
+        memset(&inv, 0, sizeof(inv));
+        inv.credit0 = work->credit0;
+        inv.credit1 = work->credit1;
+        inv.field764 = work->field764;
+        inv.zero = 0;
+        inv.count = work->count;
+        for (i = 0; i < inv.count; i++) {
+            if (i < 0 || i > work->count) {
+                id = 0;
+            } else {
+                slot = (u8*)work + i * 4;
+                id = itemBiosGetItemDataId(slot);
+                if (id != 0) {
+                    inv.items[i].num = itemBiosGetNum(slot);
+                }
+            }
+            inv.items[i].id = id;
+            if (inv.items[i].id == 0) {
+                inv.items[i].num = 0;
+                break;
+            }
+        }
+        fn_80093574(1);
+        fn_80092C90(1, &inv, 0);
+        fn_80093574(1);
+        if (fn_80093610(1) != 0xc) {
+            fn_80093698(1);
+            winMsgOpenWithSE(2, 0x3d85, 1, 0, name);
+            winMsgClose(1);
+        } else {
+            fn_80093698(1);
+            winMsgOpenWithSE(2, 0x3d84, 1, 0, name);
+            winMsgClose(1);
+        }
+        fn_8002A1C4((u8*)mapIdx, 0xe, -1);
+        return 1;
+    }
+    if (fn_801D0748(4, 2, 0) != 4) {
+        memcpy((void*)savedataGetStatus(NULL, 3), (void*)lbl_8047A3DC, 0x7198);
+        heroSetStatus(NULL, 0xd, lbl_8047A3D8);
+    }
+    return 1;
+}
+
 /*
  * fn_8002C408 - coupon shop / PC-box shop loop for location `mapIdx`.
  * Shop types 2 and 3 work on a copy of the save state held in the menu
@@ -2564,71 +2671,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
     confirm:
         if (kind == 2 || kind == 3) {
-            if (params.work.exitFlag == 0) {
-                winMsgOpenWithSE(2, fn_80029FAC(&se2, mapIdx, 0xd, -1), 1, 0, se2);
-                answer = menuSubOpenYesNo(0, -1, -1, 0);
-                winMsgClose(1);
-                if (answer == 1 || answer == -1) {
-                    done = 0;
-                } else {
-                    if ((u8)mode == 3) {
-                        fn_8002A1C4((u8*)mapIdx, 0xe, -1);
-                    }
-                    done = 1;
-                }
-            } else {
-                winMsgOpenWithSE(2, fn_80029FAC(&se2, mapIdx, 0xf, -1), 1, 0, se2);
-                answer = menuSubOpenYesNo(0, -1, -1, 0);
-                winMsgClose(1);
-                if (answer == 1 || answer == -1) {
-                    done = 0;
-                } else if ((u8)mode == 3) {
-                    name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
-                    winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
-                    memset(&inv, 0, sizeof(inv));
-                    inv.credit0 = params.work.credit0;
-                    inv.credit1 = params.work.credit1;
-                    inv.field764 = params.work.field764;
-                    inv.zero = 0;
-                    inv.count = params.work.count;
-                    for (i = 0; i < inv.count; i++) {
-                        if (i < 0 || i > params.work.count) {
-                            id = 0;
-                        } else {
-                            slot = (u8*)&params.work + i * 4;
-                            id = itemBiosGetItemDataId(slot);
-                            if (id != 0) {
-                                inv.items[i].num = itemBiosGetNum(slot);
-                            }
-                        }
-                        inv.items[i].id = id;
-                        if (inv.items[i].id == 0) {
-                            inv.items[i].num = 0;
-                            break;
-                        }
-                    }
-                    fn_80093574(1);
-                    fn_80092C90(1, &inv, 0);
-                    fn_80093574(1);
-                    if (fn_80093610(1) != 0xc) {
-                        fn_80093698(1);
-                        winMsgOpenWithSE(2, 0x3d85, 1, 0, name);
-                        winMsgClose(1);
-                    } else {
-                        fn_80093698(1);
-                        winMsgOpenWithSE(2, 0x3d84, 1, 0, name);
-                        winMsgClose(1);
-                    }
-                    fn_8002A1C4((u8*)mapIdx, 0xe, -1);
-                    done = 1;
-                } else {
-                    if (fn_801D0748(4, 2, 0) != 4) {
-                        memcpy((void*)savedataGetStatus(NULL, 3), (void*)lbl_8047A3DC, 0x7198);
-                        heroSetStatus(NULL, 0xd, lbl_8047A3D8);
-                    }
-                    done = 1;
-                }
-            }
+            done = shopConfirmLeave(&params.work, mapIdx, mode);
         } else {
             done = 1;
         }
