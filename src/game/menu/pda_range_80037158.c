@@ -6184,15 +6184,58 @@ static inline u16 pdaGetHeight(u32 id)
     return 0;
 }
 
+/* Fill the sort pairs with each seen entry's weight; returns the entry count. */
+static inline u16 pdaCollectWeights(PdaSortPair* pairs, u16* ids)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 key;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            key = pdaGetWeight(id);
+            ids[count] = id;
+            pairs[count].key = key;
+            pairs[count].index = i;
+            count++;
+        }
+    }
+    return count;
+}
+
+/* Fill the sort pairs with each seen entry's height; returns the entry count. */
+static inline u16 pdaCollectHeights(PdaSortPair* pairs, u16* ids)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 key;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            key = pdaGetHeight(id);
+            ids[count] = id;
+            pairs[count].key = key;
+            pairs[count].index = i;
+            count++;
+        }
+    }
+    return count;
+}
+
 /* Reorder the memo index table for the active sort tab. */
 #pragma peephole off
 void fn_8003E394(void)
 {
-    PdaSortPair* pairs;
-    u16* ids;
-    u16 i;
     u16 j;
     u16 count;
+    PdaSortPair* pairs;
+    u16* ids;
 
     switch (*(s8*)((u8*)&lbl_803A6818 + 0x15c)) {
     case 0:
@@ -6201,17 +6244,7 @@ void fn_8003E394(void)
     case 1:
         pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
         ids = (u16*)pdaAlloc(0x320, 0x20);
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                u16 key = pdaGetWeight(id);
-                ids[count] = id;
-                pairs[count].key = key;
-                pairs[count].index = i;
-                count++;
-            }
-        }
+        count = pdaCollectWeights(pairs, ids);
         fn_8003F2DC((u8*)pairs, count, 1);
         for (j = 0; j < count; j++) {
             lbl_8047A4E4[j] = ids[pairs[j].index];
@@ -6223,17 +6256,7 @@ void fn_8003E394(void)
     case 2:
         pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
         ids = (u16*)pdaAlloc(0x320, 0x20);
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                u16 key = pdaGetWeight(id);
-                ids[count] = id;
-                pairs[count].key = key;
-                pairs[count].index = i;
-                count++;
-            }
-        }
+        count = pdaCollectWeights(pairs, ids);
         if (count != 0) {
             fn_8003F2DC((u8*)pairs, count, 0);
             for (j = 0; j < count; j++) {
@@ -6247,17 +6270,7 @@ void fn_8003E394(void)
     case 3:
         pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
         ids = (u16*)pdaAlloc(0x320, 0x20);
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                u16 key = pdaGetHeight(id);
-                ids[count] = id;
-                pairs[count].key = key;
-                pairs[count].index = i;
-                count++;
-            }
-        }
+        count = pdaCollectHeights(pairs, ids);
         if (count != 0) {
             fn_8003F2DC((u8*)pairs, count, 1);
             for (j = 0; j < count; j++) {
@@ -6271,17 +6284,7 @@ void fn_8003E394(void)
     case 4:
         pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
         ids = (u16*)pdaAlloc(0x320, 0x20);
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            u16 id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                u16 key = pdaGetHeight(id);
-                ids[count] = id;
-                pairs[count].key = key;
-                pairs[count].index = i;
-                count++;
-            }
-        }
+        count = pdaCollectHeights(pairs, ids);
         if (count != 0) {
             fn_8003F2DC((u8*)pairs, count, 0);
             for (j = 0; j < count; j++) {
