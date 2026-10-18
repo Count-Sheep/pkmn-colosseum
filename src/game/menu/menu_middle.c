@@ -4070,6 +4070,7 @@ void fn_8006F284(void* menu) {
     Entry_8006F284* entries;
     u16* itemIds;
     void* widget;
+    void* sprite;
     u32 i;
     u8 sel13;
 
@@ -4159,27 +4160,27 @@ void fn_8006F284(void* menu) {
     winSpriteSetDisp(windowSearchItemID(menu, 0xA0A), sel13);
     winSpriteSetDisp(windowSearchItemID(menu, 0xA0B), sel13 == 0);
 
-    widget = windowSearchItemID(menu, 0x11A2);
-    winSpriteSetDisp(widget, val14Valid != 0 &&
+    sprite = windowSearchItemID(menu, 0x11A2);
+    winSpriteSetDisp(sprite, val14Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xA0C &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xA0D);
     winSpriteSetDisp(windowSearchItemID(menu, 0x11A3), val14Valid == 0);
-    widget = windowSearchItemID(menu, 0x11A4);
-    winSpriteSetDisp(widget, val16Valid != 0 &&
+    sprite = windowSearchItemID(menu, 0x11A4);
+    winSpriteSetDisp(sprite, val16Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xE34 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) != 0xE33);
     winSpriteSetDisp(windowSearchItemID(menu, 0x11A5), val16Valid == 0);
 
     winSpriteSetDisp(windowSearchItemID(menu, 0xA16), locked);
     winSpriteSetDisp(windowSearchItemID(menu, 0xD9F), locked);
-    widget = windowSearchItemID(menu, 0xA15);
-    MENU_MIDDLE_U32_004C(widget)->unk_004C = locked ? 0x3D7A : 0x3D79;
+    sprite = windowSearchItemID(menu, 0xA15);
+    MENU_MIDDLE_U32_004C(sprite)->unk_004C = locked ? 0x3D7A : 0x3D79;
 
-    widget = windowSearchItemID(menu, 0x11A6);
-    winSpriteSetDisp(widget, locked != 0 && val14Valid != 0 &&
+    sprite = windowSearchItemID(menu, 0x11A6);
+    winSpriteSetDisp(sprite, locked != 0 && val14Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) == 0x9FA);
-    widget = windowSearchItemID(menu, 0x11A7);
-    winSpriteSetDisp(widget, locked != 0 && val16Valid != 0 &&
+    sprite = windowSearchItemID(menu, 0x11A7);
+    winSpriteSetDisp(sprite, locked != 0 && val16Valid != 0 &&
                                  menuGetCursorItemID(MENU_MIDDLE_U32_0004(menu)->unk_0004) == 0x9FB);
 
     fn_80070D84(menu, (MenuMiddleEntry*)(data + 0x56C), 2);
