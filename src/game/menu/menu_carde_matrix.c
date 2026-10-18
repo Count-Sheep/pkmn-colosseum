@@ -1075,6 +1075,7 @@ static inline u32 menuCardELerpColor(u32 to, u32 from, f32 t) {
     return result;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (work-area getter) for the entry copy - see docs/RULE_EXCEPTIONS.md */
 static inline MenuCardEMatrixWork* menuCardEMatrixGetWork(MenuCardEWindow* window) {
     extern void* windowSearchID(s32 id);
     extern MenuCardEMatrixWork** windowGetFreeWork(void* window);
@@ -1234,7 +1235,8 @@ void fn_8007D978(MenuCardEWindow* window) {
     }
 
     held = windowGetKeyInfo()->held;
-    if ((work->lastKey & 0xF) != ((u16)held & 0xF)) {
+    /* RULE-EXCEPTION(user-approved): codegen-only (u8) cast keeps the key truncation - see docs/RULE_EXCEPTIONS.md */
+    if ((work->lastKey & 0xF) != ((u8)held & 0xF)) {
         work->buzzed = 0;
     }
     work->lastKey = held;
