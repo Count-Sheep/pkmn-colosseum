@@ -15,18 +15,18 @@
 
 extern u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d);
 extern u32 savedataGetStatus();
-extern s8 fadeCheck(u32 wait);
-extern void fadeSet(f32 duration, u32 mode);
-extern void _threadSwitch();
-extern void msgctrlSetValue();
-extern void winMsgOpenField();
-extern void winMsgCloseField();
+extern s8 fadeCheck(u8 wait);
+extern void fadeSet(u16 type, f32 duration);
+extern void _threadSwitch(void);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 winMsgOpenField(u32 message, u32 wait, u8 pause);
+extern void winMsgCloseField(u32 wait);
 extern void fn_801DB088(void);
 extern void* fn_801DE190(u16 index, void* model, u8 variant);
 extern BOOL fn_801DDD28(void* owner, u16 group, u16 index, u8 variant);
 extern void fn_801DA4E8(void* effect, u32 visible);
-extern void fn_801DA9E8(void* sequence, s32 moveID, s32 variant);
-extern u8 fn_801DA94C(void* obj, s32 search_key1, s32 search_key2);
+extern void fn_801DA9E8(void* sequence, u16 moveID, u16 variant);
+extern u8 fn_801DA94C(void* obj, u16 search_key1, u16 search_key2);
 extern void floorSetFadeScript();
 
 #if !defined(GS_RANGE_80265EC4_SPLIT) || defined(GS_RANGE_80265EC4_PREFIX)
@@ -86,9 +86,10 @@ static inline void fn_80265F94_update(void* model, u16 id)
 
 extern const u16 lbl_8047E6F8;
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper; returning the model through it gives retail's register order - see docs/RULE_EXCEPTIONS.md */
 static inline void* fn_80265F94_create(u16 species)
 {
-    void* model = fn_801DE190(species, 0, 0);
+    void* model = fn_801DE190(species, NULL, 0);
     fn_801DDD28(model, lbl_8047E6F8, 4, 0);
     fn_801DA4E8(model, 1);
     return model;
@@ -97,18 +98,17 @@ static inline void* fn_80265F94_create(u16 species)
 /* Address: 0x80265F94 | Size: 0x2BC */
 void fn_80265F94(int r3)
 {
-    extern int pokemonDataBiosGetVoice(void* data);
+    extern u16 pokemonDataBiosGetVoice(u8* data);
     extern void* pokemonDataBiosGetPtr(u16 species);
     extern s32 fn_801666BC(u16 voice);
     extern void fn_80166A28(u16 voice);
-    extern const u16 lbl_8047E6F8;
-    extern f32 lbl_8047E6FC;
+    extern const f32 lbl_8047E6FC;
     u16 voice;
     void* model;
     u16 status;
     u16 id;
     u16 species;
-    void* data;
+    u8* data;
     u32 msg;
 
     status = pokemonGetStatus(NULL, 0xfa, 0x66, 0);
@@ -119,7 +119,7 @@ void fn_80265F94(int r3)
     model = fn_80265F94_create(species);
     id = lbl_8047E6F8;
     fn_801DA9E8(model, id, 4);
-    fadeSet(lbl_8047E6FC, 2);
+    fadeSet(2, lbl_8047E6FC);
     while (fadeCheck(0) != 0) {
         fn_80265F94_update(model, id);
     }
@@ -127,7 +127,8 @@ void fn_80265F94(int r3)
     if (data == NULL) {
         voice = 0;
     } else {
-        voice = pokemonDataBiosGetVoice(data);
+        /* RULE-EXCEPTION(user-approved): no-op (u16) cast on the u16 result makes the truncation into voice explicit, as retail's clrlwi - see docs/RULE_EXCEPTIONS.md */
+        voice = (u16)pokemonDataBiosGetVoice(data);
         fn_80166A28(voice);
     }
     while (fn_801666BC(voice) == 2) {
@@ -156,7 +157,7 @@ void fn_80265F94(int r3)
         fn_80265F94_update(model, id);
     }
     winMsgCloseField(1);
-    fadeSet(lbl_8047E6FC, 3);
+    fadeSet(3, lbl_8047E6FC);
     while (fadeCheck(0) != 0) {
         fn_80265F94_update(model, id);
     }
