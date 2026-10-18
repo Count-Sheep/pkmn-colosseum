@@ -1331,6 +1331,7 @@ game/menu/menu_middle_candidate_8006DC28.c:
 
 game/menu/menu_middle_r59_8006E338_o1.c:
 	.text       start:0x8006E338 end:0x8006E798
+	.sbss2      start:0x8047E708 end:0x8047E710
 
 game/menu/menu_middle_r59_8006E798_middle.c:
 	.text       start:0x8006E798 end:0x8006E9A4
