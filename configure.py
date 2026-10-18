@@ -8209,14 +8209,28 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuShop_r40_8002B880_gc125n.c",
-                mw_version="GC/1.3",
+                constant_import=[
+                    {"symbol": "lbl_8047B9A4", "offset": 0x00, "expected": "40000000"},
+                    {"symbol": "lbl_8047B98C", "offset": 0x04, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047B9A0", "offset": 0x08, "expected": "3f000000"},
+                    {"symbol": "lbl_8047B978", "offset": 0x0C, "expected": "437f0000"},
+                    {"symbol": "lbl_8047B9AC", "offset": 0x10, "expected": "42340000"},
+                    {"symbol": "lbl_8047B97C", "offset": 0x14, "expected": "3f800000"},
+                    {"symbol": "lbl_8047B9B0", "offset": 0x18, "expected": "3e800000"},
+                    {"symbol": "lbl_8047B9B4", "offset": 0x1C, "expected": "3f400000"},
+                    {"symbol": "lbl_8047B998", "offset": 0x20, "expected": "4330000080000000"},
+                ],
+                # fn_8002B880 only (MENUSHOP_R40_8002B880_ONLY carve), the same
+                # compiler as fn_8002B594; this function needs -fp_contract off.
+                mw_version="GC/2.0",
                 extra_cflags=[
                     "-use_lmw_stmw on",
                     "-sdata 8",
                     "-sdata2 8",
                     "-fp_contract off",
+                    "-opt nopeephole",
                 ],
                 progress_category="game",
             ),

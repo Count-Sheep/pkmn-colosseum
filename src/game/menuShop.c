@@ -27,11 +27,13 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_candidate_8002AB00.c -> fn_8002AB00
  *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8
  *   menuShop_candidate_8002B594.c -> fn_8002B594
+ *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880
  *   menuShop_candidate_8002C284.c -> fn_8002C284 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002B594_ONLY) || \
+    defined(MENUSHOP_R40_8002B880_ONLY) || \
     defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002C284_ONLY) || \
     defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
@@ -1577,7 +1579,7 @@ void fn_8002B594(void* ctx, u8* data, u32 sprite_id, u32 color_byte, f32 pos)
 #endif
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_R40_8002B880_ONLY)
 /* fn_8002B880 - 0x8002B880 | size: 0x468 */
 extern void fn_800FE6D0(void);
 extern void spriteSetEnv(void);
@@ -1610,9 +1612,19 @@ asm void fn_8002B880(void) {
  * ENDIAN-QA: all 0x43300000 / 0x8000-xor double-word int->float idioms in the
  * original asm are normalized here to plain signed casts on the full value.
  */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENUSHOP_R40_8002B880_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#define SHOP_TWO lbl_8047B9A4
+#define SHOP_PI lbl_8047B98C
+#define SHOP_HALF lbl_8047B9A0
+#define SHOP_255 lbl_8047B978
+#define SHOP_45 lbl_8047B9AC
+#define SHOP_ONE lbl_8047B97C
+#define SHOP_QUARTER lbl_8047B9B0
+#define SHOP_THREE_QUARTERS lbl_8047B9B4
+#endif
 s32 fn_8002B880(u8* state, u8* entity)
 {
     /* Cross-TU callees (real arg lists inferred from register state at each bl). */
@@ -1620,17 +1632,20 @@ s32 fn_8002B880(u8* state, u8* entity)
     extern void spriteSetEnv(void);
     extern void fn_8002B594(void* panel, u8* entity, u32 mode, s32 step, f32 phase);
 
-    /* r2-relative read-only float constants. */
-    extern f64 lbl_8047B998; /* int->float bias double (folds into the casts) */
+#if !defined(MENUSHOP_R40_8002B880_ONLY)
+    extern f64 lbl_8047B998;
     extern f32 lbl_8047B98C;
     extern f32 lbl_8047B9A0;
     extern f32 lbl_8047B9A4;
     extern const f32 lbl_8047B978;
     extern const f32 lbl_8047B9AC;
-    extern const f32 lbl_8047B97C; /* phase wrap limit */
+    extern const f32 lbl_8047B97C;
     extern f32 lbl_8047B9B0;
     extern f32 lbl_8047B9B4;
-    /* r13-relative small-data float (running phase base). */
+#endif
+    /* Float literals are pooled by the compiler in the linked carve; configure.py's
+     * constant_import maps them to retail's lbl_8047B978-lbl_8047B9B4.
+     * r13-relative small-data float (running phase base). */
     extern f32 lbl_8047A3F0;
     /* Sprite-column lookup table: 5 entries of 8 bytes; key s32 @ +0, value s16 @ +4. */
     extern u8 lbl_802E4F68[];
@@ -1696,68 +1711,137 @@ s32 fn_8002B880(u8* state, u8* entity)
                 (s32)(s16)(*(s16*)(state + 0x86) + *(s16*)(entity + 0x52)));
     spriteSetEnv();
 
-    /* ---- Fixed per-step phase increment ---- */
+    /* ---- Fixed per-step phase increment: 2 / path length ---- */
     fx = (f32)(s16)*(s16*)(entity + 0x54);
     fy = (f32)(s16)*(s16*)(entity + 0x56);
-    denom = lbl_8047B9A4 * (fx + (lbl_8047B98C * fy) * lbl_8047B9A0);
-    incr = lbl_8047B9A4 / denom;
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+    denom = 2.0f * (fx + (3.1415927f * fy) / 2.0f);
+    incr = 2.0f / denom;
+#else
+    denom = SHOP_TWO * (fx + (SHOP_PI * fy) * SHOP_HALF);
+    incr = SHOP_TWO / denom;
+#endif
 
     /* ---- Ring 1: phase starts at the live r13 base ---- */
     phase = lbl_8047A3F0;
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
+#else
+                    (s32)(SHOP_255 * ((f32)i / SHOP_45)), phase);
+#endif
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
+#else
+        if (phase >= SHOP_ONE) {
+            phase -= SHOP_ONE;
+#endif
         }
     }
 
-    /* ---- Ring 2: phase starts at base + B9B0 ---- */
-    phase = lbl_8047B9B0 + lbl_8047A3F0;
-    if (phase > lbl_8047B97C) {
-        phase -= lbl_8047B97C;
+    /* ---- Ring 2: phase starts at base + 0.25 ---- */
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+    phase = 0.25f + lbl_8047A3F0;
+    if (phase > 1.0f) {
+        phase -= 1.0f;
+#else
+    phase = SHOP_QUARTER + lbl_8047A3F0;
+    if (phase > SHOP_ONE) {
+        phase -= SHOP_ONE;
+#endif
     }
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
+#else
+                    (s32)(SHOP_255 * ((f32)i / SHOP_45)), phase);
+#endif
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
+#else
+        if (phase >= SHOP_ONE) {
+            phase -= SHOP_ONE;
+#endif
         }
     }
 
-    /* ---- Ring 3: phase starts at base + B9A0 ---- */
-    phase = lbl_8047B9A0 + lbl_8047A3F0;
-    if (phase > lbl_8047B97C) {
-        phase -= lbl_8047B97C;
+    /* ---- Ring 3: phase starts at base + 0.5 ---- */
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+    phase = 0.5f + lbl_8047A3F0;
+    if (phase > 1.0f) {
+        phase -= 1.0f;
+#else
+    phase = SHOP_HALF + lbl_8047A3F0;
+    if (phase > SHOP_ONE) {
+        phase -= SHOP_ONE;
+#endif
     }
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
+#else
+                    (s32)(SHOP_255 * ((f32)i / SHOP_45)), phase);
+#endif
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
+#else
+        if (phase >= SHOP_ONE) {
+            phase -= SHOP_ONE;
+#endif
         }
     }
 
-    /* ---- Ring 4: phase starts at base + B9B4 ---- */
-    phase = lbl_8047B9B4 + lbl_8047A3F0;
-    if (phase > lbl_8047B97C) {
-        phase -= lbl_8047B97C;
+    /* ---- Ring 4: phase starts at base + 0.75 ---- */
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+    phase = 0.75f + lbl_8047A3F0;
+    if (phase > 1.0f) {
+        phase -= 1.0f;
+#else
+    phase = SHOP_THREE_QUARTERS + lbl_8047A3F0;
+    if (phase > SHOP_ONE) {
+        phase -= SHOP_ONE;
+#endif
     }
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
+#else
+                    (s32)(SHOP_255 * ((f32)i / SHOP_45)), phase);
+#endif
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+#if defined(MENUSHOP_R40_8002B880_ONLY)
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
+#else
+        if (phase >= SHOP_ONE) {
+            phase -= SHOP_ONE;
+#endif
         }
     }
 
     return 0;
 }
+#undef SHOP_TWO
+#undef SHOP_PI
+#undef SHOP_HALF
+#undef SHOP_255
+#undef SHOP_45
+#undef SHOP_ONE
+#undef SHOP_QUARTER
+#undef SHOP_THREE_QUARTERS
+#if !defined(MENUSHOP_R40_8002B880_ONLY)
 #pragma pop
+#endif
 #endif
 
 #endif /* guard split */
