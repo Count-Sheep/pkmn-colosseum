@@ -9041,28 +9041,23 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
-            *[
-                Object(
-                    CodeCandidate,
-                    path,
-                    mw_version=version,
-                    cflags=(
-                        [opt if flag == "-O4,p" else flag for flag in cflags_base]
-                        if opt
-                        else None
-                    ),
-                    extra_cflags=[
-                        "-use_lmw_stmw on",
-                        "-sdata 8",
-                        "-sdata2 8",
-                        "-i src/game/menu",
-                    ],
-                    progress_category="game",
-                )
-                for path, version, opt in [
-                    ("game/menu/menu_middle_r59_8006E798_middle.c", "GC/2.0", None),
-                ]
-            ],
+            # fn_8006E798 addresses the menuCB_Hook pool off one base, like
+            # fn_8006E338; the unit defines the pool and redirects it.
+            Object(
+                Matching,
+                "game/menu/menu_middle_r59_8006E798_middle.c",
+                mw_version="GC/2.0",
+                # TEMPORARY constant_import: the unit's menuCB_Hook pool tables.
+                constant_import=[MENU_CB_HOOK_POOL_IMPORT],
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-i src/game/menu",
+                    "-opt nopeephole",
+                ],
+                progress_category="game",
+            ),
             *[
                 Object(
                     (
@@ -9180,7 +9175,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_middle_range_8006FEE4.c",
                 mw_version="GC/2.0",
                 # TEMPORARY constant_import: the unit's menuCB_Hook pool tables

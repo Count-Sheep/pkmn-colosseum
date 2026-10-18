@@ -40,6 +40,7 @@
     !defined(MENU_MIDDLE_EXACT_8006D940_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006DC28_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E338_ONLY) && \
+    !defined(MENU_MIDDLE_EXACT_8006E798_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006E9A4_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006EFF8_ONLY) && \
     !defined(MENU_MIDDLE_EXACT_8006F284_ONLY) && \
@@ -196,7 +197,7 @@ u32 fn_8006A7C8(u32 r3);
 u16 fn_8006A7D0(u32 r3);
 u16 fn_8006A7D8(u32 r3);
 void fn_8006A7E0(void* r3, u32 r4);
-u32 fn_8006A7E8(u32 r3);
+s32 fn_8006A7E8(u32 r3);
 void fn_8006A7F0(void* dst, const void* src);
 u32 fn_8006A814(u32 r3);
 void fn_8006A81C(void* r3, u32 r4);
@@ -845,7 +846,7 @@ void fn_8006A7E0(void* r3, u32 r4) {
 }
 
 /* 0x8006A7E8 | size: 0x8 */
-u32 fn_8006A7E8(u32 r3) {
+s32 fn_8006A7E8(u32 r3) {
     return MENU_MIDDLE_U32_0004(r3)->unk_0004;
 }
 
@@ -3540,7 +3541,8 @@ void fn_8006E258(void* menu) {
 #endif
 
 #if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
-    defined(MENU_MIDDLE_EXACT_8006E338_ONLY) || defined(MENU_MIDDLE_RESIDUAL_8006FEE4_ONLY)
+    defined(MENU_MIDDLE_EXACT_8006E338_ONLY) || defined(MENU_MIDDLE_EXACT_8006E798_ONLY) || \
+    defined(MENU_MIDDLE_RESIDUAL_8006FEE4_ONLY)
 
 typedef struct MenuCBHookSpriteEntry {
     u16 itemId;
@@ -3634,7 +3636,7 @@ static const u16 sMenuCBHookRowIds_80268178[2][3] = {
     {0x960, 0x961, 0x95F},
     {0x95D, 0x95E, 0x95C},
 };
-static const u8 sMenuCBHookRodata_80268184[0x34C] = {
+static const u8 sMenuCBHookRodata_80268184[0x2F8] = {
     0x09, 0x7B, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x09, 0x7A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
     0x09, 0x79, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x09, 0x78, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04,
     0x09, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x08, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04,
@@ -3682,13 +3684,17 @@ static const u8 sMenuCBHookRodata_80268184[0x34C] = {
     0x0A, 0x21, 0x0A, 0x37, 0x0A, 0x2C, 0x0E, 0x46, 0x0A, 0x22, 0x0A, 0x38, 0x0A, 0x2D, 0x0E, 0x47,
     0x0A, 0x23, 0x0A, 0x39, 0x0A, 0x2E, 0x0E, 0x48, 0x0A, 0x24, 0x0A, 0x3A, 0x0A, 0x2F, 0x0E, 0x49,
     0x0A, 0x25, 0x0A, 0x3B, 0x0A, 0x30, 0x0E, 0x4A, 0x0A, 0x26, 0x0A, 0x3C, 0x0A, 0x31, 0x0E, 0x4B,
-    0x0A, 0x27, 0x0A, 0x3D, 0x0A, 0x32, 0x0A, 0x3E, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x01, 0x00,
-    0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x01,
-    0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0xA3, 0x09, 0x94, 0x09, 0x95, 0x09, 0x96,
-    0x09, 0x97, 0x09, 0x98, 0x09, 0x99, 0x00, 0x00, 0x00, 0x00, 0x3D, 0xB6, 0x00, 0x00, 0x3D, 0xB7,
-    0x00, 0x00, 0x3D, 0xB8, 0x00, 0x00, 0x3D, 0xB9, 0x00, 0x00, 0x3D, 0xBA, 0x00, 0x00, 0x3D, 0xBB,
-    0x00, 0x00, 0x3D, 0x27, 0x00, 0x00, 0x3D, 0x28, 0x00, 0x00, 0x3D, 0x2B,
+    0x0A, 0x27, 0x0A, 0x3D, 0x0A, 0x32, 0x0A, 0x3E,
 };
+static const u8 sMenuCBHookRuleDisp_8026847C[4][8] = {
+    {0, 0, 1, 0, 0, 1, 1, 0},
+    {0, 1, 1, 0, 0, 0, 1, 0},
+    {0, 1, 1, 1, 1, 0, 0, 1},
+    {1, 1, 1, 1, 0, 0, 0, 1},
+};
+static const u16 sMenuCBHookRuleIds_8026849C[7] = {0x8A3, 0x994, 0x995, 0x996, 0x997, 0x998, 0x999};
+static const u32 sMenuCBHookRuleSprites_802684AC[6] = {0x3DB6, 0x3DB7, 0x3DB8, 0x3DB9, 0x3DBA, 0x3DBB};
+static const u32 sMenuCBHookModeSprites_802684C4[3] = {0x3D27, 0x3D28, 0x3D2B};
 static const u16 sMenuCBHookTrainerItemIds_8006E338[4][14] = {
     {0xA42, 0xA47, 0xA4B, 0xA4F, 0xA53, 0xA57, 0xA5B, 0xA5F, 0xA63, 0xA67, 0xA6B, 0xA6F, 0xA73, 0xA77},
     {0xA44, 0xA48, 0xA4C, 0xA50, 0xA54, 0xA58, 0xA5C, 0xA60, 0xA64, 0xA68, 0xA6C, 0xA70, 0xA74, 0xA78},
@@ -3873,7 +3879,8 @@ void fn_8006E338(void* obj) {
 
 #endif
 
-#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY)
+#if defined(MENU_MIDDLE_ALL) || defined(MENU_MIDDLE_RESIDUAL_8006B9B8_ONLY) || \
+    defined(MENU_MIDDLE_EXACT_8006E798_ONLY)
 
 /* 0x8006E798 | size: 0x20C */
 void fn_8006E798(void* menu) {
@@ -3882,42 +3889,43 @@ void fn_8006E798(void* menu) {
     extern void winSetSequence(void* sprite, u16 sequence);
     extern void winSpriteSetDisp(void* sprite, u8 visible);
     extern void fn_80070D84(void* menu, void* table, s32 count);
-    u8* data = lbl_80267EA8;
     void* sprite;
     void* node;
-    u16 sequence;
     s32 displaySet;
-    s32 rule;
     s32 i;
 
     if (*(s8*)((u8*)menu + 2) == 0) {
-        if (*(s8*)((u8*)menu + 1) == 0) {
-            sequence = *(u16*)(data + 0x18);
-            for (i = 0; i < 7; i++) {
-                sprite = windowSearchItemID(
-                    menu, *(u16*)(data + 0x5F4 + i * 2));
-                winSetSequence((u8*)sprite + 0xC, sequence);
+        switch (*(s8*)((u8*)menu + 1)) {
+        case 0:
+            for (i = 0; i < 7U; i++) {
+                winSetSequence((u8*)windowSearchItemID(menu, sMenuCBHookRuleIds_8026849C[i]) + 0xC,
+                               sMenuCBHookSequences_8006E338[6][0]);
             }
-        } else if (*(s8*)((u8*)menu + 1) == 3) {
-            sequence = *(u16*)(data + 0x1A);
-            for (i = 0; i < 7; i++) {
-                sprite = windowSearchItemID(
-                    menu, *(u16*)(data + 0x5F4 + i * 2));
-                winSetSequence((u8*)sprite + 0xC, sequence);
+            break;
+        case 3:
+            for (i = 0; i < 7U; i++) {
+                winSetSequence((u8*)windowSearchItemID(menu, sMenuCBHookRuleIds_8026849C[i]) + 0xC,
+                               sMenuCBHookSequences_8006E338[6][1]);
             }
+            break;
         }
     }
 
-    rule = *(s32*)(savedataGetStatus(0, 0xE) + 4);
-    displaySet = rule >= 0 && rule < 2 ? 0 : 2;
-    if (fn_8006A7E8(
-            (u32)(savedataGetStatus(0, 0xE) + 0x59A8)) != 0) {
-        displaySet++;
+    switch (*(s32*)(savedataGetStatus(0, 0xE) + 4)) {
+    case 0:
+    case 1:
+        displaySet = 0;
+        break;
+    case 2:
+    default:
+        displaySet = 2;
+        break;
     }
+    displaySet += fn_8006A7E8((u32)(savedataGetStatus(0, 0xE) + 0x59A8)) != 0 ? 1 : 0;
 
     node = windowSearchItemID(menu, 0x99B);
     for (i = 0; i < 8; i++) {
-        winSpriteSetDisp(node, data[0x5D4 + displaySet * 8 + i]);
+        winSpriteSetDisp(node, sMenuCBHookRuleDisp_8026847C[displaySet][i]);
         node = *(void**)node;
     }
 
@@ -3927,12 +3935,10 @@ void fn_8006E798(void* menu) {
     MENU_MIDDLE_U32_004C(sprite)->unk_004C = 0x3D26;
     sprite = windowSearchItemID(menu, 0x9A6);
     MENU_MIDDLE_U32_004C(sprite)->unk_004C =
-        *(u32*)(data + 0x604 +
-                *(u32*)(savedataGetStatus(0, 0xE) + 8) * 4);
+        sMenuCBHookRuleSprites_802684AC[*(s32*)(savedataGetStatus(0, 0xE) + 8)];
     sprite = windowSearchItemID(menu, 0x9A8);
     MENU_MIDDLE_U32_004C(sprite)->unk_004C =
-        *(u32*)(data + 0x61C +
-                *(u32*)(savedataGetStatus(0, 0xE) + 4) * 4);
+        sMenuCBHookModeSprites_802684C4[*(s32*)(savedataGetStatus(0, 0xE) + 4)];
     fn_80070D84(menu, NULL, 0);
 }
 
