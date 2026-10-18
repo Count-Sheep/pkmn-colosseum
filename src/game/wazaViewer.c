@@ -661,6 +661,7 @@ void fn_801D603C(void) {
     void** models;
     void* sequence;
     void* node;
+    void* current;
     s32 state;
     s32 arg1;
     s32 arg2;
@@ -688,14 +689,14 @@ void fn_801D603C(void) {
         state = fn_801E11E0();
         arg2 = arg1 = 0;
         if (((WazaViewerCtrl*)(lbl_804673F8 + 0x08))->overlay) {
-            sequence = models[*(s32*)(lbl_804673F8 + 0x624)];
-            if (sequence != NULL) {
-                node = *(void**)((u8*)sequence + 0x68);
+            current = models[*(s32*)(lbl_804673F8 + 0x624)];
+            if (current != NULL) {
+                node = *(void**)((u8*)current + 0x68);
                 if (node != NULL) {
                     arg1 = *(u16*)((u8*)node + 0x2C);
                     arg2 = *(u16*)((u8*)node + 0x2E);
                 }
-                if ((u8)fn_801DA94C(sequence, arg1, arg2)) {
+                if ((u8)fn_801DA94C(current, arg1, arg2)) {
                     fn_800FE6A0(lbl_8047E2F0, lbl_8047E2F0);
                     switch (state) {
                     case 3:
