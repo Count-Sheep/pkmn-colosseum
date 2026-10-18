@@ -330,6 +330,18 @@
     "pipeline_action": "Promote exact functions from mixed units by retaining inline helper source and validating the complete link, including switch-table relocation and section ownership.",
     "rejected_probes": "No function-body rewrite was needed."
   },
+  "menuFightDrawSecretPokemonStatus": {
+    "best_local_change": "99.677086% (2026-10-18): the real fn_800FBB34(s32, s32, s16 width, s16 height, s32, u32) prototype converts case 0x124B's s32 x at the argument move, so its extsh lands after the colour copy as in retail; case 0x1242's x is an s16 local.",
+    "remaining_diff": "Code is instruction-identical; only ctx (retail r29) and sprite (retail r31) are swapped. GC/2.6 replay: after slot and @120 are simplified, sprite (28) and color (27) drop below K=29 in the same sweep while ctx (29) waits, so ctx is pushed last and takes r31. The Gauss-Seidel model reproduces retail only with sprite +2 and color +1 extra coalesced neighbours (ctx count is irrelevant).",
+    "pipeline_action": "Find two more coalesced temps live across sprite (one also across color) that leave the code unchanged. The pre-proto source had them (an extsh temp for (s16)x in 0x1242 and one in 0x124B) but scheduled 0x124B's extsh before the colour copy.",
+    "rejected_probes": "Without the prototype no arg-3 form moves the extsh after mr r7. With it: 0x1242 forms (s32 x with (s16) casts, +(s16)x, s16 copy, (s16) assignment) x FB680/msgctrlSetValue prototypes x 0x124B (s16)x: at best 99.677086%. Named locals for call results, helper parameter/result rewrites, declaration permutations and windowGetParam prototypes either change no allocator node or change the code (void* colour local adds one sprite neighbour but 99.49%). -O3/-O2/-O4,s are lower."
+  },
+  "menuFightDrawSecretWazaSelect": {
+    "best_local_change": "98.661415% (2026-10-18): halving written as one expression (srwi/add/srawi), icon read as *(u16*)&entries[offset + 0xC] (retail's mr r3,entry copy), and 0x11DD left to the default break (its explicit return emitted an unreachable branch). The code is instruction-identical.",
+    "remaining_diff": "Registers only: retail color r31, npc r30, entries r29, offset r28, entry r27; ours entries r31, color r30, npc r29, entry r28, offset r27. Replay: entries is the windowGetAllocPtr temp (r42), checked in sweep 1 while 19 later switch temps are still live, so it is pushed with npc/color in sweep 2 last. Retail needs it simplified in sweep 1 (degree three lower at its check, or numbered after the switch temps).",
+    "pipeline_action": "Look for a source shape that gives entries a node numbered after the switch temps or fewer interferences; then re-check offset/entry order.",
+    "rejected_probes": "Indexing through entries + offset + 0xC or ((u16*)entry)[6], removing the empty 0x11D9-0x11DC/0x11DE-0x11E1 groups, and default: return all scored lower or the same."
+  },
   "fn_801D56B0": {
     "best_local_change": "Split the already exact move-viewer function into a complete C unit with its exact successor; canonical link and all 26 hashes pass.",
     "remaining_diff": "None in this function; later functions in the original mixed unit remain incomplete.",
