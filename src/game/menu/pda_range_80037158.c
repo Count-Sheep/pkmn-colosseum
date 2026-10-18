@@ -9182,6 +9182,7 @@ s32 fn_8003B85C(void* window, s32 enabled)
     u16 entry;
     u16 rndId;
     u32 work;
+    s16 baseY;
     f32 step;
     f32 cur;
     f32 dt;
@@ -9281,12 +9282,13 @@ s32 fn_8003B85C(void* window, s32 enabled)
             }
         }
         *(f32*)((u8*)&lbl_803A6748 + 0x18) = *(f32*)((u8*)&lbl_803A6748 + 0x20);
+        baseY = *(s16*)(lbl_802EF0A8 + 0x50a0);
         idx = *(s32*)&lbl_803A6748 - *(s32*)((u8*)&lbl_803A6748 + 0x8);
         if (idx >= 10) {
             idx = 9;
         }
         *(f32*)((u8*)&lbl_803A6748 + 0x30) = *(f32*)((u8*)&lbl_803A6748 + 0x38) =
-            *(s16*)(lbl_802EF0A8 + 0x50a0) + idx * 0x18;
+            baseY + idx * 0x18;
     }
     return 0;
 }
