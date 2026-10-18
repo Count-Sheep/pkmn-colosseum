@@ -132,24 +132,16 @@ static inline void menuCBClearEntrySlots(MenuCBEntryWork* state)
     }
 }
 
-s32 fn_80063D14(void* work)
+/* RULE-EXCEPTION(user-approved): single-use inline helper (setup stores + GBA port loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBEntryInit(void)
 {
-    void* entries[4];
     s32 battleType;
-    s32 waiting;
-    u16 maxCount;
     s32 playerCount;
-    u16 pokemonCount;
     s32 player;
-    s32 count;
-    s32 menuResult;
-    s32 keepRunning;
+    u16 maxCount;
+    u16 pokemonCount;
     MenuCBEntryPort* port;
     void* command;
-
-    keepRunning = 1;
-    fn_80165A20(0x1E, 0, 0xFF);
-    memcpy(((MenuCBEntryWork*)lbl_803A9F08)->copy, work, 0xCC2C);
 
     battleType = toolentryTaisenGetBattleType();
     playerCount = toolentryTaisenGetEntryPlayerNum();
@@ -179,10 +171,13 @@ s32 fn_80063D14(void* work)
             fn_8008AB20(command, menuCBMin(pokemonCount, maxCount), mode);
         }
     }
+}
 
-    for (player = 0; player < 4; player++) {
-        toolentryTaisenInitPokemonOrder(player);
-    }
+/* RULE-EXCEPTION(user-approved): single-use inline helper (entry order loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBEntryInitOrder(void)
+{
+    void* entries[4];
+    s32 player;
 
     for (player = 0; player < 4; player++) {
         entries[player] = fn_8006ACCC(player);
@@ -192,6 +187,28 @@ s32 fn_80063D14(void* work)
             MENUCB_WORK->order[player] = -1;
         }
     }
+}
+
+s32 fn_80063D14(void* work)
+{
+    s32 battleType;
+    s32 waiting;
+    s32 player;
+    s32 count;
+    s32 menuResult;
+    s32 keepRunning;
+
+    keepRunning = 1;
+    fn_80165A20(0x1E, 0, 0xFF);
+    memcpy(((MenuCBEntryWork*)lbl_803A9F08)->copy, work, 0xCC2C);
+
+    menuCBEntryInit();
+
+    for (player = 0; player < 4; player++) {
+        toolentryTaisenInitPokemonOrder(player);
+    }
+
+    menuCBEntryInitOrder();
 
     switch (toolentryTaisenGetBattleType()) {
     case 0:
