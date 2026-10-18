@@ -196,8 +196,8 @@ extern f64 sin(f64);
 static inline u8 fieldSegmentBlocked(const Vec3* from, const Vec3* to,
                                      const Vec3* centerPtr, f32 radius)
 {
-    Vec3 midpoint;
     Vec3 center = *centerPtr;
+    Vec3 midpoint;
 
     if (GSvecDistance(from, to) < lbl_8047E104) {
         return fn_8018D680(from, to, &center, radius);
