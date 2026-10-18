@@ -256,7 +256,7 @@ s32 GbaMisc_HasActiveContextState(void);
 s32 fn_80089C54(void);
 void fn_80089C84(s32 param);
 s32 GbaMisc_PollEntryStatusA(s32 r31);
-s32 GbaMisc_ResetEntryStatusA(s32 param);
+s32 GbaMisc_ResetEntryStatusA(s32 param, const u8* data);
 void fn_80089D74(s32 param);
 s32 fn_80089D98(s32 r31);
 s32 fn_80089E20(s32 idx, void* obj, u32 packedStatus, u32 highHalf);

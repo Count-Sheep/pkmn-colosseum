@@ -274,7 +274,7 @@ s32 GbaMisc_HasActiveContextState(void);
 s32 fn_80089C54(void);
 void fn_80089C84(s32 param);
 s32 GbaMisc_PollEntryStatusA(s32 r31);
-s32 GbaMisc_ResetEntryStatusA(s32 param);
+s32 GbaMisc_ResetEntryStatusA(s32 param, const u8* data);
 void fn_80089D74(s32 param);
 s32 fn_80089D98(s32 r31);
 s32 fn_80089E20(s32 idx, void* obj, u32 packedStatus, u32 highHalf);
@@ -706,13 +706,13 @@ s32 GbaMisc_PollEntryStatusA(s32 r31) {
 }
 
 /* 0x80089D30 | size: 0x44 */
-s32 GbaMisc_ResetEntryStatusA(s32 param) {
-    extern s32 fn_80071AE4(s32);
+s32 GbaMisc_ResetEntryStatusA(s32 param, const u8* data) {
+    extern s32 fn_80071AE4(s32 chan, const u8* data);
     s32 ret;
     u32 tmp;
     u32 r4;
 
-    ret = fn_80071AE4(param - 1);
+    ret = fn_80071AE4(param - 1, data);
     tmp = GBA_MISC_ENTRY_HALF_OFFSET(param);
     r4 = (u32)&lbl_8047A684;
     r4 = r4 + tmp;
