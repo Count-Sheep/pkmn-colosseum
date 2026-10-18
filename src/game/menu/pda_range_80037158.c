@@ -6056,6 +6056,39 @@ static inline u16 pdaGetTypeIcon(u32 id, s32 slot)
     return type + 1;
 }
 
+/* Copy the seen entries matching the type tabs into buf; returns the count.
+ * With both set an entry needs both types, otherwise either one. */
+static inline u16 pdaFilterTypes(u16* buf, u16 type0, u16 type1, BOOL both)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 a;
+    u16 b;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            pdaLoadPokemonId(id);
+            a = pdaGetTypeIcon(id, 0);
+            b = pdaGetTypeIcon(id, 1);
+            if (both) {
+                if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
+                    buf[count] = id;
+                    count++;
+                }
+            } else {
+                if (type0 == a || type0 == b) {
+                    buf[count] = id;
+                    count++;
+                }
+            }
+        }
+    }
+    return count;
+}
+
 /* Filter the memo index table down to the active type tabs. */
 #pragma peephole off
 void fn_8003DC54(void)
@@ -6068,8 +6101,6 @@ void fn_8003DC54(void)
     u16 single;
     u16 i;
     u16 count;
-    u16 a;
-    u16 b;
 
     if (*(s8*)(S + 0x15a) == 0 && *(s8*)(S + 0x15b) == 0) {
         return;
@@ -6085,37 +6116,13 @@ void fn_8003DC54(void)
         single = 1;
     }
     if (single == 0) {
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            u32 id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                pdaLoadPokemonId(id);
-                a = pdaGetTypeIcon(id, 0);
-                b = pdaGetTypeIcon(id, 1);
-                if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
-                    buf1[count] = id;
-                    count++;
-                }
-            }
-        }
+        count = pdaFilterTypes(buf1, type0, type1, TRUE);
         for (i = 0; i < count; i++) {
             lbl_8047A4E4[i] = buf1[i];
         }
         lbl_8047A4E8 = count;
     } else {
-        count = 0;
-        for (i = 0; i < lbl_8047A4E8; i++) {
-            u32 id = lbl_8047A4E4[i];
-            if (pdaMemoSeen(id)) {
-                pdaLoadPokemonId(id);
-                a = pdaGetTypeIcon(id, 0);
-                b = pdaGetTypeIcon(id, 1);
-                if (type0 == a || type0 == b) {
-                    buf0[count] = id;
-                    count++;
-                }
-            }
-        }
+        count = pdaFilterTypes(buf0, type0, type1, FALSE);
         for (i = 0; i < count; i++) {
             lbl_8047A4E4[i] = buf0[i];
         }
