@@ -2424,6 +2424,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
     extern u32 lbl_80478E4C;
     s32 answer;
     s32 i;
+    s32 stockCount;
     u16 id;
     u8* slot;
     u8 name;
@@ -2468,7 +2469,8 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
         inv.zero = 0;
         inv.count = work->count;
         for (i = 0; i < inv.count; i++) {
-            if (i < 0 || i > work->count) {
+            stockCount = work->count;
+            if (i < 0 || i > stockCount) {
                 id = 0;
             } else {
                 slot = (u8*)work + i * 4;
