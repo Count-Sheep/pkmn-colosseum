@@ -1610,9 +1610,11 @@ asm void fn_8002B880(void) {
  * ENDIAN-QA: all 0x43300000 / 0x8000-xor double-word int->float idioms in the
  * original asm are normalized here to plain signed casts on the full value.
  */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENUSHOP_R40_8002B880_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_8002B880(u8* state, u8* entity)
 {
     /* Cross-TU callees (real arg lists inferred from register state at each bl). */
@@ -1620,17 +1622,9 @@ s32 fn_8002B880(u8* state, u8* entity)
     extern void spriteSetEnv(void);
     extern void fn_8002B594(void* panel, u8* entity, u32 mode, s32 step, f32 phase);
 
-    /* r2-relative read-only float constants. */
-    extern f64 lbl_8047B998; /* int->float bias double (folds into the casts) */
-    extern f32 lbl_8047B98C;
-    extern f32 lbl_8047B9A0;
-    extern f32 lbl_8047B9A4;
-    extern const f32 lbl_8047B978;
-    extern const f32 lbl_8047B9AC;
-    extern const f32 lbl_8047B97C; /* phase wrap limit */
-    extern f32 lbl_8047B9B0;
-    extern f32 lbl_8047B9B4;
-    /* r13-relative small-data float (running phase base). */
+    /* Float literals are pooled by the compiler; configure.py's
+     * constant_import maps them to retail's lbl_8047B978-lbl_8047B9B4.
+     * r13-relative small-data float (running phase base). */
     extern f32 lbl_8047A3F0;
     /* Sprite-column lookup table: 5 entries of 8 bytes; key s32 @ +0, value s16 @ +4. */
     extern u8 lbl_802E4F68[];
@@ -1696,68 +1690,70 @@ s32 fn_8002B880(u8* state, u8* entity)
                 (s32)(s16)(*(s16*)(state + 0x86) + *(s16*)(entity + 0x52)));
     spriteSetEnv();
 
-    /* ---- Fixed per-step phase increment ---- */
+    /* ---- Fixed per-step phase increment: 2 / path length ---- */
     fx = (f32)(s16)*(s16*)(entity + 0x54);
     fy = (f32)(s16)*(s16*)(entity + 0x56);
-    denom = lbl_8047B9A4 * (fx + (lbl_8047B98C * fy) * lbl_8047B9A0);
-    incr = lbl_8047B9A4 / denom;
+    denom = 2.0f * (fx + (3.1415927f * fy) / 2.0f);
+    incr = 2.0f / denom;
 
     /* ---- Ring 1: phase starts at the live r13 base ---- */
     phase = lbl_8047A3F0;
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
         }
     }
 
-    /* ---- Ring 2: phase starts at base + B9B0 ---- */
-    phase = lbl_8047B9B0 + lbl_8047A3F0;
-    if (phase > lbl_8047B97C) {
-        phase -= lbl_8047B97C;
+    /* ---- Ring 2: phase starts at base + 0.25 ---- */
+    phase = 0.25f + lbl_8047A3F0;
+    if (phase > 1.0f) {
+        phase -= 1.0f;
     }
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
         }
     }
 
-    /* ---- Ring 3: phase starts at base + B9A0 ---- */
-    phase = lbl_8047B9A0 + lbl_8047A3F0;
-    if (phase > lbl_8047B97C) {
-        phase -= lbl_8047B97C;
+    /* ---- Ring 3: phase starts at base + 0.5 ---- */
+    phase = 0.5f + lbl_8047A3F0;
+    if (phase > 1.0f) {
+        phase -= 1.0f;
     }
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
         }
     }
 
-    /* ---- Ring 4: phase starts at base + B9B4 ---- */
-    phase = lbl_8047B9B4 + lbl_8047A3F0;
-    if (phase > lbl_8047B97C) {
-        phase -= lbl_8047B97C;
+    /* ---- Ring 4: phase starts at base + 0.75 ---- */
+    phase = 0.75f + lbl_8047A3F0;
+    if (phase > 1.0f) {
+        phase -= 1.0f;
     }
     for (i = 0; i < 0x2d; i++) {
         fn_8002B594(state, entity, 0xd1,
-                    (s32)(lbl_8047B978 * ((f32)i / lbl_8047B9AC)), phase);
+                    (s32)(255.0f * ((f32)i / 45.0f)), phase);
         phase += incr;
-        if (phase >= lbl_8047B97C) {
-            phase -= lbl_8047B97C;
+        if (phase >= 1.0f) {
+            phase -= 1.0f;
         }
     }
 
     return 0;
 }
+#if !defined(MENUSHOP_R40_8002B880_ONLY)
 #pragma pop
+#endif
 #endif
 
 #endif /* guard split */
