@@ -82,15 +82,6 @@ typedef struct MenuRankSprite {
         return (code);           \
     } while (0)
 
-#define GBA_BOOT_DELAY(ctx, handler, level)                  \
-    do {                                                      \
-        OSCreateAlarm((ctx));                                 \
-        (level) = OSDisableInterrupts();                       \
-        OSSetAlarm((ctx), 0x10, (void*)(handler));             \
-        OSSuspendThread((u8*)(ctx) + 0x28);                    \
-        OSRestoreInterrupts(level);                            \
-    } while (0)
-
 #define GBA_BOOT_CLASSIFY(ctx, response, gba_status, result)                 \
     do {                                                                     \
         u32 boot_delta;                                                      \
@@ -2293,7 +2284,20 @@ static inline u32 gbaBootCrc(u32 crc, u8* data, u32 length) {
     return crc;
 }
 
+static inline void gbaBootDelay(GbaBootContext* ctx) {
+    u32 level;
+
+    OSCreateAlarm(ctx);
+    level = OSDisableInterrupts();
+    OSSetAlarm(ctx, 0x10, (void*)fn_8007C23C);
+    OSSuspendThread((u8*)ctx + 0x28);
+    OSRestoreInterrupts(level);
+}
+
 u32 fn_8007B6D8(GbaBootContext* context) {
+    extern s32 GBAGetStatus(s32 chan, u8* status);
+    extern s32 GBARead(s32 chan, void* dst, u8* status);
+    extern s32 GBAWrite(s32 chan, void* src, u8* status);
     u8 crc_byte;
     u8 gba_status;
     u32 recv_word;
@@ -2303,7 +2307,6 @@ u32 fn_8007B6D8(GbaBootContext* context) {
     u32 handshake;
     u32 offset;
     u32 retries;
-    u32 interrupts;
     u32 reply_crc;
     u32 candidate;
     u32 decrypt_word;
@@ -2374,7 +2377,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                 if (++retries > 9) {
                     GBA_BOOT_FAIL(context, 9);
                 }
-                GBA_BOOT_DELAY(context, fn_8007C23C, interrupts);
+                gbaBootDelay(context);
             }
             send_word = *(u32*)(context->upload_start + offset);
             if (GBAWrite(channel, &send_word, &gba_status) != 0) {
@@ -2391,7 +2394,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                 (gba_status & 8) != 0) {
                 break;
             }
-            GBA_BOOT_DELAY(context, fn_8007C23C, interrupts);
+            gbaBootDelay(context);
         }
         if (GBAReset(channel, &gba_status) != 0) {
             GBA_BOOT_FAIL(context, 9);
@@ -2482,7 +2485,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                     if (++retries > 9) {
                         GBA_BOOT_FAIL(context, 9);
                     }
-                    GBA_BOOT_DELAY(context, fn_8007C23C, interrupts);
+                    gbaBootDelay(context);
                 }
                 if (GBARead(channel, &recv_word,
                             &gba_status) != 0) {
@@ -2519,7 +2522,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
             GBA_BOOT_FAIL(context, 5);
         }
 
-        GBA_BOOT_DELAY(context, fn_8007C23C, interrupts);
+        gbaBootDelay(context);
     }
 
     if (GBAGetStatus(channel, &gba_status) != 0) {
