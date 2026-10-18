@@ -9786,22 +9786,22 @@ extern u16 itemBiosGetNum(void* item);
 s32 fn_80039644(void* work, PdaSprite* sprite)
 {
     s32 start;
-    s32 rows;
     s32 yAdj;
+    s32 rows;
     s32 total;
     s32 slots;
     s32 i;
     s32 j;
-    s32 index;
     s32 found;
-    s32 rowY;
     s32 nameX;
+    s32 rowY;
     s32 y;
     s32 width;
     u32 itemId;
     u16 count;
     void* item;
     void* name;
+    s32 index;
 
     (void)work;
     start = 0;
