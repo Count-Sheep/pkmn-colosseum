@@ -333,7 +333,7 @@ void fn_80092B2C(void);
 /* ===== Function implementations ===== */
 
 #if !defined(GBA_MISC_80089E20_ONLY) && !defined(GBA_MISC_80089F78_ONLY) && \
-    !defined(GBA_MISC_8008BBDC_ONLY)
+    !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
 
 #if !defined(GBA_MISC_80089B8C_ONLY)
 
@@ -752,7 +752,7 @@ s32 fn_80089D98(s32 r31) {
 #endif
 
 #if !defined(GBA_MISC_80089B8C_ONLY) && !defined(GBA_MISC_80089F78_ONLY) && \
-    !defined(GBA_MISC_8008BBDC_ONLY)
+    !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
 
 /* 0x80089E20 | size: 0x138 */
 s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
@@ -817,7 +817,8 @@ s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
 #if !defined(GBA_MISC_80089E20_ONLY) && \
     !defined(GBA_MISC_80089B8C_ONLY)
 
-#if !defined(GBA_MISC_80089F78_ONLY) && !defined(GBA_MISC_8008BBDC_ONLY)
+#if !defined(GBA_MISC_80089F78_ONLY) && !defined(GBA_MISC_8008BBDC_ONLY) && \
+    !defined(GBA_MISC_8008AE18_ONLY)
 
 /* 0x80089F58 | size: 0x8 */
 u32 fn_80089F58(u32 v) {
@@ -841,7 +842,7 @@ u32 fn_80089F70(u32 v) {
 
 #endif
 
-#if !defined(GBA_MISC_8008BBDC_ONLY)
+#if !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
 /*
  * Battle snapshot sent to the GBA when the player opens the GBA command
  * menu. Multi-byte fields are stored in the GBA's little-endian order.
@@ -1170,7 +1171,7 @@ u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae) {
 
 #if !defined(GBA_MISC_80089F78_ONLY)
 
-#if !defined(GBA_MISC_8008BBDC_ONLY)
+#if !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
 
 /* 0x8008A99C | size: 0x10 */
 s32 fn_8008A99C(void) {
@@ -1409,6 +1410,9 @@ void fn_8008AC34(void) {
     return;
 }
 
+#endif
+
+#if !defined(GBA_MISC_8008BBDC_ONLY)
 /* 0x8008AE18 | size: 0xDC4 */
 void fn_8008AE18(void* src, void* dst_) {
     extern u8 pokemonBiosGetEventGetFlag(void* pokemon);
@@ -1689,6 +1693,7 @@ void fn_8008AE18(void* src, void* dst_) {
 
 #endif
 
+#if !defined(GBA_MISC_8008AE18_ONLY)
 /* 0x8008BBDC | size: 0x9F4 */
 void fn_8008BBDC(void* gc, GbaPokemon* src) {
     extern void pokemonInit(void* pokemon);
@@ -1944,8 +1949,9 @@ void fn_8008BBDC(void* gc, GbaPokemon* src) {
     pokemonBiosSetSpeAtk(gc, GbaSwap16(src->speAtk));
     pokemonBiosSetSpeDef(gc, GbaSwap16(src->speDef));
 }
+#endif
 
-#if !defined(GBA_MISC_8008BBDC_ONLY)
+#if !defined(GBA_MISC_8008BBDC_ONLY) && !defined(GBA_MISC_8008AE18_ONLY)
 /* 0x8008C5D4 | size: 0x128 */
 u16 gbaPokemonConditonFromGC(void* pokemon) {
     extern s16 fn_80121984(void* pokemon, s32 kind);

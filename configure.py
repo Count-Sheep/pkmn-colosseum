@@ -8381,6 +8381,18 @@ config.libs = [
                         if path.endswith("_8008C6FC_suffix.c")
                         else ["-opt nopeephole"]
                     ),
+                    jump_table_import=(
+                        {
+                            "function": "fn_8008AE18",
+                            "owner": "game/data/data_802EEB78.c",
+                            "tables": [
+                                {"symbol": "jumptable_802EEBB8", "owner_offset": 0x40},
+                                {"symbol": "jumptable_802EEBE0", "owner_offset": 0x68},
+                            ],
+                        }
+                        if path.endswith("_8008AE18_prefix.c")
+                        else None
+                    ),
                     progress_category="game",
                 )
                 for path in [
