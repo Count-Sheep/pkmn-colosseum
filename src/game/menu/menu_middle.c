@@ -3723,41 +3723,15 @@ static inline s32 fn_8006E338_FindPort(s32 port) {
     return j;
 }
 
-/* Per-trainer panel setup: icons, colours and the all-ready flag. */
+/* Sets a trainer panel widget's sprite. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper - see docs/RULE_EXCEPTIONS.md */
-static inline void fn_8006E338_SetupPlayers(void* obj, u8* used, void** playerWidgets, u8* allReady) {
-    extern void* windowSearchItemID(void* menu, s32 itemId);
+static inline void fn_8006E338_SetIcon(void* widget, s32 id) {
     extern void* menuSpriteBiosGetPtr(s32 spriteId);
     extern void fn_80071318(void* widget, void* sprite);
-    void* w0;
-    void* w1;
-    s32 col;
-    s32 player;
-    void* w2;
-    s32 port;
     void* sprite;
-    u32 color;
 
-    for (player = 0; player < 4; player++) {
-        port = menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[player].controllerId);
-        if (port >= 0) {
-            used[port] = 1;
-            for (col = 0; col < 14u; col++) {
-                playerWidgets[col] = windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[port][col]);
-            }
-            sprite = menuSpriteBiosGetPtr((s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[player]) != 0 ? 0x2B2 : 0x2AE);
-            fn_80071318(playerWidgets[4], sprite);
-            fn_80071318(playerWidgets[5], menuSpriteBiosGetPtr(((u16*)&lbl_8047C058)[player]));
-            color = sMenuCBHookTrainerColors_8006E338[player];
-            w0 = playerWidgets[0];
-            w1 = playerWidgets[1];
-            w2 = playerWidgets[2];
-            MENU_MIDDLE_U32_0064(w0)->unk_0064 = (MENU_MIDDLE_U32_0064(w0)->unk_0064 & 0xFF) | color;
-            MENU_MIDDLE_U32_0064(w1)->unk_0064 = (MENU_MIDDLE_U32_0064(w1)->unk_0064 & 0xFF) | color;
-            MENU_MIDDLE_U32_0064(w2)->unk_0064 = (MENU_MIDDLE_U32_0064(w2)->unk_0064 & 0xFF) | color;
-            *allReady &= savedataGetStatus(0, 0xE)->players[player].ready;
-        }
-    }
+    sprite = menuSpriteBiosGetPtr(id);
+    fn_80071318(widget, sprite);
 }
 
 void fn_8006E338(void* obj) {
@@ -3767,37 +3741,43 @@ void fn_8006E338(void* obj) {
     extern void fn_80071318(void* widget, void* sprite);
     extern void winSpriteSetDisp(void* widget, u8 flag);
     extern void fn_80070D84(void* menu, void* table, s32 count);
-    void* sprite;
+    u8 used[4] = {0, 0, 0, 0};
+    void* playerWidgets[14];
+    void* widgets[14];
     s32 notReady;
     s32 row;
-    void* playerWidgets[14];
-    void* widget;
-    void* widgets[14];
+    s32 port;
+    s32 i;
     s32 col;
-    u8 allReady;
     s32 j;
-    u8 ready;
-    u8 used[4] = {0, 0, 0, 0};
+    u32 color;
     u32 index;
+    u8 ready;
+    void* sprite;
+    void* widget;
+    u8 allReady;
+    void* w0;
+    void* w1;
+    void* w2;
     s32 hidden;
 
     allReady = 1;
     if (*(s8*)((u8*)obj + 2) == 0) {
         switch (*(s8*)((u8*)obj + 1)) {
         case 0:
-            for (row = 0; row < 4u; row++) {
-                index = sMenuCBHookSequenceIndex_8006E338[row];
+            for (i = 0; i < 4u; i++) {
+                index = sMenuCBHookSequenceIndex_8006E338[i];
                 for (col = 0; col < 14u; col++) {
-                    winSetSequence((u8*)windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[row][col]) + 0xC,
+                    winSetSequence((u8*)windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[i][col]) + 0xC,
                                    sMenuCBHookSequences_8006E338[index][0]);
                 }
             }
             break;
         case 3:
-            for (row = 0; row < 4u; row++) {
-                index = sMenuCBHookSequenceIndex_8006E338[row];
+            for (i = 0; i < 4u; i++) {
+                index = sMenuCBHookSequenceIndex_8006E338[i];
                 for (col = 0; col < 14u; col++) {
-                    winSetSequence((u8*)windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[row][col]) + 0xC,
+                    winSetSequence((u8*)windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[i][col]) + 0xC,
                                    sMenuCBHookSequences_8006E338[index][1]);
                 }
             }
@@ -3805,7 +3785,26 @@ void fn_8006E338(void* obj) {
         }
     }
 
-    fn_8006E338_SetupPlayers(obj, used, playerWidgets, &allReady);
+    /* RULE-EXCEPTION(user-approved): scalar reuse - the trainer loop reuses the sequence loops' counter - see docs/RULE_EXCEPTIONS.md */
+    for (i = 0; i < 4; i++) {
+        port = menuCBBios_ControlerIDtoPortID(savedataGetStatus(0, 0xE)->players[i].controllerId);
+        if (port >= 0) {
+            used[port] = 1;
+            for (col = 0; col < 14u; col++) {
+                playerWidgets[col] = windowSearchItemID(obj, sMenuCBHookTrainerItemIds_8006E338[port][col]);
+            }
+            fn_8006E338_SetIcon(playerWidgets[4], (s32)fn_8006A7E8((u32)&savedataGetStatus(0, 0xE)->players[i]) != 0 ? 0x2B2 : 0x2AE);
+            fn_80071318(playerWidgets[5], menuSpriteBiosGetPtr(((u16*)&lbl_8047C058)[i]));
+            color = sMenuCBHookTrainerColors_8006E338[i];
+            w0 = playerWidgets[0];
+            w1 = playerWidgets[1];
+            w2 = playerWidgets[2];
+            MENU_MIDDLE_U32_0064(w0)->unk_0064 = (MENU_MIDDLE_U32_0064(w0)->unk_0064 & 0xFF) | color;
+            MENU_MIDDLE_U32_0064(w1)->unk_0064 = (MENU_MIDDLE_U32_0064(w1)->unk_0064 & 0xFF) | color;
+            MENU_MIDDLE_U32_0064(w2)->unk_0064 = (MENU_MIDDLE_U32_0064(w2)->unk_0064 & 0xFF) | color;
+            allReady &= savedataGetStatus(0, 0xE)->players[i].ready;
+        }
+    }
 
     notReady = allReady == 0;
     for (row = 0; row < 4u; row++) {
