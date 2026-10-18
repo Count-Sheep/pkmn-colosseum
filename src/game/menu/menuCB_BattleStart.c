@@ -705,6 +705,19 @@ typedef struct MenuCBBattleStartOrderTable {
 } MenuCBBattleStartOrderTable;
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005FFE4_ONLY)
+/* RULE-EXCEPTION(user-approved): single-function inline helper (_menuCBBattleStartSetIndex__Fv) - see docs/RULE_EXCEPTIONS.md */
+static inline void battleStartFillOrder(MenuCBBattleStartOrderRow* row, u16 n)
+{
+    u16 slot;
+
+    for (slot = 0; slot < n; slot++) {
+        row->slot[slot] = slot;
+    }
+    for (slot = n; slot < 6; slot++) {
+        row->slot[slot] = n++;
+    }
+}
+
 void _menuCBBattleStartSetIndex__Fv(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -718,7 +731,6 @@ void _menuCBBattleStartSetIndex__Fv(void)
     s32 player;
     s32 i;
     u16 slot;
-    u16 n;
 
     order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
     for (player = 0; player < 4; player++, order++) {
@@ -765,14 +777,8 @@ void _menuCBBattleStartSetIndex__Fv(void)
     }
     case 2:
         order = (MenuCBBattleStartOrderRow*)lbl_803A9E40;
-        for (player = 0; player < 4; player++) {
-            n = count[player];
-            for (slot = 0; slot < n; slot++) {
-                order[player].slot[slot] = slot;
-            }
-            for (slot = n; slot < 6; slot++) {
-                order[player].slot[slot] = n++;
-            }
+        for (player = 0; player < 4; player++, order++) {
+            battleStartFillOrder(order, count[player]);
         }
         break;
     }
