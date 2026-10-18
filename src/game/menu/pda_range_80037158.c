@@ -4170,6 +4170,7 @@ void fn_80044630(void) {
             f32 px2;
             f32 px1;
             f32 px0;
+            f32 nv;
             f32 rot[3];
             f32 pos[3];
             f32 mtx[3];
@@ -4180,14 +4181,14 @@ void fn_80044630(void) {
             if (tgt != cur) {
                 step = *(f32*)(S + 0x3C) / lbl_8047BCB8;
                 if (tgt > cur) {
-                    cur = cur + step;
-                    *(f32*)(S + 0x4C) = cur;
-                    if (cur > lbl_8047BCBC)
+                    nv = cur + step;
+                    *(f32*)(S + 0x4C) = nv;
+                    if (nv > lbl_8047BCBC)
                         *(f32*)(S + 0x4C) = lbl_8047BCBC;
                 } else {
-                    cur = cur - step;
-                    *(f32*)(S + 0x4C) = cur;
-                    if (cur < lbl_8047BC94)
+                    nv = cur - step;
+                    *(f32*)(S + 0x4C) = nv;
+                    if (nv < lbl_8047BC94)
                         *(f32*)(S + 0x4C) = lbl_8047BC94;
                 }
             }
@@ -4198,14 +4199,14 @@ void fn_80044630(void) {
             if (tgt != cur) {
                 step = *(f32*)(S + 0x3C) / lbl_8047BCB8;
                 if (tgt > cur) {
-                    cur = cur + step;
-                    *(f32*)(S + 0x54) = cur;
-                    if (cur > lbl_8047BCBC)
+                    nv = cur + step;
+                    *(f32*)(S + 0x54) = nv;
+                    if (nv > lbl_8047BCBC)
                         *(f32*)(S + 0x54) = lbl_8047BCBC;
                 } else {
-                    cur = cur - step;
-                    *(f32*)(S + 0x54) = cur;
-                    if (cur < lbl_8047BC94)
+                    nv = cur - step;
+                    *(f32*)(S + 0x54) = nv;
+                    if (nv < lbl_8047BC94)
                         *(f32*)(S + 0x54) = lbl_8047BC94;
                 }
             }
@@ -4216,14 +4217,14 @@ void fn_80044630(void) {
             if (tgt != cur) {
                 step = *(f32*)(S + 0x3C) / lbl_8047BCC0;
                 if (tgt > cur) {
-                    cur = cur + step;
-                    *(f32*)(S + 0x5C) = cur;
-                    if (cur > lbl_8047BCBC)
+                    nv = cur + step;
+                    *(f32*)(S + 0x5C) = nv;
+                    if (nv > lbl_8047BCBC)
                         *(f32*)(S + 0x5C) = lbl_8047BCBC;
                 } else {
-                    cur = cur - step;
-                    *(f32*)(S + 0x5C) = cur;
-                    if (cur < lbl_8047BC94)
+                    nv = cur - step;
+                    *(f32*)(S + 0x5C) = nv;
+                    if (nv < lbl_8047BC94)
                         *(f32*)(S + 0x5C) = lbl_8047BC94;
                 }
             }
