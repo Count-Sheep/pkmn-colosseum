@@ -1973,6 +1973,7 @@ static inline u32 menuGbaCrcRoll(u32 crc) {
     return crc;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_8007480C's bit count) - see docs/RULE_EXCEPTIONS.md */
 static inline u32 menuGbaCountLowBits(u32 value) {
     u32 i;
     u32 count = 0;
@@ -1986,6 +1987,7 @@ static inline u32 menuGbaCountLowBits(u32 value) {
     return count;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_8007480C's bit count) - see docs/RULE_EXCEPTIONS.md */
 static inline u32 menuGbaCountHighBits(u32 value) {
     u32 i;
     u32 count = 0;
