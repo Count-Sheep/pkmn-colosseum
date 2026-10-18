@@ -4189,6 +4189,40 @@ static inline BOOL cardGridSelect(const CardGridData* data, s32 occupied[3][3],
     return TRUE;
 }
 
+static inline BOOL cardGridMove(const CardGridData* data, u16 repeat,
+                                s32* px, s32* py)
+{
+    s32 x = *px;
+    s32 y = *py;
+    s32 nextX = x;
+    s32 nextY = y;
+    BOOL moved = FALSE;
+
+    if ((repeat & 1) && y > 0) {
+        nextY = y - 1;
+        moved = TRUE;
+    }
+    if ((repeat & 2) && nextY < 2) {
+        nextY++;
+        moved = TRUE;
+    }
+    if ((repeat & 4) && x > 0) {
+        nextX = x - 1;
+        moved = TRUE;
+    }
+    if ((repeat & 8) && nextX < 2) {
+        nextX++;
+        moved = TRUE;
+    }
+
+    if (moved) {
+        cardGridShowCursor(data->cursor, nextX, nextY);
+        *px = nextX;
+        *py = nextY;
+    }
+    return moved;
+}
+
 /* Run the card-e three-tile grid prompt.  A zero return means that three
  * cells were accepted; one means the player backed out before completing it. */
 u32 fn_80087C64(const u16* expected)
@@ -4261,33 +4295,7 @@ u32 fn_80087C64(const u16* expected)
         }
 
         if (!handled) {
-            u16 repeat = key->repeat;
-            s32 nextX = x;
-            s32 nextY = y;
-            BOOL moved = FALSE;
-
-            if ((repeat & 1) && y > 0) {
-                nextY = y - 1;
-                moved = TRUE;
-            }
-            if ((repeat & 2) && nextY < 2) {
-                nextY++;
-                moved = TRUE;
-            }
-            if ((repeat & 4) && x > 0) {
-                nextX = x - 1;
-                moved = TRUE;
-            }
-            if ((repeat & 8) && nextX < 2) {
-                nextX++;
-                moved = TRUE;
-            }
-
-            if (moved) {
-                cardGridShowCursor(data->cursor, nextX, nextY);
-                x = nextX;
-                y = nextY;
-            }
+            cardGridMove(data, key->repeat, &x, &y);
         }
         _threadSwitch();
     }
