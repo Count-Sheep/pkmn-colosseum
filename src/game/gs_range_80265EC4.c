@@ -171,6 +171,9 @@ void fn_80265F94(int r3)
   return;
 }
 
+#endif
+
+#if !defined(GS_RANGE_80265EC4_SPLIT) || defined(GS_RANGE_80266250_EXACT)
 /* RULE-EXCEPTION(user-approved): redundant masks preserve retail's saved-volume register moves; see docs/RULE_EXCEPTIONS.md. */
 /* Address: 0x80266250 | Size: 0xD0 | Ghidra import */
 void fn_80266250(void)

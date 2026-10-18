@@ -6698,7 +6698,10 @@ game/gs_range_80265EC4_exact.c:
 	.text       start:0x80265EC4 end:0x80265F94
 
 game/gs_range_80265F94_suffix.c:
-	.text       start:0x80265F94 end:0x8026635C
+	.text       start:0x80265F94 end:0x80266250
+
+game/gs_range_80266250_exact.c:
+	.text       start:0x80266250 end:0x8026635C
 
 crt/__start_mem_80003458.c:
 	.init       start:0x80003458 end:0x80005544
