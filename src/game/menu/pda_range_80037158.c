@@ -9064,6 +9064,7 @@ extern void pokemonBiosSetDarkpokemonDataId(u32 work, s32 id);
 extern void pokemonBiosSetDp(u32 work, s32 dp);
 
 /* Rebuild the preview Pokemon for the selected party entry. */
+/* RULE-EXCEPTION(user-approved): reconstructed inline helper pda_8003C7C0_LoadPreview (fn_8003C7C0, fn_8003B85C) - see docs/RULE_EXCEPTIONS.md */
 static inline void pda_8003C7C0_LoadPreview(u32 work, u16 species, u16 entry, u16 rndId)
 {
     u8 shadow;
