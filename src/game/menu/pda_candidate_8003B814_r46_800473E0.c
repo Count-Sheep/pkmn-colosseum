@@ -97,9 +97,8 @@ void fn_800473E0(PdaStatLine* p)
     ctrl.z = p->height;
     dx = p->count;
     GSsplineAddControlVectorValue(spline, &ctrl, 0.0f);
-    dx = 233.0f / dx;
     t = step;
-    ctrl.x = ctrl.x + dx;
+    ctrl.x = ctrl.x + (dx = 233.0f / dx);
     for (i = 0; i < (s32)count - 2; i++) {
         ctrl.y = (f32)(s8)data[i + 1];
         ctrl.y = -ctrl.y;
