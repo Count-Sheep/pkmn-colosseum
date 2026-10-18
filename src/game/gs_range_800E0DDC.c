@@ -483,6 +483,17 @@ static inline GSMemHandle* gsMemFindHandle(u8* data) {
     return NULL;
 }
 
+static inline GSMemHandle* gsMemFindHandleIn(GSMemHandle* top, GSMemHandle* bottom, u8* data) {
+    GSMemHandle* handle;
+
+    for (handle = top; handle >= bottom; handle--) {
+        if (handle->used != 0 && handle->data == data) {
+            return handle;
+        }
+    }
+    return NULL;
+}
+
 /* Forward copy used to slide allocations down; word-wise when the
  * regions are at least a word apart. */
 static inline void gsMemCopy(u8* dst, u8* src, u32 size) {
@@ -666,7 +677,7 @@ u32 fn_800E1544(void)
             bottom = (GSMemHandle*)lbl_8047AB38;
             if ((u8*)block + size != (u8*)bottom) {
             top = (GSMemHandle*)lbl_8047AB34;
-            desc = gsMemFindHandle((u8*)block + size);
+            desc = gsMemFindHandleIn(top, bottom, (u8*)block + size);
             if (desc == NULL) {
                 GSlogWrite(lbl_80270BB8);
                 return 0;
