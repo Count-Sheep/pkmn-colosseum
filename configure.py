@@ -8391,6 +8391,21 @@ config.libs = [
             ],
             Object(
                 Matching,
+                "game/gba/gba_misc_exact_8008BBDC.c",
+                jump_table_import={
+                    "function": "fn_8008BBDC",
+                    "owner": "game/data/data_802EEB78.c",
+                    "tables": [
+                        {"symbol": "jumptable_802EEC10", "owner_offset": 0x98},
+                        {"symbol": "jumptable_802EEC30", "owner_offset": 0xB8},
+                    ],
+                },
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                Matching,
                 "game/gba/gba_misc_candidate_80089F78.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

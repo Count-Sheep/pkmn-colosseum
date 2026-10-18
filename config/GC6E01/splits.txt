@@ -1665,7 +1665,10 @@ game/gba/gba_misc_candidate_8008ABE4_r42_8008AC34_gc20.c:
 	.text       start:0x8008AC34 end:0x8008AE18
 
 game/gba/gba_misc_r58_8008AE18_prefix.c:
-	.text       start:0x8008AE18 end:0x8008C5D4
+	.text       start:0x8008AE18 end:0x8008BBDC
+
+game/gba/gba_misc_exact_8008BBDC.c:
+	.text       start:0x8008BBDC end:0x8008C5D4
 
 game/gba/gba_misc_r58_8008C5D4_o1.c:
 	.text       start:0x8008C5D4 end:0x8008C6FC
