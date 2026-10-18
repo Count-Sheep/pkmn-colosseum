@@ -9316,6 +9316,45 @@ extern u32 pokemonCreateRndFit(void* work, s32 a, s32 b, s32 c, s32 d);
 extern void winMsgClose(s32 id);
 extern void fn_8010A420(void* work);
 
+static inline void pda_8003C7C0_LoadPreview(u32 work, u16 species, u16 entry, u16 rndId)
+{
+    u8 shadow;
+    u8 snagged;
+    s32 mode;
+    u32 rnd;
+
+    fn_801EE614(entry);
+    fn_801EE8F4(entry);
+    shadow = fn_801EEAD0(entry);
+    snagged = fn_801EEC74(entry);
+    if (shadow != 0) {
+        if (snagged != 0) {
+            mode = 1;
+        } else {
+            mode = 0;
+        }
+    } else {
+        mode = 2;
+    }
+    pokemonCreate(work, species, 10, gamedataGetStatus(0, 1));
+    rnd = *(u32*)((u8*)&lbl_803A6748 + 0x98);
+    fn_801EE750(rndId);
+    pokemonBiosSetRnd(work, rnd);
+    switch (mode) {
+    case 0:
+    case 2:
+        pokemonBiosSetDarkpokemonDataId(work, 1);
+        pokemonBiosSetDp(work, 10);
+        break;
+    case 1:
+        pokemonBiosSetDarkpokemonDataId(work, 0);
+        pokemonBiosSetDp(work, 0);
+        break;
+    default:
+        break;
+    }
+}
+
 /* Party-select scene: open the windows, drive the fade, tear it back down. */
 #pragma peephole off
 void fn_8003C7C0(void)
@@ -9396,36 +9435,7 @@ void fn_8003C7C0(void)
                     species = lbl_8047A4D4[idx].field_00;
                     entry = lbl_8047A4D4[(u16)idx].battleId;
                     rndId = lbl_8047A4D4[idx].battleId;
-                    fn_801EE614(entry);
-                    fn_801EE8F4(entry);
-                    shadow = fn_801EEAD0(entry);
-                    snagged = fn_801EEC74(entry);
-                    if (shadow != 0) {
-                        if (snagged != 0) {
-                            mode = 1;
-                        } else {
-                            mode = 0;
-                        }
-                    } else {
-                        mode = 2;
-                    }
-                    pokemonCreate(work, species, 10, gamedataGetStatus(0, 1));
-                    rnd = *(u32*)((u8*)&lbl_803A6748 + 0x98);
-                    fn_801EE750(rndId);
-                    pokemonBiosSetRnd(work, rnd);
-                    switch (mode) {
-                    case 0:
-                    case 2:
-                        pokemonBiosSetDarkpokemonDataId(work, 1);
-                        pokemonBiosSetDp(work, 10);
-                        break;
-                    case 1:
-                        pokemonBiosSetDarkpokemonDataId(work, 0);
-                        pokemonBiosSetDp(work, 0);
-                        break;
-                    default:
-                        break;
-                    }
+                    pda_8003C7C0_LoadPreview(work, species, entry, rndId);
                     fn_80109C88(model, lbl_8047A4D0);
                     *(f32*)((u8*)&lbl_803A6748 + 0x48) = lbl_8047BAC4;
                 } else {
