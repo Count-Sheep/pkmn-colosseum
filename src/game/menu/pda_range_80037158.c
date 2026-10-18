@@ -8029,6 +8029,17 @@ static inline void pdaPushCry(void* data, u32 voice)
     }
 }
 
+/* Fill the cry ring with empty trails. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper; its loop counter is an inline local, numbered after the trail push's locals, which gives retail's registers for the ring reset - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_80046168_ClearCries(void)
+{
+    s32 k;
+
+    for (k = 0; k < 8; k++) {
+        pdaPushCry(NULL, 0);
+    }
+}
+
 /* Cry-playback thread for the PDA's Pokemon entry. */
 #pragma peephole off
 void fn_80046168(void)
@@ -8042,7 +8053,6 @@ void fn_80046168(void)
     u8* S;
     PdaCryTrail* t;
     s32 running;
-    s32 k;
     s32 i;
     s32 playing;
     u8 cancel;
@@ -8052,9 +8062,7 @@ void fn_80046168(void)
     f32 ang;
 
     running = 1;
-    for (k = 0; k < 8; k++) {
-        pdaPushCry(NULL, 0);
-    }
+    pda_80046168_ClearCries();
     S = (u8*)&lbl_803A6818;
     while (1) {
         switch (*(s32*)(S + 0x20)) {
