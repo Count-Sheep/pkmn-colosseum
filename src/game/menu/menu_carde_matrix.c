@@ -1164,6 +1164,7 @@ void fn_8007D978(MenuCardEWindow* window) {
     s16 stepX;
     s8 count;
     s32 held;
+    s32 slot;
 
     work = menuCardEMatrixGetWork(window);
     switch (window->state) {
@@ -1368,27 +1369,28 @@ void fn_8007D978(MenuCardEWindow* window) {
             layer = fn_80082FE4(entryp[which], work->subIndex[which]);
             for (row = 0; row < entryp[which]->sortGroup; row++) {
                 for (column = 0; column < 6; column++) {
-                    work->cell[which][row * 6 + column]->x = baseX + column * stepX;
-                    work->cell[which][row * 6 + column]->y = baseY + row * stepY;
+                    slot = row * 6 + column;
+                    work->cell[which][slot]->x = baseX + column * stepX;
+                    work->cell[which][slot]->y = baseY + row * stepY;
                     if ((column == entryp[which]->columns && layer[row * 0xE + 0x1C] != 0) ||
                         (column < entryp[which]->columns &&
                          fn_80082EA4(entryp[which], work->subIndex[which], row, column)[0xC] != 0)) {
                         if (work->state == 0 || work->state == 6 ||
-                            work->gridIndex != row * 6 + column || work->transitionActive == 0) {
-                            winSpriteSetDisp(work->cell[which][row * 6 + column], 1);
-                            winSpriteSetDisp(work->cellFront[which][row * 6 + column], 1);
-                            winSpriteSetDisp(work->cellBack[which][row * 6 + column], 1);
-                            work->cell[which][row * 6 + column]->color = color;
-                            work->cellFront[which][row * 6 + column]->x =
+                            work->gridIndex != slot || work->transitionActive == 0) {
+                            winSpriteSetDisp(work->cell[which][slot], 1);
+                            winSpriteSetDisp(work->cellFront[which][slot], 1);
+                            winSpriteSetDisp(work->cellBack[which][slot], 1);
+                            work->cell[which][slot]->color = color;
+                            work->cellFront[which][slot]->x =
                                 work->rect[1][0] + (baseX + column * stepX) - work->rect[0][0];
-                            work->cellFront[which][row * 6 + column]->y =
+                            work->cellFront[which][slot]->y =
                                 work->rect[1][1] + (baseY + row * stepY) - work->rect[0][1];
-                            work->cellFront[which][row * 6 + column]->color = color;
-                            work->cellBack[which][row * 6 + column]->x =
+                            work->cellFront[which][slot]->color = color;
+                            work->cellBack[which][slot]->x =
                                 work->rect[2][0] + (baseX + column * stepX) - work->rect[0][0];
-                            work->cellBack[which][row * 6 + column]->y =
+                            work->cellBack[which][slot]->y =
                                 work->rect[2][1] + (baseY + row * stepY) - work->rect[0][1];
-                            work->cellBack[which][row * 6 + column]->color = color;
+                            work->cellBack[which][slot]->color = color;
                         }
                     }
                 }
