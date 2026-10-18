@@ -3065,12 +3065,15 @@ static inline void* pdaAlloc(s32 size, s32 align)
 #pragma peephole off
 void fn_8003CF38(void)
 {
+    extern u16 fn_801EE248(u16 id);
+    extern u8 fn_801EE8F4(u16 id);
+    extern u16 fn_801EE614(u16 id);
     u8 temporary[8];
     u8* sortEntries;
     u8* lower;
-    s32 count;
-    s32 gap;
     s32 i;
+    s32 gap;
+    s32 count;
     s32 j;
     u32 allocation;
     u32 handle;
@@ -3087,10 +3090,10 @@ void fn_8003CF38(void)
     for (i = 0; i < (s32)lbl_8047A4DC; i++) {
         u16 value;
 
-        value = fn_801EE248((u16)(i + 1));
+        value = fn_801EE248(i + 1);
         if (value != 0 &&
-            (fn_801EE8F4((u16)(i + 1)) != 0 ||
-             fn_801EE614((u16)(i + 1)) != 0)) {
+            (fn_801EE8F4(i + 1) != 0 ||
+             fn_801EE614(i + 1) != 0)) {
             lbl_8047A4D4[count].field_00 = value;
             lbl_8047A4D4[count].battleId = (u16)(i + 1);
             *(u32*)((u8*)lbl_8047A4D8 + count * 8) =
