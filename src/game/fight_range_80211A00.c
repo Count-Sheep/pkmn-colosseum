@@ -10923,8 +10923,8 @@ void fn_80213E94(void)
     extern u8 pokemonIsDarkPokemon();
     extern void msgctrlSetValue();
     extern void fn_80165668();
-    extern u8 fn_801EEAD0();
-    extern u16 fn_801EEE44();
+    extern u8 fn_801EEAD0(u16 id);
+    extern u8 fn_801EEE44(u16 id);
     extern u32 fightTargetGetPtrAsNowFightType();
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr();
     extern u32 fightFloorGetStatus();
@@ -10950,7 +10950,8 @@ void fn_80213E94(void)
   u32 itemPtr;
   u16 ballId;
   u16 species;
-  u16 catchRate;
+  u16 catchRateId;
+  u8 catchRate;
   u8 level;
   u32 pokemon;
   int currentHp;
@@ -10971,7 +10972,7 @@ void fn_80213E94(void)
   target = fightTargetGetPtrAsNowFightType(0x12,0);
   pokemon = fightOutPokemonGetPokemonPtr(target);
   species = pokemonGetStatus(pokemon,0,0xc3,0);
-  catchRate = pokemonGetStatus(pokemon,0,0x6e,0);
+  catchRateId = pokemonGetStatus(pokemon,0,0x6e,0);
   level = figthOutPokemonGetLevel(target);
   currentHp = pokemonGetStatus(pokemon,0,0x83,0);
   maxHp = pokemonGetStatus(pokemon,0,0x87,0);
@@ -10980,7 +10981,7 @@ void fn_80213E94(void)
     catchRate = fn_801EEE44(species);
   }
   else {
-    catchRate = (u8)pokemonGetStatus(0,catchRate,0x12,0);
+    catchRate = pokemonGetStatus(0,catchRateId,0x12,0);
   }
   switch (ballId) {
   case 2:
@@ -11047,7 +11048,7 @@ void fn_80213E94(void)
     shakes = 4;
   }
   else {
-    odds = (int)((u8)catchRate * ballMultiplier) / 10 * ((maxHp * 3) - (currentHp * 2)) /
+    odds = (int)(catchRate * ballMultiplier) / 10 * ((maxHp * 3) - (currentHp * 2)) /
            (maxHp * 3);
     if ((fn_802026E4(target,8) == 1) || (fn_802026E4(target,7) == 1)) {
       odds *= 2;
