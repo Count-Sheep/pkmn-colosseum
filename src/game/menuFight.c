@@ -1347,21 +1347,17 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
     extern u32 pokemonCheckValid(void);
     extern s32 menuOpenCustom(s32, ...);
     u8* flags;
+    u16 bits;
     u32 base;
     u8 aux;
+    s32 selected;
     s32 activeMenu;
     s32 targetMenu;
-    s32 selected;
     s8 sx;
     s8 sy;
-    s32 absX;
-    s32 absY;
     f32 angle;
     f32 fy;
     f32 fx;
-    u16 bits;
-    u32 handle;
-    s32 stored;
 
     flags = windowGetKeyInfo();
     selected = -1;
@@ -1384,14 +1380,14 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
         fy = sy;
         fx = sx;
         angle = (f32)atan2(fy, fx);
-        if (menuFightAbsAngle(angle) < lbl_8047B704) {
+        if (menuFightAbsAngle(angle) < 0.7853982f) {
             bits |= 2;
-        } else if (menuFightAbsAngle(angle) > lbl_8047B708) {
+        } else if (menuFightAbsAngle(angle) > 2.3561945f) {
             bits |= 1;
         }
-        if (lbl_8047B704 < menuFightAbsAngle(angle) &&
-            menuFightAbsAngle(angle) < lbl_8047B708) {
-            if (angle < lbl_8047B700) {
+        if (0.7853982f < menuFightAbsAngle(angle) &&
+            menuFightAbsAngle(angle) < 2.3561945f) {
+            if (angle < 0.0f) {
                 bits |= 4;
             } else {
                 bits |= 8;
