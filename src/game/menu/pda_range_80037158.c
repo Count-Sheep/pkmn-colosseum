@@ -3676,10 +3676,10 @@ void fn_80044630(void) {
     extern void  fn_801CB9D8(void* h);
     extern void  fn_801CB954(void* h, s32 b);
     extern void  GSmodelSetVisibility(void* a, s32 b);
-    extern void  GSmodelSetAnimRate(f32 v);
+    extern void  GSmodelSetAnimRate(void* model, f32 rate);
     extern void  GSmodelSet60fpsAnimFlag(void* h, s32 b);
     extern void  GSmodelSetBoundCheck(void* h, s32 b);
-    extern void  GSmodelDestroyLinkedParticles(void);
+    extern void  GSmodelDestroyLinkedParticles(void* model);
     extern void* fn_801DAC3C(void* h);
     extern void  cameraPlayAnime(u32 a, u32 id, u32 c, u32 d);
     extern void  fn_8010A420(void* subobj);
@@ -3907,8 +3907,8 @@ void fn_80044630(void) {
 
                     cam = fn_801CBA0C(0x0D181000);
                     *(void**)(S + 0x10C) = cam;
-                    *(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), cam);
-                    GSmodelSetAnimRate(lbl_8047BD18);
+                    GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), cam),
+                                       lbl_8047BD18);
                     GSmodelSet60fpsAnimFlag(*(void**)(S + 0x110), 1);
                     GSmodelSetBoundCheck(*(void**)(S + 0x110), 0);
 
@@ -3944,6 +3944,7 @@ void fn_80044630(void) {
 
                     {
                         s32 sub = *(s32*)(S + 0x28);
+                        void* particles;
                         *(f32*)(S + 0x6C) = lbl_8047BC94;
                         *(f32*)(S + 0x70) = lbl_8047BC94;
                         *(f32*)(S + 0x74) = lbl_8047BC94;
@@ -3953,23 +3954,23 @@ void fn_80044630(void) {
                             *(s32*)(S + 0x1C) = 0xD;
                             *(s32*)(S + 0x24) = 2;
                             *(f32*)(S + 0x60) = lbl_8047BC94;
-                            if (fn_801DAC3C(*(void**)(S + 0xA0)) != 0)
-                                GSmodelDestroyLinkedParticles();
+                            if ((particles = fn_801DAC3C(*(void**)(S + 0xA0))) != 0)
+                                GSmodelDestroyLinkedParticles(particles);
                             break;
                         case 1:
                             *(s32*)(S + 0x1C) = 0xD;
                             *(s32*)(S + 0x24) = 4;
                             *(f32*)(S + 0x60) = lbl_8047BC94;
-                            if (fn_801DAC3C(*(void**)(S + 0xA0)) != 0)
-                                GSmodelDestroyLinkedParticles();
+                            if ((particles = fn_801DAC3C(*(void**)(S + 0xA0))) != 0)
+                                GSmodelDestroyLinkedParticles(particles);
                             *(f32*)(S + 0x64) = lbl_8047BCA8;
                             break;
                         case 2:
                             *(s32*)(S + 0x1C) = 0xD;
                             *(s32*)(S + 0x24) = 5;
                             *(f32*)(S + 0x60) = lbl_8047BC94;
-                            if (fn_801DAC3C(*(void**)(S + 0xA0)) != 0)
-                                GSmodelDestroyLinkedParticles();
+                            if ((particles = fn_801DAC3C(*(void**)(S + 0xA0))) != 0)
+                                GSmodelDestroyLinkedParticles(particles);
                             break;
                         default:
                             break;
@@ -4086,8 +4087,8 @@ void fn_80044630(void) {
 
                 h = fn_801CBA0C(0x0D171000);
                 *(void**)(S + 0x10C) = h;
-                *(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h);
-                GSmodelSetAnimRate(lbl_8047BD18);
+                GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h),
+                                   lbl_8047BD18);
 
                 ((u32*)mtx)[0] = ((const u32*)tbl)[0];
                 ((u32*)mtx)[1] = ((const u32*)tbl)[1];
@@ -4264,8 +4265,8 @@ void fn_80044630(void) {
 
                 h = fn_801CBA0C(0x0D171000);
                 *(void**)(S + 0x10C) = h;
-                *(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h);
-                GSmodelSetAnimRate(lbl_8047BD18);
+                GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h),
+                                   lbl_8047BD18);
 
                 ((u32*)mtx)[0] = ((const u32*)tbl)[0];
                 ((u32*)mtx)[1] = ((const u32*)tbl)[1];
@@ -4418,8 +4419,8 @@ void fn_80044630(void) {
                     h = fn_801CBA0C(0x0D171000);
                     *(void**)(S + 0x10C) = h;
 
-                    *(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h);
-                    GSmodelSetAnimRate(lbl_8047BD18);
+                    GSmodelSetAnimRate(*(void**)(S + 0x110) = GSresGetResource(fn_80113F48(), h),
+                                       lbl_8047BD18);
 
                     ((u32*)mtx)[0] = ((const u32*)tbl)[0];
                     ((u32*)mtx)[1] = ((const u32*)tbl)[1];
