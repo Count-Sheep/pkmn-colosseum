@@ -11617,7 +11617,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menu_carde_matrix_candidate_8007D978.c",
                 constant_import=[
                     {"symbol": "lbl_8047C148", "offset": 0, "expected": "3f800000"},
