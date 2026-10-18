@@ -28,6 +28,11 @@ static inline f32 pdaOrbitAbs(f32 v)
     return -v;
 }
 
+static inline f32 pdaOrbitBaseAngle(f32 baseAngle)
+{
+    return lbl_8047A484 - baseAngle;
+}
+
 static inline void pdaUpdateOrbitSprite(PdaSprite* sprite, f32 baseAngle,
                                         s32 updateTarget)
 {
@@ -42,7 +47,7 @@ static inline void pdaUpdateOrbitSprite(PdaSprite* sprite, f32 baseAngle,
     if (updateTarget) {
         lbl_8047A488 = lbl_802E52A8[lbl_8047A47C];
     }
-    angle = lbl_8047A484 - baseAngle;
+    angle = pdaOrbitBaseAngle(baseAngle);
     if (angle < 0.0f) {
         angle += 6.28318548f;
     }

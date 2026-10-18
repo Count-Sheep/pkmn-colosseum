@@ -3328,7 +3328,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_candidate_80037F40.c",
                 constant_import=[
                     {"symbol": "lbl_8047BA60", "offset": 0, "expected": "40c90fdb"},
