@@ -64,18 +64,6 @@ typedef struct MenuCBEntryWork {
 
 #define MENUCB_WORK ((MenuCBEntryWork*)lbl_803A9F08)
 
-static inline s32 menuCBEntryMode(s32 battleType)
-{
-    s32 mode;
-
-    if (battleType == 1) {
-        mode = 2;
-    } else {
-        mode = 1;
-    }
-    return mode;
-}
-
 static inline s32 menuCBMin(u16 a, u16 b)
 {
     if (a < b) {
@@ -138,10 +126,10 @@ static inline void menuCBEntryInit(void)
     s32 battleType;
     s32 playerCount;
     s32 player;
-    u16 maxCount;
-    u16 pokemonCount;
-    MenuCBEntryPort* port;
     void* command;
+    u16 maxCount;
+    MenuCBEntryPort* port;
+    u16 pokemonCount;
 
     battleType = toolentryTaisenGetBattleType();
     playerCount = toolentryTaisenGetEntryPlayerNum();
@@ -165,7 +153,11 @@ static inline void menuCBEntryInit(void)
             s32 mode;
 
             gbaCommandSendWazaText(command, wazaText);
-            mode = menuCBEntryMode(battleType);
+            if (battleType == 1) {
+                mode = 2;
+            } else {
+                mode = 1;
+            }
             maxCount = fn_8006B1D4();
             pokemonCount = toolentryTaisenGetPokemonNum(player);
             fn_8008AB20(command, menuCBMin(pokemonCount, maxCount), mode);
