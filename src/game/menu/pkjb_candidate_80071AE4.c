@@ -2,10 +2,14 @@
  * @file pkjb_candidate_80071AE4.c
  * @brief pkjb_uploader.c carve, 0x80071AE4 - 0x800722A0 (candidate).
  *
- * fn_80071E34 and fn_80071EA4 are exact; fn_80071AE4 is not yet: retail
- * keeps the upload size (count * 4 + 16, + 0x70 with the extra block)
- * inside the retry loop and computes the header swap after the hoisted
- * idle-callback addresses; this source hoists both.
+ * fn_80071E34 and fn_80071EA4 are exact; fn_80071AE4 is not yet. Its
+ * buffer is the u8 block gbaCommunication.c passes (p + 0x4344, through
+ * fn_80089D30). Retail reads and swaps the header once, after the hoisted
+ * idle-callback addresses and in a block of its own (its temporaries reuse
+ * those addresses' registers); reading it before the loop interleaves the
+ * swap with the addresses, so this source reads it at the top of each
+ * attempt, which gives retail's instruction order inside the loop but keeps
+ * the swap in the loop and one register fewer (key is not spilled).
  *
  * fn_80071EA4 receives into a byte buffer (gbaCommunication.c passes
  * u8 readBuffer[0xD8]) one word at a time at a byte offset; the body size
@@ -18,7 +22,7 @@
 s32 fn_80071EA4(s32 chan, u8* data);
 
 #ifndef PKJB_80071EA4_ONLY
-static inline s32 pkjbSendBlockIdle(s32 chan, const u32* data, s32 size)
+static inline s32 pkjbSendBlockIdle(s32 chan, const u8* data, s32 size)
 {
     u32 word;
     u8 status;
@@ -27,7 +31,7 @@ static inline s32 pkjbSendBlockIdle(s32 chan, const u32* data, s32 size)
     s32 offset;
 
     for (offset = 0; offset < size; offset += 4) {
-        word = *(const u32*)((u32)data + offset);
+        word = *(const u32*)(data + offset);
         if (GBAWrite(chan, (u8*)&word, &status) != 0) {
             return 16;
         }
@@ -57,7 +61,7 @@ static inline s32 pkjbSendBlockIdle(s32 chan, const u32* data, s32 size)
     return 0;
 }
 
-static inline s32 pkjbSend22(s32 chan, const u32* data, u16 count, u16 extra)
+static inline s32 pkjbSend22(s32 chan, const u8* data, u16 count, u16 extra)
 {
     u32 response;
     s32 result;
@@ -87,7 +91,7 @@ static inline s32 pkjbSend22(s32 chan, const u32* data, u16 count, u16 extra)
 }
 
 /* 0x80071AE4 | 0x350: command 0x22, upload a block sized by its own header. */
-s32 fn_80071AE4(s32 chan, const u32* data)
+s32 fn_80071AE4(s32 chan, const u8* data)
 {
     s32 key;
     s32 result;
@@ -102,10 +106,10 @@ s32 fn_80071AE4(s32 chan, const u32* data)
     gbaCommandSetKeyState(key, 2);
     timeout = OSMillisecondsToTicks(100);
     start = OSGetTick();
-    packed = pkjbSwap32(data[3]);
-    extra = packed >> 16;
-    count = packed;
     do {
+        packed = pkjbSwap32(*(u32*)(data + 12));
+        extra = packed >> 16;
+        count = packed;
         expired = OSGetTick() - start > timeout;
         result = pkjbSend22(chan, data, count, extra);
     } while (result == 1 && !expired);
