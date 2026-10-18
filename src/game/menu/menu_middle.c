@@ -4781,13 +4781,11 @@ void fn_8006FEE4(void* menu) {
     extern void winSetSequence(void* seq, u16 seqId);
     extern void fn_80070D84(void* menu, const void* table, s32 count);
     extern double fmod(double x, double y);
-    const MenuCBHookSpriteEntry* entry;
-    const u16* ids;
-    void* window;
     u32 ready;
-    s32 visible;
     s32 i;
     s32 j;
+    void* window;
+    s32 visible;
 
     if (*(s8*)((u8*)menu + 0x95) < 6) {
         *(s32*)&lbl_8047A5FC = *(s8*)((u8*)menu + 0x95);
@@ -4800,41 +4798,35 @@ void fn_8006FEE4(void* menu) {
         fn_80071318(window, sprite);
     }
 
-    entry = sMenuCBHookSprites_80268070;
-    for (i = 0; i < 6; entry++, i++) {
-        window = windowSearchItemID(menu, entry->itemId);
+    for (i = 0; i < 6; i++) {
+        window = windowSearchItemID(menu, sMenuCBHookSprites_80268070[i].itemId);
         MENU_MIDDLE_U32_004C(window)->unk_004C =
-            (u8)fn_8006B3C8(i) != 0 ? entry->spriteId : 0x3DAA;
+            (u8)fn_8006B3C8(i) != 0 ? sMenuCBHookSprites_80268070[i].spriteId : 0x3DAA;
     }
-    for (entry = &sMenuCBHookSprites_80268070[i]; i < 10U; entry++, i++) {
-        window = windowSearchItemID(menu, entry->itemId);
-        MENU_MIDDLE_U32_004C(window)->unk_004C = entry->spriteId;
+    for (; i < 10U; i++) {
+        window = windowSearchItemID(menu, sMenuCBHookSprites_80268070[i].itemId);
+        MENU_MIDDLE_U32_004C(window)->unk_004C = sMenuCBHookSprites_80268070[i].spriteId;
     }
 
     visible = (u8)ready == 0;
-    ids = sMenuCBHookHiddenIds_802680D8;
-    for (i = 0; i < 5U; ids++, i++) {
-        winSpriteSetDisp(windowSearchItemID(menu, *ids), visible);
+    for (i = 0; i < 5U; i++) {
+        winSpriteSetDisp(windowSearchItemID(menu, sMenuCBHookHiddenIds_802680D8[i]), visible);
     }
 
     switch (*(s8*)((u8*)menu + 1)) {
     case 0:
-        ids = sMenuCBHookGridIds_802680E4[0];
-        for (i = 0; i < 6U; ids += 5, i++) {
-            const u16* item = ids;
-            for (j = 0; j < 5U; item++, j++) {
-                winSetSequence((u8*)windowSearchItemID(menu, *item) + 0xC,
+        for (i = 0; i < 6U; i++) {
+            for (j = 0; j < 5U; j++) {
+                winSetSequence((u8*)windowSearchItemID(menu, sMenuCBHookGridIds_802680E4[i][j]) + 0xC,
                                sMenuCBHookSequences_8006E338[i / 2 + 3][0]);
             }
         }
         break;
     case 3:
         if (*(s8*)((u8*)menu + 2) == 0) {
-            ids = sMenuCBHookGridIds_802680E4[0];
-            for (i = 0; i < 6U; ids += 5, i++) {
-                const u16* item = ids;
-                for (j = 0; j < 5U; item++, j++) {
-                    winSetSequence((u8*)windowSearchItemID(menu, *item) + 0xC,
+            for (i = 0; i < 6U; i++) {
+                for (j = 0; j < 5U; j++) {
+                    winSetSequence((u8*)windowSearchItemID(menu, sMenuCBHookGridIds_802680E4[i][j]) + 0xC,
                                    sMenuCBHookSequences_8006E338[i / 2 + 3][1]);
                 }
             }
@@ -4844,21 +4836,19 @@ void fn_8006FEE4(void* menu) {
 
     fn_80070D84(menu, sMenuCBHookButtons_80268120, 11);
 
-    ids = sMenuCBHookRowIds_80268178[0];
-    for (i = 0; i < 2U; ids += 3, i++) {
+    for (i = 0; i < 2U; i++) {
         u8 shown = fn_8006B1F4(*(s32*)&lbl_8047A5FC, i == 0 ? 0 : 1);
 
-        winSpriteSetDisp(windowSearchItemID(menu, ids[0]), shown);
-        winSpriteSetDisp(windowSearchItemID(menu, ids[1]), shown);
-        window = windowSearchItemID(menu, ids[2]);
+        winSpriteSetDisp(windowSearchItemID(menu, sMenuCBHookRowIds_80268178[i][0]), shown);
+        winSpriteSetDisp(windowSearchItemID(menu, sMenuCBHookRowIds_80268178[i][1]), shown);
+        window = windowSearchItemID(menu, sMenuCBHookRowIds_80268178[i][2]);
         *(u32*)((u8*)window + 0x64) = shown != 0 ? 0xFFFFFFFF : 0x606060FF;
     }
 
-    ids = (const u16*)&lbl_8047C050;
-    for (i = 0; i < 4U; ids++, i++) {
+    for (i = 0; i < 4U; i++) {
         f32* angle;
 
-        window = windowSearchItemID(menu, *ids);
+        window = windowSearchItemID(menu, ((const u16*)&lbl_8047C050)[i]);
         angle = (f32*)((u8*)window + 0x70);
         if (i % 2 != 0) {
             *angle += 0.017453292f;
