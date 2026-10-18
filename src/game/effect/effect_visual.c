@@ -209,7 +209,7 @@ extern void* GSmodelGetPart(void* model, u32 mode);
 extern void  GSpartGetTransform(void* obj, void* a, void* b, void* c);
 extern void  GSpartFree(void* handle);
 extern void* GSpartGetMaterial(void* handle, u32 idx);
-extern void* GStextureCreate(s32 width, s32 height, s32 format, s32 tlutFormat, u8 mipLevels);
+extern void* GStextureCreate(u16 width, u16 height, s32 format, s32 tlutFormat, u8 mipLevels);
 extern void* fn_800E3B08(u32 index);
 extern void  fn_800E24B0(u16 handle);
 extern void  fn_800E209C(u16 handle);
@@ -5839,7 +5839,7 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
     sourcePixels = NULL;
     baseWidth = GStextureGetXsize(baseTexture);
     baseHeight = GStextureGetYsize(baseTexture);
-    outputTexture = GStextureCreate((u16)baseWidth, (u16)baseHeight,
+    outputTexture = GStextureCreate(baseWidth, baseHeight,
                                     GStextureGetFormat(baseTexture),
                                     GStextureGetTlutFormat(baseTexture),
                                     GStextureGetMiplevels(baseTexture));
