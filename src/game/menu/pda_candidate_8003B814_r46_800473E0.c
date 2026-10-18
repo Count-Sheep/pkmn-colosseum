@@ -1,11 +1,16 @@
 #include "dolphin/types.h"
 
-typedef struct PdaOrbitPoint {
-    f32 angle;
-    f32 pad04[6];
-    f32 alpha;
-    f32 pad20;
-} PdaOrbitPoint;
+typedef struct PdaStatLine {
+    u8* data;
+    f32 count;
+    u8 pad08[4];
+    f32 drawn;
+    s32 wait;
+    f32 lifted;
+    s32 segments;
+    f32 height;
+    f32 speed;
+} PdaStatLine;
 
 typedef struct PdaVec3 {
     f32 x;
@@ -38,9 +43,8 @@ extern void fn_800D7820(void* data);
 extern void fn_800D888C(s32 mode);
 extern void fn_800D88DC(s32 mode);
 
-void fn_800473E0(PdaOrbitPoint* point)
+void fn_800473E0(PdaStatLine* p)
 {
-    u8* p = (u8*)point;
     GSspline* spline;
     u8* data;
     PdaVec3 ctrl;
@@ -53,31 +57,31 @@ void fn_800473E0(PdaOrbitPoint* point)
     u32 count;
     f32 dx;
 
-    data = *(u8**)p;
+    data = p->data;
     if (data == NULL) {
         return;
     }
     num = data[0] + 2;
     count = (u8)num;
-    *(f32*)(p + 4) = (f32)count;
-    if (*(s32*)(p + 0x18) < (s32)count) {
-        *(s32*)(p + 0x18) = *(s32*)(p + 0x18) + 1;
-    } else if (*(s32*)(p + 0x10) < (s32)count) {
-        *(s32*)(p + 0x10) = *(s32*)(p + 0x10) + 1;
-    } else if (*(s32*)(p + 0x10) < (s32)count + 30) {
-        *(s32*)(p + 0x10) = *(s32*)(p + 0x10) + 1;
-        if (*(f32*)(p + 0x14) < (f32)count) {
-            *(f32*)(p + 0x14) = *(f32*)(p + 0x14) + *(f32*)(p + 0x20);
+    p->count = (f32)count;
+    if (p->segments < (s32)count) {
+        p->segments = p->segments + 1;
+    } else if (p->wait < (s32)count) {
+        p->wait = p->wait + 1;
+    } else if (p->wait < (s32)count + 30) {
+        p->wait = p->wait + 1;
+        if (p->lifted < (f32)count) {
+            p->lifted = p->lifted + p->speed;
         }
     } else {
-        if (*(f32*)(p + 0xc) < (f32)count) {
-            *(f32*)(p + 0xc) = *(f32*)(p + 0xc) + *(f32*)(p + 0x20);
-            if (*(f32*)(p + 0x14) < (f32)count) {
-                *(f32*)(p + 0x14) = *(f32*)(p + 0x14) + *(f32*)(p + 0x20);
+        if (p->drawn < (f32)count) {
+            p->drawn = p->drawn + p->speed;
+            if (p->lifted < (f32)count) {
+                p->lifted = p->lifted + p->speed;
             }
         } else {
-            if (*(f32*)(p + 0x14) < (f32)count) {
-                *(f32*)(p + 0x14) = *(f32*)(p + 0x14) + *(f32*)(p + 0x20);
+            if (p->lifted < (f32)count) {
+                p->lifted = p->lifted + p->speed;
             }
         }
     }
@@ -88,8 +92,8 @@ void fn_800473E0(PdaOrbitPoint* point)
     step = 1.0f / (f32)(u8)num;
     ctrl.x = 0.0f;
     ctrl.y = 0.0f;
-    ctrl.z = *(f32*)(p + 0x1c);
-    dx = *(f32*)(p + 4);
+    ctrl.z = p->height;
+    dx = p->count;
     GSsplineAddControlVectorValue(spline, &ctrl, 0.0f);
     dx = 233.0f / dx;
     t = step;
@@ -104,19 +108,19 @@ void fn_800473E0(PdaOrbitPoint* point)
     ctrl.y = 0.0f;
     ctrl.x = 233.0f;
     GSsplineAddControlVectorValue(spline, &ctrl, 1.0f);
-    for (i = 0; i < (s32)*(f32*)(p + 0xc); i++) {
+    for (i = 0; i < (s32)p->drawn; i++) {
         GSvecCopy(&v0, &spline->vectors[i]);
         v0.z = 0.0f;
         GSvecCopy(&spline->vectors[i], &v0);
     }
-    for (i = (s32)*(f32*)(p + 0xc); i < (s32)*(f32*)(p + 0x14); i++) {
+    for (i = (s32)p->drawn; i < (s32)p->lifted; i++) {
         GSvecCopy(&v0, &spline->vectors[i]);
-        v0.z = *(f32*)(p + 0x1c) /
-               (f32)((s32)*(f32*)(p + 0x14) - (s32)*(f32*)(p + 0xc)) *
-               (f32)(i - (s32)*(f32*)(p + 0xc));
+        v0.z = p->height /
+               (f32)((s32)p->lifted - (s32)p->drawn) *
+               (f32)(i - (s32)p->drawn);
         GSvecCopy(&spline->vectors[i], &v0);
     }
-    for (i = 0; i < *(s32*)(p + 0x18) - 1; i++) {
+    for (i = 0; i < p->segments - 1; i++) {
         GSvecCopy(&v0, &spline->vectors[i]);
         GSvecCopy(&v1, &spline->vectors[i + 1]);
         fn_800D88DC(1);
