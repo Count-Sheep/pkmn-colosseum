@@ -84,6 +84,16 @@ static inline void fn_80265F94_update(void* model, u16 id)
     _threadSwitch();
 }
 
+extern const u16 lbl_8047E6F8;
+
+static inline void* fn_80265F94_create(u16 species)
+{
+    void* model = fn_801DE190(species, 0, 0);
+    fn_801DDD28(model, lbl_8047E6F8, 4, 0);
+    fn_801DA4E8(model, 1);
+    return model;
+}
+
 /* Address: 0x80265F94 | Size: 0x2BC */
 void fn_80265F94(int r3)
 {
@@ -106,9 +116,7 @@ void fn_80265F94(int r3)
     if (status != 0) {
         species = status;
     }
-    model = fn_801DE190(species, 0, 0);
-    fn_801DDD28(model, lbl_8047E6F8, 4, 0);
-    fn_801DA4E8(model, 1);
+    model = fn_80265F94_create(species);
     id = lbl_8047E6F8;
     fn_801DA9E8(model, id, 4);
     fadeSet(lbl_8047E6FC, 2);
