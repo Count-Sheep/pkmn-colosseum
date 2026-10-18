@@ -1102,15 +1102,15 @@ extern void* fightFloorGetFightPokemonPtrToFightTrainerPtr(s32 a, u32 ctx);
 extern u8   figthPokemonGetLevel(u32 ctx);
 extern u8   fightTrainerCheckCanIrekaeFightPokemon(void* ptr, u32 ctx);
 extern void* fightTrainerGetFightPokemonPtrToFightOutPokemonPtr(void* ptr, u32 ctx);
-extern u8   fightOutPokemonIsUseHensinBuff(void);
+extern u8   fightOutPokemonIsUseHensinBuff(void* ptr);
 extern void fightOutPokemonGetTokuseiDataId(void* ptr);
 extern void fightOutPokemonGetZokuseiDataId(void* ptr, s32 a);
 extern s32  fn_800096B4(void* ptr, s32 a, u8* b, u8* c, u8* d, u8* e);
 extern u32  pokemonGetStatus(void* ptr, u16 b, s32 c, s32 d);
 extern void fn_8010B01C(void* ptr, s32 a, s32 b);
 extern void _threadSwitch(void);
-extern void fn_8010BBB8(void* ptr);
-extern s8   fn_8010BCE4(void);
+extern u16  fn_8010BBB8(void* ptr);
+extern s8   fn_8010BCE4(u16 id);
 extern void* pokemonCreateSequence(void* ptr);
 extern void battleGridReplacePokemon(void* ptr, void* src);
 extern void battleGridUpdate(void);
@@ -1125,22 +1125,22 @@ extern void fightOutPokemonSetTokuseiDataId(void* ptr, void* a);
 extern void fightOutPokemonSetZokuseiDataId(void* ptr, u8 a, u16 b);
 extern void fightMenuFightTrainerRenewStatusMenu(void* ptr, u16 a);
 #if !defined(GS_TASK_RANGE_SPLIT) || defined(GS_TASK_RANGE_RESIDUAL_80007364)
-#pragma push
-#pragma peephole off
 s32 menuFightPokemonSelectSub(u32 ctx) {
-    s32 result;
+    u32 i;
     u8 prevLevel;
-    u16 savedId;
-    void* encounter;
     void* archive;
     void* scene;
-    u16 itemId;
+    s32 result;
+    void* encounter;
     u32 subItem;
+    void* animPtr;
+    u32 loopIdx;
+    u16 itemId;
     u8 sp_b;
     u8 sp_a;
     u8 sp_9;
     u8 sp_8;
-    u16 loopIdx;
+    u16 savedId;
 
     sp_b = 0;
     sp_a = 0;
@@ -1162,7 +1162,7 @@ s32 menuFightPokemonSelectSub(u32 ctx) {
 
     if (fightTrainerCheckCanIrekaeFightPokemon(archive, ctx) == 2) {
         encounter = fightTrainerGetFightPokemonPtrToFightOutPokemonPtr(archive, ctx);
-        if (fightOutPokemonIsUseHensinBuff() == 1) {
+        if (fightOutPokemonIsUseHensinBuff(encounter) == 1) {
             return -1;
         }
 
@@ -1179,10 +1179,8 @@ s32 menuFightPokemonSelectSub(u32 ctx) {
             if (encounter != 0) {
                 subItem = pokemonGetStatus(encounter, 0, 0xee, 0);
                 if (subItem != 0) {
-                    void* animPtr;
-
                     fn_8010B01C(scene, 0, 0);
-                    while ((fn_8010BBB8(scene), fn_8010BCE4()) == 0) {
+                    while (fn_8010BCE4(fn_8010BBB8(scene)) == 0) {
                         _threadSwitch();
                     }
                     animPtr = pokemonCreateSequence(scene);
@@ -1193,25 +1191,15 @@ s32 menuFightPokemonSelectSub(u32 ctx) {
                     fn_801DA4E8(animPtr, 1);
                     fightOutPokemonWriteJoutaiDataId(encounter, 0x14);
                 }
-                {
-                    u16 newId;
-
-                    newId = (u16)(u32)fightFloorGetStatus(0, 0, 0x14, 0);
-                    fightMenuFightOutPokemonRenewStatusMenu(encounter, newId, 1);
-                }
+                fightMenuFightOutPokemonRenewStatusMenu(
+                    encounter, (u16)(u32)fightFloorGetStatus(0, 0, 0x14, 0), 1);
                 pokemonSetSequenceStatus(
                     scene, pokemonGetStatus(encounter, 0, 0xee, 0));
                 fightOutPokemonSetTokuseiDataId(
                     encounter, pokemonGetTokuseiDataId(scene));
-                {
-                    u32 i;
-
-                    for (i = 0; (u16)i < 2; i++) {
-                        u16 val;
-
-                        val = pokemonGetStatus(0, itemId, 0x16, i);
-                        fightOutPokemonSetZokuseiDataId(encounter, (u8)i, val);
-                    }
+                for (i = 0; (u16)i < 2; i++) {
+                    fightOutPokemonSetZokuseiDataId(
+                        encounter, (u8)i, pokemonGetStatus(0, itemId, 0x16, i));
                 }
             }
         }
@@ -1226,7 +1214,6 @@ s32 menuFightPokemonSelectSub(u32 ctx) {
     fightMenuFightTrainerRenewStatusMenu(archive, savedId);
     return result;
 }
-#pragma pop
 #endif /* GS_TASK_RANGE_RESIDUAL_80007364 */
 
 #if !defined(GS_TASK_RANGE_SPLIT) || defined(GS_TASK_RANGE_EXACT_8000765C)
