@@ -493,20 +493,25 @@ static inline void gsMemCopy(u8* dst, u8* src, u32 size) {
         u32* wordSrc = (u32*)src;
         u32 words = size >> 2;
         u32 bytes = size & 3;
+        u8* byteDst;
+        u8* byteSrc;
 
         while (words != 0) {
             *wordDst++ = *wordSrc++;
             words--;
         }
-        dst = (u8*)wordDst;
-        src = (u8*)wordSrc;
+        byteDst = (u8*)wordDst;
+        byteSrc = (u8*)wordSrc;
         while (bytes != 0) {
-            *dst++ = *src++;
+            *byteDst++ = *byteSrc++;
             bytes--;
         }
     } else {
+        u8* byteDst = dst;
+        u8* byteSrc = src;
+
         while (size != 0) {
-            *dst++ = *src++;
+            *byteDst++ = *byteSrc++;
             size--;
         }
     }
@@ -632,6 +637,9 @@ u32 fn_800E1544(void)
     GSFreeBlock* fresh;
     GSFreeBlock* prev;
     GSFreeBlock* next;
+    GSFreeBlock* before;
+    GSFreeBlock* scan;
+    GSFreeBlock* freed;
     GSMemHandle* desc;
     GSMemHandle* saved;
     GSMemHandle** entry;
@@ -743,7 +751,28 @@ u32 fn_800E1544(void)
                 (*entry)->data = destination;
                 destination += (*entry)->size;
                 remaining -= (*entry)->size;
-                gsMemInsertFree((GSFreeBlock*)source, (*entry)->size);
+                before = NULL;
+                for (scan = (GSFreeBlock*)lbl_8047AB30; scan != NULL && scan < (GSFreeBlock*)source; scan = scan->next) {
+                    before = scan;
+                }
+                freed = (GSFreeBlock*)source;
+                if (before != NULL) {
+                    freed->prev = before;
+                    freed->next = before->next;
+                } else {
+                    freed->prev = NULL;
+                    freed->next = (GSFreeBlock*)lbl_8047AB30;
+                    lbl_8047AB30 = (u32)freed;
+                }
+                freed->size = (*entry)->size;
+                if (freed->prev != NULL) {
+                    freed->prev->next = freed;
+                }
+                if (freed->next != NULL) {
+                    freed->next->prev = freed;
+                }
+                gsMemMergeNext(freed);
+                gsMemMergePrev(freed);
                 entry++;
             }
             if (remaining >= sizeof(GSFreeBlock)) {
