@@ -134,9 +134,9 @@ void fn_8004B7EC(void)
     state->selection = 0;
     state->savedSelection = 0;
     state->menuBusy = 0;
-    state->angles[0] = lbl_8047BDAC;
-    state->angles[1] = lbl_8047BDAC;
     state->angles[2] = lbl_8047BDAC;
+    state->angles[1] = lbl_8047BDAC;
+    state->angles[0] = lbl_8047BDAC;
     state->field2C = lbl_8047BDA0;
     state->field28 = lbl_8047BDA0;
     *transition = lbl_8047BDF4;
