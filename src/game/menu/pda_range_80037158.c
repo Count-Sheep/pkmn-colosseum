@@ -5182,7 +5182,19 @@ static inline void* pdaGetPokemonName(u16 id)
     return NULL;
 }
 
-/* Fill the kana-row table with the first characters of tab's row. */
+/* Mark the row's entries used and convert their first characters. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D8CC_Fill (fn_8003D8CC) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8003D8CC_Fill(PdaNameEntry* tbl, PdaKanaGroup* group)
+{
+    s32 n;
+
+    for (n = 0; n < group->count; n++) {
+        tbl[n].used = 1;
+        GScharMakeFromSJIS(tbl[n].text, group->words[n]);
+    }
+}
+
+/* Clear the kana-row table and fill it from tab's row. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D8CC_KanaSetup (fn_8003D8CC) - see docs/RULE_EXCEPTIONS.md */
 static inline PdaKanaGroup* pda_8003D8CC_KanaSetup(PdaNameEntry* tbl, s32 tab)
 {
@@ -5194,10 +5206,7 @@ static inline PdaKanaGroup* pda_8003D8CC_KanaSetup(PdaNameEntry* tbl, s32 tab)
     }
     if (tab != 0) {
         group = &lbl_802E60B0[0][tab - 1];
-        for (n = 0; n < group->count; n++) {
-            tbl[n].used = 1;
-            GScharMakeFromSJIS(tbl[n].text, group->words[n]);
-        }
+        pda_8003D8CC_Fill(tbl, group);
     }
     return group;
 }
