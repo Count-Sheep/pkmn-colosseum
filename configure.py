@@ -6646,8 +6646,9 @@ config.libs = [
                 CodeCandidate,
                 "game/gs_candidate_801C7730.c",
                 constant_import=[
-                    {"symbol": "lbl_8047E120", "offset": 0, "expected": "4330000080000000"},
-                    {"symbol": "lbl_8047E128", "offset": 8, "expected": "4330000000000000"},
+                    {"symbol": "lbl_8047E100", "offset": 0, "expected": "3f800000"},
+                    {"symbol": "lbl_8047E120", "offset": 8, "expected": "4330000080000000"},
+                    {"symbol": "lbl_8047E128", "offset": 16, "expected": "4330000000000000"},
                 ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

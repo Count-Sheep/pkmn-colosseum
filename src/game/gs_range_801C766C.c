@@ -345,7 +345,7 @@ s32 fn_801C7730(s32 side, s32 slot)
     radius += lbl_8047E100;
 
     if (fieldSegmentBlocked(&partner, &requested, &origin,
-                            lbl_8047E100 + radius) == 0) {
+                            1.0f + radius) == 0) {
         return 0;
     }
 
