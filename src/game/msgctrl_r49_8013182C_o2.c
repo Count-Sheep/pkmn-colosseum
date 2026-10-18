@@ -15,8 +15,11 @@ extern u16 lbl_80427050[];
 extern u16* _msgctrlMakeDigit__FPUslUll(void* table, u32 stride, u32 value, u32 type);
 
 /* Play time (in seconds) as "[H]HH:MM": each digit is drawn through
- * _msgctrlMakeDigit and its glyph copied into the output string. */
-void msgctrlTime(void)
+ * _msgctrlMakeDigit and its glyph copied into the output string, which is
+ * returned like the other message-control callbacks' strings. Returning the
+ * buffer keeps its address live in r3 past the terminator store, which is
+ * what gives retail's final-block register choice. */
+u16* msgctrlTime(void)
 {
     u32 minutes;
     u32 hours;
@@ -52,4 +55,5 @@ void msgctrlTime(void)
     lbl_8047AEA8 = glyph;
     lbl_80427050[i++] = *glyph;
     lbl_80427050[i] = 0;
+    return lbl_80427050;
 }
