@@ -891,7 +891,7 @@ game/menu/pda_exact_80044378.c:
 game/menu/pda_exact_80044630.c:
 	.text       start:0x80044630 end:0x80046168
 
-game/menu/pda_candidate_8003B814_r46_80044630.c:
+game/menu/pda_exact_80046168.c:
 	.text       start:0x80046168 end:0x800472CC
 
 game/menu/pda_exact_800472CC.c:

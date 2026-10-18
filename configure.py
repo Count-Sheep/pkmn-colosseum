@@ -3900,11 +3900,14 @@ config.libs = [
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: the 0.0f compare literal and the int-to-float bias.
             Object(
                 CodeCandidate,
-                "game/menu/pda_candidate_8003B814_r46_80044630.c",
+                "game/menu/pda_exact_80046168.c",
+                constant_import=[{"symbol": "lbl_8047BC94", "offset": 0, "expected": "00000000"},
+                                 {"symbol": "lbl_8047BCB0", "offset": 8, "expected": "4330000080000000"}],
                 mw_version="GC/1.3",
-                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # TEMPORARY constant_import
