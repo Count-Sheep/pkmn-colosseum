@@ -30,7 +30,8 @@
     !defined(FIGHT_RANGE_802230BC_ONLY) && \
     !defined(FIGHT_RANGE_80224158_ONLY) && \
     !defined(FIGHT_RANGE_80213A78_ONLY) && \
-    !defined(FIGHT_RANGE_80220868_ONLY)
+    !defined(FIGHT_RANGE_80220868_ONLY) && \
+    !defined(FIGHT_RANGE_8021D40C_ONLY)
 #define FIGHT_RANGE_ALL
 #endif
 
@@ -14004,7 +14005,25 @@ void fn_8021D090(void);
 #undef fn_8012640C
 #undef fn_801F025C
 #undef fn_801F54A4
+#endif /* FIGHT_RANGE_ALL */
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_8021D40C_ONLY)
+#if defined(FIGHT_RANGE_8021D40C_ONLY)
+/* Declarations fn_8021D40C and fn_8021D688 take from the shared body. */
+extern void* lbl_8047B64C;
+u32 fn_8022B2CC();
+extern u32 itemGetStatus();
+#endif
+/* RULE-EXCEPTION(user-approved): single-use inline helper - fn_8021D40C's side lookup returns through an inline so the call result coalesces straight into side (retail `mr r29,r3`, no r0 carrier copy) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 fn_8021D40C_side(u32 pokemon)
+{
+    extern u32 fightTargetGetPtrAsNowFightType();
+    return fightTargetGetPtrAsNowFightType(3, pokemon);
+}
+#if !defined(FIGHT_RANGE_8021D40C_ONLY)
 #pragma optimize_for_size on
+#endif
 void fn_8021D40C(void)
 {
     extern u32 fightFloorGetStatus();
@@ -14025,8 +14044,19 @@ void fn_8021D40C(void)
     extern s8 pokemonSearchWazaDataId();
     extern s32 pokemonGetStatus();
     extern void fn_80265598();
-    u16 floorStatus;
+    u32 target;
+    u16 floor2;
+    u32 side;
+    u32 trainer;
+    u32 redirected;
+    u32 targetId;
     u32 ctx;
+    s32 otherMove;
+    u16 floorStatus;
+    u32 target3;
+    u32 pokemon;
+    u32 outPokemon;
+    u32 defender;
     u32 moveId;
 
     floorStatus = fightFloorGetStatus(0, 0, 0x14, 0);
@@ -14038,24 +14068,18 @@ void fn_8021D40C(void)
         fightOutPokemonInitJoutaiKeep(ctx);
         break;
     case 1: {
-        u32 defender;
-        u32 side;
-        u32 redirected;
-        u32 targetId;
 
         fightTargetGetPtrAsNowFightType(0x11, 0);
         defender = fightTargetGetPtrAsNowFightType(0x12, 0);
         fightFloorSetStatus(0, 0, 0x36, 0, defender);
-        side = fightTargetGetPtrAsNowFightType(3, defender);
-        floorStatus = fightFloorGetStatus(0, 0, 0x14, 0);
+        side = fn_8021D40C_side(defender);
+        floor2 = fightFloorGetStatus(0, 0, 0x14, 0);
         redirected = 0;
         if (fightSideIsJoutaiDataId(side, 0x4d) == 1) {
             targetId = fightSideGetJoutaiUserFightTargetId(side, 0x4d);
             if ((u16)targetId != 0) {
-                u32 target;
-
                 target = fightTargetGetRelativeHostSideFightTargetIdToTragetPtr(
-                    targetId, floorStatus);
+                    targetId, floor2);
                 if (target != 0 && fightOutPokemonCheckFightOut(target) == 1) {
                     redirected = target;
                 }
@@ -14068,11 +14092,9 @@ void fn_8021D40C(void)
         break;
     }
     case 3: {
-        u32 target;
-
-        target = fn_8022B2CC(ctx, moveId, floorStatus, 0, 1, 1, -1);
-        if (target != 0) {
-            fightFloorSetStatus(0, 0, 0x43, 0, target);
+        target3 = fn_8022B2CC(ctx, moveId, floorStatus, 0, 1, 1, -1);
+        if (target3 != 0) {
+            fightFloorSetStatus(0, 0, 0x43, 0, target3);
         }
         break;
     }
@@ -14084,10 +14106,6 @@ void fn_8021D40C(void)
         }
         break;
     case 6: {
-        u32 pokemon;
-        u32 trainer;
-        u32 outPokemon;
-
         pokemon = (u32)lbl_8047B64C;
         if (pokemon == 0) {
             break;
@@ -14101,8 +14119,6 @@ void fn_8021D40C(void)
             break;
         }
         if (fn_802026E4(outPokemon, 0x36) == 1) {
-            s32 otherMove;
-
             otherMove = fn_80201C58(outPokemon, 0x36);
             if (pokemonSearchWazaDataId(
                     fightOutPokemonGetPokemonPtr(outPokemon), otherMove) < 0) {
@@ -14118,7 +14134,9 @@ void fn_8021D40C(void)
 
     lbl_8047B610 += 3;
 }
+#if !defined(FIGHT_RANGE_8021D40C_ONLY)
 #pragma optimize_for_size reset
+#endif
 /* RULE-EXCEPTION(user-approved): inline copy of fightSeqGetItemType (u16 item id, branchy 6/7 tail, as retail inlines it into fn_8021D688) and a local dont_inline off/reset around fn_8021D688 — see docs/RULE_EXCEPTIONS.md */
 static inline u8 fn_8021D688_itemType(u16 itemId)
 {
@@ -14172,7 +14190,9 @@ static inline u8 fn_8021D688_itemType(u16 itemId)
     return 7;
 }
 
+#if !defined(FIGHT_RANGE_8021D40C_ONLY)
 #pragma dont_inline off
+#endif
 void fn_8021D688(void)
 
 {
@@ -14253,7 +14273,14 @@ void fn_8021D688(void)
   lbl_8047B610 = lbl_8047B610 + 1;
   return;
 }
+#if !defined(FIGHT_RANGE_8021D40C_ONLY)
 #pragma dont_inline reset
+#endif
+#endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_8021D40C_ONLY */
+
+#if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_EXACT_802128D0_ONLY) || \
+    defined(FIGHT_RANGE_EXACT_80213A78_ONLY)
+#if defined(FIGHT_RANGE_ALL)
 #define fn_801F37B0 fightFloorLoopValidFightOutPokemon
 void WS_SCA_END_SET(void)
 
