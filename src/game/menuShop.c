@@ -923,7 +923,7 @@ s32 fn_8002AB40(void* r3, u8* r4) {
 #endif
 
 /* fn_8002ACB8 - 0x8002ACB8 | size: 0x18c */
-extern u32 lbl_8047A660;
+extern volatile u32 lbl_8047A660;
 extern u32 lbl_8047A664;
 #if 0
 asm void fn_8002ACB8(void) {
@@ -957,9 +957,9 @@ s32 fn_8002ACB8(void* r3, u8* r4) {
         break;
     case 3:
         if (ctx + 0x20 != NULL) {
-            if ((s32)*(volatile u32*)&lbl_8047A660 > 0) {
-                *(u32*)(ctx + 0x778) += *(volatile u32*)&lbl_8047A660;
-                *(u32*)(ctx + 0x77C) += *(volatile u32*)&lbl_8047A660;
+            if ((s32)lbl_8047A660 > 0) {
+                *(u32*)(ctx + 0x778) += lbl_8047A660;
+                *(u32*)(ctx + 0x77C) += lbl_8047A660;
                 lbl_8047A660 = 0;
             }
             if ((s32)lbl_8047A664 > 0) {
@@ -2262,7 +2262,7 @@ extern void* memcpy(void* dst, const void* src, u32 n);
 extern void* memset(void* dst, int val, u32 n);
 extern u32 lbl_8047A3DC;
 extern u32 lbl_8047A3D8;
-extern u32 lbl_8047A660;
+extern volatile u32 lbl_8047A660;
 extern u32 lbl_8047A664;
 extern u32 lbl_80478E54;
 extern u32 lbl_80478E44;
@@ -2284,7 +2284,7 @@ asm void fn_8002C408(void) {
 static inline u32 shopGetMoney(u8 mode, ShopWork* work)
 {
     extern u32 heroGetStatus(u8* ptr, u32 selector, u32 idx);
-    extern u32 lbl_8047A660;
+    extern volatile u32 lbl_8047A660;
     extern u32 lbl_8047A664;
 
     switch (mode) {
@@ -2381,7 +2381,6 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     s32 answer;
     s32 room;
     s32 ret;
-    ShopWork* work;
     u8* slot;
     u8 name;
     u8 se;
@@ -2415,9 +2414,8 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     done = 0;
     switch (type) {
     case 2:
-        work = &params.work;
-        fn_80142A88(work, 0xeb);
-        fn_80142A88(work->head + 0x3ac, 0xeb);
+        fn_80142A88(&params.work, 0xeb);
+        fn_80142A88(params.work.head + 0x3ac, 0xeb);
         params.work.credit0 = 0;
         params.work.credit1 = 0;
         params.work.exitFlag = 0;
@@ -2458,7 +2456,6 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
     }
     kind = mode;
-    work = &params.work;
     while (done == 0) {
         if ((s32)lbl_804788A8 != 0) {
             for (i = 0; i < 5; i++) {
@@ -2473,7 +2470,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         itemDataBiosGetPtr(done);
         n = (u16)itemDataBiosGetCoupon();
         if (n > 0) {
-            n = (s32)shopGetMoney(type, work) / n;
+            n = (s32)shopGetMoney(type, &params.work) / n;
             if (n > 0x63) {
                 n = 0x63;
             }
@@ -2525,10 +2522,10 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             room = (u16)pcboxGetItemCapacity(0, done);
             break;
         case 3:
-            if (work != NULL) {
+            if (&params.work != NULL) {
                 room = 0;
-                slot = (u8*)work;
-                for (i = 0; i < work->count; i++) {
+                slot = (u8*)&params.work;
+                for (i = 0; i < params.work.count; i++) {
                     if (itemBiosGetItemDataId(slot) == (u16)done) {
                         room += (u16)(999 - itemBiosGetNum(slot));
                     } else if (itemBiosGetItemDataId(slot) == 0) {
@@ -2549,7 +2546,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             continue;
         }
         fn_8002A1C4((u8*)mapIdx, 6, -1);
-        fn_80029EF4((void*)total, done, qty, mode, work);
+        fn_80029EF4((void*)total, done, qty, mode, &params.work);
         fn_80166AB8(0x3cc, 0, 0);
         if ((u8)mode != 4) {
             continue;
@@ -2562,7 +2559,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         }
     confirm:
         if (kind == 2 || kind == 3) {
-            if (work->exitFlag == 0) {
+            if (params.work.exitFlag == 0) {
                 winMsgOpenWithSE(2, fn_80029FAC(&se2, mapIdx, 0xd, -1), 1, 0, se2);
                 answer = menuSubOpenYesNo(0, -1, -1, 0);
                 winMsgClose(1);
@@ -2584,16 +2581,16 @@ void fn_8002C408(s32 mapIdx, u32 mode)
                     name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
                     winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
                     memset(&inv, 0, sizeof(inv));
-                    inv.credit0 = work->credit0;
-                    inv.credit1 = work->credit1;
-                    inv.field764 = work->field764;
+                    inv.credit0 = params.work.credit0;
+                    inv.credit1 = params.work.credit1;
+                    inv.field764 = params.work.field764;
                     inv.zero = 0;
-                    inv.count = work->count;
+                    inv.count = params.work.count;
                     for (i = 0; i < inv.count; i++) {
-                        if (i < 0 || i > work->count) {
+                        if (i < 0 || i > params.work.count) {
                             id = 0;
                         } else {
-                            slot = (u8*)work + i * 4;
+                            slot = (u8*)&params.work + i * 4;
                             id = itemBiosGetItemDataId(slot);
                             if (id != 0) {
                                 inv.items[i].num = itemBiosGetNum(slot);
