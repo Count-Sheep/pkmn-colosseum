@@ -1075,12 +1075,12 @@ void fn_80062334(void)
     state->field35C = lbl_8047BF90;
     lbl_803A9A60.field360 = lbl_8047BF70;
     lbl_803A9A60.field364 = lbl_8047BF90;
-    lbl_803A9A60.transitions.target[1] = lbl_8047BF60;
+    lbl_803A9A60.transitions.target[1] = 0.0f;
     lbl_803A9A60.transitions.current[1] = lbl_8047BFBC;
-    lbl_803A9A60.transitions.active[1] = lbl_8047BF60;
-    lbl_803A9A60.transitions.target[0] = lbl_8047BF60;
+    lbl_803A9A60.transitions.active[1] = 0.0f;
+    lbl_803A9A60.transitions.target[0] = 0.0f;
     lbl_803A9A60.transitions.current[0] = lbl_8047BFC0;
-    lbl_803A9A60.transitions.active[0] = lbl_8047BF60;
+    lbl_803A9A60.transitions.active[0] = 0.0f;
 }
 #endif
 
