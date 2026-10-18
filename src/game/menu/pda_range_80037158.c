@@ -8224,27 +8224,49 @@ extern f32 lbl_8047BDB0;
 extern f32 lbl_8047BDB4;
 extern f32 lbl_8047BDB8;
 
-/* Mail-list backdrop: fade panel, scanlines, and the sheared page edge. */
-#pragma peephole off
-s32 fn_800495C8(void* work, PdaSprite* sprite)
+static inline void pda_800495C8_Scanline(PdaSprite* sprite, s16 y, s32 alpha)
 {
     extern u8 lbl_80314E08[];
     extern void fn_800D5648(f32 width);
     extern void fn_800D5BA0(s32 index, u32 color);
     extern void fn_800D61E4(s16 x, s16 y);
+    u32 color;
+
+    fn_800D88DC(1);
+    fn_800D888C(6);
+    fn_800D7820(lbl_80314E08);
+    fn_800D6A00(1);
+    fn_800D5648(1.0f);
+    fn_800D67BC(2);
+    fn_800D61E4(0, y);
+    color = alpha | 0x00800000;
+    fn_800D5BA0(0, color);
+    fn_800D61E4(sprite->x, y);
+    fn_800D5BA0(0, color);
+    fn_800D6728();
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_800495C8_RowLine (fn_800495C8) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_800495C8_RowLine(PdaSprite* sprite, f32 y, s32 alpha)
+{
+    s16 row = 480.0f * y;
+
+    pda_800495C8_Scanline(sprite, row, alpha);
+}
+
+/* Mail-list backdrop: fade panel, scanlines, and the sheared page edge. */
+#pragma peephole off
+s32 fn_800495C8(void* work, PdaSprite* sprite)
+{
+    extern u8 lbl_80314E08[];
+    extern void fn_800D5BA0(s32 index, u32 color);
+    extern void fn_800D61E4(s16 x, s16 y);
     u8* G = lbl_803A6A60;
     u8* data;
-    f32 kOne;
-    f32 kAlpha;
     f32 top;
-    f32 kMin;
-    f32 kScale;
-    f32 kMul;
-    f32 kDiv;
     f32 y;
     u8 fade;
     u32 color;
-    s16 row;
     s32 j;
     s32 i;
     s32 alpha;
@@ -8302,46 +8324,18 @@ s32 fn_800495C8(void* work, PdaSprite* sprite)
     fn_800D6728();
 
     for (i = 0; i < 0x1e0; i += 4) {
-        fn_800D88DC(1);
-        fn_800D888C(6);
-        fn_800D7820(lbl_80314E08);
-        fn_800D6A00(1);
-        fn_800D5648(1.0f);
-        fn_800D67BC(2);
-        fn_800D61E4(0, i);
-        fn_800D5BA0(0, 0x00800080);
-        fn_800D61E4(sprite->x, i);
-        fn_800D5BA0(0, 0x00800080);
-        fn_800D6728();
+        pda_800495C8_Scanline(sprite, i, 0x80);
     }
 
     top = **(f32**)(data + 8);
-    kAlpha = 255.0f;
-    kOne = 1.0f;
-    kDiv = 12.0f;
-    kMul = 4.0f;
-    kScale = 480.0f;
-    kMin = 0.0f;
     for (j = 0; j < 12; j++) {
-        fade = (s32)(kAlpha * (kOne - (f32)j / kDiv)) & 0xff;
-        y = top - kMul * (f32)j / kScale;
-        if (y < kMin) {
-            y = y + kOne;
+        fade = (s32)(255.0f * (1.0f - (f32)j / 12.0f));
+        y = top - 4.0f * (f32)j / 480.0f;
+        if (y < 0.0f) {
+            y += 1.0f;
         }
-        row = kScale * y;
-        fn_800D88DC(1);
-        fn_800D888C(6);
-        fn_800D7820(lbl_80314E08);
-        fn_800D6A00(1);
-        fn_800D5648(1.0f);
-        fn_800D67BC(2);
-        fn_800D61E4(0, row);
         /* RULE-EXCEPTION(user-approved): redundant mask on the u8 row alpha, chosen for code generation (fn_800495C8) - see docs/RULE_EXCEPTIONS.md */
-        color = (fade & 0xff) | 0x00800000;
-        fn_800D5BA0(0, color);
-        fn_800D61E4(sprite->x, row);
-        fn_800D5BA0(0, color);
-        fn_800D6728();
+        pda_800495C8_RowLine(sprite, y, fade & 0xff);
     }
     return 0;
 }
