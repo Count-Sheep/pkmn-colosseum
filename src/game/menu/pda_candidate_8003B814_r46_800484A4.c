@@ -558,8 +558,7 @@ void fn_80048918(void)
     *(f32*)((u8*)&lbl_803A6818 + 0x70) = lbl_8047BC94;
     *(f32*)((u8*)&lbl_803A6818 + 0x74) = lbl_8047BC94;
     *(f32*)((u8*)&lbl_803A6818 + 0x64) = lbl_8047BCF0;
-    anim = fn_801CBA0C(0xd171000);
-    *(void**)((u8*)&lbl_803A6818 + 0x10c) = anim;
+    anim = *(void**)((u8*)&lbl_803A6818 + 0x10c) = fn_801CBA0C(0xd171000);
     res = GSresGetResource((u32)fn_80113F48(), (u32)anim);
     *(void**)((u8*)&lbl_803A6818 + 0x110) = res;
     GSmodelSetAnimRate(res, lbl_8047BD18);
