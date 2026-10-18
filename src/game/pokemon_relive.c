@@ -927,6 +927,7 @@ void reliveCeremonyAll(u32 r3)
 void reliveMain(void)
 
 {
+    struct ReliveResetPair { u32 first; u32 second; } *resetPair;
     extern u32 lbl_80478DA8;
     extern u32 lbl_8047B668;
     extern u32 lbl_8047B66C;
@@ -988,8 +989,9 @@ void reliveMain(void)
     fadeCheck(1);
 				    wazaSequenceSysRelease();
 						    lbl_804782BC[0] = -1;
-						    lbl_8047B668 = 0xffffffff;
-						    lbl_8047B66C = 0xffffffff;
+						    resetPair = (struct ReliveResetPair*)&lbl_8047B668;
+						    resetPair->first = 0xffffffff;
+						    resetPair->second = 0xffffffff;
 				    *(u16 *)((u8 *)lbl_804782BC + 4) = 0;
     lbl_804782BC[2] = 0;
     fn_800FF660();
