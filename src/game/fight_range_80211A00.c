@@ -14885,6 +14885,30 @@ void fn_8021FAD4(void);
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_EXACT_802128D0_ONLY || FIGHT_RANGE_EXACT_80213A78_ONLY */
 
 #if defined(FIGHT_RANGE_ALL) || defined(FIGHT_RANGE_80220868_ONLY)
+/* Status id of battle stat `stat` (1 attack ... 7 evasion) for pokemonGetStatus;
+ * both stat loops of fn_80220868 use it. */
+static inline u32 fn_80220868_statusId(u8 stat)
+{
+    switch (stat) {
+    case 1:
+        return 0xe6;
+    case 2:
+        return 0xe7;
+    case 3:
+        return 0xea;
+    case 4:
+        return 0xe8;
+    case 5:
+        return 0xe9;
+    case 6:
+        return 0xeb;
+    case 7:
+        return 0xec;
+    default:
+        return 0;
+    }
+}
+
 void fn_80220868(void)
 {
     extern u32 fightTargetGetPtrAsNowFightType();
@@ -14897,7 +14921,6 @@ void fn_80220868(void)
     u32 statusId;
     u32 ctx;
     u32 side;
-    int flag4;
     u16 ability;
     u8 mask;
     u8 status;
@@ -14925,33 +14948,7 @@ void fn_80220868(void)
 
         while (mask != 0) {
             if (mask & 1) {
-                switch (bitIndex) {
-                case 1:
-                    statusId = 0xe6;
-                    break;
-                case 2:
-                    statusId = 0xe7;
-                    break;
-                case 3:
-                    statusId = 0xea;
-                    break;
-                case 4:
-                    statusId = 0xe8;
-                    break;
-                case 5:
-                    statusId = 0xe9;
-                    break;
-                case 6:
-                    statusId = 0xeb;
-                    break;
-                case 7:
-                    statusId = 0xec;
-                    break;
-                default:
-                    statusId = 0;
-                    break;
-                }
-
+                statusId = fn_80220868_statusId(bitIndex);
                 status = (u8)pokemonGetStatus(ctx, 0, statusId, 0);
                 if ((flags & 8) != 0) {
                     if (status != 0) {
@@ -14991,33 +14988,7 @@ void fn_80220868(void)
 
         while (mask != 0) {
             if (mask & 1) {
-                switch (bitIndex) {
-                case 1:
-                    statusId = 0xe6;
-                    break;
-                case 2:
-                    statusId = 0xe7;
-                    break;
-                case 3:
-                    statusId = 0xea;
-                    break;
-                case 4:
-                    statusId = 0xe8;
-                    break;
-                case 5:
-                    statusId = 0xe9;
-                    break;
-                case 6:
-                    statusId = 0xeb;
-                    break;
-                case 7:
-                    statusId = 0xec;
-                    break;
-                default:
-                    statusId = 0;
-                    break;
-                }
-
+                statusId = fn_80220868_statusId(bitIndex);
                 status = (u8)pokemonGetStatus(ctx, 0, statusId, 0);
                 if (status < 0xc) {
                     command = (baseCommand + bitIndex) & 0xffff;
@@ -15037,24 +15008,17 @@ void fn_80220868(void)
         }
     }
 
-    if ((flag4 = flags & 4) != 0 && count < 2) {
+    if ((flags & 4) && count < 2) {
         lbl_8047B610 += 4;
-        goto done;
+    } else if (count != 0 && lbl_8047B64A == 0) {
+        fn_80220B8C(command);
+        if ((flags & 4) && count > 1) {
+            lbl_8047B64A = 1;
+        }
+        lbl_8047B610 += 4;
+    } else {
+        lbl_8047B610 += 4;
     }
-    if (count == 0 || lbl_8047B64A != 0) {
-        goto advance;
-    }
-    fn_80220B8C(command);
-    if (flag4 != 0 && count > 1) {
-        lbl_8047B64A = 1;
-    }
-    lbl_8047B610 += 4;
-    goto done;
-
-advance:
-    lbl_8047B610 += 4;
-done:
-    return;
 }
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80220868_ONLY */
 
