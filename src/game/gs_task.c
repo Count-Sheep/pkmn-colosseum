@@ -459,7 +459,7 @@ extern void fn_8001EA98(s32, s32, s32, s32);
 extern void fn_8001E4B4(s32, s32, s32, s32, s32, s32);
 extern s32 sprintf(char*, const char*, ...);
 extern s32 fn_800FAEF8(s32, s32, s32, ...);
-extern u32 fn_801906A0(u32);
+extern u32 fn_801906A0(s32);
 extern u8 lbl_80478838[8];
 extern u8 lbl_803A19C8[];
 extern u8 lbl_80266688[];
@@ -497,15 +497,11 @@ static inline u16 gsTaskFlagGetId(s32 index) {
     return id;
 }
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80008868(u8* window)
 {
     GsTaskFlagConfig* config;
     s32 flagCount;
-    s32 right;
-    volatile s32 width;
+    s32 width;
     s32 pageSize;
     s32 row;
     s32 rowHeight;
@@ -529,7 +525,8 @@ void fn_80008868(u8* window)
     }
 
     rowHeight = visibleCount * 13;
-    fn_8001EA98(30, 40, width + 25, rowHeight);
+    /* RULE-EXCEPTION(user-approved): codegen-only identity cast; reading width through its address keeps it a stack local that is reloaded after each call and hoisted out of the row loop, as in retail - see docs/RULE_EXCEPTIONS.md */
+    fn_8001EA98(30, 40, *(s32*)&width + 25, rowHeight);
 
     if (*(s16*)lbl_80478838 > 0) {
         center = width / 2;
@@ -543,7 +540,6 @@ void fn_80008868(u8* window)
                     rowHeight + 47, center + 30, rowHeight + 57);
     }
 
-    right = width;
     row = 0;
     while (row < visibleCount) {
         if (*(s16*)(lbl_80478838 + 2) == row) {
@@ -557,26 +553,22 @@ void fn_80008868(u8* window)
                 gsTaskFlagGetId(flagIndex));
         fn_800FAEF8(30, rowY, color, lbl_803A19C8);
 
-        fn_800FAEF8(right + 30, rowY, color, lbl_8047B6C8,
+        fn_800FAEF8(width + 30, rowY, color, lbl_8047B6C8,
                     fn_801906A0(gsTaskFlagGetId(row + *(s16*)lbl_80478838)));
         rowY += 13;
         row++;
     }
 }
-#pragma pop
 
 /* 0x80008C40 | 0x538 */
 extern u8* windowGetKeyInfo(void);
-extern void fn_80190528(u32);
-extern void fn_801903B0(u32);
+extern void fn_80190528(s32);
+extern void fn_801903B0(s32);
 typedef struct GsTaskFlagCursor {
     s16 top;
     s16 cursor;
 } GsTaskFlagCursor;
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
-#pragma push
-#pragma peephole off
 void fn_80008C40(u8* window) {
     u16 repeat;
     u16 trigger;
@@ -631,7 +623,6 @@ void fn_80008C40(u8* window) {
     *(GsTaskFlagCursor*)lbl_80478838 = pos;
     *(u32*)(window + 0x80) = gsTaskFlagGetId(pos.top + pos.cursor);
 }
-#pragma pop
 #endif /* GS_TASK_RANGE_RESIDUAL_80008868 */
 
 #if !defined(GS_TASK_RANGE_SPLIT) || defined(GS_TASK_RANGE_RESIDUAL_80006908)
