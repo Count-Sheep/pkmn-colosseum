@@ -3890,6 +3890,16 @@ config.libs = [
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: retail's 20.0f clamp and 0.0f compare literals.
+            Object(
+                Matching,
+                "game/menu/pda_exact_80044630.c",
+                constant_import=[{"symbol": "lbl_8047BC98", "offset": 0, "expected": "41a00000"},
+                                 {"symbol": "lbl_8047BC94", "offset": 4, "expected": "00000000"}],
+                mw_version="GC/1.3",
+                extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 CodeCandidate,
                 "game/menu/pda_candidate_8003B814_r46_80044630.c",
