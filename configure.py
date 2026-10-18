@@ -2541,7 +2541,7 @@ config.libs = [
                     (Matching, "game/wazaViewer_exact_801D53D8.c"),
                     (Matching, "game/wazaViewer_candidate_801D5464.c"),
                     (Matching, "game/wazaViewer_exact_801D56B0.c"),
-                    (CodeCandidate, "game/wazaViewer_candidate_801D5A94.c"),
+                    (Matching, "game/wazaViewer_candidate_801D5A94.c"),
                     (Matching, "game/wazaViewer_exact_801D5DA0.c"),
                     (CodeCandidate, "game/wazaViewer_candidate_801D56B0.c"),
                     (Matching, "game/wazaViewer_exact_801D624C.c"),
