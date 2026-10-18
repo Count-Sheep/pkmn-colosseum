@@ -2171,6 +2171,22 @@ s32 fn_8003CE1C(s32 index)
 #pragma pop
 
 
+static inline u16 pda_8003D818_LoadIds(void)
+{
+    extern u16* lbl_8047A4E4;
+    extern u16 memoDataGetPokemonID(u16* data, u32 index);
+    extern u16 memoDataGetCount(u16* data);
+    u32 index;
+    u16 count;
+
+    count = 0;
+    for (index = 0; (u16)index < memoDataGetCount(0); index++) {
+        lbl_8047A4E4[(u16)index] = memoDataGetPokemonID(0, index);
+        count++;
+    }
+    return count;
+}
+
 #pragma peephole off
 u16 fn_8003D818(void)
 {
@@ -2180,21 +2196,9 @@ u16 fn_8003D818(void)
     extern u16 memoDataGetCount(u16* data);
     extern void fn_8003E394(void);
     u8* work;
-    struct {
-        u16 count;
-        u32 index;
-    } memo;
 
     work = (u8*)&lbl_803A6818;
-    memo.count = 0;
-    memo.index = memo.count;
-    while ((u16)memo.index < memoDataGetCount(0)) {
-        lbl_8047A4E4[(u16)memo.index] =
-            memoDataGetPokemonID(0, memo.index);
-        memo.count++;
-        memo.index++;
-    }
-    lbl_8047A4E8 = memo.count;
+    lbl_8047A4E8 = pda_8003D818_LoadIds();
     work[0x158] = 0;
     work[0x159] = 0;
     work[0x15b] = 0;
@@ -5113,12 +5117,30 @@ s32 fn_8003D1FC(void)
     return 0;
 }
 
+/* Color variant of the memo entry; bails out before loading when no work slot exists. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D4C8_Color (fn_8003D4C8) - see docs/RULE_EXCEPTIONS.md */
+static inline u8 pda_8003D4C8_Color(u16 id)
+{
+    u32 work = lbl_8047A4E0;
+    void* data;
+
+    if (work != 0) {
+        work = pdaLoadPokemonId(id);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetColor(data, 0);
+            }
+            return 0;
+        }
+    }
+    return 0;
+}
+
 /* Rebuild the memo index table, optionally filtered by the active color tab. */
 #pragma peephole off
 u16 fn_8003D4C8(void)
 {
-    extern u16 memoDataGetCount(s32 a);
-    extern u16 memoDataGetPokemonID(s32 a, u16 index);
     extern void fn_8003D8CC(void);
     extern void fn_8003DC54(void);
     extern void fn_8003E394(void);
@@ -5127,12 +5149,7 @@ u16 fn_8003D4C8(void)
     u16 count;
     u16 total;
 
-    count = 0;
-    for (i = 0; i < memoDataGetCount(0); i++) {
-        lbl_8047A4E4[i] = memoDataGetPokemonID(0, i);
-        count++;
-    }
-    lbl_8047A4E8 = count;
+    lbl_8047A4E8 = pda_8003D818_LoadIds();
     fn_8003D8CC();
     if (*(s8*)((u8*)&lbl_803A6818 + 0x159) != 0) {
         count = 0;
@@ -5141,7 +5158,7 @@ u16 fn_8003D4C8(void)
             if ((id & 0x8000) == 0) {
                 pdaLoadPokemonId(id);
                 if (*(s8*)((u8*)&lbl_803A6818 + 0x159) ==
-                    pdaGetPokemonColor(id)) {
+                    pda_8003D4C8_Color(id)) {
                     buf[count] = id;
                     count++;
                 }
