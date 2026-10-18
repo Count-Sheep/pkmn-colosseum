@@ -1123,7 +1123,6 @@ void fn_8007D978(MenuCardEWindow* window) {
     extern u8* fn_80082EA4(MenuCardEEntry* entry, s8 layer, s8 row, s8 column);
     MenuCardEMatrixWork* work;
     MenuCardEEntry* entries[3];
-    MenuCardEEntry** entryp;
     MenuCardEEntry* entry;
     MenuCardEWindow* other;
     MenuCardESprite* sprite;
@@ -1152,10 +1151,11 @@ void fn_8007D978(MenuCardEWindow* window) {
     s32 blink;
     s16 baseX;
     s16 baseY;
-    s16 stepX;
     s16 stepY;
+    MenuCardEEntry** entryp;
     s8 row;
     s8 column;
+    s16 stepX;
     s8 count;
     s32 held;
 
