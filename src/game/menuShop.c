@@ -2496,9 +2496,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
             winMsgClose(1);
         }
         fn_8002A1C4((u8*)mapIdx, 0xe, -1);
-        return 1;
-    }
-    if (fn_801D0748(4, 2, 0) != 4) {
+    } else if (fn_801D0748(4, 2, 0) != 4) {
         memcpy((void*)savedataGetStatus(NULL, 3), (void*)lbl_8047A3DC, 0x7198);
         heroSetStatus(NULL, 0xd, lbl_8047A3D8);
     }
