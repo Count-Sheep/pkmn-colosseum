@@ -5880,8 +5880,8 @@ void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* baseTexture,
         x = lbl_80478BA8[spot][0] + (s32)(3.4f * xOffset);
         startPixel = (s16)(y * baseWidth + x);
         for (row = 0; row < spotHeight; row++) {
-            outputIndex = startPixel + row * baseWidth;
             sourceIndex = row * spotWidth;
+            outputIndex = startPixel + row * baseWidth;
             if (outputIndex >= 0) {
                 output = outputPixels + outputIndex;
                 if (output <= lastOutputPixel) {
