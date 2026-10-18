@@ -3372,7 +3372,7 @@ s32 fn_80022050(s32 arg0, s32* arg1) {
 #endif
 
 /* fn_8002217C - 0x8002217C | size: 0x2fc */
-#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_8002217C)
+#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_EXACT_8002217C)
 s32 fn_8002217C(u32 wazaDataId, u32* result) {
     typedef struct TitleEffectEntry {
         s32 code;
@@ -3475,7 +3475,9 @@ s32 fn_8002217C(u32 wazaDataId, u32* result) {
     }
     return 1;
 }
+#endif
 
+#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_CANDIDATE_80022478)
 /* fn_80022478 - 0x80022478 | size: 0x2a8 */
 extern void jumptable_802E4F00();
 extern u8 lbl_80478888[8];
@@ -3572,7 +3574,9 @@ s32 fn_80022478(u32 arg0, u32* arg1) {
         return 1;
     }
 }
+#endif
 
+#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_EXACT_80022720)
 /* fn_80022720 - 0x80022720 | size: 0x114
  *
  * fn_80022720(u32 arg0, u32* arg1) -> s32  -- error-report dispatcher for
@@ -3591,11 +3595,7 @@ s32 fn_80022478(u32 arg0, u32* arg1) {
  * Calls winMsgOpen(2, msg_from_row_iVar1, 1, 0) then winMsgClose(1) to
  * print the error message, writes 0 to *arg1, returns 0.
  *
- * Status: 70.5% matched. Blocker: target asm batches ALL 10 lwz loads
- * first THEN ALL stw stores; our CW compile interleaves load-store-load-
- * store. This is CW 1.3 scheduler behavior we have not been able to
- * force from source (tried u32* src, temp-var pair hoist, array init
- * syntax, scheduling pragmas).
+ * The table copy and dispatcher match in the isolated 0x80022720 unit.
  */
 extern u8 lbl_80266C54[];
 typedef struct TitleMsgEnt {
@@ -3621,6 +3621,9 @@ s32 fn_80022720(u32 arg0, u32* arg1) {
     *arg1 = 0;
     return 0;
 }
+#endif
+
+#if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_CANDIDATE_80022834)
 #pragma optimization_level 4
 
 /* fn_80022834 - 0x80022834 | size: 0x308 */
