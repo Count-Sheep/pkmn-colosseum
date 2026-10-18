@@ -8506,22 +8506,41 @@ extern void menuSpriteBiosGetPtr(s32 id);
 extern u32 menuGetCursorItemID(s32 menu);
 extern void fn_8004A7A8(void* work, PdaSprite* sprite);
 
+/* Show a header tab and centre it on its measured width plus the tab's wave offset. */
+static inline void pda_800499BC_PlaceTab(PdaSprite* sprite, s32 width, s16 wave)
+{
+    s16 left;
+
+    sprite->flags |= 2;
+    left = width - 0x36;
+    left += wave;
+    sprite->field_50 = left + 0xa8;
+}
+
 /* Per-widget update for the mail screen's sprites and captions. */
 #pragma peephole off
 s32 fn_800499BC(void* work, PdaSprite* sprite)
 {
+    extern u32 fn_80005748(void);
     extern f64 sin(f64 x);
     extern void windowDrawSprite2(s16 x, s16 y, s16 w, s16 h, u32 color,
                                   void* work, s32 id, s32 flag);
     PdaPairS16 wave[2];
     PdaPairS16 icon[2];
-    s32 idx;
+    /* RULE-EXCEPTION(user-approved): volatile icon index in fn_800499BC, kept in its stack slot as retail does - see docs/RULE_EXCEPTIONS.md */
+    volatile s32 idx;
+    s16* pos;
     s32 i;
     s32 id;
-    s32 cursor;
+    u16 cursor;
     s32 msg;
     u8* row;
     u32 value;
+    s32 n;
+    s32 x;
+    u8* layout;
+    u32 digit;
+    s16 left;
     u32 status;
 
     fn_8004A7A8(work, sprite);
@@ -8529,6 +8548,7 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
     case 0x6e1:
         icon[0] = lbl_8047BD70;
         icon[1] = lbl_8047BD74;
+        pos = (s16*)(lbl_802EF0A8 + 0xc09e);
         status = heroGetStatus(0, 0xe, 0);
         for (i = lbl_804788F0 - 1; i >= 0; i--) {
             if (lbl_802E61D8[i] <= status) {
@@ -8546,8 +8566,8 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         menuSpriteBiosGetPtr(id);
         windowDrawSprite2(
             (s16)((s32)*(f32*)(lbl_803A6A60 + 0x30) +
-                  (*(s16*)(lbl_802EF0A8 + 0xc09e) - sprite->field_50)),
-            (s16)(*(s16*)(lbl_802EF0A8 + 0xc0a0) - sprite->field_52),
+                  (pos[0] - sprite->field_50)),
+            (s16)(pos[1] - sprite->field_52),
             sprite->x, sprite->y, sprite->alpha | -0x100, work, id, 0);
         break;
     case 0x435:
@@ -8556,24 +8576,29 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         sprite->colorR = row[0];
         sprite->colorG = row[1];
         sprite->colorB = row[2];
-        if (*(s8*)(lbl_803A6A60 + 0) == 1) {
+        switch (*(s8*)(lbl_803A6A60 + 0)) {
+        case 1:
             if (*(s8*)(lbl_803A6A60 + 1) == 2) {
                 sprite->flags &= ~2;
             } else {
                 sprite->flags |= 2;
             }
+            break;
         }
         break;
     case 0x433:
     case 0x436:
-        if (*(s8*)(lbl_803A6A60 + 0) == 1) {
+        switch (*(s8*)(lbl_803A6A60 + 0)) {
+        case 1:
             if (*(s8*)(lbl_803A6A60 + 1) == 1) {
                 sprite->flags |= 2;
             } else {
                 sprite->flags &= ~2;
             }
-        } else {
+            break;
+        default:
             sprite->flags &= ~2;
+            break;
         }
         break;
     case 0x438:
@@ -8626,15 +8651,15 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
             }
         }
         break;
+    case 0x439:
+        *(s32*)(lbl_803A6A60 + 0x20) = GSmsgGetRect(sprite->messageId) >> 16;
+        break;
     case 0x6e7:
     case 0x6e8:
     case 0x6e9:
     case 0x75d:
     case 0x75e:
     case 0x75f:
-    case 0x439:
-        *(s32*)(lbl_803A6A60 + 0x20) = GSmsgGetRect(sprite->messageId) >> 16;
-        break;
     case 0x760:
     case 0x761:
     case 0x762:
@@ -8643,8 +8668,13 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
     case 0x765:
         fn_8004B598((s32)work, sprite, sprite->eventId);
         break;
+    case 0x6dd:
+    case 0x6e2:
+        break;
     case 0x754:
-        msgctrlSetValue(0x4c, fn_80005748());
+        /* RULE-EXCEPTION(user-approved): scalar reuse of digit for the play time in fn_800499BC - see docs/RULE_EXCEPTIONS.md */
+        digit = fn_80005748();
+        msgctrlSetValue(0x4c, digit);
         break;
     case 0x755:
         msgctrlSetValue(0x50, heroGetStatus(0, 0xd, 0));
@@ -8653,22 +8683,21 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         msgctrlSetValue(0x50, heroGetStatus(0, 0xc, 0));
         break;
     case 0x757:
-        sprite->field_50 =
-            (s16)(*(s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c + 2) +
-                  (s32)*(f32*)(lbl_803A6A60 + 0x30));
+        pos = (s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c);
+        sprite->field_50 = pos[1] + (s32)*(f32*)(lbl_803A6A60 + 0x30);
         spriteSetEnv(fn_800FE6D0(
             (s16)(*(s16*)((u8*)work + 0x84) + sprite->field_50),
             (s16)(*(s16*)((u8*)work + 0x86) + sprite->field_52)));
-        sprite->field_50 =
-            (s16)(*(s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c + 2) +
-                  (s32)*(f32*)(lbl_803A6A60 + 0x30));
-        value = heroGetStatus(0, 2, 0);
-        idx = sprite->x - 0x20;
-        for (i = 0; i < 5; i++) {
-            idx -= 0xd;
-            msgctrlSetValue(0x34, value % 10);
+        pos = (s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c);
+        sprite->field_50 = pos[1] + (s32)*(f32*)(lbl_803A6A60 + 0x30);
+        value = heroGetStatus(0, 2, 0) & 0xffff;
+        x = sprite->x - 0x20;
+        for (n = 0; n < 5; n++) {
+            x -= 0xd;
+            digit = value % 10;
             value = value / 10;
-            fn_800FB680(idx + 0x24, 0, sprite->alpha | -0x100LL, (void*)0xca);
+            msgctrlSetValue(0x34, digit);
+            fn_800FB680(x + 0x24, 0, sprite->alpha | -0x100, (void*)0xca);
         }
         break;
     case 0x777:
@@ -8697,104 +8726,95 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
     case 0x6e6:
         wave[0] = lbl_8047BD98;
         wave[1] = lbl_8047BD9C;
-        row = lbl_802EF0A8 + sprite->eventId * 0x1c;
+        layout = lbl_802EF0A8 + sprite->eventId * 0x1c;
         switch (*(s8*)(lbl_803A6A60 + 0)) {
         case 0:
             if (sprite->eventId == 0x6e3) {
-                sprite->field_50 = (s16)(s32)(
+                sprite->field_50 = (
                     4.0f *
                         (f32)sin(3.1415927f *
                                  (2.0f *
                                   (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))) +
-                    (f32)*(s16*)(row + 2));
-                wave[0].x = (s16)(s32)(
+                    (f32)*(s16*)(layout + 2));
+                wave[0].x = (
                     4.0f *
                     (f32)sin(3.1415927f *
                              (2.0f *
                               (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
+                sprite->field_50 = *(s16*)(layout + 2);
                 wave[0].x = 0;
-                sprite->field_50 = *(s16*)(row + 2);
             }
-            wave[0].x = wave[0].x - 0x1e;
+            wave[0].x -= 0x1e;
             break;
         case 1:
             if (sprite->eventId == 0x6e4) {
-                sprite->field_50 = (s16)(s32)(
+                sprite->field_50 = (
                     4.0f *
                         (f32)sin(3.1415927f *
                                  (2.0f *
                                   (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))) +
-                    (f32)*(s16*)(row + 2));
-                wave[0].y = (s16)(s32)(
+                    (f32)*(s16*)(layout + 2));
+                wave[0].y = (
                     4.0f *
                     (f32)sin(3.1415927f *
                              (2.0f *
                               (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
+                sprite->field_50 = *(s16*)(layout + 2);
                 wave[0].y = 0;
-                sprite->field_50 = *(s16*)(row + 2);
             }
-            wave[0].y = wave[0].y - 0x1e;
+            wave[0].y -= 0x1e;
             break;
         case 2:
             if (sprite->eventId == 0x6e5) {
-                wave[1].x = (s16)(s32)(
+                wave[1].x = (
                     4.0f *
                     (f32)sin(3.1415927f *
                              (2.0f *
                               (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
+                sprite->field_50 = *(s16*)(layout + 2);
                 wave[1].x = 0;
-                sprite->field_50 = *(s16*)(row + 2);
             }
-            wave[1].x = wave[1].x - 0x1e;
+            wave[1].x -= 0x1e;
             break;
         case 3:
             if (sprite->eventId == 0x6e6) {
-                sprite->field_50 = (s16)(s32)(
+                sprite->field_50 = (
                     4.0f *
                         (f32)sin(3.1415927f *
                                  (2.0f *
                                   (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))) +
-                    (f32)*(s16*)(row + 2));
-                wave[1].y = (s16)(s32)(
+                    (f32)*(s16*)(layout + 2));
+                wave[1].y = (
                     4.0f *
                     (f32)sin(3.1415927f *
                              (2.0f *
                               (2.0f * *(f32*)(lbl_803A6A60 + 0x40)))));
             } else {
+                sprite->field_50 = *(s16*)(layout + 2);
                 wave[1].y = 0;
-                sprite->field_50 = *(s16*)(row + 2);
             }
-            wave[1].y = wave[1].y - 0x1e;
+            wave[1].y -= 0x1e;
             break;
         default:
             break;
         }
         if (sprite->eventId == 0x6e5) {
             sprite->flags |= 2;
-            sprite->field_50 =
-                (s16)((s16)(*(s32*)(lbl_803A6A60 + 0x20) - 0x36) + wave[1].x +
-                      0xa8);
+            left = *(s32*)(lbl_803A6A60 + 0x20) - 0x36;
+            left += wave[1].x;
+            sprite->field_50 = left + 0xa8;
         }
         if (sprite->eventId == 0x6e3) {
-            sprite->flags |= 2;
-            sprite->field_50 =
-                (s16)((s16)(*(s32*)(lbl_803A6A60 + 0x18) - 0x36) + wave[0].x +
-                      0xa8);
+            pda_800499BC_PlaceTab(sprite, *(s32*)(lbl_803A6A60 + 0x18), wave[0].x);
         }
         if (sprite->eventId == 0x6e4) {
-            sprite->flags |= 2;
-            sprite->field_50 =
-                (s16)((s16)(*(s32*)(lbl_803A6A60 + 0x1c) - 0x36) + wave[0].y +
-                      0xa8);
+            pda_800499BC_PlaceTab(sprite, *(s32*)(lbl_803A6A60 + 0x1c), wave[0].y);
         }
         if (sprite->eventId == 0x6e6) {
-            sprite->flags |= 2;
-            sprite->field_50 =
-                (s16)((s16)(*(s32*)(lbl_803A6A60 + 0x24) - 0x36) + wave[1].y +
-                      0xa8);
+            pda_800499BC_PlaceTab(sprite, *(s32*)(lbl_803A6A60 + 0x24), wave[1].y);
         }
         if (sprite->eventId == 0x6e4) {
             if (fn_801902E0(0x3f0) != 0) {
