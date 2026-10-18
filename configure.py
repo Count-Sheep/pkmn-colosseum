@@ -7035,6 +7035,9 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/fight_range_80213A78.c",
+                constant_import=[
+                    {"symbol": "lbl_8047E610", "offset": 0, "expected": "4330000000000000"},
+                ],
                 mw_version="GC/2.0",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
