@@ -1286,8 +1286,7 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     x_mid = *(s16*)(refs.draw + 0x54) - x_mid - (GSmsgGetRect(0x14f) >> 16);
 
     /* scroll animation */
-    scroll_f = **(f32**)(refs.ctx + 0xc);
-    if (lbl_8047B980 != scroll_f && **(s32**)(refs.ctx + 0x14) != 0) {
+    if (lbl_8047B980 != (scroll_f = **(f32**)(refs.ctx + 0xc)) && **(s32**)(refs.ctx + 0x14) != 0) {
         if (scroll_f < lbl_8047B980) {
             slot_i--;
             dir_off = -1;
