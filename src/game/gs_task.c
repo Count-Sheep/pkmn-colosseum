@@ -544,8 +544,8 @@ void fn_80008868(u8* window)
                     rowHeight + 47, center + 30, rowHeight + 57);
     }
 
-    row = 0;
     right = width;
+    row = 0;
     while (row < visibleCount) {
         if (*(s16*)(lbl_80478838 + 2) == row) {
             color = 0xFF0000FF;
@@ -560,11 +560,8 @@ void fn_80008868(u8* window)
                 (u16)flagId);
         fn_800FAEF8(30, rowY, color, lbl_803A19C8);
 
-        flagIndex = row + *(s16*)lbl_80478838;
-        flagId = gsTaskFlagGetId(flagIndex);
-
         fn_800FAEF8(right + 30, rowY, color, lbl_8047B6C8,
-                    fn_801906A0((u16)flagId));
+                    fn_801906A0(gsTaskFlagGetId(row + *(s16*)lbl_80478838)));
         rowY += 13;
         row++;
     }
