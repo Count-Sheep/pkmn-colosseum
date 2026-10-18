@@ -9321,6 +9321,7 @@ extern void fn_8010A420(void* work);
 void fn_8003C7C0(void)
 {
     extern void _threadSwitch(void);
+    u32 work;
     u8* model;
     u8* tbl;
     u8* base;
@@ -9331,7 +9332,6 @@ void fn_8003C7C0(void)
     u16 entry;
     u16 rndId;
     s32 mode;
-    u32 work;
     u32 rnd;
     u32 handle;
     f32 step;
