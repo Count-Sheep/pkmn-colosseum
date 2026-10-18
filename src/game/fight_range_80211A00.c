@@ -11757,7 +11757,7 @@ void fn_80218018(void)
     u32 ability;
     u8 pp;
     u8 newPp;
-    u32 flags;
+    int flags;
     int callbackResult;
     u8* nextPc;
 
@@ -12877,7 +12877,7 @@ void fn_8021A054(void)
     u8 invalid;
     s8 slot;
     u8 pp;
-    u32 flags;
+    int flags;
 
     attacker = fightTargetGetPtrAsNowFightType(0x11, 0);
     pokemon = pokemonGetStatus(attacker, 0, 0xd9, 0);
@@ -14888,21 +14888,20 @@ void fn_8021FAD4(void);
 void fn_80220868(void)
 {
     extern u32 fightTargetGetPtrAsNowFightType();
-    extern u32 fightOutPokemonGetTokuseiDataId();
+    extern u16 fightOutPokemonGetTokuseiDataId(u32);
     extern u32 pokemonGetStatus();
     extern u8 fightSideIsJoutaiDataId();
     extern void fn_80220B8C();
     extern u8 lbl_8047B64A;
-    u8 flags;
+    int flags;
     u32 statusId;
-    u16 baseCommand;
     u32 ctx;
     u32 side;
     int flag4;
-    u32 ability;
+    u16 ability;
     u8 mask;
     u8 status;
-    u32 bitIndex;
+    u8 bitIndex;
     u32 command;
     s32 count;
 
@@ -14913,20 +14912,20 @@ void fn_80220868(void)
     side = fightTargetGetPtrAsNowFightType(2, ctx);
     ability = fightOutPokemonGetTokuseiDataId(ctx);
     mask = lbl_8047B610[2];
-    flags = lbl_8047B610[3];
+    /* RULE-EXCEPTION(user-approved): codegen-only cast - the (u8) on the u8 script byte stored into an int makes flags a late conversion temporary, which MWCC colours first (r31) as in retail - see docs/RULE_EXCEPTIONS.md */
+    flags = (u8)lbl_8047B610[3];
 
     if ((flags & 1) != 0) {
+        u16 baseCommand;
+
         baseCommand = 0x15;
         if ((flags & 2) != 0) {
             baseCommand = 0x2d;
         }
 
-        while ((u8)(s8)mask != 0) {
-            u32 currentMask;
-
-            currentMask = (u8)mask;
-            if ((currentMask & 1) != 0) {
-                switch ((u8)bitIndex) {
+        while (mask != 0) {
+            if (mask & 1) {
+                switch (bitIndex) {
                 case 1:
                     statusId = 0xe6;
                     break;
@@ -14956,19 +14955,19 @@ void fn_80220868(void)
                 status = (u8)pokemonGetStatus(ctx, 0, statusId, 0);
                 if ((flags & 8) != 0) {
                     if (status != 0) {
-                        command = ((u8)bitIndex + baseCommand) & 0xffff;
+                        command = (baseCommand + bitIndex) & 0xffff;
                         count++;
                     }
                 } else if (fightSideIsJoutaiDataId(side, 0x4c) == 0 &&
-                           (u16)ability != 0x1d && (u16)ability != 0x49 &&
-                           !((u16)ability == 0x33 && (u16)statusId == 0xeb) &&
-                           !((u16)ability == 0x34 && (u16)statusId == 0xe6) &&
+                           ability != 0x1d && ability != 0x49 &&
+                           !(ability == 0x33 && (u16)statusId == 0xeb) &&
+                           !(ability == 0x34 && (u16)statusId == 0xe6) &&
                            status != 0) {
-                    command = ((u8)bitIndex + baseCommand) & 0xffff;
+                    command = (baseCommand + bitIndex) & 0xffff;
                     count++;
                 }
             }
-            mask = (s32)currentMask >> 1;
+            mask = mask >> 1;
             bitIndex++;
         }
 
@@ -14980,18 +14979,19 @@ void fn_80220868(void)
             }
         }
     } else {
+        u16 baseCommand;
+        u32 statusId;
+        u8 status;
+
         if ((flags & 2) != 0) {
             baseCommand = 0x26;
         } else {
             baseCommand = 0xe;
         }
 
-        while ((u8)(s8)mask != 0) {
-            u32 currentMask;
-
-            currentMask = (u8)mask;
-            if ((currentMask & 1) != 0) {
-                switch ((u8)bitIndex) {
+        while (mask != 0) {
+            if (mask & 1) {
+                switch (bitIndex) {
                 case 1:
                     statusId = 0xe6;
                     break;
@@ -15020,11 +15020,11 @@ void fn_80220868(void)
 
                 status = (u8)pokemonGetStatus(ctx, 0, statusId, 0);
                 if (status < 0xc) {
-                    command = (baseCommand + (u8)bitIndex) & 0xffff;
+                    command = (baseCommand + bitIndex) & 0xffff;
                     count++;
                 }
             }
-            mask = (s32)currentMask >> 1;
+            mask = mask >> 1;
             bitIndex++;
         }
 
