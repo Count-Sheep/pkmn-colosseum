@@ -1,3 +1,4 @@
+/* RULE-EXCEPTION(user-approved): constant_import (temporary) - remove when this file is merged back into one unit - see docs/RULE_EXCEPTIONS.md */
 /**
  * @file pda_range_80037158.c
  * @brief PDA subsystem body, 0x80037158 - 0x8004B7EC.
@@ -611,11 +612,11 @@ void fn_80048918(void)
     *(f32*)((u8*)&lbl_803A6818 + 0x30) = 0.0f;
     *(f32*)((u8*)&lbl_803A6818 + 0x34) = 0.0f;
     *(f32*)((u8*)&lbl_803A6818 + 0x38) = 0.0f;
-    *(s32*)((u8*)&lbl_803A6818 + 0x0) = 0;
-    *(s32*)((u8*)&lbl_803A6818 + 0x28) = 0;
-    *(s32*)((u8*)&lbl_803A6818 + 0x14) = 0;
-    *(s32*)((u8*)&lbl_803A6818 + 0x4) = 0;
-    *(s32*)((u8*)&lbl_803A6818 + 0x20) = 0;
+    /* One zero for the five word resets; written separately, the front end's
+     * per-statement copies move retail's basic-block break past the 0x15a store. */
+    *(s32*)((u8*)&lbl_803A6818 + 0x20) = *(s32*)((u8*)&lbl_803A6818 + 0x4) =
+        *(s32*)((u8*)&lbl_803A6818 + 0x14) = *(s32*)((u8*)&lbl_803A6818 + 0x28) =
+        *(s32*)((u8*)&lbl_803A6818 + 0x0) = 0;
     *(f32*)((u8*)&lbl_803A6818 + 0x44) = 0.0f;
     *(s8*)((u8*)&lbl_803A6818 + 0x48) = 0;
     *(f32*)((u8*)&lbl_803A6818 + 0x64) = 1.5f;
