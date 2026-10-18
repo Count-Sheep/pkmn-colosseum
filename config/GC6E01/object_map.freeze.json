@@ -17,13 +17,13 @@
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2362332",
-    "matched_code_percent": 94.30693,
+    "matched_code": "2367700",
+    "matched_code_percent": 94.521225,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8586,
-    "matched_functions_percent": 98.95125,
-    "fuzzy_match_percent": 99.73613
+    "matched_functions": 8589,
+    "matched_functions_percent": 98.985825,
+    "fuzzy_match_percent": 99.754105
   },
   "unit_topology": [
     {
@@ -6742,12 +6742,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 64,
+          "size": 1216,
           "virtual_address": 2150558584
         }
       ],
       "total_code": 0,
-      "total_data": 64,
+      "total_data": 1216,
       "total_functions": 0
     },
     {
@@ -7315,32 +7315,27 @@
       "name": "main/game/gba/gba_misc_r58_8008AE18_prefix",
       "sections": [
         {
-          "name": ".data",
-          "size": 184,
-          "virtual_address": 2150558648
-        },
-        {
           "name": ".text",
-          "size": 6076,
+          "size": 3524,
           "virtual_address": 2148052504
         }
       ],
-      "total_code": 6076,
-      "total_data": 184,
-      "total_functions": 2
+      "total_code": 3524,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
-      "name": "main/game/data/data_802EEC70",
+      "name": "main/game/gba/gba_misc_exact_8008BBDC",
       "sections": [
         {
-          "name": ".data",
-          "size": 968,
-          "virtual_address": 2150558832
+          "name": ".text",
+          "size": 2552,
+          "virtual_address": 2148056028
         }
       ],
-      "total_code": 0,
-      "total_data": 968,
-      "total_functions": 0
+      "total_code": 2552,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
       "name": "main/game/gba/gba_misc_r58_8008C5D4_o1",
