@@ -13,8 +13,18 @@ typedef struct PdaVec3 {
     f32 z;
 } PdaVec3;
 
-extern void* GSsplineCreate(s32 a, s32 b, s32 count);
-extern void GSsplineAddControlVectorValue(void* spline, void* vec, f32 t);
+typedef struct GSspline {
+    s32 kind;
+    s32 state;
+    u8 capacity;
+    u8 valueCount;
+    u8 pad0A;
+    u8 keyCount;
+    PdaVec3* vectors;
+} GSspline;
+
+extern GSspline* GSsplineCreate(s32 kind, s32 state, u8 capacity);
+extern void GSsplineAddControlVectorValue(GSspline* spline, void* vec, f32 t);
 extern void GSsplineFree(void* spline);
 extern void GSvecCopy(void* dst, void* src);
 extern u8 lbl_80314E08[];
@@ -31,19 +41,17 @@ extern void fn_800D88DC(s32 mode);
 void fn_800473E0(PdaOrbitPoint* point)
 {
     u8* p = (u8*)point;
+    GSspline* spline;
     u8* data;
-    void* spline;
     PdaVec3 ctrl;
     PdaVec3 v0;
     PdaVec3 v1;
-    u32 count;
+    f32 t;
     s32 num;
     s32 i;
-    s32 off;
     f32 step;
-    f32 t;
+    u32 count;
     f32 dx;
-    f32 zero;
 
     data = *(u8**)p;
     if (data == NULL) {
@@ -96,27 +104,21 @@ void fn_800473E0(PdaOrbitPoint* point)
     ctrl.y = 0.0f;
     ctrl.x = 233.0f;
     GSsplineAddControlVectorValue(spline, &ctrl, 1.0f);
-    off = 0;
-    zero = 0.0f;
     for (i = 0; i < (s32)*(f32*)(p + 0xc); i++) {
-        GSvecCopy(&v0, (u8*)*(void**)((u8*)spline + 0xc) + off);
-        v0.z = zero;
-        GSvecCopy((u8*)*(void**)((u8*)spline + 0xc) + off, &v0);
-        off += 0xc;
+        GSvecCopy(&v0, &spline->vectors[i]);
+        v0.z = 0.0f;
+        GSvecCopy(&spline->vectors[i], &v0);
     }
-    off = (s32)*(f32*)(p + 0xc) * 0xc;
     for (i = (s32)*(f32*)(p + 0xc); i < (s32)*(f32*)(p + 0x14); i++) {
-        GSvecCopy(&v0, (u8*)*(void**)((u8*)spline + 0xc) + off);
+        GSvecCopy(&v0, &spline->vectors[i]);
         v0.z = *(f32*)(p + 0x1c) /
                (f32)((s32)*(f32*)(p + 0x14) - (s32)*(f32*)(p + 0xc)) *
                (f32)(i - (s32)*(f32*)(p + 0xc));
-        GSvecCopy((u8*)*(void**)((u8*)spline + 0xc) + off, &v0);
-        off += 0xc;
+        GSvecCopy(&spline->vectors[i], &v0);
     }
-    off = 0;
     for (i = 0; i < *(s32*)(p + 0x18) - 1; i++) {
-        GSvecCopy(&v0, (u8*)*(void**)((u8*)spline + 0xc) + off);
-        GSvecCopy(&v1, (u8*)*(void**)((u8*)spline + 0xc) + (i + 1) * 0xc);
+        GSvecCopy(&v0, &spline->vectors[i]);
+        GSvecCopy(&v1, &spline->vectors[i + 1]);
         fn_800D88DC(1);
         fn_800D888C(6);
         fn_800D7820(lbl_80314E08);
@@ -131,7 +133,6 @@ void fn_800473E0(PdaOrbitPoint* point)
         fn_800D5BA0(0, (u8)(s32)v1.z | 0x361e0500);
         fn_800D6728();
         fn_800D5648(1.0f);
-        off += 0xc;
     }
     GSsplineFree(spline);
 }
