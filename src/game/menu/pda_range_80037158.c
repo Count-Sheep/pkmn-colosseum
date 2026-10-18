@@ -4063,9 +4063,7 @@ void fn_80044630(void) {
             }
 
             /* settle test */
-            if (*(f32*)(S + 0x50) != *(f32*)(S + 0x4C)) {
-                _threadSwitch();
-            } else {
+            if (*(f32*)(S + 0x50) == *(f32*)(S + 0x4C)) {
                 *(s32*)(S + 0x1C) = 0;
                 menuCloseCustom(0x3C, 0, 1);
                 menuCloseCustom(0x96, 0, 1);
@@ -4131,6 +4129,8 @@ void fn_80044630(void) {
                 *(s32*)(S + 0x14) = 0;
                 *(f32*)(S + 0x50) = lbl_8047BCBC;
                 *(f32*)(S + 0x58) = lbl_8047BC94;
+            } else {
+                _threadSwitch();
             }
         } break;
 
