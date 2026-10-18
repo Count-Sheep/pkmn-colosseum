@@ -2491,9 +2491,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     s32 ret;
     ShopWork* work;
     u8* slot;
-    u8 name;
     u8 se;
-    u8 se2;
     s32 header;
     struct {
         s32 enabled;
@@ -2506,17 +2504,6 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         u8 pad;
         u32 trailer;
     } qtyParams;
-    struct {
-        u32 credit0;
-        u32 credit1;
-        u32 field764;
-        u16 zero;
-        u16 count;
-        struct {
-            u16 id;
-            u16 num;
-        } items[50];
-    } inv;
     ShopListMenu params;
 
     type = mode;
