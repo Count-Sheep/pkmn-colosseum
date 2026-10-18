@@ -10926,12 +10926,12 @@ void fn_80213E94(void)
     extern u32 fightTargetGetPtrAsNowFightType();
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr();
     extern u32 fightFloorGetStatus();
-    extern void fightTrainerHokakuThrowEffect();
+    extern void fightTrainerHokakuThrowEffect(u32 trainer, u16 ball, u8 mode);
     extern u8 fn_802026E4();
     extern u32 fightOutPokemonGetNicknamePtr();
     extern u32 figthOutPokemonGetLevel();
     extern u32 fightOutPokemonGetPokemonPtr();
-    extern void fightOutPokemonHokakuEffect();
+    extern void fightOutPokemonHokakuEffect(u32 target, u8 shakes, u16 ball, u8 phase, u8* buf);
     extern u8 fightOutPokemonIsZokuseiDataId();
     extern void fightMenuCloseMsg();
     extern void fightMenuOpenMsg();
@@ -10939,175 +10939,162 @@ void fn_80213E94(void)
     extern u8 lbl_80375E5F[];
     extern u32 lbl_80279E1C[];
     extern u32 pokemonGetStatus();
-
+  u8 ballMultiplier;
+  u8 shakes;
+  u32 target;
+  u16 battleType;
   u16 floorStatusF;
-  u32 uVar1;
-  u32 trainerPtr;
-  int uVar11;
-  int catchProduct;
+  u32 attacker;
+  u32 itemPtr;
+  u16 ballId;
+  u16 species;
+  u16 catchRate;
   u8 level;
-  u16 uVar3;
-  u16 uVar8;
-  u32 uVar4;
-  u32 uVar2;
-  struct {
-    u32 value;
-  } uVar12;
+  u32 pokemon;
   int currentHp;
-  int iVar5;
-  u16 uVar9;
-  u16 sVar7;
-  u8 cVar10;
-  u32 sqrtResult;
-  u8 local_58[8];
+  int maxHp;
+  u32 trainerPtr;
+  u8 isBonus;
+  u32 odds;
+  u8 shakeBuf[8];
 
-  uVar11 = 0;
-  uVar12.value = 0;
-  sVar7 = fightFloorGetStatus(0,0,0xd,0);
+  ballMultiplier = 0;
+  isBonus = 0;
+  battleType = fightFloorGetStatus(0,0,0xd,0);
   floorStatusF = fightFloorGetStatus(0,0,0xf,0);
-  uVar1 = fightTargetGetPtrAsNowFightType(0x11,0);
-  uVar2 = pokemonGetStatus(uVar1,0,0xe5,0);
-  itemGetStatus(uVar2,0,0x20,0);
-  uVar3 = itemGetStatus(uVar2,0,0x1e,0);
-  uVar2 = fightTargetGetPtrAsNowFightType(0x12,0);
-  uVar4 = fightOutPokemonGetPokemonPtr();
-  uVar8 = pokemonGetStatus(uVar4,0,0xc3,0);
-  uVar9 = (u16)pokemonGetStatus(uVar4,0,0x6e,0);
-  level = figthOutPokemonGetLevel(uVar2);
-  currentHp = pokemonGetStatus(uVar4,0,0x83,0);
-  iVar5 = pokemonGetStatus(uVar4,0,0x87,0);
-  trainerPtr = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,uVar1);
-  cVar10 = pokemonIsDarkPokemon(uVar4);
-  if (cVar10 == 1) {
-    uVar9 = fn_801EEE44(uVar8);
+  attacker = fightTargetGetPtrAsNowFightType(0x11,0);
+  itemPtr = pokemonGetStatus(attacker,0,0xe5,0);
+  itemGetStatus(itemPtr,0,0x20,0);
+  ballId = itemGetStatus(itemPtr,0,0x1e,0);
+  target = fightTargetGetPtrAsNowFightType(0x12,0);
+  pokemon = fightOutPokemonGetPokemonPtr();
+  species = pokemonGetStatus(pokemon,0,0xc3,0);
+  catchRate = pokemonGetStatus(pokemon,0,0x6e,0);
+  level = figthOutPokemonGetLevel(target);
+  currentHp = pokemonGetStatus(pokemon,0,0x83,0);
+  maxHp = pokemonGetStatus(pokemon,0,0x87,0);
+  trainerPtr = fightFloorGetFightOutPokemonPtrToFightTrainerPtr(0,attacker);
+  if (pokemonIsDarkPokemon(pokemon) == 1) {
+    catchRate = fn_801EEE44(species);
   }
   else {
-    uVar9 = (u8)pokemonGetStatus(0,uVar9,0x12,0);
+    catchRate = (u8)pokemonGetStatus(0,catchRate,0x12,0);
   }
-  switch (uVar3) {
+  switch (ballId) {
   case 2:
-    uVar12.value = 0x14;
+    ballMultiplier = 0x14;
     break;
   case 3:
-    uVar12.value = 0xf;
+    ballMultiplier = 0xf;
     break;
   case 4:
   case 5:
-    uVar12.value = 0xa;
+    ballMultiplier = 0xa;
     break;
   case 6:
-    if ((fightOutPokemonIsZokuseiDataId(uVar2, 0xb) == 1) ||
-        (fightOutPokemonIsZokuseiDataId(uVar2, 6) == 1)) {
-      uVar12.value = 0x1e;
+    if ((fightOutPokemonIsZokuseiDataId(target, 0xb) == 1) ||
+        (fightOutPokemonIsZokuseiDataId(target, 6) == 1)) {
+      ballMultiplier = 0x1e;
     } else {
-      uVar12.value = 0xa;
+      ballMultiplier = 0xa;
     }
     break;
   case 7:
     if ((((u16)(floorStatusF - 3)) <= 1) || (floorStatusF == 5)) {
-      uVar12.value = 0x23;
+      ballMultiplier = 0x23;
     } else {
-      uVar12.value = 0xa;
+      ballMultiplier = 0xa;
     }
     break;
   case 8:
     if (level < 0x28) {
-      uVar12.value = 0x28 - level;
-      if ((u8)uVar12.value < 0xa) {
-        uVar12.value = 0xa;
+      ballMultiplier = 0x28 - level;
+      if (ballMultiplier < 0xa) {
+        ballMultiplier = 0xa;
       }
     } else {
-      uVar12.value = 0xa;
+      ballMultiplier = 0xa;
     }
     break;
   case 9:
-    if (pokemonIsDarkPokemon(uVar4) == 1) {
-      if (fn_801EEAD0(uVar8) == 1) {
-        uVar11 = 1;
+    if (pokemonIsDarkPokemon(pokemon) == 1) {
+      if (fn_801EEAD0(species) == 1) {
+        isBonus = 1;
       }
-    } else if ((u8)pokemonGetStatus(uVar4, 0, 0x63, 0) == 1) {
-      uVar11 = 1;
+    } else if ((u8)pokemonGetStatus(pokemon, 0, 0x63, 0) == 1) {
+      isBonus = 1;
     }
-    if ((u8)uVar11 == 1) {
-      uVar12.value = 0x1e;
+    if (isBonus == 1) {
+      ballMultiplier = 0x1e;
     } else {
-      uVar12.value = 0xa;
+      ballMultiplier = 0xa;
     }
     break;
   case 10:
-    uVar12.value = (u16)fightFloorGetStatus(0, 0, 0xc, 0) + 0xa;
-    if ((u8)uVar12.value > 0x28) {
-      uVar12.value = 0x28;
+    ballMultiplier = (u16)fightFloorGetStatus(0, 0, 0xc, 0) + 0xa;
+    if (ballMultiplier > 0x28) {
+      ballMultiplier = 0x28;
     }
     break;
   case 11:
   case 12:
-    uVar12.value = 0xa;
+    ballMultiplier = 0xa;
     break;
   }
-  if ((uVar3 == 1) || (sVar7 == 0x11)) {
-    uVar12.value = 4;
+  if ((ballId == 1) || (battleType == 0x11)) {
+    shakes = 4;
   }
   else {
-    catchProduct = (int)(u8)uVar9;
-    catchProduct *= (int)(u8)uVar12.value;
-    uVar11 = (catchProduct / 10) * ((iVar5 * 3) - (currentHp * 2)) /
-             (iVar5 * 3);
-    cVar10 = fn_802026E4(uVar2,8);
-    if ((cVar10 == 1) || (cVar10 = fn_802026E4(uVar2,7), cVar10 == 1)) {
-      uVar11 = uVar11 << 1;
+    odds = (int)((u8)catchRate * ballMultiplier) / 10 * ((maxHp * 3) - (currentHp * 2)) /
+           (maxHp * 3);
+    if ((fn_802026E4(target,8) == 1) || (fn_802026E4(target,7) == 1)) {
+      odds *= 2;
     }
-    cVar10 = fn_802026E4(uVar2,3);
-    if ((((cVar10 == 1) || (cVar10 = fn_802026E4(uVar2,4), cVar10 == 1)) ||
-        (cVar10 = fn_802026E4(uVar2,5), cVar10 == 1)) ||
-       (cVar10 = fn_802026E4(uVar2,6), cVar10 == 1)) {
-      uVar11 = (u32)(uVar11 * 0xf) / 10;
+    if ((fn_802026E4(target,3) == 1) || (fn_802026E4(target,4) == 1) ||
+        (fn_802026E4(target,5) == 1) || (fn_802026E4(target,6) == 1)) {
+      odds = (odds * 15) / 10;
     }
-    if ((u32)uVar11 >= 0xff) {
-      uVar12.value = 4;
+    if (odds >= 0xff) {
+      shakes = 4;
     }
     else {
-      sqrtResult = __cvt_fp2unsigned(
-          sqrt((double)(0xff0000 / (u32)uVar11)));
-      uVar11 = __cvt_fp2unsigned(sqrt((double)sqrtResult));
-      uVar11 = (u32)0xffff0 / (u32)uVar11;
-      uVar12.value = 0;
-      while ((uVar12.value & 0xff) < 4) {
-        if ((fn_800E0C54() & 0xffff) >= (u32)uVar11) {
+      odds = __cvt_fp2unsigned(sqrt((double)__cvt_fp2unsigned(sqrt((double)(0xff0000 / odds)))));
+      odds = 0xffff0 / odds;
+      shakes = 0;
+      while (shakes < 4) {
+        if ((fn_800E0C54() & 0xffff) >= odds) {
           break;
         }
-        uVar12.value = uVar12.value + 1;
+        shakes++;
       }
     }
   }
-  fightTrainerHokakuThrowEffect(trainerPtr,uVar3,0);
-  fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,0,local_58);
-  fightTrainerHokakuThrowEffect(trainerPtr,uVar3,1);
-  fightTrainerHokakuThrowEffect(trainerPtr,uVar3,3);
-  fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,1,local_58);
-  uVar4 = fightOutPokemonGetNicknamePtr(uVar2);
-  msgctrlSetValue(0x16,uVar4);
-  if ((uVar12.value & 0xff) >= 4) {
-    fightTrainerHokakuThrowEffect(trainerPtr,uVar3,4);
+  fightTrainerHokakuThrowEffect(trainerPtr,ballId,0);
+  fightOutPokemonHokakuEffect(target,shakes,ballId,0,shakeBuf);
+  fightTrainerHokakuThrowEffect(trainerPtr,ballId,1);
+  fightTrainerHokakuThrowEffect(trainerPtr,ballId,3);
+  fightOutPokemonHokakuEffect(target,shakes,ballId,1,shakeBuf);
+  msgctrlSetValue(0x16,fightOutPokemonGetNicknamePtr(target));
+  if (shakes >= 4) {
+    fightTrainerHokakuThrowEffect(trainerPtr,ballId,4);
     msgctrlSetValue(0x5d,0);
     fightMenuOpenMsg(0x771f);
     fn_80165668(0x3f6,0,0xff);
-    fightTrainerHokakuThrowEffect(trainerPtr,uVar3,5);
+    fightTrainerHokakuThrowEffect(trainerPtr,ballId,5);
     fightMenuCloseMsg();
     lbl_8047B610 = lbl_80375E51;
   }
   else {
-    fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,2,local_58);
-    lbl_80478D78[5] = (u8)uVar12.value;
-    fightMenuOpenMsg(lbl_80279E1C[(u8)uVar12.value]);
-    fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,3,local_58);
+    fightOutPokemonHokakuEffect(target,shakes,ballId,2,shakeBuf);
+    lbl_80478D78[5] = shakes;
+    fightMenuOpenMsg(lbl_80279E1C[shakes]);
+    fightOutPokemonHokakuEffect(target,shakes,ballId,3,shakeBuf);
     fightMenuCloseMsg();
     lbl_8047B610 = lbl_80375E5F;
   }
-  fightTrainerHokakuThrowEffect(trainerPtr,uVar3,2);
-  fightTrainerHokakuThrowEffect(trainerPtr,uVar3,6);
-  fightOutPokemonHokakuEffect(uVar2,uVar12.value,uVar3,4,local_58);
-  return;
+  fightTrainerHokakuThrowEffect(trainerPtr,ballId,2);
+  fightTrainerHokakuThrowEffect(trainerPtr,ballId,6);
+  fightOutPokemonHokakuEffect(target,shakes,ballId,4,shakeBuf);
 }
 #endif /* FIGHT_RANGE_ALL || FIGHT_RANGE_80213A78_ONLY */
 #if defined(FIGHT_RANGE_ALL)
