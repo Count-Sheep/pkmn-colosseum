@@ -3979,10 +3979,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menu/pda_candidate_8004A47C.c",
+                Matching,
+                "game/menu/pda_exact_8004A47C.c",
                 mw_version="GC/1.3.2",
-                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # TEMPORARY constant_import: retail shares the mail-screen float literals.
