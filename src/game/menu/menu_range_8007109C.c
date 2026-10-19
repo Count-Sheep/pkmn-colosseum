@@ -20,7 +20,8 @@
     defined(MENU_R47_80079C1C_ONLY) || defined(MENU_80075390_ONLY) || \
     defined(MENU_R56B_80071398_ONLY) || defined(MENU_80073E8C_ONLY) || \
     defined(MENU_80076054_ONLY) || defined(MENU_80076A8C_ONLY) || \
-    defined(MENU_800776E4_ONLY)
+    defined(MENU_800776E4_ONLY) || \
+    defined(MENU_8007B6D8_ONLY)
 #define MENU_RANGE_CARVE 1
 #endif
 
@@ -2251,7 +2252,9 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     return 0;
 }
 
+#endif /* !MENU_RANGE_CARVE */
 
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_8007B6D8_ONLY)
 static inline u32 gbaBootClassify(GbaBootContext* context, u32 response,
                                   u32 status) {
     u32 delta;
@@ -2312,10 +2315,9 @@ u32 fn_8007B6D8(void* arg) {
     u32 i;
     s32 result;
     GbaBootContext* context;
-    u32 transfer_size;
     s32 channel;
+    u32 transfer_size;
 
-    context = arg;
     context = arg;
     channel = context->channel;
     context->state = 0;
@@ -2527,6 +2529,8 @@ u32 fn_8007B6D8(void* arg) {
             gbaBootDelay(context);
         }
 
+        /* Retail fails with 9 when this status read succeeds; the bit
+         * checks below run only after a failed read. */
         if (GBAGetStatus(channel, &gba_status) == 0) {
             GBA_BOOT_FAIL(context, 9);
         }
@@ -2545,7 +2549,7 @@ u32 fn_8007B6D8(void* arg) {
 }
 
 
-#endif /* !MENU_RANGE_CARVE */
+#endif /* !MENU_RANGE_CARVE || MENU_8007B6D8_ONLY */
 
 #if defined(MENU_R47_80077ED4_ONLY)
 /* File-scope declarations the linked carve needs from the excluded part. */

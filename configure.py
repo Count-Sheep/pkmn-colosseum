@@ -6907,8 +6907,8 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menu/menu_candidate_80075390_r46_8007B6D8_o3.c",
+                Matching,
+                "game/menu/menu_exact_8007B6D8.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-inline noauto", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",

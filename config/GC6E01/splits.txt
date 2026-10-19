@@ -1543,7 +1543,7 @@ game/menu/menu_exact_8007B350.c:
 game/menu/menu_exact_8007B6A4.c:
 	.text       start:0x8007B6A4 end:0x8007B6D8
 
-game/menu/menu_candidate_80075390_r46_8007B6D8_o3.c:
+game/menu/menu_exact_8007B6D8.c:
 	.text       start:0x8007B6D8 end:0x8007C23C
 
 game/menu/menu_candidate_80075390_r46_8007C23C.c:
