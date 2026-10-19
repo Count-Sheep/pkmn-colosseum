@@ -29,7 +29,8 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_candidate_8002B594.c -> fn_8002B594
  *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880
  *   menuShop_candidate_8002C284.c -> fn_8002C284
- *   menuShop_exact_80029AC8.c -> fn_80029AC8 */
+ *   menuShop_exact_80029AC8.c -> fn_80029AC8
+ *   menuShop_exact_80029CC0.c -> fn_80029CC0 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
@@ -40,7 +41,8 @@ extern u32 GSmsgGetRect(u32 id);
     defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
     defined(MENUSHOP_ISLAND_80029850_ONLY) || \
     defined(MENUSHOP_ISLAND_80029EF4_ONLY) || \
-    defined(MENUSHOP_EXACT_80029AC8_ONLY)
+    defined(MENUSHOP_EXACT_80029AC8_ONLY) || \
+    defined(MENUSHOP_EXACT_80029CC0_ONLY)
 #define MENUSHOP_ISLAND_ONLY
 #endif
 
@@ -81,7 +83,7 @@ u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
 
 #endif /* guard split */
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY) || defined(MENUSHOP_ISLAND_80029EF4_ONLY) || \
-    defined(MENUSHOP_EXACT_80029AC8_ONLY)
+    defined(MENUSHOP_EXACT_80029AC8_ONLY) || defined(MENUSHOP_EXACT_80029CC0_ONLY)
 typedef struct ShopItemSlot {
     u16 item_id;
     u16 quantity;
@@ -102,10 +104,11 @@ typedef struct ShopInventory {
 
 #endif /* guard split */
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY) || \
-    defined(MENUSHOP_EXACT_80029AC8_ONLY)
+    defined(MENUSHOP_EXACT_80029AC8_ONLY) || defined(MENUSHOP_EXACT_80029CC0_ONLY)
 /* fn_800298DC - 0x800298DC | size: 0x1ec */
-#if defined(MENUSHOP_EXACT_80029AC8_ONLY)
-/* fn_80029AC8's carve takes these helpers only; its unit sets -opt nopeephole. */
+#if defined(MENUSHOP_EXACT_80029AC8_ONLY) || defined(MENUSHOP_EXACT_80029CC0_ONLY)
+/* The fn_80029AC8 and fn_80029CC0 carves take these helpers only; their units
+ * set -opt nopeephole. */
 extern u16 itemBiosGetItemDataId(void*);
 extern u16 itemBiosGetNum(void*);
 #else
@@ -207,7 +210,7 @@ static inline s32 shopFillSlot(ShopItemSlot* slots, u16 count, s32 item_id,
 /* The explicit-index step of fn_80029CC0's copy: the same slot fill, but the
  * remaining quantity is returned as a fresh narrowed value. */
 /* RULE-EXCEPTION(user-approved): single-use inline copy of the slot step for fn_80029CC0's explicit-index path - see docs/RULE_EXCEPTIONS.md */
-static inline s32 shopFillSlotOnce(ShopItemSlot* slots, u16 count, s32 item_id,
+static inline s32 shopFillSlotOnce(ShopItemSlot* slots, u16 count, u32 item_id,
                                u16 quantity, s16 index, u16 maximum) {
     u16 current_id;
     u16 current_quantity;
@@ -219,12 +222,11 @@ static inline s32 shopFillSlotOnce(ShopItemSlot* slots, u16 count, s32 item_id,
     }
     slots += index;
     current_id = itemBiosGetItemDataId(slots);
-    if (current_id != (u16)item_id && current_id != 0) {
+    if (current_id != item_id && current_id != 0) {
         return quantity;
     }
     if (current_id == 0) {
-        /* RULE-EXCEPTION(user-approved): codegen-only cast to the callee's u16 id (the value is already a u16 save-data id) - see docs/RULE_EXCEPTIONS.md */
-        itemBiosSetItemDataId(slots, (u16)item_id);
+        itemBiosSetItemDataId(slots, item_id);
         current_quantity = 0;
     } else {
         current_quantity = itemBiosGetNum(slots);
@@ -254,8 +256,8 @@ static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
 }
 
 /* RULE-EXCEPTION(user-approved): second inline copy of fn_800298DC, taking the
- * item id as u16, used only by fn_80029CC0 — see docs/RULE_EXCEPTIONS.md */
-static inline u16 shopAddItemId(ShopItemSlot* slots, u16 count, u16 item_id,
+ * item id as u32, used only by fn_80029CC0 — see docs/RULE_EXCEPTIONS.md */
+static inline u16 shopAddItemId(ShopItemSlot* slots, u16 count, u32 item_id,
                               s32 quantity, s16 index, u16 maximum) {
     s32 i;
 
@@ -271,7 +273,7 @@ static inline u16 shopAddItemId(ShopItemSlot* slots, u16 count, u16 item_id,
     return quantity;
 }
 
-#if !defined(MENUSHOP_EXACT_80029AC8_ONLY)
+#if !defined(MENUSHOP_EXACT_80029AC8_ONLY) && !defined(MENUSHOP_EXACT_80029CC0_ONLY)
 s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
                  s16 index, s32 maximum) {
     s32 i;
@@ -290,7 +292,7 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
     return quantity;
 }
 #pragma pop
-#endif /* !MENUSHOP_EXACT_80029AC8_ONLY */
+#endif /* !MENUSHOP_EXACT_80029AC8_ONLY && !MENUSHOP_EXACT_80029CC0_ONLY */
 
 #endif /* guard split */
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_EXACT_80029AC8_ONLY)
@@ -324,7 +326,7 @@ void fn_80029AC8(s32 price, s32 item_id, s32 quantity, ShopInventory* inventory)
 #endif
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_EXACT_80029CC0_ONLY)
 
 /* fn_80029CC0 - 0x80029CC0 | size: 0x234 */
 extern void fn_80142A88(void*, s32);
@@ -346,10 +348,13 @@ asm void fn_80029CC0(void) {
 #include "src/game/gs_worldmap_fn_80029CC0.inc"
 }
 #else
+#if !defined(MENUSHOP_EXACT_80029CC0_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; peephole off; scheduling on), whole-file compiles only; the linked carve uses unit-level -opt nopeephole - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
 #pragma scheduling on
+#endif
 s32 fn_80029CC0(u8* r30) {
     WorldMapBuf buf;
     s32 i;
@@ -373,7 +378,9 @@ s32 fn_80029CC0(u8* r30) {
     *(u16*)(r30 + 0x768) = buf.count;
     return 1;
 }
+#if !defined(MENUSHOP_EXACT_80029CC0_ONLY)
 #pragma pop
+#endif
 #endif
 
 #endif /* guard split */

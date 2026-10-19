@@ -10712,8 +10712,7 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
-            # 0x80029850-0x80029CC0 and 0x80029EF4-0x80029FAC: exact menuShop.c
-            # islands around the residual fn_80029CC0.
+            # 0x80029850-0x80029FAC: exact menuShop.c islands and carves.
             Object(
                 Matching,
                 "game/menuShop_island_80029850.c",
@@ -10731,10 +10730,12 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
-                "game/menuShop.c",
+                Matching,
+                "game/menuShop_exact_80029CC0.c",
+                # fn_80029CC0 only (MENUSHOP_EXACT_80029CC0_ONLY carve); the
+                # unit-level -opt nopeephole replaces the file's local pragma.
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(

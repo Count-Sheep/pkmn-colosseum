@@ -512,7 +512,7 @@ game/menuShop_island_80029850.c:
 game/menuShop_exact_80029AC8.c:
 	.text       start:0x80029AC8 end:0x80029CC0
 
-game/menuShop.c:
+game/menuShop_exact_80029CC0.c:
 	.text       start:0x80029CC0 end:0x80029EF4
 
 game/menuShop_island_80029EF4.c:
