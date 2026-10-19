@@ -95,6 +95,7 @@ void fn_8025DCBC(int *param)
 }
 
 /* Address: 0x8025DD14 | Size: 0x98 | Ghidra import */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma use_lmw_stmw off
 void fn_8025DD14(int *r3)
