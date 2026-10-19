@@ -1095,7 +1095,9 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         if (name == 0) {
             break;
         }
-        msgctrlSetValue(0x37, GSmsgGetGSchar(name));
+        /* RULE-EXCEPTION(user-approved): scalar reuse; the move name ID local also carries its GS string, an extra merged temporary live across sprite that gives retail's sprite/colour/ctx registers - see docs/RULE_EXCEPTIONS.md */
+        name = GSmsgGetGSchar(name);
+        msgctrlSetValue(0x37, name);
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56),
                     color, 0xE7);
         break;
@@ -1105,7 +1107,9 @@ void menuFightDrawSecretPokemonStatus(u8* ctx, u8* sprite)
         u16 item = (u16)pokemonGetSoubiItemDataId(pokemon);
         if (item != 0) {
             u32 data = itemDataBiosGetPtr(item);
-            msgctrlSetValue(0x37, GSmsgGetGSchar(itemDataBiosGetName(data)));
+            /* RULE-EXCEPTION(user-approved): scalar reuse; the item record local also carries the item name's GS string, the second merged temporary live across sprite - see docs/RULE_EXCEPTIONS.md */
+            data = GSmsgGetGSchar(itemDataBiosGetName(data));
+            msgctrlSetValue(0x37, data);
             fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56),
                         color, 0xE7);
         }

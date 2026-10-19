@@ -9141,7 +9141,7 @@ config.libs = [
                     (Matching, "game/menuFight_r51_8000DE24.c"),
                     (Matching, "game/menuFight_exact_8000DFF0.c"),
                     (Matching, "game/menuFight_exact_8000E204.c"),
-                    (CodeCandidate, "game/menuFight_r51_8000E290.c"),
+                    (Matching, "game/menuFight_r51_8000E290.c"),
                     (Matching, "game/menuFight_exact_8000EA10.c"),
                     (CodeCandidate, "game/menuFight_candidate_8000ED34.c"),
                     (Matching, "game/menuFight_exact_8000F310.c"),
