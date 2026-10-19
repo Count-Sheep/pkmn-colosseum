@@ -9300,6 +9300,7 @@ void fn_8003C7C0(void)
     u8 shadow;
     u8 snagged;
     f32 cur;
+    s16* dim;
 
     state = 0;
     running = 1;
@@ -9330,8 +9331,8 @@ void fn_8003C7C0(void)
         *(s16*)(lbl_802EF0A8 + 0x509e);
     *(f32*)((u8*)&lbl_803A6748 + 0x38) = *(f32*)((u8*)&lbl_803A6748 + 0x30) =
         *(s16*)(lbl_802EF0A8 + 0x50a0);
-    menuModelInit(model, *(s16*)(lbl_802EF0A8 + 0x17ca6),
-                  *(s16*)(lbl_802EF0A8 + 0x17ca8));
+    dim = (s16*)(lbl_802EF0A8 + 0x17ca6);
+    menuModelInit(model, dim[0], dim[1]);
 
     while (1) {
         switch (state) {
