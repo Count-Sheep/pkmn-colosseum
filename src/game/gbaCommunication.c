@@ -1617,6 +1617,7 @@ s32 fn_80093698(s32 channel)
 #if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
 
 /* 0x800937F4 | size: 0x310 */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 s32 fn_800937F4(void* arg0)
