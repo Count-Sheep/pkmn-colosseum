@@ -3738,7 +3738,7 @@ config.libs = [
             ),
             # TEMPORARY constant_import
             Object(
-                NonMatching,
+                Matching,
                 "game/menu/pda_exact_8003F464.c",
                 constant_import=[{"symbol": "lbl_8047BCA0", "offset": 0, "expected": "437f0000"},
                                  {"symbol": "lbl_8047BCA8", "offset": 4, "expected": "40000000"},
