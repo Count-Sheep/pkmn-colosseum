@@ -20,7 +20,7 @@
     defined(MENU_R47_80079C1C_ONLY) || defined(MENU_80075390_ONLY) || \
     defined(MENU_R56B_80071398_ONLY) || defined(MENU_80073E8C_ONLY) || \
     defined(MENU_80076054_ONLY) || defined(MENU_80076A8C_ONLY) || \
-    defined(MENU_800776E4_ONLY) || \
+    defined(MENU_800776E4_ONLY) || defined(MENU_8007480C_ONLY) || \
     defined(MENU_8007B6D8_ONLY)
 #define MENU_RANGE_CARVE 1
 #endif
@@ -1883,6 +1883,9 @@ u8 fn_80077EA4(u16* s1, u16* s2) {
     return memcmp(s1, s2, 0x54) == 0;
 }
 
+#endif /* !MENU_RANGE_CARVE */
+
+#if !defined(MENU_RANGE_CARVE) || defined(MENU_8007480C_ONLY)
 
 extern s32 fn_800D37CC(void);
 extern u32 fn_800D3088(void);
@@ -2153,8 +2156,10 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         value = MENU_BSWAP32(*image);
         encoded = value;
         if (offset >= 0xA0) {
-            encoded = value - rolling_crc;
-            encoded ^= rolling_key;
+            u32 cipher = value - rolling_crc;
+
+            cipher ^= rolling_key;
+            encoded = cipher;
             rolling_crc = menuGbaCrcStep(rolling_crc, value);
             rolling_key = rolling_key * 0x6177614B + 1;
         }
@@ -2266,7 +2271,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     return 0;
 }
 
-#endif /* !MENU_RANGE_CARVE */
+#endif /* !MENU_RANGE_CARVE || MENU_8007480C_ONLY */
 
 #if !defined(MENU_RANGE_CARVE) || defined(MENU_8007B6D8_ONLY)
 static inline u32 gbaBootClassify(GbaBootContext* context, u32 response,
