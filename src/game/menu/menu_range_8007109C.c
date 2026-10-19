@@ -2131,7 +2131,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if ((status & 0x30) != 0x30) {
             return 9;
         }
-        if ((status & 2) == 0) {
+        if ((((u8*)&status)[0] & 2) == 0) {
             break;
         }
         if (lbl_803B6E18[channel].func != NULL) {
