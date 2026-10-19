@@ -118,6 +118,31 @@ static inline u32 pda_8003DC54_LoadBoth(u32 id)
     return 0;
 }
 
+/* pdaLoadPokemonId for the both-types filter's first load, whose result is unused; the trainer
+ * argument is read into a local before pokemonCreate. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003DC54_LoadSlot (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8003DC54_LoadSlot(u32 id)
+{
+    u32 work;
+    u32 rnd;
+    u32 species = id;
+    u32 trainerRnd;
+    u32 trainer;
+
+    if (lbl_8047A4E0 != 0) {
+        work = lbl_8047A4E0;
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        trainer = gamedataGetStatus(0, 1);
+        pokemonCreate(work, (u16)species, 10, trainer);
+        rnd = pda_8003DC54_Rnd(species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+    }
+}
+
 /* pdaGetTypeIcon for the both-types filter. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper copy pda_8003DC54_TypeIconBoth for the both-types filter (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
 static inline u16 pda_8003DC54_TypeIconBoth(u32 id, s32 slot)
@@ -145,7 +170,7 @@ static inline u16 pda_8003DC54_FilterBoth(u16* buf, u16 type0, u16 type1)
     for (i = 0; i < lbl_8047A4E8; i++) {
         id = lbl_8047A4E4[i];
         if (pdaMemoSeen(id)) {
-            pda_8003DC54_LoadBoth(id);
+            pda_8003DC54_LoadSlot(id);
             a = pda_8003DC54_TypeIconBoth(id, 0);
             b = pda_8003DC54_TypeIconBoth(id, 1);
             if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
