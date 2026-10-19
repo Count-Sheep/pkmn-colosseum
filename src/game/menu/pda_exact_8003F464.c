@@ -1206,15 +1206,17 @@ void fn_8003F464(PdaSprite* alphaSprite, PdaSprite* sprite)
                     (void*)(lbl_802E5514[3])[*(s8*)(S + 0x15c)]);
         break;
     case 0xd75:
-        msgctrlSetValue(
-            0x37,
-            GSmsgGetGSchar((lbl_802E5514[2])[*(s8*)(S + 0x15b)]));
+        {
+            u32 ch = GSmsgGetGSchar((lbl_802E5514[2])[*(s8*)(S + 0x15b)]);
+            msgctrlSetValue(0x37, ch);
+        }
         fn_800FB680(0, 0, ((s64)alphaSprite->alphaByte | -0x100), (void*)0xe7);
         break;
     case 0xd76:
-        msgctrlSetValue(
-            0x37,
-            GSmsgGetGSchar((lbl_802E5514[2])[*(s8*)(S + 0x15a)]));
+        {
+            u32 ch = GSmsgGetGSchar((lbl_802E5514[2])[*(s8*)(S + 0x15a)]);
+            msgctrlSetValue(0x37, ch);
+        }
         fn_800FB680(0, 0, ((s64)alphaSprite->alphaByte | -0x100), (void*)0xe7);
         break;
     case 0xd77:
