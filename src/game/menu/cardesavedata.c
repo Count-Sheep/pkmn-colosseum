@@ -4207,7 +4207,7 @@ static inline BOOL cardGridMove(const CardGridData* data, u16 repeat,
         moved = TRUE;
     }
     if ((repeat & 4) && x > 0) {
-        nextX = x - 1;
+        nextX--;
         moved = TRUE;
     }
     if ((repeat & 8) && nextX < 2) {
