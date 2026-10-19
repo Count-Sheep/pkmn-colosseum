@@ -81,6 +81,7 @@ s32 fn_8004E180(u8* context, u8* object)
 }
 #pragma peephole reset
 
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 s32 fn_8004E2E0(u8* context, u8* object)
 {

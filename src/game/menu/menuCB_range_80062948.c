@@ -2631,6 +2631,7 @@ void fn_80068DBC(u8* context, UICmdMsg* msg, s32 player)
 
 /* Address: 0x80068F84 | Size: 0xC4 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80068F84(void)
 {

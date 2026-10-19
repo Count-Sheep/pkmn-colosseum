@@ -118,6 +118,7 @@ extern void fn_80165668(s32, s32, s32);
 extern void fn_800832C8(s32, void*, s32);
 
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 #if !defined(GS_RANGE_EXACT_80034280) && !defined(GS_RANGE_SUFFIX_80034FB4)
 static void sysvarsWaitForTransfer(void)
@@ -1237,6 +1238,7 @@ typedef struct SysvarsSaveWork {
  * (base advancing by 0x2A, move payload at displacement 0x22).
  */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80034830(u8 enabled, s32 selection,
                  SysvarsOpponentSource* source)
@@ -1325,6 +1327,7 @@ static inline u8 sysvarsGroupMaxLevel(u8* group)
 }
 
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
 {

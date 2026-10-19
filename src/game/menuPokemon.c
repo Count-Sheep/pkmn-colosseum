@@ -1680,6 +1680,7 @@ asm void fn_800194E4(void) {
 #include "src/game/gs_pcbox_fn_800194E4.inc"
 }
 #else
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 4
 /* RULE-EXCEPTION(user-approved): local propagation control preserves the
  * consumed loop index as retail's byte offset; see docs/RULE_EXCEPTIONS.md. */
