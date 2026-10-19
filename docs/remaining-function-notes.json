@@ -331,16 +331,28 @@
     "rejected_probes": "No function-body rewrite was needed."
   },
   "menuFightDrawSecretPokemonStatus": {
-    "best_local_change": "99.677086% (2026-10-18): the real fn_800FBB34(s32, s32, s16 width, s16 height, s32, u32) prototype converts case 0x124B's s32 x at the argument move, so its extsh lands after the colour copy as in retail; case 0x1242's x is an s16 local.",
-    "remaining_diff": "Code is instruction-identical; only ctx (retail r29) and sprite (retail r31) are swapped. GC/2.6 replay: after slot and @120 are simplified, sprite (28) and color (27) drop below K=29 in the same sweep while ctx (29) waits, so ctx is pushed last and takes r31. The Gauss-Seidel model reproduces retail only with sprite +2 and color +1 extra coalesced neighbours (ctx count is irrelevant).",
-    "pipeline_action": "Find two more coalesced temps live across sprite (one also across color) that leave the code unchanged. The pre-proto source had them (an extsh temp for (s16)x in 0x1242 and one in 0x124B) but scheduled 0x124B's extsh before the colour copy.",
-    "rejected_probes": "Without the prototype no arg-3 form moves the extsh after mr r7. With it: 0x1242 forms (s32 x with (s16) casts, +(s16)x, s16 copy, (s16) assignment) x FB680/msgctrlSetValue prototypes x 0x124B (s16)x: at best 99.677086%. Named locals for call results, helper parameter/result rewrites, declaration permutations and windowGetParam prototypes either change no allocator node or change the code (void* colour local adds one sprite neighbour but 99.49%). -O3/-O2/-O4,s are lower."
+    "best_local_change": "100%, linked (2026-10-19): cases 0x1246 and 0x124A store GSmsgGetGSchar's result back into their dead name/data locals (tagged scalar reuse, docs/RULE_EXCEPTIONS.md). Each adds a merged temporary live across sprite, so sprite is simplified after ctx (retail r31 sprite, r30 colour, r29 ctx). Unit menuFight_r51_8000E290 is Matching; its jump table lands after data_802E4B98 like menuFightDrawSecretPokemon's.",
+    "remaining_diff": "None.",
+    "pipeline_action": "Replace the two scalar reuses if the original locals are recovered.",
+    "rejected_probes": "Separate text locals instead of the reuses change the code (INSERT). Either reuse alone moves only ctx (99.56%)."
   },
   "menuFightDrawSecretWazaSelect": {
     "best_local_change": "98.661415% (2026-10-18): halving written as one expression (srwi/add/srawi), icon read as *(u16*)&entries[offset + 0xC] (retail's mr r3,entry copy), and 0x11DD left to the default break (its explicit return emitted an unreachable branch). The code is instruction-identical.",
     "remaining_diff": "Registers only: retail color r31, npc r30, entries r29, offset r28, entry r27; ours entries r31, color r30, npc r29, entry r28, offset r27. Replay: entries is the windowGetAllocPtr temp (r42), checked in sweep 1 while 19 later switch temps are still live, so it is pushed with npc/color in sweep 2 last. Retail needs it simplified in sweep 1 (degree three lower at its check, or numbered after the switch temps).",
     "pipeline_action": "Look for a source shape that gives entries a node numbered after the switch temps or fewer interferences; then re-check offset/entry order.",
-    "rejected_probes": "Indexing through entries + offset + 0xC or ((u16*)entry)[6], removing the empty 0x11D9-0x11DC/0x11DE-0x11E1 groups, and default: return all scored lower or the same."
+    "rejected_probes": "Indexing through entries + offset + 0xC or ((u16*)entry)[6], removing the empty 0x11D9-0x11DC/0x11DE-0x11E1 groups, and default: return all scored lower or the same. 2026-10-19 (unit now menuFight_r51_8000F768): the GC/2.6 replay model needs entries numbered after the idx temps (r44/r45) and offset after r38, or entries numbered below npc; no declaration order reaches it (exhaustive model search). Rejected in the real build: register locals, u32 entries (folds entries+offset), void*/u32 windowGetAllocPtr returns, assignment in the if, &entries[offset], no idx local, u32/u16 offset, slot-switch or entries/alloc inline helpers, -opt nopropagation."
+  },
+  "menuFightDrawSecretWazaDoc": {
+    "best_local_change": "100%, linked as menuFight_exact_8000F400 (2026-10-19): locals declared party, state, battle, id, delta, color, value, y0, y1, result (found with the allocator replay model); the local opt_propagation pragma became the unit flag -opt nopropagation; the 0x11FE/0x11FF case labels were swapped relative to retail's jump table (found by the link) and are fixed.",
+    "remaining_diff": "None.",
+    "pipeline_action": "None.",
+    "rejected_probes": "None needed."
+  },
+  "menuFightButtonSecretPokemonTop": {
+    "best_local_change": "99.23% (report); code instruction-identical, registers only.",
+    "remaining_diff": "Retail ctx r31, flags r30, bits r29, selected r28, activeMenu r27, targetMenu r26, base r25, aux r24, sx r23; ours flags r31, base r30, aux r29, ..., ctx r25, sx r24, bits r23. GC/2.6 replay: sweep 1 pushes bits/sx/inline temps, sweep 2 pushes ctx, targetMenu, activeMenu, selected, aux, base, flags. The model reaches retail only with bits +2 interferences, base and aux numbered after every other node and ctx after the named locals and flags/sx temps; degree changes alone (up to four nodes) and every declaration order of the named locals fall short.",
+    "pipeline_action": "Find a source shape that numbers base/aux late (e.g. values produced after the switch temps) and keeps ctx live with more merged temporaries; or recover the original C++ structure.",
+    "rejected_probes": "ctx alias local (propagated away), inline helpers for the 0x98/0x99 close and the select store (no node change), the whole body as an inline helper (nested inlines stop expanding; float kept in f31)."
   },
   "fn_801D56B0": {
     "best_local_change": "Split the already exact move-viewer function into a complete C unit with its exact successor; canonical link and all 26 hashes pass.",
