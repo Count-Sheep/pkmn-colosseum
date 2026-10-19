@@ -646,31 +646,34 @@ static inline u16 gsMemChecksum(GSMemHandle* handle) {
 u32 fn_800E1544(void)
 {
     extern const char lbl_80270BB8[];
-    s32 i;
-    u8* destination;
-    GSFreeBlock* before;
     GSMemHandle** entry;
-    u32 remaining;
-    u32 sum;
-    GSMemHandle* saved;
-    GSFreeBlock* scan;
-    u8 wasHead;
-    GSFreeBlock* prev;
-    GSMemHandle* desc;
-    GSMemHandle* candidates[4];
-    GSFreeBlock* fresh;
-    u32 oldLargest;
-    s32 count;
-    u32 size;
-    GSFreeBlock* block;
-    s32 j;
     GSMemHandle* bottom;
-    GSFreeBlock* freed;
+    u32 sum;
+    u32 total;
+    u8 wasHead;
+    GSMemHandle* desc;
+    GSMemHandle* saved;
+    GSFreeBlock* before;
     GSMemHandle* top;
+    GSFreeBlock* fresh;
+    u8* destination;
+    s32 i;
+    s32 k;
+    GSFreeBlock* prevFree;
+    GSFreeBlock* nextFree;
+    GSFreeBlock* scan;
+    s32 j;
+    s32 count;
+    GSFreeBlock* block;
+    GSFreeBlock* next;
     u8* data;
     u8* source;
-    u32 total;
-    GSFreeBlock* next;
+    u32 size;
+    u32 remaining;
+    GSFreeBlock* prev;
+    GSMemHandle* candidates[4];
+    u32 oldLargest;
+    GSFreeBlock* freed;
 
     oldLargest = gsMemLargestFree();
     block = lbl_8047AB30;
@@ -735,7 +738,7 @@ u32 fn_800E1544(void)
                     candidates[i] = desc;
                     sum = 0;
                     for (j = 0; j < count; j++) {
-                        sum += candidates[j]->size;
+                        sum += entry[j]->size;
                     }
                     if (sum > total && sum <= block->size) {
                         total = sum;
@@ -747,20 +750,20 @@ u32 fn_800E1544(void)
             }
             if (count > 0) {
 
-            prev = block->prev;
-            next = block->next;
+            prevFree = block->prev;
+            nextFree = block->next;
             remaining = block->size;
             if (block == lbl_8047AB30) {
-                lbl_8047AB30 = next;
+                lbl_8047AB30 = nextFree;
             }
-            if (prev != NULL) {
-                prev->next = next;
+            if (prevFree != NULL) {
+                prevFree->next = nextFree;
             }
-            if (next != NULL) {
-                next->prev = prev;
+            if (nextFree != NULL) {
+                nextFree->prev = prevFree;
             }
             destination = (u8*)block;
-            for (i = 0; i < count; i++) {
+            for (k = 0; k < count; k++) {
                 source = (*entry)->data;
                 gsMemCopy(destination, source, (*entry)->size);
                 (*entry)->data = destination;
@@ -792,8 +795,8 @@ u32 fn_800E1544(void)
             }
             if (remaining >= sizeof(GSFreeBlock)) {
                 fresh = (GSFreeBlock*)destination;
-                fresh->prev = prev;
-                fresh->next = next;
+                fresh->prev = prevFree;
+                fresh->next = nextFree;
                 fresh->size = remaining;
                 if (fresh->prev != NULL) {
                     fresh->prev->next = fresh;
