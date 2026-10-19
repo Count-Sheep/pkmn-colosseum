@@ -24,12 +24,14 @@ extern u16* lbl_8047A500;
  * MENU_PDA_MAIL_LIST_ONLY the mailbox list menu (fn_8004D34C),
  * MENU_PDA_MAIL_HIGHLIGHT_ONLY the row highlight callback (fn_8004DA64),
  * MENU_PDA_MAIL_PICKER_ONLY the handle picker input callback (fn_8004DDC0)
- * MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0)
+ * MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0),
+ * MENU_PDA_MAIL_PREVIEW_ONLY the attachment preview draw (fn_8004E510)
  * and MENU_PDA_MAIL_SORTLABEL_ONLY the sort label and page arrows
  * (fn_8004C3E4, fn_8004C4A4). */
 #if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY) || \
     defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY) || defined(MENU_PDA_MAIL_PICKER_ONLY) || \
-    defined(MENU_PDA_MAIL_ATTACH_ONLY) || defined(MENU_PDA_MAIL_SORTLABEL_ONLY)
+    defined(MENU_PDA_MAIL_ATTACH_ONLY) || defined(MENU_PDA_MAIL_SORTLABEL_ONLY) || \
+    defined(MENU_PDA_MAIL_PREVIEW_ONLY)
 #define MENU_PDA_MAIL_PARTIAL
 #endif
 
@@ -405,6 +407,9 @@ typedef struct PdaMailWindowB {
     s32* field_0x60;
 } PdaMailWindowB;
 
+#endif /* MENU_PDA_MAIL_PARTIAL */
+
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_PREVIEW_ONLY)
 extern u32 mailGetAttachFileGroup(s32 index);
 extern s32 fn_8017B2CC(u32 fileHandle);
 extern s32 fn_8017B448(u32 fileHandle);
@@ -421,20 +426,23 @@ static inline s32 pdaMailIsAttachReady(s32 index)
 }
 
 /* RULE-EXCEPTION(user-approved): reconstructed inline helper (fn_8004E440, fn_8004E180, fn_8004E2E0, fn_8004E510) — see docs/RULE_EXCEPTIONS.md */
-static inline s32 pdaMailCountAttachItems(s32* state)
+static inline u32 pdaMailGetGroup(s32 index)
+{
+    return mailGetAttachFileGroup(index);
+}
+
+/* RULE-EXCEPTION(user-approved): reconstructed inline helper (fn_8004E440, fn_8004E180, fn_8004E2E0, fn_8004E510) — see docs/RULE_EXCEPTIONS.md */
+static inline s32 pdaMailCountAttachItems(s32 index)
 {
     u32 object;
-    s32 index;
     s32 total;
     s32 count;
     s32 i;
 
-    index = state[1];
-
     if (!pdaMailIsAttachReady(index)) {
         return -1;
     }
-    object = mailGetAttachFileGroup(index);
+    object = pdaMailGetGroup(index);
     total = fn_8017B448(object);
     count = 0;
     for (i = 0; i < total; i++) {
@@ -445,13 +453,15 @@ static inline s32 pdaMailCountAttachItems(s32* state)
     }
     return count;
 }
+#endif /* MENU_PDA_MAIL_PREVIEW_ONLY */
 
+#ifndef MENU_PDA_MAIL_PARTIAL
 #pragma peephole off
 s32 fn_8004E440(PdaMailWindowB* window, void* fieldHandle)
 {
     s32 count;
 
-    count = pdaMailCountAttachItems(window->field_0x60);
+    count = pdaMailCountAttachItems(window->field_0x60[1]);
     if (count <= 0) {
         winSpriteSetDisp(fieldHandle, 0);
     } else {
@@ -1721,7 +1731,7 @@ s32 fn_8004E180(u8* context, u8* object)
 
     attachmentState = *(u8**)(context + 0x60);
     current = **(s32**)(attachmentState + 8);
-    count = pdaMailCountAttachItems((s32*)attachmentState);
+    count = pdaMailCountAttachItems(((s32*)attachmentState)[1]);
     if (count <= 0) {
         return 0;
     }
@@ -1751,7 +1761,7 @@ s32 fn_8004E2E0(u8* context, u8* object)
     s32 count;
 
     attachmentState = *(u8**)(context + 0x60);
-    count = pdaMailCountAttachItems((s32*)attachmentState);
+    count = pdaMailCountAttachItems(((s32*)attachmentState)[1]);
 
     if (count < 2) {
         winSpriteSetDisp(object, 0);
@@ -1770,7 +1780,9 @@ s32 fn_8004E2E0(u8* context, u8* object)
     return 0;
 }
 #pragma peephole reset
+#endif /* MENU_PDA_MAIL_PARTIAL */
 
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_PREVIEW_ONLY)
 extern u8 fn_8017B07C(u32 fileHandle, u32 entry);
 extern void fn_800D88DC(u32 mask);
 extern void fn_800D888C(u32 value);
@@ -1789,14 +1801,14 @@ extern f32 lbl_8047BE4C;
 static inline u32 pdaMailGetAttachEntry(s32* state, s32 selected)
 {
     s32 index;
-    s32 i;
     u32 entry;
-    s32 found;
     s32 count;
     u32 fileHandle;
+    s32 i;
+    s32 found;
 
     index = state[1];
-    count = pdaMailCountAttachItems(state);
+    count = pdaMailCountAttachItems(index);
     if (count <= selected) {
         return -1;
     }
@@ -1814,23 +1826,20 @@ static inline u32 pdaMailGetAttachEntry(s32* state, s32 selected)
     return entry;
 }
 
-#pragma peephole off
 s32 fn_8004E510(u8* context, u8* object)
 {
-    /* RULE-EXCEPTION(user-approved): codegen-only local for the selected attachment, read before the entry lookup - see docs/RULE_EXCEPTIONS.md */
-    s32 selected;
     u8* attachmentState;
     u32 fileHandle;
     u32 entry;
     u32 texture;
 
     attachmentState = *(u8**)(context + 0x60);
-    if (pdaMailCountAttachItems((s32*)attachmentState) <= 0) {
+    if (pdaMailCountAttachItems(((s32*)attachmentState)[1]) <= 0) {
         return 0;
     }
 
-    selected = **(s32**)(attachmentState + 8);
-    entry = pdaMailGetAttachEntry((s32*)attachmentState, selected);
+    entry = pdaMailGetAttachEntry((s32*)attachmentState,
+                                  **(s32**)(attachmentState + 8));
     if (entry == -1) {
         return 0;
     }
@@ -1860,9 +1869,7 @@ s32 fn_8004E510(u8* context, u8* object)
     fn_800D6728();
     return 0;
 }
-#pragma peephole reset
-
-#endif /* MENU_PDA_MAIL_PARTIAL */
+#endif /* MENU_PDA_MAIL_PREVIEW_ONLY */
 
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORT_ONLY)
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */

@@ -4151,11 +4151,17 @@ config.libs = [
                 )
                 for status, path in [
                     (Matching, "game/menu/menu_pda_mail_exact_8004E440.c"),
-                    (CodeCandidate, "game/menu/menu_pda_mail_candidate_8004E510.c"),
                     (Matching, "game/menu/menu_pda_mail_exact_8004E790.c"),
                     (Matching, "game/menu/menu_pda_mail_candidate_8004E9C0.c"),
                 ]
             ],
+            Object(
+                Matching,
+                "game/menu/menu_pda_mail_candidate_8004E510.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             Object(
                 Matching,
                 "game/menu/menu_pda_mail_exact_8004D590.c",
