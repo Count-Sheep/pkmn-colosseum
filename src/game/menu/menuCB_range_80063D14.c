@@ -178,21 +178,6 @@ static inline void menuCBEntryInit(void)
     menuCBEntryPorts(battleType, playerCount);
 }
 
-/* RULE-EXCEPTION(user-approved): single-use inline helper (entry order loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
-static inline void menuCBEntryInitOrder(void)
-{
-    void* entries[4];
-    s32 player;
-
-    for (player = 0; player < 4; player++) {
-        entries[player] = fn_8006ACCC(player);
-        if (entries[player] != NULL) {
-            MENUCB_WORK->order[player] = *(s32*)((u8*)entries[player] + 0x28);
-        } else {
-            MENUCB_WORK->order[player] = -1;
-        }
-    }
-}
 
 /* RULE-EXCEPTION(user-approved): single-use inline helper (decision wait loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
 static inline void menuCBWaitDecided(void)
@@ -211,6 +196,7 @@ static inline void menuCBWaitDecided(void)
 
 s32 fn_80063D14(void* work)
 {
+    void* entries[4];
     s32 battleType;
     s32 player;
     s32 count;
@@ -227,7 +213,14 @@ s32 fn_80063D14(void* work)
         toolentryTaisenInitPokemonOrder(player);
     }
 
-    menuCBEntryInitOrder();
+    for (player = 0; player < 4; player++) {
+        entries[player] = fn_8006ACCC(player);
+        if (entries[player] != NULL) {
+            MENUCB_WORK->order[player] = *(s32*)((u8*)entries[player] + 0x28);
+        } else {
+            MENUCB_WORK->order[player] = -1;
+        }
+    }
 
     switch (toolentryTaisenGetBattleType()) {
     case 0:
