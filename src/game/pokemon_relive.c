@@ -574,9 +574,7 @@ u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
 }
 #endif
 
-#if defined(POKEMON_RELIVE_POST_CEREMONY_ONLY)
-#pragma push
-#pragma optimize_for_size off
+#if defined(POKEMON_RELIVE_PRE_MAIN_ONLY)
 /* Address: 0x8025EF58 | Size: 0x354 | Ghidra import */
 
 typedef struct ReliveSelection {
@@ -722,7 +720,6 @@ void preReliveMain(void)
         ((u32*)&lbl_8047B668)[1] = 0xFFFFFFFF;
     }
 }
-#pragma pop
 #endif
 
 #if defined(POKEMON_RELIVE_SEQUENCE_EXACT_ONLY)
@@ -919,7 +916,7 @@ void reliveCeremonyAll(u32 r3)
 #pragma pop
 #endif
 
-#if defined(POKEMON_RELIVE_POST_CEREMONY_ONLY)
+#if defined(POKEMON_RELIVE_MAIN_ONLY)
 #pragma push
 #pragma optimize_for_size off
 /* Address: 0x8025ED4C | Ghidra import */
