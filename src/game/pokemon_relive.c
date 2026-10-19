@@ -471,6 +471,11 @@ typedef struct ReliveLevelUpStatus {
 
 int _cbWazaForget__FP7PokemonUsl(u32 r3, u32 r4);
 
+static inline s16 expRecoverGetStat(u32 p, u32 id)
+{
+    return (s16)pokemonGetStatus(p, 0, id, 0);
+}
+
 u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
 {
     extern void winMsgCloseLevelUpStatus(s32);
@@ -496,7 +501,7 @@ u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
     u8 level;
     s16 spAttack;
     s16 spDefense;
-    s16 speed;
+    u32 rest;
     ReliveLevelUpStatus status;
     u32 newLevel;
     u32 levelUp;
@@ -504,49 +509,47 @@ u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
     u8 wazaIndex;
     u32 waza;
     u32 item;
-    u32 carrier;
-    u32 carrier2;
+    s16 speed;
 
-    carrier2 = r3;
-    carrier = carrier2;
+    rest = r4;
     levelUp = 0;
     wazaIndex = 0;
-    pokemonGetStatus(carrier, 0, 0x7A, 0);
+    pokemonGetStatus(r3, 0, 0x7A, 0);
     for (;;) {
-        if (r4 == 0) {
-            pokemonSetStatus(carrier, 0, 0xC6, 0, r4);
+        if (rest == 0) {
+            pokemonSetStatus(r3, 0, 0xC6, 0, rest);
             break;
         }
-        level = (u8)pokemonGetStatus(carrier, 0, 0x7A, 0);
+        level = (u8)pokemonGetStatus(r3, 0, 0x7A, 0);
         if (level >= 100) {
             break;
         }
-        exp = (u32)pokemonGetStatus(carrier, 0, 0x79, 0);
-        next = pokemonGetLevelToExp(carrier, level + 1);
-        hp = (s16)pokemonGetStatus(carrier, 0, 0x87, 0);
-        attack = (s16)pokemonGetStatus(carrier, 0, 0x88, 0);
-        defense = (s16)pokemonGetStatus(carrier, 0, 0x89, 0);
-        spAttack = (s16)pokemonGetStatus(carrier, 0, 0x8A, 0);
-        spDefense = (s16)pokemonGetStatus(carrier, 0, 0x8B, 0);
-        speed = (s16)pokemonGetStatus(carrier, 0, 0x8C, 0);
-        exp += r4;
+        exp = (u32)pokemonGetStatus(r3, 0, 0x79, 0);
+        next = pokemonGetLevelToExp(r3, level + 1);
+        hp = expRecoverGetStat(r3, 0x87);
+        attack = expRecoverGetStat(r3, 0x88);
+        defense = expRecoverGetStat(r3, 0x89);
+        spAttack = expRecoverGetStat(r3, 0x8A);
+        spDefense = expRecoverGetStat(r3, 0x8B);
+        speed = expRecoverGetStat(r3, 0x8C);
+        exp += rest;
         if (exp >= next) {
-        r4 = exp - next;
+        rest = exp - next;
         levelUp = 1;
-        pokemonBiosSetExp(carrier, next);
-        pokemonResetBasisStatus(carrier);
-        item = pokemonGetSoubiItemSoubiDataId(carrier);
-        pokemonGetFriendFormPokemonFriendFilterId(carrier, item, 0);
-        newLevel = pokemonBiosGetLevel(carrier);
+        pokemonBiosSetExp(r3, next);
+        pokemonResetBasisStatus(r3);
+        item = pokemonGetSoubiItemSoubiDataId(r3);
+        pokemonGetFriendFormPokemonFriendFilterId(r3, item, 0);
+        newLevel = pokemonBiosGetLevel(r3);
         fn_80165668(0x4CA, 0, 0xFF);
         msgctrlSetValue(0x2F, (u8)newLevel);
         winMsgOpenField(0x44CE, 1, 0);
-        status.hp = (s16)pokemonGetStatus(carrier, 0, 0x87, 0);
-        status.attack = (s16)pokemonGetStatus(carrier, 0, 0x88, 0);
-        status.defense = (s16)pokemonGetStatus(carrier, 0, 0x89, 0);
-        status.spAttack = (s16)pokemonGetStatus(carrier, 0, 0x8A, 0);
-        status.spDefense = (s16)pokemonGetStatus(carrier, 0, 0x8B, 0);
-        status.speed = (s16)pokemonGetStatus(carrier, 0, 0x8C, 0);
+        status.hp = expRecoverGetStat(r3, 0x87);
+        status.attack = expRecoverGetStat(r3, 0x88);
+        status.defense = expRecoverGetStat(r3, 0x89);
+        status.spAttack = expRecoverGetStat(r3, 0x8A);
+        status.spDefense = expRecoverGetStat(r3, 0x8B);
+        status.speed = expRecoverGetStat(r3, 0x8C);
         gain.hp = status.hp - hp;
         gain.attack = status.attack - attack;
         gain.defense = status.defense - defense;
@@ -559,20 +562,21 @@ u32 _expRecover__FP7PokemonUl(u32 r3,u32 r4)
         winMsgOpenLevelUpStatus(&status, 1);
         winMsgCloseLevelUpStatus(1);
         wazaIndex = 0;
-        while ((u16)(waza = pokemonGetOboeWazaDataId(carrier, newLevel, &wazaIndex)) != 0) {
-            if (pokemonSearchWazaDataId(carrier, waza) == -1 &&
-                (s32)evolutionWazaLearn(carrier, waza, &slot, 0, _cbWazaForget__FP7PokemonUsl, 0) != 0) {
-                pokemonWazaCreate(carrier, slot, waza);
+        while ((u16)(waza = pokemonGetOboeWazaDataId(r3, newLevel, &wazaIndex)) != 0) {
+            if (pokemonSearchWazaDataId(r3, waza) == -1 &&
+                (s32)evolutionWazaLearn(r3, waza, &slot, 0, _cbWazaForget__FP7PokemonUsl, 0) != 0) {
+                pokemonWazaCreate(r3, slot, waza);
             }
             wazaIndex++;
         }
         } else {
-            r4 = 0;
-            pokemonSetStatus(carrier, 0, 0x79, 0, exp);
+            rest = 0;
+            pokemonSetStatus(r3, 0, 0x79, 0, exp);
         }
     }
     return levelUp;
 }
+
 #endif
 
 #if defined(POKEMON_RELIVE_PRE_MAIN_ONLY)
