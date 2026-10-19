@@ -1061,9 +1061,8 @@ void* lbl_802E60B0[5] = {
 /* Anchor a PDA widget to its layout entry and hand the sprite to the drawer. */
 static inline void pdaPlaceSprite(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
-    sprite->field_50 =
-        (s16)((s32)*(f32*)((u8*)&lbl_803A6818 + 0x1dc) +
-              *(s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c + 2));
+    s16 base = *(s16*)(lbl_802EF0A8 + sprite->eventId * 0x1c + 2);
+    sprite->field_50 = (s16)(base + (s32)*(f32*)((u8*)&lbl_803A6818 + 0x1dc));
     spriteSetEnv(fn_800FE6D0(
         (s16)(*(s16*)((u8*)alphaSprite + 0x84) + sprite->field_50),
         (s16)(*(s16*)((u8*)alphaSprite + 0x86) + sprite->field_52)));
