@@ -543,7 +543,7 @@ asm void fn_800155B0(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_800155B0(s32 x, s32 pageIndex, u16* packedRange) {
+s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
     s32 visibleIndex;
     s32 textX;
     s32 validCount;
@@ -620,7 +620,7 @@ asm void fn_800159BC(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_800159BC(s32 x, s32 pageIndex, u16* packedRange) {
+s32 fn_800159BC(int x, s32 pageIndex, u16* packedRange) {
     s32 validCount;
     s32 itemIndex;
     s32 displayLine;
@@ -715,7 +715,7 @@ asm void fn_80015E3C(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_80015E3C(s32 x, s32 pageIndex, u16* packedRange) {
+s32 fn_80015E3C(int x, s32 pageIndex, u16* packedRange) {
     s32 validCount;
     s32 itemIndex;
     s32 displayLine;
