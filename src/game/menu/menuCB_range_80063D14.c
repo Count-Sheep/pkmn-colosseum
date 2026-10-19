@@ -2,8 +2,15 @@
  * @file menuCB_range_80063D14.c
  * @brief Residual menuCB candidate range, 0x80063D14 - 0x80064378.
  */
-#define MENUCB_RANGE_RESIDUAL_EMPTY_ONLY
-#include "menuCB_range_80062948.c"
+#include "dolphin/types.h"
+
+extern u8 lbl_803A9F08[];
+extern f32 lbl_8047BFE8;
+extern s32 toolentryTaisenGetBattleType(void);
+extern s32 toolentryTaisenGetEntryPlayerNum(void);
+extern s32 fn_8006B1D4(void);
+extern u16 toolentryTaisenGetPokemonNum(s32);
+extern s32 fn_8025D9CC(void);
 
 typedef struct MenuCBEntryPort {
     u32 unused;
@@ -146,7 +153,7 @@ static inline void menuCBEntryPorts(s32 battleType, s32 playerCount)
                 mode = 1;
             }
             maxCount = fn_8006B1D4();
-            pokemonCount = toolentryTaisenGetPokemonNum(player);
+            pokemonCount = toolentryTaisenGetPokemonNum(player) & 0xFFFF;
             fn_8008AB20(command, menuCBMin(pokemonCount, maxCount), mode);
         }
     }
