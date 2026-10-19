@@ -1341,11 +1341,8 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
 
     u8* tbl;
     u8* entry;
-    struct {
-        u8* ctx;
-        u8* draw;
-    } refs;
     s32 slot_count;
+    u8* ctx;
     s32 slot_i;
     s32 loop_lim;
     s32 dir_off;
@@ -1358,9 +1355,8 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     s32 x_pos;
 
     tbl = lbl_802EF0A8;
-    refs.draw = arg1;
-    refs.ctx = *(u8**)((u8*)arg0 + 0x60);
-    entry = tbl + *(s16*)(refs.draw + 0x6) * 0x1c;
+    ctx = *(u8**)((u8*)arg0 + 0x60);
+    entry = tbl + *(s16*)(arg1 + 0x6) * 0x1c;
     dir_off = 0;
     loop_lim = 10;
     scroll_px = 0;
@@ -1371,13 +1367,13 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
                 *(s16*)(tbl + 0x4932), *(s16*)(tbl + 0x4934));
 
     slot_i = *(s8*)((u8*)arg0 + 0x94);
-    slot_count = *(s32*)(refs.ctx + 0x8);
+    slot_count = *(s32*)(ctx + 0x8);
     msgctrlSetValue(0x50, (void*)0x270f);
     w = GSmsgGetRect(0xdb) >> 16;
-    x_mid = *(s16*)(refs.draw + 0x54) - w - (GSmsgGetRect(0x14f) >> 16);
+    x_mid = *(s16*)(arg1 + 0x54) - w - (GSmsgGetRect(0x14f) >> 16);
 
     /* scroll animation */
-    if (lbl_8047B980 != (scroll_f = **(f32**)(refs.ctx + 0xc)) && **(s32**)(refs.ctx + 0x14) != 0) {
+    if (lbl_8047B980 != (scroll_f = **(f32**)(ctx + 0xc)) && **(s32**)(ctx + 0x14) != 0) {
         if (scroll_f < lbl_8047B980) {
             slot_i--;
             dir_off = -1;
@@ -1395,13 +1391,13 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
         }
 
         x_pos = x_acc - scroll_px;
-        shopDrawListRow(refs.ctx, refs.draw, slot_i, x_pos, x_mid);
+        shopDrawListRow(ctx, arg1, slot_i, x_pos, x_mid);
     }
 
     /* trailing "add"/"locked" button if visual columns remain */
     if (loop_i < loop_lim) {
         fn_800FB680(0, loop_i * 0x1f - scroll_px, -1,
-                    (refs.ctx[0x1d] & 1) ? 0x2b47 : 0x2b2c);
+                    (ctx[0x1d] & 1) ? 0x2b47 : 0x2b2c);
     }
 
     fn_800FE35C();
