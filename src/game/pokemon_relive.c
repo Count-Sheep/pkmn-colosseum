@@ -210,8 +210,11 @@ void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,
 #endif
 
 #if defined(POKEMON_RELIVE_PRE_SEQUENCE_ONLY)
-/* Address: 0x8025DF38 | Size: 0x178 | Ghidra import */
-u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
+/* Address: 0x8025DF38 | Size: 0x178
+ * The body lives in a single-use inline helper whose parameters and locals
+ * are numbered after the wrapper's, which gives retail's register order. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper carrying the whole body for register numbering - see docs/RULE_EXCEPTIONS.md */
+static inline u32 impl_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
 {
     extern u32 _fadeEffectGetRandom__FUl(u32);
     extern void GSmodelSetBoundCheck(void* model, s32 on);
@@ -228,17 +231,18 @@ u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
     extern u8 fn_801DDD28(u32 handle, u16 a, u16 b, s32 c);
     extern u32 fn_801DE190(u32 id, u32 random, s32 flags);
     extern void* fn_801DAC3C(u32 handle);
-    s32 n;
-    void* floor;
-    u32 i;
-    void* model;
-    int k;
+    u16* pair;
     u32 light;
+    int k;
+    u32 id;
+    u32 i;
+    void* floor;
+    u32 count;
+    s32 n;
+    void* model;
+    u32 handle;
     u32 surface;
     u32 surfaces[13];
-    u32 count;
-    u32 handle;
-    u16* pair;
 
     handle = fn_801DE190(r4, _fadeEffectGetRandom__FUl(0xFFFFFFFF), 0);
     *r3 = handle;
@@ -261,7 +265,8 @@ u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
             n = 0;
             if (count == 1) {
                 for (i = 0; i < count; i++) {
-                    surface = floorGetResource(fn_800FF56C(), floorDataBiosGetShadowReciveID(floor, i));
+                    id = floorDataBiosGetShadowReciveID(floor, i);
+                    surface = floorGetResource(fn_800FF56C(), id);
                     if (surface != 0) {
                         surfaces[n] = surface;
                         n++;
@@ -275,6 +280,11 @@ u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
         }
     }
     return 1;
+}
+
+u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
+{
+    return impl_8025DF38(r3, r4, r5, r6);
 }
 #endif
 
