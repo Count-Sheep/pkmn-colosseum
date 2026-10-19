@@ -627,7 +627,7 @@ s32 fn_800159BC(int x, s32 pageIndex, u16* packedRange) {
     s32 visibleIndex;
     s32 lineLimit;
     s32 scroll;
-    s32 y;
+    int y;
     s32 textX;
     void* itemData;
     u8 machineNo;
@@ -722,7 +722,7 @@ s32 fn_80015E3C(int x, s32 pageIndex, u16* packedRange) {
     s32 visibleIndex;
     s32 lineLimit;
     s32 scroll;
-    s32 y;
+    int y;
     u32 name;
     s16 width;
 
