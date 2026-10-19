@@ -223,7 +223,8 @@ static inline s32 shopFillSlotOnce(ShopItemSlot* slots, u16 count, s32 item_id,
         return quantity;
     }
     if (current_id == 0) {
-        itemBiosSetItemDataId(slots, item_id);
+        /* RULE-EXCEPTION(user-approved): codegen-only cast to the callee's u16 id (the value is already a u16 save-data id) - see docs/RULE_EXCEPTIONS.md */
+        itemBiosSetItemDataId(slots, (u16)item_id);
         current_quantity = 0;
     } else {
         current_quantity = itemBiosGetNum(slots);
