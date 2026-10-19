@@ -31,6 +31,9 @@
     defined(MENU_FIGHT_ONLY_8000ED34)
 #define MENU_FIGHT_ONLY
 #endif
+#if defined(MENU_FIGHT_ONLY_8000F400)
+#define MENU_FIGHT_ONLY
+#endif
 
 /* =========================================================================
  * External declarations
@@ -1539,6 +1542,9 @@ visibility_done:
 }
 #endif
 
+#endif /* !MENU_FIGHT_ONLY */
+
+#if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000F400)
 /* menuFightDrawSecretWazaDoc - 0x8000F400 | size: 0x368 */
 extern u32 fightOutPokemonGetPokemonPtr();
 extern void fn_800FB8C8(void);
@@ -1548,8 +1554,6 @@ asm void menuFightDrawSecretWazaDoc(void) {
 #include "src/game/gs_npc_interact_fn_8000F400.inc"
 }
 #else
-#pragma push
-#pragma opt_propagation off
 void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     extern u32 windowSearchID(void);
     extern u8* windowGetAllocPtr(void);
@@ -1641,14 +1645,14 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
             fn_800FB8C8(0, 0, *(s16*)(npc + 0x54), *(s16*)(npc + 0x56), color, 0xD2);
         }
         break;
-    case 0x11FE: {
+    case 0x11FF: {
         u8* entry = party + (*(s32*)state * 0xC);
 
         msgctrlSetValue(0x37, *(u32*)(entry + 4));
         fn_800FB680(0, 0, color, 0xCF);
         break;
     }
-    case 0x11FF: {
+    case 0x11FE: {
         u8* entry;
 
         y0 = (s16)(GSmsgGetRect(0x1A4) >> 16);
@@ -1668,9 +1672,11 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
         break;
     }
 }
-#pragma pop
 #endif
 
+#endif
+
+#ifndef MENU_FIGHT_ONLY
 /* menuFightDrawSecretWazaSelect - 0x8000F768 | size: 0x1fc */
 extern void jumptable_802E4CD8();
 #if 0

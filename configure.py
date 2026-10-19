@@ -9145,7 +9145,7 @@ config.libs = [
                     (Matching, "game/menuFight_exact_8000EA10.c"),
                     (CodeCandidate, "game/menuFight_candidate_8000ED34.c"),
                     (Matching, "game/menuFight_exact_8000F310.c"),
-                    (CodeCandidate, "game/menuFight_r51_8000F400.c"),
+                    (CodeCandidate, "game/menuFight_r51_8000F768.c"),
                     (Matching, "game/menuFight_exact_8000FFA8.c"),
                     (Matching, "game/menuFight_exact_800100C0.c"),
                     (Matching, "game/menuFight_exact_80010294.c"),
@@ -9153,6 +9153,15 @@ config.libs = [
                     (Matching, "game/menuFight_exact_80010C98.c"),
                 ]
             ],
+            # menuFightDrawSecretWazaDoc: one-function carve, built without
+            # copy propagation (unit flag instead of the old local pragma).
+            Object(
+                Matching,
+                "game/menuFight_exact_8000F400.c",
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole,nopropagation"],
+                progress_category="game",
+            ),
             # TEMPORARY constant_import
             Object(
                 Matching,
