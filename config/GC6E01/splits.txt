@@ -796,7 +796,10 @@ game/menu/pda_range_r46_8003AFDC_o4s.c:
 	.text       start:0x8003AFDC end:0x8003B2D8
 
 game/menu/pda_exact_8003B2D8.c:
-	.text       start:0x8003B2D8 end:0x8003B6D0
+	.text       start:0x8003B2D8 end:0x8003B478
+
+game/menu/pda_exact_8003B478.c:
+	.text       start:0x8003B478 end:0x8003B6D0
 
 game/menu/pda_candidate_8003B6D0_gc20.c:
 	.text       start:0x8003B6D0 end:0x8003B814

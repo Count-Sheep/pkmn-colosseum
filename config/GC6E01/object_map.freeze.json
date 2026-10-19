@@ -6,12 +6,12 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2229
+    "total_units": 2230
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2131,
-    "source_backed_units": 2130,
+    "named_units": 2132,
+    "source_backed_units": 2131,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
@@ -23,7 +23,7 @@
     "matched_data_percent": 58.849697,
     "matched_functions": 8643,
     "matched_functions_percent": 99.60816,
-    "fuzzy_match_percent": 99.94925
+    "fuzzy_match_percent": 99.949455
   },
   "unit_topology": [
     {
@@ -3510,13 +3510,26 @@
       "sections": [
         {
           "name": ".text",
-          "size": 1016,
+          "size": 416,
           "virtual_address": 2147726040
         }
       ],
-      "total_code": 1016,
+      "total_code": 416,
       "total_data": 0,
-      "total_functions": 2
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/menu/pda_exact_8003B478",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 600,
+          "virtual_address": 2147726456
+        }
+      ],
+      "total_code": 600,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
       "name": "main/game/menu/pda_candidate_8003B6D0_gc20",
