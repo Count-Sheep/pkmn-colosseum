@@ -8618,9 +8618,9 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
     extern void windowDrawSprite2(s16 x, s16 y, s16 w, s16 h, u32 color,
                                   void* work, s32 id, s32 flag);
     PdaPairS16 wave[2];
+    s32* rank;
+    s32 idx;
     PdaPairS16 icon[2];
-    /* RULE-EXCEPTION(user-approved): volatile icon index in fn_800499BC, kept in its stack slot as retail does - see docs/RULE_EXCEPTIONS.md */
-    volatile s32 idx;
     s16* pos;
     s32 i;
     s32 id;
@@ -8650,11 +8650,12 @@ s32 fn_800499BC(void* work, PdaSprite* sprite)
         if (i < 0) {
             i = 0;
         }
-        idx = i;
+        rank = &idx;
+        *rank = i;
         if (i > 4) {
-            idx = 0;
+            *rank = 0;
         }
-        id = ((u16*)icon)[idx];
+        id = ((u16*)icon)[*rank];
         menuSpriteBiosGetPtr(id);
         windowDrawSprite2(
             (s16)((s32)*(f32*)(lbl_803A6A60 + 0x30) +
