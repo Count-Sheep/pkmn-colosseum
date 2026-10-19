@@ -2131,6 +2131,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if ((status & 0x30) != 0x30) {
             return 9;
         }
+        /* RULE-EXCEPTION(user-approved): codegen-only cast (byte view of status keeps the two flag reads unmerged until the backend) - see docs/RULE_EXCEPTIONS.md */
         if ((((u8*)&status)[0] & 2) == 0) {
             break;
         }
