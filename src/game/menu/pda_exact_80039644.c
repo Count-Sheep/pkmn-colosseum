@@ -13,7 +13,7 @@ extern u16 pcboxGetNbItemSlot(s32 box);
 extern u8 fn_801429E8(void* item);
 extern s32 itemBiosGetItemDataId(void* item);
 extern s32 itemBiosGetNum(void* item);
-extern void* itemDataBiosGetPtr(u16 id);
+extern void* itemDataBiosGetPtr(s32 id);
 extern void* itemDataBiosGetName(void* data);
 extern u8 itemDataBiosGetKind(void* data);
 extern void msgctrlSetValue(s32 id, u32 value);
@@ -68,15 +68,15 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
 {
     s32 start;
     s32 i;
+    s32 rowY;
     s32 slots;
     s32 j;
     s32 found;
-    s32 nameX;
     s32 total;
-    s32 rowY;
+    s32 nameX;
     s32 y;
     s32 width;
-    u32 itemId;
+    s32 itemId;
     u16 count;
     void* item;
     void* name;
@@ -117,7 +117,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
         }
         y = rowY - yAdj;
         itemId = pda_80039644_ItemId(index);
-        name = itemDataBiosGetName(itemDataBiosGetPtr(itemId));
+        name = itemDataBiosGetName(itemDataBiosGetPtr((u16)itemId));
         if (name != NULL) {
             fn_800FB680(0, y, (s32)sprite, name);
         }
