@@ -502,12 +502,12 @@ static inline void gsMemCopy(u8* dst, u8* src, u32 size) {
     u32 distance = src - dst;
 
     if ((distance > 0 ? distance : -distance) >= 4) {
-        u32* wordDst = (u32*)dst;
         u32* wordSrc = (u32*)src;
+        u32* wordDst = (u32*)dst;
         u32 words = size >> 2;
         u32 bytes = size & 3;
-        u8* byteDst;
         u8* byteSrc;
+        u8* byteDst;
 
         while (words != 0) {
             *wordDst++ = *wordSrc++;
@@ -520,8 +520,8 @@ static inline void gsMemCopy(u8* dst, u8* src, u32 size) {
             bytes--;
         }
     } else {
-        u8* byteDst = dst;
         u8* byteSrc = src;
+        u8* byteDst = dst;
 
         while (size != 0) {
             *byteDst++ = *byteSrc++;
@@ -541,7 +541,7 @@ static inline void gsMemMergeNext(GSFreeBlock* block) {
 }
 
 static inline void gsMemMergePrev(GSFreeBlock* block) {
-    if (block->prev != NULL && (GSFreeBlock*)((u8*)block->prev + block->prev->size) == block) {
+    if (block->prev != NULL && block == (GSFreeBlock*)((u8*)block->prev + block->prev->size)) {
         block->prev->size += block->size;
         if (block->next != NULL) {
             block->next->prev = block->prev;
@@ -738,7 +738,7 @@ u32 fn_800E1544(void)
                     candidates[i] = desc;
                     sum = 0;
                     for (j = 0; j < count; j++) {
-                        sum += entry[j]->size;
+                        sum += candidates[j]->size;
                     }
                     if (sum > total && sum <= block->size) {
                         total = sum;
