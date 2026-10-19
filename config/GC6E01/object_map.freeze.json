@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2228
+    "total_units": 2226
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2130,
-    "source_backed_units": 2129,
+    "named_units": 2128,
+    "source_backed_units": 2127,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2440268",
-    "matched_code_percent": 97.41822,
+    "matched_code": "2440776",
+    "matched_code_percent": 97.4385,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8630,
-    "matched_functions_percent": 99.458336,
-    "fuzzy_match_percent": 99.93579
+    "matched_functions": 8631,
+    "matched_functions_percent": 99.469864,
+    "fuzzy_match_percent": 99.93595
   },
   "unit_topology": [
     {
@@ -629,33 +629,7 @@
       "total_functions": 1
     },
     {
-      "name": "main/game/menuFight_r51_8000F768",
-      "sections": [
-        {
-          "name": ".text",
-          "size": 508,
-          "virtual_address": 2147546984
-        }
-      ],
-      "total_code": 508,
-      "total_data": 0,
-      "total_functions": 1
-    },
-    {
-      "name": "main/game/menuFight_exact_8000F964",
-      "sections": [
-        {
-          "name": ".text",
-          "size": 1604,
-          "virtual_address": 2147547492
-        }
-      ],
-      "total_code": 1604,
-      "total_data": 0,
-      "total_functions": 4
-    },
-    {
-      "name": "main/game/menuFight_exact_8000FFA8",
+      "name": "main/game/menuFight_exact_8000F768",
       "sections": [
         {
           "name": ".data",
@@ -664,13 +638,13 @@
         },
         {
           "name": ".text",
-          "size": 280,
-          "virtual_address": 2147549096
+          "size": 2392,
+          "virtual_address": 2147546984
         }
       ],
-      "total_code": 280,
+      "total_code": 2392,
       "total_data": 180,
-      "total_functions": 1
+      "total_functions": 6
     },
     {
       "name": "main/game/menuFight_exact_800100C0",

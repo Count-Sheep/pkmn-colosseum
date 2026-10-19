@@ -9182,8 +9182,6 @@ config.libs = [
                     (Matching, "game/menuFight_exact_8000EA10.c"),
                     (CodeCandidate, "game/menuFight_candidate_8000ED34.c"),
                     (Matching, "game/menuFight_exact_8000F310.c"),
-                    (CodeCandidate, "game/menuFight_r51_8000F768.c"),
-                    (Matching, "game/menuFight_exact_8000FFA8.c"),
                     (Matching, "game/menuFight_exact_800100C0.c"),
                     (Matching, "game/menuFight_exact_80010294.c"),
                     (Matching, "game/menuFight_exact_80010588.c"),
@@ -9199,10 +9197,12 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole,nopropagation"],
                 progress_category="game",
             ),
-            # TEMPORARY constant_import
+            # menuFightDrawSecretWazaSelect .. menuFightDrawBall: one carve so the
+            # two adjacent switch tables (0x802E4CD8, 0x802E4D2C) come from one
+            # object. TEMPORARY constant_import for the WazaTop literals.
             Object(
                 Matching,
-                "game/menuFight_exact_8000F964.c",
+                "game/menuFight_exact_8000F768.c",
                 constant_import=[{"symbol": "lbl_8047B700", "offset": 0, "expected": "00000000"},
                                  {"symbol": "lbl_8047B704", "offset": 4, "expected": "3f490fdb"},
                                  {"symbol": "lbl_8047B708", "offset": 8, "expected": "4016cbe4"},

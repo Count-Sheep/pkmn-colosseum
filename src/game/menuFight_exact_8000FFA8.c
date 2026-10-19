@@ -1,44 +1,15 @@
 /**
  * @file menuFight_exact_8000FFA8.c
- * @brief menuFightDrawBall, 0x8000FFA8 - 0x800100C0, with .data
- *        0x802E4CD8 - 0x802E4D8C.
+ * @brief menuFightDrawBall, 0x8000FFA8 - 0x800100C0.
  *
- * Function-boundary carve of the menuFight TU (see menuFight.c, where the
- * body is unchanged). DrawBall's switch table sits at 0x802E4D2C, which is
- * only 4-aligned, so the unit starts its .data with the preceding table
- * (menuFightDrawSecretWazaSelect's, 0x802E4CD8, 8-aligned) and the compiler
- * places DrawBall's own table right after it. GC/1.3 -O4,p with the TU's
- * unit-wide -opt nopeephole, no pragmas.
+ * Part of the menuFight carve menuFight_exact_8000F768.c (which includes this
+ * file after DrawSecretWazaSelect and the secret-move top window functions,
+ * so DrawBall's switch table lands at 0x802E4D2C right after
+ * DrawSecretWazaSelect's). Body unchanged from menuFight.c.
  */
 #include "dolphin/types.h"
 
 extern void windowDrawSprite();
-extern u8 menuFightDrawSecretWazaSelect[];
-
-/* RULE-EXCEPTION(user-approved): data stand-in for another function's switch table, carried so DrawBall's table keeps its 4-aligned address — see docs/RULE_EXCEPTIONS.md */
-void* jumptable_802E4CD8[21] = {
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x80),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x88),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x90),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x78),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x94),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x80),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x88),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x90),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x78),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x80),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x88),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x90),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x78),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x80),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x88),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x90),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x78),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x80),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x88),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x90),
-    (void*)((u8*)menuFightDrawSecretWazaSelect + 0x78),
-};
 
 void menuFightDrawBall(u8* ctx, u8* npc) {
     extern u8* windowGetFreeWork(u8* a);

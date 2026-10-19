@@ -2,9 +2,10 @@
  * @file menuFight_exact_8000F964.c
  * @brief menuFightButtonSecretWazaTop .. menuFightCtrlSecretMain, 0x8000F964 - 0x8000FFA8.
  *
- * Function-boundary carve of the menuFight TU (see menuFight.c): the
- * secret-move top window and the secret/ball window controls. GC/1.3
- * -O4,p with the TU's unit-wide -opt nopeephole, no pragmas.
+ * Part of the menuFight carve menuFight_exact_8000F768.c (0x8000F768 -
+ * 0x800100C0), which includes this file: the secret-move top window and the
+ * secret/ball window controls. GC/1.3 -O4,p with the TU's unit-wide
+ * -opt nopeephole, no pragmas.
  *
  * RULE-EXCEPTION(user-approved): constant_import (temporary) redirects this
  * carve's own 0.0f, pi/4, 3pi/4 and int-to-float bias literals to the TU's

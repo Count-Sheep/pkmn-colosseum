@@ -137,14 +137,8 @@ game/data/data_802E4CA8.c:
 game/menuFight_exact_8000F400.c:
 	.text       start:0x8000F400 end:0x8000F768
 
-game/menuFight_r51_8000F768.c:
-	.text       start:0x8000F768 end:0x8000F964
-
-game/menuFight_exact_8000F964.c:
-	.text       start:0x8000F964 end:0x8000FFA8
-
-game/menuFight_exact_8000FFA8.c:
-	.text       start:0x8000FFA8 end:0x800100C0
+game/menuFight_exact_8000F768.c:
+	.text       start:0x8000F768 end:0x800100C0
 	.data       start:0x802E4CD8 end:0x802E4D8C
 
 game/menuFight_exact_800100C0.c:
