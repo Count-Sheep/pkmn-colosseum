@@ -26,12 +26,13 @@ extern u16* lbl_8047A500;
  * MENU_PDA_MAIL_PICKER_ONLY the handle picker input callback (fn_8004DDC0)
  * MENU_PDA_MAIL_ATTACH_ONLY the attachment viewer (fn_8004E9C0),
  * MENU_PDA_MAIL_PREVIEW_ONLY the attachment preview draw (fn_8004E510)
- * and MENU_PDA_MAIL_SORTLABEL_ONLY the sort label and page arrows
- * (fn_8004C3E4, fn_8004C4A4). */
+ * MENU_PDA_MAIL_SORTLABEL_ONLY the sort label and page arrows
+ * (fn_8004C3E4, fn_8004C4A4) and MENU_PDA_MAIL_OPEN_ONLY the mailbox
+ * scene thread (fn_8004B7EC, built with the unit flag -opt nopeephole). */
 #if defined(MENU_PDA_MAIL_SORT_ONLY) || defined(MENU_PDA_MAIL_LIST_ONLY) || \
     defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY) || defined(MENU_PDA_MAIL_PICKER_ONLY) || \
     defined(MENU_PDA_MAIL_ATTACH_ONLY) || defined(MENU_PDA_MAIL_SORTLABEL_ONLY) || \
-    defined(MENU_PDA_MAIL_PREVIEW_ONLY)
+    defined(MENU_PDA_MAIL_PREVIEW_ONLY) || defined(MENU_PDA_MAIL_OPEN_ONLY)
 #define MENU_PDA_MAIL_PARTIAL
 #endif
 
@@ -118,7 +119,7 @@ typedef struct PdaMailAttachmentConfig {
     s32 x;
 } PdaMailAttachmentConfig;
 
-#ifndef MENU_PDA_MAIL_PARTIAL
+#if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_OPEN_ONLY)
 /* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8004B7EC) - see docs/RULE_EXCEPTIONS.md */
 static inline void pdaMailWaitModel(void* model)
 {
@@ -145,7 +146,10 @@ static inline void pdaMailWaitTransition(f32* transition, f32* target, f32 value
     }
 }
 
+#ifndef MENU_PDA_MAIL_OPEN_ONLY
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) for full-file builds; the linked unit uses the flag -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
+#endif
 void fn_8004B7EC(void)
 {
     PdaMailOpenConfig config;
@@ -276,22 +280,27 @@ void fn_8004B7EC(void)
         transition = transitionField;
     }
 
-    phase = 0;
-    active = 1;
-    do {
-        switch (phase) {
-        case 0:
-            if (!fadeCheck(0)) {
-                phase = 100;
-            } else {
-                _threadSwitch();
+    {
+        s32 fading;
+        s32 step;
+
+        step = 0;
+        fading = 1;
+        do {
+            switch (step) {
+            case 0:
+                if (!fadeCheck(0)) {
+                    step = 100;
+                } else {
+                    _threadSwitch();
+                }
+                break;
+            case 100:
+                fading = 0;
+                break;
             }
-            break;
-        case 100:
-            active = 0;
-            break;
-        }
-    } while (active);
+        } while (fading);
+    }
 
     if (state->offscreenHidden != 1) {
         menuOffScreenSetDisp(1);
@@ -304,30 +313,40 @@ void fn_8004B7EC(void)
     menuCloseSync(0xF0, 1);
     menuCloseSync(0x71, 1);
 
-    phase = 0;
-    active = 1;
-    do {
-        switch (phase) {
-        case 0:
-            fadeSet(2, lbl_8047BDA8);
-            phase = 1;
-            break;
-        case 1:
-            if (!fadeCheck(0)) {
-                phase = 100;
-            } else {
-                _threadSwitch();
+    {
+        s32 fading;
+        s32 step;
+
+        step = 0;
+        fading = 1;
+        do {
+            switch (step) {
+            case 0:
+                fadeSet(2, lbl_8047BDA8);
+                step = 1;
+                break;
+            case 1:
+                if (!fadeCheck(0)) {
+                    step = 100;
+                } else {
+                    _threadSwitch();
+                }
+                break;
+            case 100:
+                fading = 0;
+                break;
             }
-            break;
-        case 100:
-            active = 0;
-            break;
-        }
-    } while (active);
+        } while (fading);
+    }
     fn_800FF660();
     floorSetFadeScript(0, 0);
 }
+#ifndef MENU_PDA_MAIL_OPEN_ONLY
 #pragma peephole reset
+#endif
+#endif /* MENU_PDA_MAIL_PARTIAL || MENU_PDA_MAIL_OPEN_ONLY */
+
+#ifndef MENU_PDA_MAIL_PARTIAL
 
 /* PI/6 and 2*PI -- rotation-angle wrap constants shared by the PDA
  * mail-icon spin/animation helpers. */
