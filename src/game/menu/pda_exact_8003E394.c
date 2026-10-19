@@ -213,29 +213,6 @@ static inline u16 pdaCollectWeights(PdaSortPair* pairs, u16* ids)
     return count;
 }
 
-/* Fill the sort pairs with each seen entry's weight; returns the entry count. */
-/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_CollectWeights (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
-static inline u16 pda_8003E394_CollectWeights(PdaSortPair* pairs, u16* ids)
-{
-    u16 i;
-    u32 id;
-    u16 count;
-    u16 key;
-
-    count = 0;
-    for (i = 0; i < lbl_8047A4E8; i++) {
-        id = lbl_8047A4E4[i];
-        if (pdaMemoSeen(id)) {
-            key = pda_8003E394_GetWeight(id);
-            ids[count] = id;
-            pairs[count].key = key;
-            pairs[count].index = i;
-            count++;
-        }
-    }
-    return count;
-}
-
 /* Fill the sort pairs with each seen entry's height; returns the entry count. */
 static inline u16 pdaCollectHeights(PdaSortPair* pairs, u16* ids)
 {
@@ -258,22 +235,45 @@ static inline u16 pdaCollectHeights(PdaSortPair* pairs, u16* ids)
     return count;
 }
 
-/* Sort tab 1: order the seen entries by weight (the sort runs even for an empty list). */
+/* Sort tab 1: collect the seen entries by weight, sort them and copy the order back
+ * (the sort runs even for an empty list; i counts both loops). Returns the entry count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_SortPairs (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pda_8003E394_SortPairs(PdaSortPair* pairs, u16* ids)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 key;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            key = pda_8003E394_GetWeight(id);
+            ids[count] = id;
+            pairs[count].key = key;
+            pairs[count].index = i;
+            count++;
+        }
+    }
+    fn_8003F2DC((u8*)pairs, count, 1);
+    for (i = 0; i < count; i++) {
+        lbl_8047A4E4[i] = ids[pairs[i].index];
+    }
+    return count;
+}
+
+/* Sort tab 1: order the seen entries by weight. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_SortWeight (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
 static inline void pda_8003E394_SortWeight(void)
 {
-    u16 j;
     u16 count;
     PdaSortPair* pairs;
     u16* ids;
 
     pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
     ids = (u16*)pdaAlloc(0x320, 0x20);
-    count = pda_8003E394_CollectWeights(pairs, ids);
-    fn_8003F2DC((u8*)pairs, count, 1);
-    for (j = 0; j < count; j++) {
-        lbl_8047A4E4[j] = ids[pairs[j].index];
-    }
+    count = pda_8003E394_SortPairs(pairs, ids);
     lbl_8047A4E8 = count;
     pdaFree(pairs);
     pdaFree(ids);

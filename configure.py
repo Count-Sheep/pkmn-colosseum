@@ -3716,7 +3716,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                NonMatching,
+                Matching,
                 "game/menu/pda_exact_8003E394.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
