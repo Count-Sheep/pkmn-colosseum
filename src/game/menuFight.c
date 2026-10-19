@@ -1564,13 +1564,13 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     u8* party;
     u8* state;
     u32 battle;
-    u16 result;
     s32 id;
+    s16 delta;
     s32 color;
     s32 value;
     s16 y0;
     s16 y1;
-    s16 delta;
+    u16 result;
 
     value = -1;
     windowGetParam(ctx, 0);
