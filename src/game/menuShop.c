@@ -1282,6 +1282,45 @@ asm void menuShopDrawListText(void) {
  * drawing a header icon and either a normal or alternate text string per slot,
  * then draws a trailing "add" or "locked" button if visual space remains.
  */
+/* One row of the shop list: icon, then price or coupon text at the row's
+ * x position; x_mid is the price column. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for menuShopDrawListText's row (its x_mid parameter is retail's hoisted preheader copy) - see docs/RULE_EXCEPTIONS.md */
+static inline void shopDrawListRow(u8* ctx, u8* draw, s32 slot_i, s32 x_pos, int x_mid)
+{
+    extern void msgctrlSetValue(s32, void*);
+    extern u32 GSmsgGetRect(u32);
+    extern void fn_800FB680(s32, s32, s32, u32);
+    extern void itemDataBiosGetPtr(u32);
+    u32 slot_id;
+    u32 icon;
+    u32 value;
+    u8 mode;
+
+    slot_id = shopListItem(ctx, slot_i);
+
+    itemDataBiosGetPtr(slot_id);
+    icon = itemDataBiosGetName();
+    if (icon != 0) {
+        fn_800FB680(0, x_pos, -1, icon);
+    }
+
+    mode = ctx[0x1c];
+    if (mode == 0 || mode == 1) {
+        fn_800FB680(x_mid, x_pos, -1, 0x14f);
+        itemDataBiosGetPtr(slot_id);
+        value = itemDataBiosGetPrice();
+        msgctrlSetValue(0x50, (void*)(u16)value);
+        fn_800FB680(*(s16*)(draw + 0x54) - (GSmsgGetRect(0xdb) >> 16),
+                    x_pos, -1, 0xdb);
+    } else {
+        itemDataBiosGetPtr(slot_id);
+        value = itemDataBiosGetCoupon();
+        msgctrlSetValue(0x50, (void*)(u16)value);
+        fn_800FB680(*(s16*)(draw + 0x54) - (GSmsgGetRect(0x153) >> 16),
+                    x_pos, -1, 0x153);
+    }
+}
+
 #pragma push
 #pragma peephole off
 s32 menuShopDrawListText(void* arg0, u8* arg1)
@@ -1312,14 +1351,11 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     s32 dir_off;
     s32 scroll_px;
     s32 x_mid;
+    u32 w;
     f32 scroll_f;
     s32 x_acc;
     s32 loop_i;
     s32 x_pos;
-    u32 slot_id;
-    u32 icon;
-    u32 value;
-    u8 mode;
 
     tbl = lbl_802EF0A8;
     refs.draw = arg1;
@@ -1337,8 +1373,8 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     slot_i = *(s8*)((u8*)arg0 + 0x94);
     slot_count = *(s32*)(refs.ctx + 0x8);
     msgctrlSetValue(0x50, (void*)0x270f);
-    x_mid = GSmsgGetRect(0xdb) >> 16;
-    x_mid = *(s16*)(refs.draw + 0x54) - x_mid - (GSmsgGetRect(0x14f) >> 16);
+    w = GSmsgGetRect(0xdb) >> 16;
+    x_mid = *(s16*)(refs.draw + 0x54) - w - (GSmsgGetRect(0x14f) >> 16);
 
     /* scroll animation */
     if (lbl_8047B980 != (scroll_f = **(f32**)(refs.ctx + 0xc)) && **(s32**)(refs.ctx + 0x14) != 0) {
@@ -1359,29 +1395,7 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
         }
 
         x_pos = x_acc - scroll_px;
-        slot_id = shopListItem(refs.ctx, slot_i);
-
-        itemDataBiosGetPtr(slot_id);
-        icon = itemDataBiosGetName();
-        if (icon != 0) {
-            fn_800FB680(0, x_pos, -1, icon);
-        }
-
-        mode = refs.ctx[0x1c];
-        if (mode == 0 || mode == 1) {
-            fn_800FB680(x_mid, x_pos, -1, 0x14f);
-            itemDataBiosGetPtr(slot_id);
-            value = itemDataBiosGetPrice();
-            msgctrlSetValue(0x50, (void*)(u16)value);
-            fn_800FB680(*(s16*)(refs.draw + 0x54) - (GSmsgGetRect(0xdb) >> 16),
-                        x_pos, -1, 0xdb);
-        } else {
-            itemDataBiosGetPtr(slot_id);
-            value = itemDataBiosGetCoupon();
-            msgctrlSetValue(0x50, (void*)(u16)value);
-            fn_800FB680(*(s16*)(refs.draw + 0x54) - (GSmsgGetRect(0x153) >> 16),
-                        x_pos, -1, 0x153);
-        }
+        shopDrawListRow(refs.ctx, refs.draw, slot_i, x_pos, x_mid);
     }
 
     /* trailing "add"/"locked" button if visual columns remain */
