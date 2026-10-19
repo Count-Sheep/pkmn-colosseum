@@ -136,6 +136,126 @@ static inline u32 evolutionCreateModel(u32 pkm, int kind)
   return model;
 }
 
+/* Address: 0x802600E4 | Size: 0x378 | Ghidra import */
+extern s8 menuSubOpenYesNo();
+extern int winMsgClose();
+extern int winMsgOpen();
+
+static inline int evolutionAskYesNo(int r6, u32 msg)
+{
+  int sel;
+
+  if (r6 == 0) {
+    winMsgOpenField(msg,1,0);
+  }
+  else {
+    winMsgOpen(2,msg,1,0);
+  }
+  if (r6 == 0) {
+    sel = (s8)fn_8001E184();
+  }
+  else {
+    sel = menuSubOpenYesNo(0,0xffffffff,0xffffffff,0);
+  }
+  if (r6 == 0) {
+    winMsgCloseField(1);
+  }
+  else {
+    winMsgClose(1);
+  }
+  switch (sel) {
+  case 0:
+    return 0;
+  case 1:
+    return 1;
+  default:
+    return 2;
+  }
+}
+
+int
+evolutionWazaLearn(u8 *r3,u32 r4,u8 *r5,int r6,void *r7,
+            u32 r8)
+
+{
+  int slot;
+  u32 uVar2;
+  u32 waza;
+  u16 sVar3;
+  u16 uVar4;
+
+  slot = 0;
+  do {
+    sVar3 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
+    if (sVar3 == 0) break;
+    slot = slot + 1;
+  } while (slot < 4);
+  if (slot < 4) goto LAB_0025d3c4;
+
+  uVar2 = pokemonBiosGetNicknamePtr(r3);
+  msgctrlSetValue(0x32,uVar2);
+  waza = r4 & 0xffff;
+  msgctrlSetValue(0x39,waza);
+  do {
+    if (evolutionAskYesNo(r6,0x4243) == 0) {
+      if (r7 != (void *)0x0) {
+        slot = ((s8 (*)())r7)(r3,r4,r8);
+      }
+      else {
+        slot = 0;
+      }
+      if (0 <= slot) goto LAB_waza_set;
+    }
+    msgctrlSetValue(0x32,uVar2);
+    msgctrlSetValue(0x39,waza);
+  } while (evolutionAskYesNo(r6,0x4242) != 0);
+  if (r6 == 0) {
+    winMsgOpenField(0x4241,1,0);
+  }
+  else {
+    winMsgOpen(2,0x4241,1,0);
+  }
+  if (r6 == 0) {
+    winMsgCloseField(1);
+  }
+  else {
+    winMsgClose(1);
+  }
+  return 0;
+
+LAB_waza_set:
+  uVar2 = pokemonBiosGetNicknamePtr(r3);
+  msgctrlSetValue(0x32,uVar2);
+  msgctrlSetValue(0x5d,0x468);
+  uVar4 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
+  msgctrlSetValue(0x39,uVar4);
+  if (r6 == 0) {
+    winMsgOpenField(0x4248,1,0);
+  }
+  else {
+    winMsgOpen(2,0x4248,1,0);
+  }
+LAB_0025d3c4:
+  fn_80165668(0x4ca,0,0xff);
+  uVar2 = pokemonBiosGetNicknamePtr(r3);
+  msgctrlSetValue(0x32,uVar2);
+  msgctrlSetValue(0x39,r4 & 0xffff);
+  if (r6 == 0) {
+    winMsgOpenField(0x423d,1,0);
+  }
+  else {
+    winMsgOpen(2,0x423d,1,0);
+  }
+  if (r6 == 0) {
+    winMsgCloseField(1);
+  }
+  else {
+    winMsgClose(1);
+  }
+  *r5 = (char)slot;
+  return 1;
+}
+
 /* Address: 0x8026045C | Size: 0x27C | Ghidra import */
 int cbWazaForget(u32 r3,u32 r4,int r5)
 
@@ -340,6 +460,10 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
   return iVar8;
 }
 
+#if !defined(EVOLUTION_802600E4_ONLY)
+/* EVOLUTION_802600E4_ONLY (evolution_exact_802600E4.c) stops here: that unit
+ * links 0x802600E4-0x80260910 (evolutionWazaLearn, cbWazaForget,
+ * doWazaSequence) in retail order. */
 typedef struct EvoWork {
     u32 model[2];
     u32 seq;
@@ -494,126 +618,6 @@ void evolution(void)
     base[6] = evolutionStart(base[0], base[1], base[2], (u16*)base[4], base[3], (u8*)base[5]);
     fn_800FF660();
     floorSetFadeScript(0, 0);
-}
-
-/* Address: 0x802600E4 | Size: 0x378 | Ghidra import */
-extern s8 menuSubOpenYesNo();
-extern int winMsgClose();
-extern int winMsgOpen();
-
-static inline int evolutionAskYesNo(int r6, u32 msg)
-{
-  int sel;
-
-  if (r6 == 0) {
-    winMsgOpenField(msg,1,0);
-  }
-  else {
-    winMsgOpen(2,msg,1,0);
-  }
-  if (r6 == 0) {
-    sel = (s8)fn_8001E184();
-  }
-  else {
-    sel = menuSubOpenYesNo(0,0xffffffff,0xffffffff,0);
-  }
-  if (r6 == 0) {
-    winMsgCloseField(1);
-  }
-  else {
-    winMsgClose(1);
-  }
-  switch (sel) {
-  case 0:
-    return 0;
-  case 1:
-    return 1;
-  default:
-    return 2;
-  }
-}
-
-int
-evolutionWazaLearn(u8 *r3,u32 r4,u8 *r5,int r6,void *r7,
-            u32 r8)
-
-{
-  int slot;
-  u32 uVar2;
-  u32 waza;
-  u16 sVar3;
-  u16 uVar4;
-
-  slot = 0;
-  do {
-    sVar3 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
-    if (sVar3 == 0) break;
-    slot = slot + 1;
-  } while (slot < 4);
-  if (slot < 4) goto LAB_0025d3c4;
-
-  uVar2 = pokemonBiosGetNicknamePtr(r3);
-  msgctrlSetValue(0x32,uVar2);
-  waza = r4 & 0xffff;
-  msgctrlSetValue(0x39,waza);
-  do {
-    if (evolutionAskYesNo(r6,0x4243) == 0) {
-      if (r7 != (void *)0x0) {
-        slot = ((s8 (*)())r7)(r3,r4,r8);
-      }
-      else {
-        slot = 0;
-      }
-      if (0 <= slot) goto LAB_waza_set;
-    }
-    msgctrlSetValue(0x32,uVar2);
-    msgctrlSetValue(0x39,waza);
-  } while (evolutionAskYesNo(r6,0x4242) != 0);
-  if (r6 == 0) {
-    winMsgOpenField(0x4241,1,0);
-  }
-  else {
-    winMsgOpen(2,0x4241,1,0);
-  }
-  if (r6 == 0) {
-    winMsgCloseField(1);
-  }
-  else {
-    winMsgClose(1);
-  }
-  return 0;
-
-LAB_waza_set:
-  uVar2 = pokemonBiosGetNicknamePtr(r3);
-  msgctrlSetValue(0x32,uVar2);
-  msgctrlSetValue(0x5d,0x468);
-  uVar4 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
-  msgctrlSetValue(0x39,uVar4);
-  if (r6 == 0) {
-    winMsgOpenField(0x4248,1,0);
-  }
-  else {
-    winMsgOpen(2,0x4248,1,0);
-  }
-LAB_0025d3c4:
-  fn_80165668(0x4ca,0,0xff);
-  uVar2 = pokemonBiosGetNicknamePtr(r3);
-  msgctrlSetValue(0x32,uVar2);
-  msgctrlSetValue(0x39,r4 & 0xffff);
-  if (r6 == 0) {
-    winMsgOpenField(0x423d,1,0);
-  }
-  else {
-    winMsgOpen(2,0x423d,1,0);
-  }
-  if (r6 == 0) {
-    winMsgCloseField(1);
-  }
-  else {
-    winMsgClose(1);
-  }
-  *r5 = (char)slot;
-  return 1;
 }
 
 extern u8 pokemonCheckValid();
@@ -814,3 +818,4 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   }
   return 1;
 }
+#endif /* !EVOLUTION_802600E4_ONLY */

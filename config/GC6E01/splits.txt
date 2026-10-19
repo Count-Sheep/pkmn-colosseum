@@ -6758,8 +6758,11 @@ game/memo_exact_8025FEE4.c:
 game/memo_candidate_8025FF18.c:
 	.text       start:0x8025FF18 end:0x802600E4
 
-game/evolution_r57b_802600E4_prefix.c:
-	.text       start:0x802600E4 end:0x80260EBC
+game/evolution_exact_802600E4.c:
+	.text       start:0x802600E4 end:0x80260910
+
+game/evolution_candidate_80260910.c:
+	.text       start:0x80260910 end:0x80260EBC
 
 game/evolution_r57b_80260EBC_o4p.c:
 	.text       start:0x80260EBC end:0x802612D0
