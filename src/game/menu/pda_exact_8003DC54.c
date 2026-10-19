@@ -41,16 +41,16 @@ static inline BOOL pdaMemoSeen(u16 id)
     return (id & 0x8000) == 0;
 }
 
-/* Catch-trainer random value of a memo entry's species. */
-/* RULE-EXCEPTION(user-approved): single-use inline helper pdaTrainerRnd (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
-static inline u32 pdaTrainerRnd(u32 species)
+/* Catch-trainer random value of a memo entry's species (single-type filter loader). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003DC54_TrainerRnd (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003DC54_TrainerRnd(u32 species)
 {
     u32 trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
 
     return trainerRnd;
 }
 
-/* pdaLoadPokemonId for the type filter: tests the work slot, then reads it again into work. */
+/* pdaLoadPokemonId for the single-type filter: tests the work slot, then reads it again into work. */
 static inline u32 pdaLoadPokemonSlot(u32 id)
 {
     u32 work;
@@ -65,7 +65,7 @@ static inline u32 pdaLoadPokemonSlot(u32 id)
         }
         pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
         rnd = memoDataGetPokemonRndFromID(0, species);
-        trainerRnd = pdaTrainerRnd(species);
+        trainerRnd = pda_8003DC54_TrainerRnd(species);
         pokemonBiosSetRnd(work, rnd);
         pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
         return lbl_8047A4E0;
@@ -85,9 +85,80 @@ static inline u16 pdaGetTypeIcon(u32 id, s32 slot)
     return type + 1;
 }
 
-/* Copy the seen entries matching the type tabs into buf; returns the count.
- * With both set an entry needs both types, otherwise either one. */
-static inline u16 pdaFilterTypes(u16* buf, u16 type0, u16 type1, BOOL both)
+/* Random value of a memo entry's species (both-types filter loader). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003DC54_Rnd (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003DC54_Rnd(u32 species)
+{
+    u32 rnd = memoDataGetPokemonRndFromID(0, species);
+
+    return rnd;
+}
+
+/* pdaLoadPokemonId for the both-types filter (its rnd read goes through pda_8003DC54_Rnd). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper copy pda_8003DC54_LoadBoth for the both-types filter (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003DC54_LoadBoth(u32 id)
+{
+    u32 work;
+    u32 rnd;
+    u32 species = id;
+    u32 trainerRnd;
+
+    if (lbl_8047A4E0 != 0) {
+        work = lbl_8047A4E0;
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = pda_8003DC54_Rnd(species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
+/* pdaGetTypeIcon for the both-types filter. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper copy pda_8003DC54_TypeIconBoth for the both-types filter (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pda_8003DC54_TypeIconBoth(u32 id, s32 slot)
+{
+    u32 type = (u16)pokemonGetStatus(
+        0, (u16)pokemonGetStatus(pda_8003DC54_LoadBoth(id), 0, 0x6e, 0), 0x16, slot);
+
+    if (type >= 9) {
+        type = type - 1;
+    }
+    return type + 1;
+}
+
+/* Copy the seen entries that have both tab types into buf; returns the count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003DC54_FilterBoth (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pda_8003DC54_FilterBoth(u16* buf, u16 type0, u16 type1)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 a;
+    u16 b;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            pda_8003DC54_LoadBoth(id);
+            a = pda_8003DC54_TypeIconBoth(id, 0);
+            b = pda_8003DC54_TypeIconBoth(id, 1);
+            if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
+                buf[count++] = id;
+            }
+        }
+    }
+    return count;
+}
+
+/* Copy the seen entries that have the tab type into buf; returns the count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pdaFilterTypes (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pdaFilterTypes(u16* buf, u16 type0)
 {
     u16 i;
     u32 id;
@@ -102,14 +173,8 @@ static inline u16 pdaFilterTypes(u16* buf, u16 type0, u16 type1, BOOL both)
             pdaLoadPokemonSlot(id);
             a = pdaGetTypeIcon(id, 0);
             b = pdaGetTypeIcon(id, 1);
-            if (both) {
-                if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
-                    buf[count++] = id;
-                }
-            } else {
-                if (type0 == a || type0 == b) {
-                    buf[count++] = id;
-                }
+            if (type0 == a || type0 == b) {
+                buf[count++] = id;
             }
         }
     }
@@ -142,13 +207,13 @@ void fn_8003DC54(void)
         single = 1;
     }
     if (single == 0) {
-        count = pdaFilterTypes(buf1, type0, type1, TRUE);
+        count = pda_8003DC54_FilterBoth(buf1, type0, type1);
         for (i = 0; i < count; i++) {
             lbl_8047A4E4[i] = buf1[i];
         }
         lbl_8047A4E8 = count;
     } else {
-        count = pdaFilterTypes(buf0, type0, type1, FALSE);
+        count = pdaFilterTypes(buf0, type0);
         for (i = 0; i < count; i++) {
             lbl_8047A4E4[i] = buf0[i];
         }
