@@ -918,13 +918,12 @@ void reliveCeremonyAll(u32 r3)
 #endif
 
 #if defined(POKEMON_RELIVE_MAIN_ONLY)
-#pragma push
-#pragma optimize_for_size off
 /* Address: 0x8025ED4C | Ghidra import */
 
 void reliveMain(void)
 
 {
+    struct ReliveResetPair { u32 first; u32 second; } *resetPair;
     extern u32 lbl_80478DA8;
     extern u32 lbl_8047B668;
     extern u32 lbl_8047B66C;
@@ -986,8 +985,9 @@ void reliveMain(void)
     fadeCheck(1);
 				    wazaSequenceSysRelease();
 						    lbl_804782BC[0] = -1;
-						    lbl_8047B668 = 0xffffffff;
-						    lbl_8047B66C = 0xffffffff;
+						    resetPair = (struct ReliveResetPair*)&lbl_8047B668;
+						    resetPair->first = 0xffffffff;
+						    resetPair->second = 0xffffffff;
 				    *(u16 *)((u8 *)lbl_804782BC + 4) = 0;
     lbl_804782BC[2] = 0;
     fn_800FF660();
@@ -996,7 +996,6 @@ void reliveMain(void)
   }
   return;
 }
-#pragma pop
 
 
 #endif
