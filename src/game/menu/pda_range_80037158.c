@@ -6013,11 +6013,34 @@ u8 fn_800484A4(u8* work)
     return 1;
 }
 
+/* pdaLoadPokemonId for the type filter: tests the work slot, then reads it again into work. */
+static inline u32 pdaLoadPokemonSlot(u32 id)
+{
+    u32 work;
+    u32 rnd;
+    u32 species = id;
+    u32 trainerRnd;
+
+    if (lbl_8047A4E0 != 0) {
+        work = lbl_8047A4E0;
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
 /* Icon index of one of a memo entry's two types. */
 static inline u16 pdaGetTypeIcon(u32 id, s32 slot)
 {
     u32 type = (u16)pokemonGetStatus(
-        0, (u16)pokemonGetStatus(pdaLoadPokemonWork(id), 0, 0x6e, 0), 0x16, slot);
+        0, (u16)pokemonGetStatus(pdaLoadPokemonSlot(id), 0, 0x6e, 0), 0x16, slot);
 
     if (type >= 9) {
         type = type - 1;
@@ -6039,7 +6062,7 @@ static inline u16 pdaFilterTypes(u16* buf, u16 type0, u16 type1, BOOL both)
     for (i = 0; i < lbl_8047A4E8; i++) {
         id = lbl_8047A4E4[i];
         if (pdaMemoSeen(id)) {
-            pdaLoadPokemonId(id);
+            pdaLoadPokemonSlot(id);
             a = pdaGetTypeIcon(id, 0);
             b = pdaGetTypeIcon(id, 1);
             if (both) {
