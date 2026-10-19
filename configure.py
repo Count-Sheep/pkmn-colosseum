@@ -4473,8 +4473,12 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/gbaCommunication_candidate_8009567C.c",
+                constant_import=[
+                    {"symbol": "lbl_8047C220", "offset": 0, "expected": "4330000000000000"},
+                    {"symbol": "lbl_8047C228", "offset": 8, "expected": "4330000080000000"},
+                ],
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # fn_800965C8 carve: GC/2.0 -O3, peephole off.
@@ -9898,7 +9902,7 @@ config.libs = [
                     {"symbol": "lbl_8047B768", "offset": 0x20, "expected": "4330000080000000"},
                 ],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-fp_contract off"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(

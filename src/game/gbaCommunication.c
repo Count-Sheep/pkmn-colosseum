@@ -122,6 +122,9 @@ typedef struct RibbonSpriteInfo {
 
 extern RibbonSpriteInfo lbl_802EED44[];
 
+/* GBA_COMMUNICATION_STATUS_ONLY carves (one status renderer per unit): each
+ * wrapper also defines GBA_COMMUNICATION_<ADDR>_ONLY for the function it keeps. */
+#if !defined(GBA_COMMUNICATION_STATUS_ONLY) || defined(GBA_COMMUNICATION_80093B4C_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -234,6 +237,7 @@ void fn_80093B4C(s32 context, void* widget)
     }
 }
 #pragma pop
+#endif
 
 typedef struct MenuStatusColor {
     u8 r;
@@ -337,6 +341,7 @@ static inline u8 menuStatusMoveDetailVisible(u8* sprite)
     return visible;
 }
 
+#if !defined(GBA_COMMUNICATION_STATUS_ONLY) || defined(GBA_COMMUNICATION_80094650_ONLY)
 void fn_80094650(u8* context, u8* sprite)
 {
     extern u32 pokemonGetStatus();
@@ -807,12 +812,16 @@ void fn_80094650(u8* context, u8* sprite)
         break;
     }
 }
+#endif
 
 
 
+#if !defined(GBA_COMMUNICATION_STATUS_ONLY) || defined(GBA_COMMUNICATION_8009567C_ONLY)
 /* 0x80091564 | size: 0x210 */
+#if !defined(GBA_COMMUNICATION_8009567C_ONLY)
 #pragma push
 #pragma peephole off
+#endif
 /* Whether the shown Pokemon still belongs to its original trainer. */
 static inline u8 menuStatusIsOriginalTrainer(u8* pokemon)
 {
@@ -826,10 +835,11 @@ static inline u8 menuStatusIsOriginalTrainer(u8* pokemon)
     extern u32 heroBiosGetNamePtr(u32 hero);
     extern u32 heroBiosGetRnd(u32 hero);
     extern s32 GScharCmp(u32 a, u32 b);
+    u32 trainer;
     u32 hero;
     u32 name;
 
-    hero = *(u32*)(lbl_803FB380 + 8);
+    trainer = *(u32*)(lbl_803FB380 + 8);
     if (pokemon == NULL) {
         return 0;
     }
@@ -837,13 +847,13 @@ static inline u8 menuStatusIsOriginalTrainer(u8* pokemon)
         return 0;
     }
     if (lbl_803FB380[0] & 0x20) {
-        if (hero == 0) {
-            hero = fightFloorGetGcHeroFightTrainerPtr(0);
+        if (trainer == 0) {
+            trainer = fightFloorGetGcHeroFightTrainerPtr(0);
         }
-        if (hero == 0) {
+        if (trainer == 0) {
             return 0;
         }
-        hero = fightTrainer_GetHeroPtr(hero);
+        hero = fightTrainer_GetHeroPtr(trainer);
     } else if (fn_801906A0(0x8AE) == 0) {
         hero = (u32)savedataGetStatus(0, 2);
     } else {
@@ -929,9 +939,9 @@ void fn_8009567C(u8* context, u8* sprite)
     case 0x13C:
     case 0x57D:
         value = (u8)pokemonDataBiosGetZokuseiDataId(pokemon_data, 0);
-        message = (u8)pokemonDataBiosGetZokuseiDataId(pokemon_data, 1);
-        if (value != message) {
-            windowDrawSprite(0, 0, context, fn_8010C46C(message), 0);
+        count = (u8)pokemonDataBiosGetZokuseiDataId(pokemon_data, 1);
+        if (value != count) {
+            windowDrawSprite(0, 0, context, fn_8010C46C(count), 0);
         }
         break;
     case 0x142:
@@ -974,19 +984,19 @@ void fn_8009567C(u8* context, u8* sprite)
         break;
     case 0x54E:
     case 0x599:
-        message = 0x2BE6;
+        text = 0x2BE6;
         value = pokemonGetStatus(pokemon, 0, 0x71, 0);
         name = fn_8011396C(value);
         if (menuStatusIsOriginalTrainer(pokemon)) {
             switch ((u16)pokemonGetStatus(pokemon, 0, 0x6E, 0)) {
             case 0xC4:
             case 0xC5:
-                message = 0x2BE4;
+                text = 0x2BE4;
                 break;
             default:
                 if (name != 0) {
                     msgctrlSetValue(0x37, GSmsgGetGSchar(name));
-                    message = 0x2BD7;
+                    text = 0x2BD7;
                 }
                 break;
             }
@@ -1001,24 +1011,24 @@ void fn_8009567C(u8* context, u8* sprite)
                     match = 0;
                 }
                 if (match) {
-                    message = 0x2BE7;
+                    text = 0x2BE7;
                 } else if (value == 0xFF) {
-                    message = 0x2BE5;
+                    text = 0x2BE5;
                 } else if (name != 0) {
                     msgctrlSetValue(0x37, GSmsgGetGSchar(name));
-                    message = 0x2BD7;
+                    text = 0x2BD7;
                 }
                 break;
             case 8:
             case 9:
             case 10:
                 if (value == 0xFF) {
-                    message = 0x2BE5;
+                    text = 0x2BE5;
                 }
                 break;
             }
         }
-        fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, message);
+        fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, text);
         break;
     case 0x582:
         switch (pokemonGetDarkPokemonLevel(pokemon)) {
@@ -1203,7 +1213,10 @@ void fn_8009567C(u8* context, u8* sprite)
 
 
 
+#if !defined(GBA_COMMUNICATION_8009567C_ONLY)
 #pragma pop
+#endif
+#endif
 /* 0x80091DA4 - 0x80092C90: defined in gbaCommunication_candidate_80091DA4.c.
  * The peephole pass stayed off from fn_80092140 onward; keep that state for
  * the code below. */
@@ -1614,7 +1627,8 @@ s32 fn_80093698(s32 channel)
 
 #endif
 
-#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY)
+#if !defined(GBA_COMMUNICATION_EXACT_80092FC8_ONLY) && \
+    !defined(GBA_COMMUNICATION_STATUS_ONLY)
 
 /* 0x800937F4 | size: 0x310 */
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
