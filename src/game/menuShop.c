@@ -1350,7 +1350,6 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     s32 x_mid;
     u32 w;
     f32 scroll_f;
-    s32 x_acc;
     s32 loop_i;
     s32 x_pos;
 
@@ -1383,14 +1382,13 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
         scroll_px = (s32)scroll_f;
     }
 
-    x_acc = dir_off * 0x1f;
     for (loop_i = dir_off; loop_i < loop_lim && slot_i < slot_count;
-         x_acc += 0x1f, loop_i++, slot_i++) {
+         loop_i++, slot_i++) {
         if (slot_i < 0) {
             continue;
         }
 
-        x_pos = x_acc - scroll_px;
+        x_pos = loop_i * 0x1f - scroll_px;
         shopDrawListRow(ctx, arg1, slot_i, x_pos, x_mid);
     }
 
