@@ -1994,31 +1994,36 @@ static inline u32 menuGbaCountHighBits(u32 value) {
     return count;
 }
 
+static inline u32 menuGbaCrcStep(u32 crc, u32 value) {
+    crc ^= value;
+    return menuGbaCrcRoll(crc);
+}
+
 s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     extern void OSReport(const char* fmt, ...);
     u8 status;
     u32 recv_word;
     u32 send_word;
-    u32* image;
-    u32 image_size;
-    u32 challenge;
     u32 padded_size;
-    u32 timeout;
-    u32 start;
-    u32 bit_count;
-    u32 value;
-    u32 i;
-    u32 offset;
-    u32 rolling_crc;
     u32 rolling_key;
     u32 encoded;
-    u32 expected_status;
+    u32 i;
     u32 response_key;
-    u32 final_word;
-    u32 candidate;
-    u32 checksum;
-    const char* strings;
     u32 seed;
+    u32 bit_count;
+    u32 value;
+    u32 candidate;
+    u32 timeout;
+    u32 expected_status;
+    u32 rolling_crc;
+    u32 checksum;
+    u32 image_size;
+    u32 offset;
+    u32 challenge;
+    u32* image;
+    const char* strings;
+    u32 final_word;
+    u32 start;
 
     strings = (const char*)lbl_80268780;
     if (use_primary_image != 0) {
@@ -2127,7 +2132,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
         if (offset >= 0xA0) {
             encoded = value - rolling_crc;
             encoded ^= rolling_key;
-            rolling_crc = menuGbaCrcRoll(rolling_crc ^ value);
+            rolling_crc = menuGbaCrcStep(rolling_crc, value);
             rolling_key = rolling_key * 0x6177614B + 1;
         }
 
@@ -2193,9 +2198,9 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                 checksum = final_word >> 8;
                 for (offset = 0; offset < 0x100; offset++) {
                     candidate = (offset << 24) - 1;
-                    value = menuGbaCrcRoll(candidate ^ rolling_crc);
+                    value = menuGbaCrcStep(candidate, rolling_crc);
                     if (checksum == value) {
-                        value = menuGbaCrcRoll(candidate ^ 0xBB);
+                        value = menuGbaCrcStep(candidate, 0xBB);
                         final_word = value | 0xBB000000;
                         OSReport(strings + 0x100,
                                  candidate, final_word);
