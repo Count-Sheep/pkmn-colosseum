@@ -3745,7 +3745,7 @@ config.libs = [
                                  {"symbol": "lbl_8047BCA4", "offset": 8, "expected": "40490fdb"},
                                  {"symbol": "lbl_8047BCAC", "offset": 12, "expected": "41e80000"},
                                  {"symbol": "lbl_8047BCB0", "offset": 16, "expected": "4330000080000000"}],
-                mw_version="GC/1.3",
+                mw_version="GC/1.3.2",
                 extra_cflags=["-O3", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
@@ -12524,6 +12524,11 @@ config.libs = [
             Object(
                 Matching,
                 "game/data/data_802E51C8.c",
+                progress_category="game",
+            ),
+            Object(
+                Matching,
+                "game/data/data_802E61D8.c",
                 progress_category="game",
             ),
             Object(

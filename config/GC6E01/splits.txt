@@ -751,7 +751,7 @@ game/data/bss_803F6E40.c:
 	.bss        start:0x803F6E40 end:0x803FB380
 
 game/data/data_802E51C8.c:
-	.data       start:0x802E52B8 end:0x802E6270
+	.data       start:0x802E52B8 end:0x802E52C8
 
 game/menu/pda_candidate_80038E74.c:
 	.text       start:0x80038E74 end:0x80039004
@@ -854,6 +854,10 @@ game/menu/pda_exact_8003F2DC.c:
 
 game/menu/pda_exact_8003F464.c:
 	.text       start:0x8003F464 end:0x80040018
+	.data       start:0x802E52C8 end:0x802E61D8
+
+game/data/data_802E61D8.c:
+	.data       start:0x802E61D8 end:0x802E6270
 
 game/menu/pda_exact_80040018.c:
 	.text       start:0x80040018 end:0x80040308

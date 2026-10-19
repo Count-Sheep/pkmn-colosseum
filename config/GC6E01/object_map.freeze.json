@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2226
+    "total_units": 2227
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2128,
-    "source_backed_units": 2127,
+    "named_units": 2129,
+    "source_backed_units": 2128,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2446344",
-    "matched_code_percent": 97.66078,
-    "matched_data": "2098602",
-    "matched_data_percent": 58.849697,
-    "matched_functions": 8634,
-    "matched_functions_percent": 99.50443,
-    "fuzzy_match_percent": 99.93951
+    "matched_code": "2451444",
+    "matched_code_percent": 97.86438,
+    "matched_data": "2094746",
+    "matched_data_percent": 58.74157,
+    "matched_functions": 8636,
+    "matched_functions_percent": 99.52748,
+    "fuzzy_match_percent": 99.943474
   },
   "unit_topology": [
     {
@@ -3315,12 +3315,12 @@
       "sections": [
         {
           "name": ".data",
-          "size": 4024,
+          "size": 16,
           "virtual_address": 2150519480
         }
       ],
       "total_code": 0,
-      "total_data": 4024,
+      "total_data": 16,
       "total_functions": 0
     },
     {
@@ -3756,14 +3756,32 @@
       "name": "main/game/menu/pda_exact_8003F464",
       "sections": [
         {
+          "name": ".data",
+          "size": 3856,
+          "virtual_address": 2150519496
+        },
+        {
           "name": ".text",
           "size": 2996,
           "virtual_address": 2147742820
         }
       ],
       "total_code": 2996,
-      "total_data": 0,
+      "total_data": 3856,
       "total_functions": 1
+    },
+    {
+      "name": "main/game/data/data_802E61D8",
+      "sections": [
+        {
+          "name": ".data",
+          "size": 152,
+          "virtual_address": 2150523352
+        }
+      ],
+      "total_code": 0,
+      "total_data": 152,
+      "total_functions": 0
     },
     {
       "name": "main/game/menu/pda_exact_80040018",
