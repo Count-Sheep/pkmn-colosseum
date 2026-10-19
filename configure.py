@@ -3628,9 +3628,18 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: the row-layout float literals.
             Object(
                 CodeCandidate,
                 "game/menu/pda_exact_8003C2B8.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BAC0", "offset": 0, "expected": "437f0000"},
+                    {"symbol": "lbl_8047BAC8", "offset": 4, "expected": "3f800000"},
+                    {"symbol": "lbl_8047BAF8", "offset": 8, "expected": "42860000"},
+                    {"symbol": "lbl_8047BAFC", "offset": 12, "expected": "41000000"},
+                    {"symbol": "lbl_8047BB00", "offset": 16, "expected": "40800000"},
+                    {"symbol": "lbl_8047BAD8", "offset": 20, "expected": "41c00000"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",

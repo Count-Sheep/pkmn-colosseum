@@ -27,12 +27,6 @@ extern u8 lbl_802EF0A8[];
 extern PdaListEntry* lbl_8047A4D4;
 extern u32 lbl_8047A4D0;
 extern s32 lbl_8047A4DC;
-extern f32 lbl_8047BAC0;
-extern f32 lbl_8047BAC8;
-extern f32 lbl_8047BAD8;
-extern f32 lbl_8047BAF8;
-extern f32 lbl_8047BAFC;
-extern f32 lbl_8047BB00;
 
 extern void fn_800FE35C(void);
 extern void fn_800FE38C(s32 x1, s32 y1, s32 x2, s32 y2);
@@ -124,7 +118,7 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     f32 rowY;
 
     alphaSprite->alphaByte =
-        lbl_8047BAC0 * *(f32*)(lbl_803A6748 + 0x44);
+        255.0f * *(f32*)(lbl_803A6748 + 0x44);
     fn_800FE38C(*(s16*)(lbl_802EF0A8 + 0x4fa2) -
                     *(s16*)(lbl_802EF0A8 + event->messageId * 0x1c + 2),
                 *(s16*)(lbl_802EF0A8 + 0x4fa4) -
@@ -134,8 +128,8 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     slot = lbl_803A6748 + 0x94;
     firstX = *(f32*)(lbl_803A6748 + 0x14);
     rowY = *(f32*)(lbl_803A6748 + 0x18);
-    shifted = lbl_8047BAC8 + (firstX - lbl_8047BAF8 - lbl_8047BAFC);
-    stride = lbl_8047BAD8;
+    shifted = 1.0f + (firstX - 67.0f - 8.0f);
+    stride = 24.0f;
     for (i = 0, off = 0; i < (s32)lbl_8047A4DC; i++) {
         if (i >= *(s32*)(lbl_803A6748 + 0x8) - 1 &&
             i <= *(s32*)(lbl_803A6748 + 0xc) + 1) {
@@ -191,11 +185,11 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
             }
             switch (mode) {
             case 0:
-                windowDrawSprite(shifted, rowY - lbl_8047BB00,
+                windowDrawSprite(shifted, rowY - 4.0f,
                                  alphaSprite, 0x161, 0);
                 break;
             case 1:
-                windowDrawSprite(firstX - lbl_8047BAF8, rowY, alphaSprite, 0x160, 0);
+                windowDrawSprite(firstX - 67.0f, rowY, alphaSprite, 0x160, 0);
                 break;
             case 2:
                 break;
