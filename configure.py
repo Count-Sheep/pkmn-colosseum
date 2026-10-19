@@ -3630,7 +3630,7 @@ config.libs = [
             ),
             # TEMPORARY constant_import: the row-layout float literals.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/pda_exact_8003C2B8.c",
                 constant_import=[
                     {"symbol": "lbl_8047BAC0", "offset": 0, "expected": "437f0000"},

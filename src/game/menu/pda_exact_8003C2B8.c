@@ -93,23 +93,56 @@ static inline u32 pda_8003C2B8_OwnerText(s32 off, u8* slot)
     return 0;
 }
 
+/* Caption for the highlighted battle: the Pokemon's species name, or the
+   matching dark Pokemon's nickname from the trainer's party. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pdaBattleCaption (fn_8003C2B8) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pdaBattleCaption(u16 id)
+{
+    u16 trainerId;
+    void* data;
+    void* entry;
+    void* nick;
+    u32 name;
+
+    trainerId = fn_801EEFAC(id, 0);
+    if (trainerId == 9) {
+        data = pokemonDataBiosGetPtr(fn_801EE248(id));
+        if (data != NULL) {
+            name = GSmsgGetGSchar((u32)pokemonDataBiosGetName(data));
+        }
+    } else {
+        entry = fightTrainerPokemonDataBiosGetPtr(
+            fn_801FCC3C((u8*)fightTrainerDataBiosGetPtr(trainerId)));
+        name = GSmsgGetGSchar(
+            (u32)fightTrainerPokemonDataBiosGetNickname(entry));
+        for (;;) {
+            if (id == fightTrainerPokemonDataBiosGetDarkPokemonFlag(entry)) {
+                nick = fightTrainerPokemonDataBiosGetNickname(entry);
+                if (nick != NULL) {
+                    name = GSmsgGetGSchar((u32)nick);
+                }
+                break;
+            }
+            entry = (u8*)entry + 0x50;
+        }
+    }
+    return name;
+}
+
 /* Draw one row per party entry: nickname, owner and battle caption. */
 void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
 {
-    s32 y;
-    void* entry;
     u32 name;
     u32 owner;
     u32 caption;
     u32 msg;
     u32 tint;
     u16 id;
+    s32 y;
     s32 i;
     s32 off;
     s32 mode;
     u8* slot;
-    void* nick;
-    u16 trainerId;
     u8 registered;
     u8 cleared;
     f32 stride;
@@ -133,30 +166,7 @@ void fn_8003C2B8(PdaSprite* alphaSprite, PdaEvent* event)
     for (i = 0, off = 0; i < (s32)lbl_8047A4DC; i++) {
         if (i >= *(s32*)(lbl_803A6748 + 0x8) - 1 &&
             i <= *(s32*)(lbl_803A6748 + 0xc) + 1) {
-            id = *(u16*)((u8*)lbl_8047A4D4 + off + 2);
-            trainerId = fn_801EEFAC(id, 0);
-            if (trainerId == 9) {
-                entry = pokemonDataBiosGetPtr(fn_801EE248(id));
-                if (entry != NULL) {
-                    name = GSmsgGetGSchar(
-                        (u32)pokemonDataBiosGetName(entry));
-                }
-            } else {
-                entry = fightTrainerPokemonDataBiosGetPtr(
-                    fn_801FCC3C((u8*)fightTrainerDataBiosGetPtr(trainerId)));
-                name = GSmsgGetGSchar(
-                    (u32)fightTrainerPokemonDataBiosGetNickname(entry));
-                for (;;) {
-                    if (id == fightTrainerPokemonDataBiosGetDarkPokemonFlag(entry)) {
-                        nick = fightTrainerPokemonDataBiosGetNickname(entry);
-                        if (nick != NULL) {
-                            name = GSmsgGetGSchar((u32)nick);
-                        }
-                        break;
-                    }
-                    entry = (u8*)entry + 0x50;
-                }
-            }
+            name = pdaBattleCaption(*(u16*)((u8*)lbl_8047A4D4 + off + 2));
             msg = name;
             if (name == 0) {
                 msg = GSmsgGetGSchar(1);
