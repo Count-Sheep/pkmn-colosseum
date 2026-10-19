@@ -107,6 +107,18 @@
     "pipeline_action": "None.",
     "rejected_probes": "Parameter order of shopAddItemId (720 permutations) and declaration order of the helper's locals have no effect; caller-side id/entry locals scored lower."
   },
+  "fn_8002C408": {
+    "best_local_change": "98.598495% (2026-10-19, w3): the room check returns from shopGetRoom (shaped like shopGetMoney) whose PC-box case expands shopCountSpace, an inline copy of fn_80029850 (retail's li r17,0 ... mr r18,r17 and room in one callee-saved node); the stock write-back reads each slot through shopStockId, which adds i*4 to the work block as its own statement (retail's add r18,r28,r20 with the mr r20,r17 offset start).",
+    "remaining_diff": "Registers almost everywhere (mode copy r29, &params.work r28, done r25, kind r15, induction order in the stock loop: retail steps inv, i, offset; ours inv, offset, i), plus the stock loop's lhz/blt order. The GC/2.6 replay model does not reproduce our own allocation for this function (36 differing nodes), so it cannot guide renumbering here.",
+    "pipeline_action": "Find the source shape for mode/kind (retail stores raw mode into params.mode while kind is a separate clrlwi); then retry the replay on a reduced TU.",
+    "rejected_probes": "2026-10-19 (w3): shopOpenItemList mode parameter as u32/s32/u16; kind as mode & 0xFF, u32 or s32, or a copy of type; type as u32; slot address as (u32)i*4, i << 2, typed slot pointer, &work->head[i*4], or a separate pointer helper; the bounds check as && or reversed; room helper with u16 item or inline loop body (lower)."
+  },
+  "menuShopDrawListText": {
+    "best_local_change": "98.41936% (2026-10-19, w3): each row is drawn by the inline shopDrawListRow(ctx, arg1, slot_i, x_pos, int x_mid), whose loop-invariant x_mid parameter copy MWCC hoists to the preheader (retail's mr r28,r4), with the first GSmsgGetRect width in its own local w; ctx is a plain local declared after slot_count and draw is read through arg1 (the refs struct is gone); the row x is loop_i * 0x1f - scroll_px, so the x accumulator is a strength-reduced temp (retail's r30). Code is instruction-identical.",
+    "remaining_diff": "Registers: retail arg1 r21, dir_off/x_pos r24, loop_lim r23, scroll_px r22, slot_count r31, loop_i r26; ours arg1 r31, dir_off r28, loop_lim r24, scroll_px r23, slot_count r27, loop_i r22 (plus the tbl/entry r4/r6 swap at entry). Replay model (exhaustive over the named locals and arg1): the only exact numbering puts slot_count and dir_off below arg1, which a local cannot be; with arg1 fixed, the best leaves two nodes wrong.",
+    "pipeline_action": "Find a form where arg1 is not the parameter node (a surviving draw copy) or where slot_count/dir_off come from parameter-level values; it also needs a MENUSHOP_*_ONLY carve with unit -opt nopeephole to link.",
+    "rejected_probes": "2026-10-19 (w3): row helper with x_pos computed inside, x_mid as s32 (coalesces, no copy) or s16 (extsh copy); a split w without the helper; a draw local (copy-propagated away); the model's declaration order (97.81); the whole body as an inline helper (94.5)."
+  },
   "menuShopOpen": {
     "best_local_change": "No accepted source change; the 184-byte function remains 99.67391% in a two-function incomplete unit.",
     "remaining_diff": "Retail loads literal 1 before the state address; candidate emits the same two instructions in reverse order at offsets 0x44 and 0x48.",
