@@ -431,7 +431,7 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
     s32 displayLine;
     s32 visibleIndex;
     s32 lineLimit;
-    s32 y;
+    int y;
     s32 textX;
     s32 itemIndex;
 
