@@ -316,6 +316,7 @@ void fn_80217E20(void)
 #undef fn_801F025C
 
 /* 0x80218018 size 0x1C0: fn_80218018 (owner line 13139) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_80218018(void)
 
@@ -390,6 +391,7 @@ void fn_80218018(void)
 }
 
 /* 0x802181D8 size 0x98: _fightSeqWsHorobinoutaSub__FPvUsPv (owner line 13214) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_802062FC fightOutPokemonCheckFightOut
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId

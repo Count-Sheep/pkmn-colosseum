@@ -1048,6 +1048,7 @@ s32 fn_80034280(void)
 #if defined(GS_RANGE_EXACT_80034280)
 /* fn_800345A4 - 0x800345A4 | size: 0x164 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_800345A4(void* unused, u8* sprite) {
     extern u32 lbl_802E61D8[];
@@ -1099,6 +1100,7 @@ void fn_800345A4(void* unused, u8* sprite) {
 
 /* fn_80034708 - 0x80034708 | size: 0xB0 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80034708(void* unused, u8* sprite) {
     extern u32 lbl_8047A458;
@@ -1140,6 +1142,7 @@ void fn_800347B8(void) {
 
 /* fn_800347C4 - 0x800347C4 | size: 0x24 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 void fn_800347C4(void) {
     extern void fn_80166A28(u32);
@@ -1150,6 +1153,7 @@ void fn_800347C4(void) {
 
 /* fn_800347E8 - 0x800347E8 | size: 0x24 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 void fn_800347E8(void) {
     extern void fn_80166A28(u32);
@@ -1160,6 +1164,7 @@ void fn_800347E8(void) {
 
 /* fn_8003480C - 0x8003480C | size: 0x24 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma scheduling off
 void fn_8003480C(void) {
     extern void fn_80166A28(u32);
@@ -1396,6 +1401,7 @@ void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
 
 /* fn_80034DC0 - 0x80034DC0 | size: 0x78 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80034DC0(u8* arg0, u8* arg1) {
     extern u32 lbl_8047A44C;
@@ -1417,6 +1423,7 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
 
 /* fn_80034E38 - 0x80034E38 | size: 0xB8 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 void fn_80034E38(u8* arg0, u8* arg1) {
     extern u32 lbl_8047A44C;
@@ -1448,7 +1455,9 @@ void fn_80034E38(u8* arg0, u8* arg1) {
 
 /* fn_80034EF0 - 0x80034EF0 | size: 0x94 */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 1
 void fn_80034EF0(u8* arg0, u8* arg1) {
     extern void fn_800FB680(s32, s32, u32, u16);
@@ -1477,10 +1486,12 @@ void fn_80034EF0(u8* arg0, u8* arg1) {
 
 /* fn_80034F84 - 0x80034F84 | size: 0x2C */
 #pragma push
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_80034F84(void) {
     extern void msgctrlSetValue();
     extern u8 lbl_803A3288[];
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
     msgctrlSetValue(0x37, lbl_803A3288);
 }

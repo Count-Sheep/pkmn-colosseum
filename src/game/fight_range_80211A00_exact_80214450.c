@@ -328,6 +328,7 @@ u8* fn_802146B4(void) {
 }
 
 /* 0x802146C4 size 0xD0: fn_802146C4 (owner line 13061) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
@@ -382,6 +383,7 @@ void fn_802146C4(void)
 
 /* 0x80214794 size 0xD0: fn_80214794 (owner line 9863) */
 #pragma optimize_for_size reset
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_802040E8 fightOutPokemonGetSoubiItemDataId
@@ -426,6 +428,7 @@ void fn_80214794(void) {
 
 /* 0x80214864 size 0x154: fn_80214864 (owner line 5349) */
 #pragma optimize_for_size reset
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F453C fightFloorGetNowTenkouDataId
 #define fn_801F025C fightTargetGetPtrAsNowFightType
@@ -465,6 +468,7 @@ void fn_80214864(void) {
 
 /* 0x802149B8 size 0xFC: fn_802149B8 (owner line 9904) */
 #pragma optimize_for_size reset
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80207BF4 fightOutPokemonGetTokuseiDataId
@@ -540,6 +544,7 @@ void fn_80214AFC(void) {
 u8* fn_80214B58(void) { return lbl_8047B610++; }
 
 /* 0x80214B68 size 0x4C: WS_HIMITUNOTIKARA (owner line 13108) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_80136468 tikeiDataBiosGetFightKoukaId
@@ -582,6 +587,7 @@ void fn_80214BB4(void) {
 #undef fn_801F025C
 
 /* 0x80214C04 size 0xAC: fn_80214C04 (owner line 2948) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
@@ -754,6 +760,7 @@ check2:
 #undef fn_801F025C
 
 /* 0x80214F10 size 0xF8: fn_80214F10 (owner line 5462) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
@@ -1092,6 +1099,7 @@ void fn_80215614(void)
 #undef fn_801F025C
 
 /* 0x80215720 size 0xE8: fn_80215720 (owner line 13428) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
@@ -1264,6 +1272,7 @@ void WS_NEWOHARU(void) {
 }
 
 /* 0x80215AEC size 0x184: fn_80215AEC (owner line 13507) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 void fn_80215AEC(void)
 {
@@ -1504,6 +1513,7 @@ u8 fn_80216048(u32 elem) {
 #undef fn_801F54A4
 
 /* 0x802160EC size 0x104: fn_802160EC (owner line 3080) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F54A4 fightFloorGetStatus
@@ -1724,6 +1734,7 @@ void WS_JUUDEN(void)
 #undef fn_801F025C
 
 /* 0x802165B4 size 0x9C: fn_802165B4 (owner line 2563) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_801F6E44 fightSideCheckWriteJoutaiDataId

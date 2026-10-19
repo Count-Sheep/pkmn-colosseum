@@ -263,6 +263,7 @@ void fn_80217018(void) {
 #undef fn_801F025C
 
 /* 0x802170B4 size 0x108: fn_802170B4 (owner line 4949) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
@@ -332,6 +333,7 @@ void WS_MARUKUNARU(void)
 #undef fn_801F025C
 
 /* 0x80217220 size 0x1B4: fn_80217220 (owner line 9299) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F54A4 fightFloorGetStatus
 #define fn_801F025C fightTargetGetPtrAsNowFightType
@@ -429,6 +431,7 @@ void WS_JIKOANJI(void)
 #undef fn_801F025C
 
 /* 0x80217434 size 0xF0: fn_80217434 (owner line 2876) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
@@ -557,6 +560,7 @@ void fn_802175A8(void)
 }
 
 /* 0x802177E4 size 0x110: fn_802177E4 (owner line 4053) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
@@ -693,6 +697,7 @@ void fn_8021799C(void) {
 #undef fn_801F025C
 
 /* 0x80217AE4 size 0xEC: fn_80217AE4 (owner line 12868) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_8011BBD8 wazaSetStatus
 #define fn_8011BEB4 wazaGetStatus

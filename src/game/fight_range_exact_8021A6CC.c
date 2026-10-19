@@ -292,6 +292,7 @@ void fn_8021A80C(void) {
 #undef fn_801F54A4
 
 /* 0x8021A878 size 0x10C: fn_8021A878 (owner line 4214) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_802016A4 fightOutPokemonGetSex
@@ -477,7 +478,9 @@ void fn_8021AB9C(void) {
 #undef fn_801F025C
 
 /* 0x8021AC1C size 0x390: fn_8021AC1C (owner line 14662) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_propagation off
 void fn_8021AC1C(void)
 
@@ -603,6 +606,7 @@ void fn_8021AC1C(void)
 }
 
 /* 0x8021AFAC size 0x104: fn_8021AFAC (owner line 4060) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimize_for_size on
 #pragma scheduling reset
 #pragma opt_lifetimes reset
@@ -699,6 +703,7 @@ skipB0B0:
 #undef fn_801F54A4
 
 /* 0x8021B1A4 size 0x1C0: fn_8021B1A4 (owner line 14787) */
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma opt_lifetimes off
 void fn_8021B1A4(void)
 
