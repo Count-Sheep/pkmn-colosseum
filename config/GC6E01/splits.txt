@@ -825,7 +825,7 @@ game/menu/pda_candidate_8003C2B8.c:
 game/menu/pda_exact_8003C728.c:
 	.text       start:0x8003C728 end:0x8003C7C0
 
-game/menu/pda_candidate_8003C7C0.c:
+game/menu/pda_exact_8003C7C0.c:
 	.text       start:0x8003C7C0 end:0x8003CE1C
 
 game/menu/pda_exact_8003CE1C.c:
