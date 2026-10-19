@@ -2997,13 +2997,15 @@ s32 menuCardE_CompareEntryPtrs(u32 r3, u32 r4);
 static inline void* menuCardE_Alloc(u32 size) {
     void* buf;
     u16 handle;
+    u32 bytes = size;
 
-    handle = fn_800E2C04((size + 0x1F) & ~0x1F, 0x20);
+    size = (size + 0x1F) & ~0x1F;
+    handle = fn_800E2C04(size, 0x20);
     if (handle == 0) {
         __assert(sCardEMatrixFile, 0x1A2, lbl_8047C140);
     }
     buf = fn_800E27B0(handle);
-    memset(buf, 0, size);
+    memset(buf, 0, bytes);
     return buf;
 }
 

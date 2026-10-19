@@ -4210,7 +4210,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/cardesavedata.c",
                 mw_version="GC/2.0",
                 # TEMPORARY constant_import: fn_8007FDBC defines the
