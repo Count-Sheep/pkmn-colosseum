@@ -44,7 +44,6 @@ extern void GSlightSetTarget(void* light, void* target);
 extern void GSlightSetActive(void* light, s32 active);
 extern void* memcpy(void* dst, const void* src, u32 size);
 
-#pragma peephole off
 u8 fn_800478B4(void* work, void* sub)
 {
     extern f64 tan(f64 x);
@@ -166,4 +165,3 @@ u8 fn_800478B4(void* work, void* sub)
     GSscene_SetMode(4);
     return 1;
 }
-#pragma peephole reset
