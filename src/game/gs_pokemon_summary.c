@@ -219,7 +219,7 @@ typedef s32 (*DrawHandlerFn)(u8*, u8*, u16*);
 typedef s32 (*SummaryMenuCallback)(s32, s32, s32*);
 
 extern u16 itemBiosGetItemDataId(void*);
-extern u32 itemDataBiosGetName(void);
+extern u32 itemDataBiosGetName(void* itemData);
 extern u32 itemDataBiosGetKinomiNo(u16);
 extern u32 itemDataBiosGetWazaMachineNo(void* itemData);
 extern u32 itemDataBiosGetHidenMachineNo(void* itemData);
@@ -462,8 +462,8 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
             msgctrlSetValue(0x34, itemIndex + 1);
             fn_800FB680(textX, y, -1, 0xCA);
             textX += (u16)(GSmsgGetRect(0xCA) >> 16);
-            itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex));
-            fn_800FB680(textX + 10, y, -1, itemDataBiosGetName());
+            fn_800FB680(textX + 10, y, -1,
+                        itemDataBiosGetName(itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex))));
         }
     }
 
@@ -516,8 +516,7 @@ s32 fn_80015374(s32 x, s32 pageIndex, u16* packedRange) {
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
-            itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex));
-            name = itemDataBiosGetName();
+            name = itemDataBiosGetName(itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex)));
             if (name != 0) {
                 fn_800FB680(x, y, -1, name);
             }
@@ -589,8 +588,7 @@ s32 fn_800155B0(s32 x, s32 pageIndex, u16* packedRange) {
             msgctrlSetValue(0x34, berryNo);
             fn_800FB680(textX, y, -1, 0xCA);
             textX += (u16)(GSmsgGetRect(0xCA) >> 16);
-            itemDataBiosGetPtr((u16)itemId);
-            fn_800FB680(textX + 9, y, -1, itemDataBiosGetName());
+            fn_800FB680(textX + 9, y, -1, itemDataBiosGetName(itemDataBiosGetPtr((u16)itemId)));
 
             msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
@@ -747,8 +745,7 @@ s32 fn_80015E3C(s32 x, s32 pageIndex, u16* packedRange) {
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
-            itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex));
-            name = itemDataBiosGetName();
+            name = itemDataBiosGetName(itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex)));
             if (name != 0) {
                 fn_800FB680(x, y, -1, name);
             }
