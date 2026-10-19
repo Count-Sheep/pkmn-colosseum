@@ -846,8 +846,14 @@ game/menu/pda_exact_8003D818.c:
 game/menu/pda_exact_8003D8CC.c:
 	.text       start:0x8003D8CC end:0x8003DC54
 
-game/menu/pda_candidate_8003B814_r46_8003DC54.c:
-	.text       start:0x8003DC54 end:0x8003F2DC
+game/menu/pda_exact_8003DC54.c:
+	.text       start:0x8003DC54 end:0x8003E394
+
+game/menu/pda_exact_8003E394.c:
+	.text       start:0x8003E394 end:0x8003F040
+
+game/menu/pda_exact_8003F040.c:
+	.text       start:0x8003F040 end:0x8003F2DC
 
 game/menu/pda_exact_8003F2DC.c:
 	.text       start:0x8003F2DC end:0x8003F464

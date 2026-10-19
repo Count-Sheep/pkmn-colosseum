@@ -1,0 +1,263 @@
+/**
+ * @file pda_exact_8003E394.c
+ * @brief PDA memo list reorder for the active sort tab, 0x8003E394 - 0x8003F040.
+ *        Standalone copy of fn_8003E394 (and the helpers it inlines) from
+ *        pda_range_80037158.c, linked on its own.
+ */
+#include "dolphin/types.h"
+
+extern u32 fn_800E202C(void* p);
+extern void fn_800E209C(u32 handle);
+extern void fn_800E24B0(u32 handle);
+extern void* fn_800E27B0(u32 handle);
+extern u32 fn_800E2C04(s32 size, s32 align);
+extern u32 lbl_8047A4E0;
+extern u16* lbl_8047A4E4;
+extern u16 lbl_8047A4E8;
+
+extern u32 gamedataGetStatus(s32 a, s32 b);
+extern void pokemonCreate(u32 work, u16 species, s32 level, u32 trainer);
+extern u32 memoDataGetPokemonRndFromID(s32 a, u32 id);
+extern u32 memoDataGetPokemonTrainerRndFromID(s32 a, u32 id);
+extern void pokemonBiosSetRnd(u32 work, u32 rnd);
+extern void pokemonBiosSetCatchTrainerRnd(u32 work, u32 rnd);
+extern u16 pokemonBiosGetPokemonDataId(u32 work);
+extern void* pokemonDataBiosGetPtr(u16 id);
+extern void* pokemonDataBiosGetName(void* data);
+extern s32 fn_800F96E4(u8* dst, s32 size, u8* src);
+
+extern u16 pokemonDataBiosGetWeight(void* data);
+extern u16 pokemonDataBiosGetHeight(void* data);
+extern void fn_8003F2DC(u8* arr, s32 count, s32 dir);
+void fn_8003F040(void);
+
+typedef struct PdaSceneWork {
+    u8 pad00[0x15c];
+    s8 sortTab;
+} PdaSceneWork;
+extern PdaSceneWork lbl_803A6818;
+
+/* Whether a memo entry ID has been seen (the high bit marks an unseen entry). */
+static inline BOOL pdaMemoSeen(u16 id)
+{
+    return (id & 0x8000) == 0;
+}
+
+/* pdaLoadPokemonId for the lookup helpers, which go on to read the work slot. */
+static inline u32 pdaLoadPokemonWork(u32 id)
+{
+    u32 trainerRnd;
+    u32 rnd;
+    u32 species = id;
+    u32 work;
+
+    if ((work = lbl_8047A4E0) != 0) {
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
+static inline void* pdaAlloc(s32 size, s32 align)
+{
+    u32 h = fn_800E2C04(size, align);
+
+    if ((u16)h != 0) {
+        return fn_800E27B0(h);
+    }
+    return NULL;
+}
+
+static inline void pdaFree(void* p)
+{
+    u32 h;
+
+    if (p != NULL) {
+        h = fn_800E202C(p);
+        if ((u16)h != 0) {
+            fn_800E24B0(h);
+            fn_800E209C(h);
+        }
+    }
+}
+
+typedef struct PdaSortPair {
+    u16 index;
+    u16 key;
+} PdaSortPair;
+
+
+
+static inline u16 pdaGetWeight(u32 id)
+{
+    u32 work = lbl_8047A4E0;
+    void* data;
+
+    if (work != 0) {
+        work = pdaLoadPokemonWork(id);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetWeight(data);
+            }
+            return 0;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+static inline u16 pdaGetHeight(u32 id)
+{
+    u32 work = lbl_8047A4E0;
+    void* data;
+
+    if (work != 0) {
+        work = pdaLoadPokemonWork(id);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetHeight(data);
+            }
+            return 0;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+/* Fill the sort pairs with each seen entry's weight; returns the entry count. */
+static inline u16 pdaCollectWeights(PdaSortPair* pairs, u16* ids)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 key;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            key = pdaGetWeight(id);
+            ids[count] = id;
+            pairs[count].key = key;
+            pairs[count].index = i;
+            count++;
+        }
+    }
+    return count;
+}
+
+/* Fill the sort pairs with each seen entry's height; returns the entry count. */
+static inline u16 pdaCollectHeights(PdaSortPair* pairs, u16* ids)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 key;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            key = pdaGetHeight(id);
+            ids[count] = id;
+            pairs[count].key = key;
+            pairs[count].index = i;
+            count++;
+        }
+    }
+    return count;
+}
+
+/* Sort tab 1: order the seen entries by weight (the sort runs even for an empty list). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_SortWeight (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8003E394_SortWeight(void)
+{
+    u16 j;
+    u16 count;
+    PdaSortPair* pairs;
+    u16* ids;
+
+    pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
+    ids = (u16*)pdaAlloc(0x320, 0x20);
+    count = pdaCollectWeights(pairs, ids);
+    fn_8003F2DC((u8*)pairs, count, 1);
+    for (j = 0; j < count; j++) {
+        lbl_8047A4E4[j] = ids[pairs[j].index];
+    }
+    lbl_8047A4E8 = count;
+    pdaFree(pairs);
+    pdaFree(ids);
+}
+
+/* Reorder the memo index table for the active sort tab. */
+void fn_8003E394(void)
+{
+    u16 j;
+    u16 count;
+    /* RULE-EXCEPTION(user-approved): no-op store, NULL initialisers that every case overwrites (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+    u16* ids = NULL;
+    PdaSortPair* pairs = NULL;
+
+    switch (lbl_803A6818.sortTab) {
+    case 0:
+        fn_8003F040();
+        break;
+    case 1:
+        pda_8003E394_SortWeight();
+        break;
+    case 2:
+        pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
+        ids = (u16*)pdaAlloc(0x320, 0x20);
+        count = pdaCollectWeights(pairs, ids);
+        if (count != 0) {
+            fn_8003F2DC((u8*)pairs, count, 0);
+            for (j = 0; j < count; j++) {
+                lbl_8047A4E4[j] = ids[pairs[j].index];
+            }
+        }
+        lbl_8047A4E8 = count;
+        pdaFree(pairs);
+        pdaFree(ids);
+        break;
+    case 3:
+        pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
+        ids = (u16*)pdaAlloc(0x320, 0x20);
+        count = pdaCollectHeights(pairs, ids);
+        if (count != 0) {
+            fn_8003F2DC((u8*)pairs, count, 1);
+            for (j = 0; j < count; j++) {
+                lbl_8047A4E4[j] = ids[pairs[j].index];
+            }
+        }
+        lbl_8047A4E8 = count;
+        pdaFree(pairs);
+        pdaFree(ids);
+        break;
+    case 4:
+        pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
+        ids = (u16*)pdaAlloc(0x320, 0x20);
+        count = pdaCollectHeights(pairs, ids);
+        if (count != 0) {
+            fn_8003F2DC((u8*)pairs, count, 0);
+            for (j = 0; j < count; j++) {
+                lbl_8047A4E4[j] = ids[pairs[j].index];
+            }
+        }
+        lbl_8047A4E8 = count;
+        pdaFree(pairs);
+        pdaFree(ids);
+        break;
+    default:
+        break;
+    }
+}
+
