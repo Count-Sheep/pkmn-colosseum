@@ -3292,13 +3292,13 @@ extern void msgctrlSetValue(s32 id, u32 value);
 void fn_8003B2D8(u8* context)
 {
     extern s32 fn_801EE544(u16, s8*);
+    u8 special;
+    u32 ownerText;
     u8* slot;
     u16 kind;
     u32 text;
-    u32 ownerText;
     u32 owner;
     u32 caption;
-    u8 special;
     u16 index;
     u16 trainerId;
 
@@ -3325,8 +3325,12 @@ void fn_8003B2D8(u8* context)
             }
             break;
         }
-        if (special == 0) {
+        switch (special) {
+        case 0:
             ownerText = GSmsgGetGSchar(text);
+            break;
+        default:
+            break;
         }
     } else {
         ownerText = special;
