@@ -3278,15 +3278,15 @@ static inline void CardESetStatusMessage(u8* window, void* sprite, s32 active)
 
 void fn_80084038(u8* window)
 {
-    CardEStatusWork* work;
+    u8 changed;
     CardEStatusWork* status;
-    void* sprite;
+    CardEStatusWork* work;
+    u8 selected;
     u16 handle;
+    s32 i;
     s32 flags;
     u32 n;
-    s32 i;
-    u8 changed;
-    u8 selected;
+    void* sprite;
 
     status = CardEGetStatusWork(window);
     work = status;
