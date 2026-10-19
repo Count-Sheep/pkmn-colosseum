@@ -92,6 +92,26 @@ typedef struct EvoWazaSeq {
 extern EvoWazaSeq lbl_8027A488[];
 extern u8 fn_801DDD28();
 
+/* Species index for the evolution model: 0xFFFF when the Pokemon or its
+ * species-0x66 entry is empty. Its early-return value is a merged-away copy
+ * during the model lookups, one more neighbour for the evolutionStart
+ * parameters that puts r6/r8 in retail's r28/r27. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (evolutionStart's model species lookup) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 evolutionGetModelNo(u32 pkm)
+{
+  u16 no;
+
+  no = (int)pokemonGetStatus(pkm,0,0x6e,0);
+  if (no == 0) {
+    return 0xffff;
+  }
+  no = (int)pokemonGetStatus(0,no,0x66,0);
+  if (no == 0) {
+    return 0xffff;
+  }
+  return no;
+}
+
 static inline u32 evolutionCreateModel(u32 pkm, int kind)
 {
   u16 no;
@@ -101,16 +121,7 @@ static inline u32 evolutionCreateModel(u32 pkm, int kind)
   int i;
   u32 model;
 
-  no = (int)pokemonGetStatus(pkm,0,0x6e,0);
-  if (no == 0) {
-    no = 0xffff;
-  }
-  else {
-    no = (int)pokemonGetStatus(0,no,0x66,0);
-    if (no == 0) {
-      no = 0xffff;
-    }
-  }
+  no = evolutionGetModelNo(pkm);
   if (no == 0xffff) {
     return 0;
   }
@@ -136,6 +147,7 @@ static inline u32 evolutionCreateModel(u32 pkm, int kind)
   return model;
 }
 
+#if !defined(EVOLUTION_80260EBC_ONLY)
 /* Address: 0x802600E4 | Size: 0x378 | Ghidra import */
 extern s8 menuSubOpenYesNo();
 extern int winMsgClose();
@@ -460,6 +472,11 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
   return iVar8;
 }
 
+#else
+/* EVOLUTION_80260EBC_ONLY (evolution_exact_80260EBC.c) links evolutionStart alone. */
+int cbWazaForget(u32 r3, u32 r4, int r5);
+#endif /* !EVOLUTION_80260EBC_ONLY */
+
 #if !defined(EVOLUTION_802600E4_ONLY)
 /* EVOLUTION_802600E4_ONLY (evolution_exact_802600E4.c) stops here: that unit
  * links 0x802600E4-0x80260910 (evolutionWazaLearn, cbWazaForget,
@@ -510,8 +527,6 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   int result;
   u8 slot;
   u8 pokemon[320];
-  u16 *wp = wazaList;
-  u8 *sp = slotList;
 
   bgm = fn_801653C4();
   if (bgm != 0) {
@@ -545,16 +560,16 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   }
   pokemonBiosCopy(pokemon,after);
   for (i = 0; i < wazaNum; i++) {
-    waza = *wp;
+    waza = *wazaList;
     if (evolutionWazaLearn(pokemon,waza,&slot,0,cbWazaForget,(u32)work) != 0) {
       pokemonWazaCreate(pokemon,slot,waza);
     }
     else {
       slot = 0xff;
     }
-    wp++;
-    *sp = slot;
-    sp++;
+    wazaList++;
+    *slotList = slot;
+    slotList++;
   }
   fadeSet(lbl_8047E6C0,3);
   fadeCheck(1);
@@ -584,6 +599,7 @@ evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
   return 1;
 }
 
+#if !defined(EVOLUTION_80260EBC_ONLY)
 /* Address: 0x8026132C | Size: 0x5C | Ghidra import */
 u32 evolutionOpen(u32 r3, u32 r4, u32 r5, u16 *r6, u32 r7, u8 *r8)
 {
@@ -818,4 +834,5 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   }
   return 1;
 }
+#endif /* !EVOLUTION_80260EBC_ONLY */
 #endif /* !EVOLUTION_802600E4_ONLY */

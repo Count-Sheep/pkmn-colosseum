@@ -30816,17 +30816,30 @@
       "total_functions": 3
     },
     {
-      "name": "main/game/evolution_r57b_802600E4_prefix",
+      "name": "main/game/evolution_exact_802600E4",
       "sections": [
         {
           "name": ".text",
-          "size": 3544,
+          "size": 2092,
           "virtual_address": 2149974244
         }
       ],
-      "total_code": 3544,
+      "total_code": 2092,
       "total_data": 0,
-      "total_functions": 4
+      "total_functions": 3
+    },
+    {
+      "name": "main/game/evolution_candidate_80260910",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 1452,
+          "virtual_address": 2149976336
+        }
+      ],
+      "total_code": 1452,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
       "name": "main/game/evolution_r57b_80260EBC_o4p",

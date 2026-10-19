@@ -6764,7 +6764,7 @@ game/evolution_exact_802600E4.c:
 game/evolution_candidate_80260910.c:
 	.text       start:0x80260910 end:0x80260EBC
 
-game/evolution_r57b_80260EBC_o4p.c:
+game/evolution_exact_80260EBC.c:
 	.text       start:0x80260EBC end:0x802612D0
 
 game/evolution_r57b_802612D0_suffix.c:
