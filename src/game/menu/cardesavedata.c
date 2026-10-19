@@ -3188,6 +3188,15 @@ typedef struct CardEStatusData {
     /* 0x184 */ char file[1];
 } CardEStatusData;
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's window lookup) - see docs/RULE_EXCEPTIONS.md */
+static inline u8* CardEStatusWindow(u8* window)
+{
+    if (window == NULL) {
+        window = ((u8* (*)(u32))windowSearchID)(0xA6);
+    }
+    return window;
+}
+
 static inline CardEStatusWork* CardEGetStatusWork(u8* window)
 {
     if (window == NULL) {
@@ -3288,7 +3297,7 @@ void fn_80084038(u8* window)
     u32 n;
     void* sprite;
 
-    status = CardEGetStatusWork(window);
+    status = *(CardEStatusWork**)((void* (*)(u8*))windowGetFreeWork)(CardEStatusWindow(window));
     work = status;
     switch ((s8)window[1]) {
     case 0:
@@ -4173,27 +4182,29 @@ static inline void cardGridShowCount(s32 count)
     }
 }
 
-static inline u16 cardGridTileAt(CardGridTiles tiles, s32 x, s32 y)
+static inline u16 cardGridTileAt(const CardGridTiles* tiles, s32 x, s32 y)
 {
     if (x < 0 || x >= 3 || y < 0 || y >= 3) {
         return 0;
     }
-    return tiles.id[y][x];
+    return tiles->id[y][x];
 }
 
-static inline u16 cardGridTile(CardGridTiles tiles, s32 x, s32 y)
-{
-    return cardGridTileAt(tiles, x, y);
-}
-
-static inline void cardGridCountRow(CardGridTiles tiles, s32* occupied,
-                                    s32 y, const u16* expected, s32* matches)
+static inline void cardGridCountRow(const CardGridTiles* tiles, CardGridTiles* row,
+                                    CardGridTiles* read, s32* occupied, s32 y,
+                                    const u16* expected, s32* matches)
 {
     s32 x;
 
+    /* RULE-EXCEPTION(user-approved): carrier copy (fn_80087C64's tile-grid stack copies, retail slot order) - see docs/RULE_EXCEPTIONS.md */
+    *row = *tiles;
     for (x = 0; x < 3; x++) {
         if (occupied[x] != 0) {
-            u16 tile = cardGridTile(tiles, x, y);
+            u16 tile;
+
+            /* RULE-EXCEPTION(user-approved): carrier copy (fn_80087C64's tile-grid stack copies, retail slot order) - see docs/RULE_EXCEPTIONS.md */
+            *read = *row;
+            tile = cardGridTileAt(read, x, y);
             if (tile == expected[0]) {
                 (*matches)++;
             } else if (tile == expected[1]) {
@@ -4205,23 +4216,23 @@ static inline void cardGridCountRow(CardGridTiles tiles, s32* occupied,
     }
 }
 
-static inline s32 cardGridCountMatches(CardGridTiles tiles,
-                                       s32 occupied[3][3],
+static inline s32 cardGridCountMatches(CardGridTiles tiles, CardGridTiles* row,
+                                       CardGridTiles* read, s32 occupied[3][3],
                                        const u16* expected)
 {
     s32 y;
     s32 matches = 0;
 
     for (y = 0; y < 3; y++) {
-        cardGridCountRow(tiles, occupied[y], y, expected, &matches);
+        cardGridCountRow(&tiles, row, read, occupied[y], y, expected, &matches);
     }
     return matches;
 }
 
-static inline void cardGridShowCursor(CardGridCursor cursor, s32 x, s32 y)
+static inline void cardGridShowCursor(const CardGridCursor* cursor, s32 x, s32 y)
 {
     if (x >= 0 && x < 3 && y >= 0 && y < 3) {
-        s32 anim = cursor.anim[y][x];
+        s32 anim = cursor->anim[y][x];
         void* model = fn_800F92D4(0x107E1009);
         if (model != 0) {
             cardGridAnimate(model, anim);
@@ -4247,8 +4258,8 @@ static inline BOOL cardGridSelect(const CardGridData* data, s32 occupied[3][3],
     return TRUE;
 }
 
-static inline BOOL cardGridMove(const CardGridData* data, u16 repeat,
-                                s32* px, s32* py)
+static inline BOOL cardGridMove(const CardGridData* data, CardGridCursor* cursor,
+                                u16 repeat, s32* px, s32* py)
 {
     s32 x = *px;
     s32 y = *py;
@@ -4274,7 +4285,9 @@ static inline BOOL cardGridMove(const CardGridData* data, u16 repeat,
     }
 
     if (moved) {
-        cardGridShowCursor(data->cursor, nextX, nextY);
+        /* RULE-EXCEPTION(user-approved): carrier copy (fn_80087C64's tile-grid stack copies, retail slot order) - see docs/RULE_EXCEPTIONS.md */
+        *cursor = data->cursor;
+        cardGridShowCursor(cursor, nextX, nextY);
         *px = nextX;
         *py = nextY;
     }
@@ -4287,6 +4300,10 @@ u32 fn_80087C64(const u16* expected)
 {
     s32 occupied[3][3];
     CardGridChoice choices[3];
+    /* RULE-EXCEPTION(user-approved): carrier copy (fn_80087C64's tile-grid stack copies, retail slot order) - see docs/RULE_EXCEPTIONS.md */
+    CardGridTiles readTiles;
+    CardGridCursor cursor;
+    CardGridTiles rowTiles;
     const CardGridData* data = (const CardGridData*)lbl_8026F488;
     s32 x;
     s32 y;
@@ -4316,7 +4333,7 @@ u32 fn_80087C64(const u16* expected)
                 cardGridShowCount(count);
 
                 if (count >= 3) {
-                    if (cardGridCountMatches(data->tiles, occupied, expected) < 3) {
+                    if (cardGridCountMatches(data->tiles, &rowTiles, &readTiles, occupied, expected) < 3) {
                         fn_80166A28(0x26);
                         while (fn_801666BC(0x26) == 2) {
                             _threadSwitch();
@@ -4353,7 +4370,7 @@ u32 fn_80087C64(const u16* expected)
         }
 
         if (!handled) {
-            cardGridMove(data, key->repeat, &x, &y);
+            cardGridMove(data, &cursor, key->repeat, &x, &y);
         }
         _threadSwitch();
     }
