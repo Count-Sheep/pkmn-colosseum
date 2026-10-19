@@ -43,6 +43,13 @@ static inline BOOL pdaMemoSeen(u16 id)
     return (id & 0x8000) == 0;
 }
 
+static inline u32 pdaTrainerRnd(u32 species)
+{
+    u32 trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+
+    return trainerRnd;
+}
+
 /* pdaLoadPokemonId for the lookup helpers, which go on to read the work slot. */
 static inline u32 pdaLoadPokemonWork(u32 id)
 {
@@ -57,7 +64,38 @@ static inline u32 pdaLoadPokemonWork(u32 id)
         }
         pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
         rnd = memoDataGetPokemonRndFromID(0, species);
-        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        trainerRnd = pdaTrainerRnd(species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_Rnd (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003E394_Rnd(u32 species)
+{
+    u32 rnd = memoDataGetPokemonRndFromID(0, species);
+
+    return rnd;
+}
+
+/* pdaLoadPokemonId for the lookup helpers, which go on to read the work slot. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_LoadPokemonWork (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003E394_LoadPokemonWork(u32 id)
+{
+    u32 trainerRnd;
+    u32 rnd;
+    u32 species = id;
+    u32 work;
+
+    if ((work = lbl_8047A4E0) != 0) {
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = pda_8003E394_Rnd(species);
+        trainerRnd = pdaTrainerRnd(species);
         pokemonBiosSetRnd(work, rnd);
         pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
         return lbl_8047A4E0;
@@ -114,6 +152,26 @@ static inline u16 pdaGetWeight(u32 id)
     return 0;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_GetWeight (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pda_8003E394_GetWeight(u32 id)
+{
+    u32 work = lbl_8047A4E0;
+    void* data;
+
+    if (work != 0) {
+        work = pda_8003E394_LoadPokemonWork(id);
+        if (work != 0) {
+            data = pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(work));
+            if (data != NULL) {
+                return pokemonDataBiosGetWeight(data);
+            }
+            return 0;
+        }
+        return 0;
+    }
+    return 0;
+}
+
 static inline u16 pdaGetHeight(u32 id)
 {
     u32 work = lbl_8047A4E0;
@@ -146,6 +204,29 @@ static inline u16 pdaCollectWeights(PdaSortPair* pairs, u16* ids)
         id = lbl_8047A4E4[i];
         if (pdaMemoSeen(id)) {
             key = pdaGetWeight(id);
+            ids[count] = id;
+            pairs[count].key = key;
+            pairs[count].index = i;
+            count++;
+        }
+    }
+    return count;
+}
+
+/* Fill the sort pairs with each seen entry's weight; returns the entry count. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003E394_CollectWeights (fn_8003E394) - see docs/RULE_EXCEPTIONS.md */
+static inline u16 pda_8003E394_CollectWeights(PdaSortPair* pairs, u16* ids)
+{
+    u16 i;
+    u32 id;
+    u16 count;
+    u16 key;
+
+    count = 0;
+    for (i = 0; i < lbl_8047A4E8; i++) {
+        id = lbl_8047A4E4[i];
+        if (pdaMemoSeen(id)) {
+            key = pda_8003E394_GetWeight(id);
             ids[count] = id;
             pairs[count].key = key;
             pairs[count].index = i;
@@ -188,7 +269,7 @@ static inline void pda_8003E394_SortWeight(void)
 
     pairs = (PdaSortPair*)pdaAlloc(0x640, 0x20);
     ids = (u16*)pdaAlloc(0x320, 0x20);
-    count = pdaCollectWeights(pairs, ids);
+    count = pda_8003E394_CollectWeights(pairs, ids);
     fn_8003F2DC((u8*)pairs, count, 1);
     for (j = 0; j < count; j++) {
         lbl_8047A4E4[j] = ids[pairs[j].index];
