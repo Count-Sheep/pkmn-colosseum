@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2224
+    "total_units": 2225
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2126,
-    "source_backed_units": 2125,
+    "named_units": 2127,
+    "source_backed_units": 2126,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2412708",
-    "matched_code_percent": 96.31799,
+    "matched_code": "2413212",
+    "matched_code_percent": 96.33812,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8617,
-    "matched_functions_percent": 99.30852,
-    "fuzzy_match_percent": 99.91891
+    "matched_functions": 8618,
+    "matched_functions_percent": 99.320045,
+    "fuzzy_match_percent": 99.9193
   },
   "unit_topology": [
     {
@@ -2236,17 +2236,30 @@
       "total_functions": 2
     },
     {
+      "name": "main/game/menuShop_exact_80029AC8",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 504,
+          "virtual_address": 2147654344
+        }
+      ],
+      "total_code": 504,
+      "total_data": 0,
+      "total_functions": 1
+    },
+    {
       "name": "main/game/menuShop",
       "sections": [
         {
           "name": ".text",
-          "size": 1068,
-          "virtual_address": 2147654344
+          "size": 564,
+          "virtual_address": 2147654848
         }
       ],
-      "total_code": 1068,
+      "total_code": 564,
       "total_data": 0,
-      "total_functions": 2
+      "total_functions": 1
     },
     {
       "name": "main/game/menuShop_island_80029EF4",

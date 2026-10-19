@@ -28,7 +28,8 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8
  *   menuShop_candidate_8002B594.c -> fn_8002B594
  *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880
- *   menuShop_candidate_8002C284.c -> fn_8002C284 */
+ *   menuShop_candidate_8002C284.c -> fn_8002C284
+ *   menuShop_exact_80029AC8.c -> fn_80029AC8 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
@@ -38,7 +39,8 @@ extern u32 GSmsgGetRect(u32 id);
     defined(MENUSHOP_CANDIDATE_8002C284_ONLY) || \
     defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
     defined(MENUSHOP_ISLAND_80029850_ONLY) || \
-    defined(MENUSHOP_ISLAND_80029EF4_ONLY)
+    defined(MENUSHOP_ISLAND_80029EF4_ONLY) || \
+    defined(MENUSHOP_EXACT_80029AC8_ONLY)
 #define MENUSHOP_ISLAND_ONLY
 #endif
 
@@ -78,7 +80,8 @@ u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY) || defined(MENUSHOP_ISLAND_80029EF4_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY) || defined(MENUSHOP_ISLAND_80029EF4_ONLY) || \
+    defined(MENUSHOP_EXACT_80029AC8_ONLY)
 typedef struct ShopItemSlot {
     u16 item_id;
     u16 quantity;
@@ -98,12 +101,19 @@ typedef struct ShopInventory {
 } ShopInventory;
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_80029850_ONLY) || \
+    defined(MENUSHOP_EXACT_80029AC8_ONLY)
 /* fn_800298DC - 0x800298DC | size: 0x1ec */
+#if defined(MENUSHOP_EXACT_80029AC8_ONLY)
+/* fn_80029AC8's carve takes these helpers only; its unit sets -opt nopeephole. */
+extern u16 itemBiosGetItemDataId(void*);
+extern u16 itemBiosGetNum(void*);
+#else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
+#endif
 static inline s32 shopAddToSlot(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
                                 s16 index, s32 maximum) {
     u16 current_id;
@@ -260,6 +270,7 @@ static inline u16 shopAddItemId(ShopItemSlot* slots, u16 count, u16 item_id,
     return quantity;
 }
 
+#if !defined(MENUSHOP_EXACT_80029AC8_ONLY)
 s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
                  s16 index, s32 maximum) {
     s32 i;
@@ -278,18 +289,22 @@ s32 fn_800298DC(ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
     return quantity;
 }
 #pragma pop
+#endif /* !MENUSHOP_EXACT_80029AC8_ONLY */
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_EXACT_80029AC8_ONLY)
 /* fn_80029AC8 - 0x80029AC8 | size: 0x1f8 */
 #if 0
 asm void fn_80029AC8(void) {
 #include "src/game/gs_worldmap_fn_80029AC8.inc"
 }
 #else
+#if !defined(MENUSHOP_EXACT_80029AC8_ONLY)
+/* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; optimization_level 4; peephole off), whole-file compiles only; the linked carve uses unit-level -opt nopeephole - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma optimization_level 4
 #pragma peephole off
+#endif
 void fn_80029AC8(s32 price, s32 item_id, s32 quantity, ShopInventory* inventory) {
     s32 count;
 
@@ -302,8 +317,13 @@ void fn_80029AC8(s32 price, s32 item_id, s32 quantity, ShopInventory* inventory)
     inventory->currency -= price;
     inventory->modified = 1;
 }
+#if !defined(MENUSHOP_EXACT_80029AC8_ONLY)
 #pragma pop
 #endif
+#endif
+
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 
 /* fn_80029CC0 - 0x80029CC0 | size: 0x234 */
 extern void fn_80142A88(void*, s32);
