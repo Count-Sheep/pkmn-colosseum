@@ -1332,12 +1332,10 @@ static inline f32 menuFightAbsAngle(f32 angle)
 /* |value| of a stick axis */
 static inline s32 menuFightAbsS8(s8 value)
 {
-    s32 a = value;
-
-    if (a < 0) {
-        a = -a;
+    if (value < 0) {
+        return -value;
     }
-    return a;
+    return value;
 }
 
 void menuFightButtonSecretPokemonTop(u8* ctx) {
@@ -1352,11 +1350,11 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
     extern s32 menuOpenCustom(s32, ...);
     u8* flags;
     u16 bits;
-    u32 base;
-    u8 aux;
     s32 selected;
     s32 activeMenu;
     s32 targetMenu;
+    u32 base;
+    u8 aux;
     s8 sx;
     s8 sy;
     f32 angle;
