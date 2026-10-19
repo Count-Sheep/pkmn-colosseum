@@ -48,32 +48,10 @@ static inline u32 pdaLoadPokemonId(u32 id)
     return 0;
 }
 
-/* pdaLoadPokemonId for the lookup helpers, which go on to read the work slot. */
-static inline u32 pdaLoadPokemonWork(u32 id)
-{
-    u32 rnd;
-    u32 species = id;
-    u32 trainerRnd;
-    u32 work;
-
-    if ((work = lbl_8047A4E0) != 0) {
-        if (id >= 0x8000) {
-            species = id & 0x3fff;
-        }
-        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
-        rnd = memoDataGetPokemonRndFromID(0, species);
-        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
-        pokemonBiosSetRnd(work, rnd);
-        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
-        return lbl_8047A4E0;
-    }
-    return 0;
-}
-
 /* Name of the memo entry as a wide string, or NULL when unavailable. */
 static inline void* pdaGetPokemonName(u16 id)
 {
-    u32 work = pdaLoadPokemonWork(id);
+    u32 work = pdaLoadPokemonId(id);
 
     if (work != 0) {
         return pokemonDataBiosGetName(
@@ -111,21 +89,34 @@ typedef struct PdaNamePair {
     u16 name[12];
 } PdaNamePair;
 
-/* Sort the memo index table by species name. */
-void fn_8003F040(void)
+/* Shell sort of the name pairs by name (array indexing; the compiler derives the row pointers). */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003F040_Sort (fn_8003F040) - see docs/RULE_EXCEPTIONS.md */
+static inline void pda_8003F040_Sort(PdaNamePair* pairs, s32 count)
 {
     extern s32 GScharCmp(u16* a, u16* b);
     extern void* memcpy(void* dst, const void* src, u32 size);
-    u16 i;
     PdaNamePair tmp;
     s32 gap;
-    PdaNamePair* q;
-    PdaNamePair* pairs;
-    s32 k;
     s32 j;
-    PdaNamePair* p;
+    s32 k;
+
+    for (gap = count / 2; gap > 0; gap /= 2) {
+        for (j = gap; j < count; j++) {
+            for (k = j - gap; k >= 0 && GScharCmp(pairs[k].name, pairs[k + gap].name) >= 0; k -= gap) {
+                memcpy(&tmp, &pairs[k], 0x1a);
+                memcpy(&pairs[k], &pairs[k + gap], 0x1a);
+                memcpy(&pairs[k + gap], &tmp, 0x1a);
+            }
+        }
+    }
+}
+
+/* Sort the memo index table by species name. */
+void fn_8003F040(void)
+{
+    u16 i;
+    PdaNamePair* pairs;
     u16* ids;
-    s32 count;
 
     pairs = (PdaNamePair*)pdaAlloc(0x28a0, 0x20);
     ids = (u16*)pdaAlloc(0x320, 0x20);
@@ -135,20 +126,7 @@ void fn_8003F040(void)
         fn_800F96E4((u8*)pairs[i].name, 0x18, (u8*)pdaGetPokemonName(id));
         pairs[i].index = i;
     }
-
-    count = lbl_8047A4E8;
-    for (gap = count / 2; gap > 0; gap = gap / 2) {
-        for (j = gap; j < count; j++) {
-            for (k = j - gap, p = &pairs[k];
-                 k >= 0 && GScharCmp(p->name, (q = &pairs[k + gap])->name) >= 0;
-                 p -= gap, k -= gap) {
-                memcpy(&tmp, p, 0x1a);
-                memcpy(p, q, 0x1a);
-                memcpy(q, &tmp, 0x1a);
-            }
-        }
-    }
-
+    pda_8003F040_Sort(pairs, lbl_8047A4E8);
     for (i = 0; i < lbl_8047A4E8; i++) {
         lbl_8047A4E4[i] = ids[pairs[i].index];
     }
