@@ -2411,6 +2411,28 @@ static inline u32 shopGetRoom(u8 mode, ShopWork* work, u32 item)
     }
 }
 
+/* Item id in stock slot `i` (0 when out of range); stores its count in
+ * `*num` when the slot is used. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_8002C408's stock write-back - see docs/RULE_EXCEPTIONS.md */
+static inline u16 shopStockId(ShopWork* work, s32 i, u16* num)
+{
+    extern u16 itemBiosGetItemDataId(void* slot);
+    extern u16 itemBiosGetNum(void* slot);
+    u8* slot;
+    u16 id;
+
+    if (i < 0 || i > work->count) {
+        return 0;
+    }
+    slot = (u8*)work;
+    slot += i * 4;
+    id = itemBiosGetItemDataId(slot);
+    if (id != 0) {
+        *num = itemBiosGetNum(slot);
+    }
+    return id;
+}
+
 /* Asks whether to leave the shop of type `mode`; a PC-box shop (3) that
  * changed its stock writes the stock back first. Returns 1 to leave. */
 static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
@@ -2481,15 +2503,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
         inv.zero = 0;
         inv.count = work->count;
         for (i = 0; i < inv.count; i++) {
-            if (i < 0 || i > work->count) {
-                id = 0;
-            } else {
-                slot = (u8*)work + i * 4;
-                id = itemBiosGetItemDataId(slot);
-                if (id != 0) {
-                    inv.items[i].num = itemBiosGetNum(slot);
-                }
-            }
+            id = shopStockId(work, i, &inv.items[i].num);
             inv.items[i].id = id;
             if (inv.items[i].id == 0) {
                 inv.items[i].num = 0;
