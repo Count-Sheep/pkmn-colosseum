@@ -1073,15 +1073,29 @@ static inline s32 pdaTint(PdaSprite* alphaSprite, s32 tint)
     return alphaSprite->alphaByte | tint;
 }
 
+/* Draw the open tab's message list from row i on, one row every 29 pixels;
+ * only the rows around the visible window are drawn. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper - the start row is a parameter, so its zero is copied into the strength-reduced word offset (retail li r29,0; mr r28,r29) - see docs/RULE_EXCEPTIONS.md */
+static inline void pdaDrawTabList(PdaSprite* alphaSprite, u8* S, s8 i)
+{
+    f32 pos;
+    f32 stride;
+    pos = *(f32*)(S + 0x1d0);
+    stride = 29.0f;
+    for (; i < *(s8*)(S + 0x160); i++) {
+        if (i >= *(s8*)(S + 0x1c8) - 1 && i <= *(s8*)(S + 0x1c9) + 1) {
+            fn_800FB680(0, (s32)pos, ((s64)alphaSprite->alphaByte | -0x100),
+                        (void*)lbl_802E5514[*(s8*)(S + 0x15d)][i]);
+        }
+        pos = pos + stride;
+    }
+}
+
 /* Per-widget layout and visibility for the PDA's summary page. */
 void fn_8003F464(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern f64 sin(f64 x);
     u8* S = (u8*)&lbl_803A6818;
-    f32 pos;
-    f32 stride;
-    s8 i;
-    s32 off;
     s32 slot;
     s32 msg;
 
@@ -1163,21 +1177,7 @@ void fn_8003F464(PdaSprite* alphaSprite, PdaSprite* sprite)
             *(s16*)(lbl_802EF0A8 + 0x17b56),
             *(s16*)(lbl_802EF0A8 + 0x17b58));
         if (*(s8*)(S + 0x15d) != 4) {
-            i = 0;
-            pos = *(f32*)(S + 0x1d0);
-            off = 0;
-            stride = 29.0f;
-            for (i = 0; i < *(s8*)(S + 0x160); i++) {
-                if (i >= *(s8*)(S + 0x1c8) - 1 &&
-                    i <= *(s8*)(S + 0x1c9) + 1) {
-                    fn_800FB680(0, (s32)pos,
-                                ((s64)alphaSprite->alphaByte | -0x100),
-                                (void*)*(u32*)((u8*)lbl_802E5514[*(s8*)(S + 0x15d)] +
-                                               off));
-                }
-                pos = pos + stride;
-                off += 4;
-            }
+            pdaDrawTabList(alphaSprite, S, 0);
         }
         fn_800FE35C();
         break;
