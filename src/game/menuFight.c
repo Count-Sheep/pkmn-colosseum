@@ -34,6 +34,9 @@
 #if defined(MENU_FIGHT_ONLY_8000F400)
 #define MENU_FIGHT_ONLY
 #endif
+#if defined(MENU_FIGHT_ONLY_8000F768)
+#define MENU_FIGHT_ONLY
+#endif
 
 /* =========================================================================
  * External declarations
@@ -1676,7 +1679,7 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
 
 #endif
 
-#ifndef MENU_FIGHT_ONLY
+#if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000F768)
 /* menuFightDrawSecretWazaSelect - 0x8000F768 | size: 0x1fc */
 extern void jumptable_802E4CD8();
 #if 0
@@ -1685,11 +1688,15 @@ asm void menuFightDrawSecretWazaSelect(void) {
 }
 #else
 void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
-    extern u32 windowSearchID(void);
-    extern u8* windowGetAllocPtr(void);
+    extern void* windowSearchID(s32 id);
+    extern u8* windowGetAllocPtr(void* window);
     extern u32 windowGetParam(u8* a, s32 b);
     extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
-    extern void fn_800FB680();
+    extern void fn_800FB680(s32 x, s32 y, s32 color, u32 key);
+    extern void windowDrawSprite(void* x, void* y, void* context, u32 spriteId, u32 flags);
+    extern u32 GSmsgGetRect(u32 id);
+    extern void msgctrlSetValue(u32 id, u32 value);
+    void* window;
     u8* entries;
     s32 offset;
     u8* entry;
@@ -1697,42 +1704,43 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     s32 color;
     s16 y;
     s32 slot;
+    s16 h;
+    s32 diff;
 
     slot = -1;
-    windowGetParam(ctx, 0);
-    if (windowSearchID() == 0) return;
-    entries = windowGetAllocPtr();
+    window = windowSearchID(windowGetParam(ctx, 0));
+    if (window == NULL) return;
+    entries = windowGetAllocPtr(window);
     if (entries == NULL) return;
     color = (s32)menuSubCalcColor(ctx, npc);
     idx = *(s16*)(npc + 6) - 0x11D9;
     switch (idx) {
     case 3:
-    case 7:
-    case 11:
-    case 15:
-    case 19:
-        slot = 0;
-        break;
-    case 0:
-    case 4:
     case 8:
     case 12:
     case 16:
     case 20:
-        slot = 1;
+        slot = 0;
         break;
-    case 1:
+    case 0:
     case 5:
     case 9:
     case 13:
     case 17:
-        slot = 2;
+        slot = 1;
         break;
-    case 2:
+    case 1:
     case 6:
     case 10:
     case 14:
     case 18:
+        slot = 2;
+        break;
+    case 2:
+    case 7:
+    case 11:
+    case 15:
+    case 19:
         slot = 3;
         break;
     default:
@@ -1769,7 +1777,10 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     case 0x11E7:
     case 0x11E8:
     case 0x11E9:
-        y = (s16)((*(s16*)(npc + 0x54) - (s16)(GSmsgGetRect(0x197) >> 16)) / 2);
+        h = (s16)(GSmsgGetRect(0x197) >> 16);
+        diff = *(s16*)(npc + 0x54) - h;
+        /* diff / 2, rounded toward zero */
+        y = (s16)(((s32)((u32)diff >> 31) + diff) >> 1);
         fn_800FB680(y, 0, color, 0x197);
         msgctrlSetValue(0x34, entries[offset + 0xF]);
         fn_800FBB34(0, 0, y, *(s16*)(npc + 0x56), color, 0xDE);
@@ -1789,6 +1800,9 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
 }
 #endif
 
+#endif
+
+#ifndef MENU_FIGHT_ONLY
 /* menuFightButtonSecretWazaTop - 0x8000F964 | size: 0x474 */
 extern f64 lbl_8047B710;
 extern f32 lbl_8047B700;
