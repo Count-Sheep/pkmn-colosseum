@@ -41,6 +41,15 @@ static inline BOOL pdaMemoSeen(u16 id)
     return (id & 0x8000) == 0;
 }
 
+/* Catch-trainer random value of a memo entry's species. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pdaTrainerRnd (fn_8003DC54) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pdaTrainerRnd(u32 species)
+{
+    u32 trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+
+    return trainerRnd;
+}
+
 /* pdaLoadPokemonId for the type filter: tests the work slot, then reads it again into work. */
 static inline u32 pdaLoadPokemonSlot(u32 id)
 {
@@ -56,7 +65,7 @@ static inline u32 pdaLoadPokemonSlot(u32 id)
         }
         pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
         rnd = memoDataGetPokemonRndFromID(0, species);
-        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        trainerRnd = pdaTrainerRnd(species);
         pokemonBiosSetRnd(work, rnd);
         pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
         return lbl_8047A4E0;
@@ -95,13 +104,11 @@ static inline u16 pdaFilterTypes(u16* buf, u16 type0, u16 type1, BOOL both)
             b = pdaGetTypeIcon(id, 1);
             if (both) {
                 if ((type0 == a && type1 == b) || (type0 == b && type1 == a)) {
-                    buf[count] = id;
-                    count++;
+                    buf[count++] = id;
                 }
             } else {
                 if (type0 == a || type0 == b) {
-                    buf[count] = id;
-                    count++;
+                    buf[count++] = id;
                 }
             }
         }
