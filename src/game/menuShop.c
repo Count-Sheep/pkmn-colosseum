@@ -191,6 +191,36 @@ static inline s32 shopFillSlot(ShopItemSlot* slots, u16 count, s32 item_id,
     capacity = maximum - current_quantity;
     added = (capacity < quantity) ? capacity : quantity;
     itemBiosSetNum(slots, current_quantity + added);
+    return quantity -= added;
+}
+
+/* The explicit-index step of fn_80029CC0's copy: the same slot fill, but the
+ * remaining quantity is returned as a fresh narrowed value. */
+/* RULE-EXCEPTION(user-approved): single-use inline copy of the slot step for fn_80029CC0's explicit-index path - see docs/RULE_EXCEPTIONS.md */
+static inline s32 shopFillSlotOnce(ShopItemSlot* slots, u16 count, s32 item_id,
+                               u16 quantity, s16 index, u16 maximum) {
+    u16 current_id;
+    u16 current_quantity;
+    u16 capacity;
+    u16 added;
+
+    if (index < 0 || index >= count) {
+        return quantity;
+    }
+    slots += index;
+    current_id = itemBiosGetItemDataId(slots);
+    if (current_id != (u16)item_id && current_id != 0) {
+        return quantity;
+    }
+    if (current_id == 0) {
+        itemBiosSetItemDataId(slots, item_id);
+        current_quantity = 0;
+    } else {
+        current_quantity = itemBiosGetNum(slots);
+    }
+    capacity = maximum - current_quantity;
+    added = (capacity < quantity) ? capacity : quantity;
+    itemBiosSetNum(slots, current_quantity + added);
     return (u16)(quantity - added);
 }
 
@@ -207,7 +237,6 @@ static inline u16 shopAddItem(ShopItemSlot* slots, u16 count, s32 item_id,
     }
     quantity = (u16)quantity;
     for (i = 0; i < count && quantity > 0; i++) {
-        quantity = (u16)quantity;
         quantity = shopFillSlot(slots, count, item_id, quantity, i, maximum);
     }
     return quantity;
@@ -223,11 +252,9 @@ static inline u16 shopAddItemId(ShopItemSlot* slots, u16 count, u16 item_id,
         return quantity;
     }
     if (index != -1) {
-        return shopFillSlot(slots, count, item_id, quantity, index, maximum);
+        return shopFillSlotOnce(slots, count, item_id, quantity, index, maximum);
     }
-    quantity = (u16)quantity;
     for (i = 0; i < count && quantity > 0; i++) {
-        quantity = (u16)quantity;
         quantity = shopFillSlot(slots, count, item_id, quantity, i, maximum);
     }
     return quantity;
