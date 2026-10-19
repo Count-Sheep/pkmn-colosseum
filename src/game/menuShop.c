@@ -2364,6 +2364,53 @@ static inline u32 shopGetMoney(u8 mode, ShopWork* work)
     }
 }
 
+/* Free room for `item_id` across `count` slots: the shop's inline copy of
+ * fn_80029850. */
+/* RULE-EXCEPTION(user-approved): inline copy of the real fn_80029850 (linked in menuShop_island_80029850) expanded by fn_8002C408 - see docs/RULE_EXCEPTIONS.md */
+static inline u32 shopCountSpace(u8* slot, u16 count, u16 item_id, u16 maximum)
+{
+    extern u16 itemBiosGetItemDataId(void* slot);
+    extern u16 itemBiosGetNum(void* slot);
+    u32 space;
+    s32 i;
+    u16 id;
+
+    space = 0;
+    i = 0;
+    while (i < count) {
+        id = itemBiosGetItemDataId(slot);
+        if (id == item_id) {
+            space += (u16)(maximum - itemBiosGetNum(slot));
+        } else if (id == 0) {
+            space += maximum;
+        }
+        i++;
+        slot += 4;
+    }
+    return space;
+}
+
+/* Room for `item` in the shop of type `mode`'s destination: the PC box,
+ * the PC-box shop's work block, or the hero's bag. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_8002C408's room check (same shape as shopGetMoney) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 shopGetRoom(u8 mode, ShopWork* work, u32 item)
+{
+    extern u32 pcboxGetItemCapacity(s32 a, u32 item);
+    extern s32 heroItemCheckAddItemDataId(u8* ptr, u32 item);
+
+    switch (mode) {
+    case 2:
+        return (u16)pcboxGetItemCapacity(0, item);
+    case 3:
+        if (work != NULL) {
+            return shopCountSpace((u8*)work, work->count, item, 999);
+        }
+        return 0;
+    default:
+        return heroItemCheckAddItemDataId(NULL, item);
+    }
+}
+
 /* Asks whether to leave the shop of type `mode`; a PC-box shop (3) that
  * changed its stock writes the stock back first. Returns 1 to leave. */
 static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
@@ -2669,33 +2716,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         if (answer == 1 || answer == -1) {
             continue;
         }
-        switch (type) {
-        case 2:
-            room = pcboxGetItemCapacity(0, item) & 0xFFFF;
-            break;
-        case 3:
-            if (&params.work != NULL) {
-                u16 id;
-                s32 count;
-                room = 0;
-                count = params.work.count;
-                slot = (u8*)&params.work;
-                for (i = 0; i < count; i++, slot += 4) {
-                    id = itemBiosGetItemDataId(slot);
-                    if (id == (u16)item) {
-                        room += (u16)(999 - itemBiosGetNum(slot));
-                    } else if (id == 0) {
-                        room += 999;
-                    }
-                }
-            } else {
-                room = 0;
-            }
-            break;
-        default:
-            room = heroItemCheckAddItemDataId(NULL, item);
-            break;
-        }
+        room = shopGetRoom(type, &params.work, item);
         if (room < qty) {
             fn_8002A1C4((u8*)mapIdx, 9, -1);
             continue;
