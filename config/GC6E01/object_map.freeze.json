@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2226
+    "total_units": 2228
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2128,
-    "source_backed_units": 2127,
+    "named_units": 2130,
+    "source_backed_units": 2129,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2438340",
-    "matched_code_percent": 97.34125,
+    "matched_code": "2440268",
+    "matched_code_percent": 97.41822,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8628,
-    "matched_functions_percent": 99.43529,
-    "fuzzy_match_percent": 99.932434
+    "matched_functions": 8630,
+    "matched_functions_percent": 99.458336,
+    "fuzzy_match_percent": 99.93579
   },
   "unit_topology": [
     {
@@ -2262,7 +2262,7 @@
       "total_functions": 1
     },
     {
-      "name": "main/game/menuShop",
+      "name": "main/game/menuShop_exact_80029CC0",
       "sections": [
         {
           "name": ".text",
@@ -3727,17 +3727,43 @@
       "total_functions": 1
     },
     {
-      "name": "main/game/menu/pda_candidate_8003B814_r46_8003DC54",
+      "name": "main/game/menu/pda_exact_8003DC54",
       "sections": [
         {
           "name": ".text",
-          "size": 5768,
+          "size": 1856,
           "virtual_address": 2147736660
         }
       ],
-      "total_code": 5768,
+      "total_code": 1856,
       "total_data": 0,
-      "total_functions": 3
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/menu/pda_exact_8003E394",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 3244,
+          "virtual_address": 2147738516
+        }
+      ],
+      "total_code": 3244,
+      "total_data": 0,
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/menu/pda_exact_8003F040",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 668,
+          "virtual_address": 2147741760
+        }
+      ],
+      "total_code": 668,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
       "name": "main/game/menu/pda_exact_8003F2DC",
