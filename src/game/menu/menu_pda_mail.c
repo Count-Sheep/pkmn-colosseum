@@ -151,8 +151,11 @@ void fn_8004B7EC(void)
     PdaMailOpenConfig config;
     s32 menuSelection;
     PdaMailSceneState* state = (PdaMailSceneState*) lbl_803A6A60;
-    register f32* transitionTarget = &state->transitionTarget;
-    register f32* transition = &state->transition;
+    f32* targetField = &state->transitionTarget;
+    f32* transitionField = &state->transition;
+    /* RULE-EXCEPTION(user-approved): pointer carriers refreshed each loop pass (fn_8004B7EC) - see docs/RULE_EXCEPTIONS.md */
+    f32* transitionTarget = targetField;
+    f32* transition = transitionField;
     s32 phase = 0;
     s32 active;
     void* model;
@@ -268,6 +271,9 @@ void fn_8004B7EC(void)
             state->exiting = 1;
             break;
         }
+        /* RULE-EXCEPTION(user-approved): no-op carrier refresh keeps the field pointers in registers (fn_8004B7EC) - see docs/RULE_EXCEPTIONS.md */
+        transitionTarget = targetField;
+        transition = transitionField;
     }
 
     phase = 0;
