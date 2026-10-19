@@ -338,6 +338,8 @@ void fn_80092B2C(void);
 
 #if !defined(GBA_MISC_80089B8C_ONLY)
 
+#if !defined(GBA_MISC_800896E8_ONLY)
+
 /* 0x800895A4 | size: 0x114 */
 void fn_800895A4(void) {
     extern void fn_8008BBDC();
@@ -458,15 +460,11 @@ void fn_800896E0(u32 v) {
     *(u32*)&lbl_8047A670 = v;
 }
 
+#endif /* !GBA_MISC_800896E8_ONLY */
+
 /* 0x800896E8 | size: 0x290 */
-s32 fn_800896E8(void* work, void* arg) {
-    extern void msgctrlSetValue(s32 id, void* value);
-    extern void fn_80189990(void* work, void* arg, s32 size);
-    extern void fn_8018C1E8(void* work, u8 kind, s32 flag);
-    extern void fadeCheck(s32 mode);
-    extern s32 fn_801CA5C4(s32 id, s32 a, s32 b);
-    extern u8 fn_801EEAD0(u8 id);
-    extern void fightTrainerPokemonDataBiosSetPokemonDataId(u8* pokemon, s32 id);
+/* RULE-EXCEPTION(user-approved): single-use inline helpers for fn_800896E8 (Trainer nested in Setup, Finish); the nesting depth orders the locals for retail's registers - see docs/RULE_EXCEPTIONS.md */
+static inline u8* fn_800896E8_Trainer(u8* ctx) {
     extern u8* fightTrainerPokemonDataBiosGetPtr(u16 slot);
     extern void fn_801FCAFC(void* trainer, u8 value);
     extern void fn_801FCB40(void* trainer, u8 slot, u16 value);
@@ -476,59 +474,45 @@ s32 fn_800896E8(void* work, void* arg) {
     extern void fightTrainerDataBiosSetKindDataId(void* trainer, u8 value);
     extern void* fightTrainerDataBiosGetPtr(s32 id);
     extern void* fightEncountDataBiosGetPtr(s32 id);
-    extern s8 fn_8001E184(void);
-    u8* ctx;
-    /* RULE-EXCEPTION(user-approved): move-table walk through a named pointer, declaration order chosen for register allocation — see docs/RULE_EXCEPTIONS.md */
+    /* RULE-EXCEPTION(user-approved): move-table walk through a named pointer - see docs/RULE_EXCEPTIONS.md */
     u8* p;
-    u8* pokemon;
+    u8* trainer;
     s32 count;
-    s32 i;
-    u32 result;
-    u8 ok;
-
-    ctx = (u8*)fn_80083CFC(0);
-    if (ctx == NULL) {
-        return 0;
-    }
-    if (ctx[0x4000] == 1) {
-        msgctrlSetValue(0x4D, ctx + 0x4004);
-        fn_80189990(work, arg, 0xE0);
-    } else {
-        msgctrlSetValue(0x4D, ctx + 0x4060);
-        fn_80189990(work, arg, 0xE0);
-        switch (fn_8001E184()) {
-        case 0:
-            break;
-        case 1:
-        case -1:
-        default:
-            return 0;
-        }
-    }
 
     ctx[0x4000] = 2;
     fightEncountDataBiosGetPtr(0x231);
-    pokemon = fightTrainerDataBiosGetPtr(9);
-    fn_801FCB94(pokemon, ctx[0x4124]);
-    fightTrainerDataBiosSetKindDataId(pokemon, ctx[0x4125]);
-    fn_801FCB84(pokemon, *(u16*)(ctx + 0x4134));
-    fn_801FCAFC(pokemon, ctx[0x4136]);
+    trainer = fightTrainerDataBiosGetPtr(9);
+    fn_801FCB94(trainer, ctx[0x4124]);
+    fightTrainerDataBiosSetKindDataId(trainer, ctx[0x4125]);
+    fn_801FCB84(trainer, *(u16*)(ctx + 0x4134));
+    fn_801FCAFC(trainer, ctx[0x4136]);
     p = ctx;
     for (count = 0; count < 4; count++) {
-        fn_801FCB40(pokemon, count, *(u16*)(p + 0x4126));
+        fn_801FCB40(trainer, count, *(u16*)(p + 0x4126));
         p += 2;
     }
-    pokemon = fightTrainerPokemonDataBiosGetPtr(fn_801FCC3C(pokemon));
-    for (i = count = 0; i < 4; i++) {
-        if (fn_80089978(pokemon, &((u8(*)[0x2A])&((GbaMiscContext*)ctx)->state_4000)[i][0x138]) == 1) {
-            pokemon += 0x50;
-            count++;
-        }
-    }
-    for (; count < 6; count++) {
-        fightTrainerPokemonDataBiosSetPokemonDataId(pokemon, 0);
-        pokemon += 0x50;
-    }
+    return trainer;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (depth-1 wrapper so Trainer's locals number after Finish's result) - see docs/RULE_EXCEPTIONS.md */
+static inline u8* fn_800896E8_Setup(u8* ctx) {
+    extern u8* fightTrainerPokemonDataBiosGetPtr(u16 slot);
+    extern u16 fn_801FCC3C(void* trainer);
+    return fightTrainerPokemonDataBiosGetPtr(fn_801FCC3C(fn_800896E8_Trainer(ctx)));
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper; the block locals are declared ahead of result so result numbers above them - see docs/RULE_EXCEPTIONS.md */
+static inline u32 fn_800896E8_Finish(u8* ctx, void* work) {
+    extern void fn_8018C1E8(void* work, u8 kind, s32 flag);
+    extern void fadeCheck(s32 mode);
+    extern s32 fn_801CA5C4(s32 id, s32 a, s32 b);
+    extern u8 fn_801EEAD0(u8 id);
+    s32 j;
+    u32 key;
+    GbaMiscContext* cur;
+    u8 kind;
+    u8 ok;
+    u32 result;
 
     *(u8**)&lbl_8047A670 = ctx + 0x4118;
     *(u32*)&lbl_80478960 = 9;
@@ -541,11 +525,6 @@ s32 fn_800896E8(void* work, void* arg) {
             ok = 0;
         }
         if (ok == 1) {
-            GbaMiscContext* cur;
-            u32 key;
-            s32 j;
-            u8 kind;
-
             fn_800830A4(ctx);
             cur = fn_80083CFC(0);
             if (cur != NULL) {
@@ -567,6 +546,51 @@ s32 fn_800896E8(void* work, void* arg) {
     fadeCheck(1);
     return result;
 }
+
+s32 fn_800896E8(void* work, void* arg) {
+    extern void msgctrlSetValue(s32 id, void* value);
+    extern void fn_80189990(void* work, void* arg, s32 size);
+    extern s8 fn_8001E184(void);
+    extern void fightTrainerPokemonDataBiosSetPokemonDataId(u8* pokemon, s32 id);
+    u8* ctx;
+    u8* pokemon;
+    s32 count;
+    s32 i;
+
+    ctx = (u8*)fn_80083CFC(0);
+    if (ctx == NULL) {
+        return 0;
+    }
+    if (ctx[0x4000] == 1) {
+        msgctrlSetValue(0x4D, ctx + 0x4004);
+        fn_80189990(work, arg, 0xE0);
+    } else {
+        msgctrlSetValue(0x4D, ctx + 0x4060);
+        fn_80189990(work, arg, 0xE0);
+        switch (fn_8001E184()) {
+        case 0:
+            break;
+        case 1:
+        case -1:
+        default:
+            return 0;
+        }
+    }
+    pokemon = fn_800896E8_Setup(ctx);
+    for (i = count = 0; i < 4; i++) {
+        if (fn_80089978(pokemon, &((u8(*)[0x2A])&((GbaMiscContext*)ctx)->state_4000)[i][0x138]) == 1) {
+            pokemon += 0x50;
+            count++;
+        }
+    }
+    for (; count < 6; count++) {
+        fightTrainerPokemonDataBiosSetPokemonDataId(pokemon, 0);
+        pokemon += 0x50;
+    }
+    return fn_800896E8_Finish(ctx, work);
+}
+
+#if !defined(GBA_MISC_800896E8_ONLY)
 
 /* 0x80089978 | size: 0x214 */
 u8 fn_80089978(u8* pokemon, u8* entry) {
@@ -631,7 +655,11 @@ u8 fn_80089978(u8* pokemon, u8* entry) {
     return 1;
 }
 
+#endif /* !GBA_MISC_800896E8_ONLY */
+
 #endif
+
+#if !defined(GBA_MISC_800896E8_ONLY)
 
 /* 0x80089B8C | size: 0x84 */
 u8 GbaMisc_GetMappedContextByte(void) {
@@ -748,11 +776,14 @@ s32 fn_80089D98(s32 r31) {
 
 #endif
 
+#endif /* !GBA_MISC_800896E8_ONLY */
+
 #endif
 
 #if !defined(GBA_MISC_80089B8C_ONLY) && !defined(GBA_MISC_80089F78_ONLY) && \
     !defined(GBA_MISC_8008AE18_ONLY) && \
-    !defined(GBA_MISC_8008BBDC_ONLY)
+    !defined(GBA_MISC_8008BBDC_ONLY) && \
+    !defined(GBA_MISC_800896E8_ONLY)
 
 /* 0x80089E20 | size: 0x138 */
 s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
@@ -815,7 +846,8 @@ s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
 #endif
 
 #if !defined(GBA_MISC_80089E20_ONLY) && \
-    !defined(GBA_MISC_80089B8C_ONLY)
+    !defined(GBA_MISC_80089B8C_ONLY) && \
+    !defined(GBA_MISC_800896E8_ONLY)
 
 #if !defined(GBA_MISC_80089F78_ONLY) && !defined(GBA_MISC_8008AE18_ONLY) && \
     !defined(GBA_MISC_8008BBDC_ONLY)
