@@ -1691,11 +1691,11 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     extern void fn_800FB680();
     u8* entries;
+    s32 offset;
     u8* entry;
     s32 idx;
     s32 color;
-    s32 y;
-    s32 offset;
+    s16 y;
     s32 slot;
 
     slot = -1;
