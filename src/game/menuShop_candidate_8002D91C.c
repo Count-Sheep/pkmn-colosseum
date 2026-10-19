@@ -8,7 +8,7 @@ typedef struct ShopLocationEntry {
 } ShopLocationEntry;
 
 typedef struct ShopTravelState {
-    s32 location;
+    u32 location;
     u32 active;
 } ShopTravelState;
 
@@ -94,10 +94,10 @@ void fn_8002D91C(u32 location_index)
     u8 text0;
 
     location = location_index;
-    location_entry = &lbl_80478E54[location];
     state = (ShopTravelState*)&lbl_8047A3FC;
-    state->location = location_index;
     state->active = 0;
+    location_entry = &lbl_80478E54[location];
+    state->location = location_index;
     type = location_entry->type;
 
     switch (type) {
