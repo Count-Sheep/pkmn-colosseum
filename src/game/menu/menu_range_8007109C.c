@@ -51,7 +51,7 @@ typedef struct GbaBootContext {
     u8* upload_start;
     u8* upload_end;
     u8 pad_388[0x2000];
-    u32 reply[0x410];
+    u8 reply[0x1040];
 } GbaBootContext;
 
 typedef struct MenuExDiscLoadData {
@@ -2295,7 +2295,7 @@ static inline void gbaBootDelay(GbaBootContext* ctx) {
     OSRestoreInterrupts(level);
 }
 
-u32 fn_8007B6D8(GbaBootContext* context) {
+u32 fn_8007B6D8(void* arg) {
     extern s32 GBAGetStatus(s32 chan, u8* status);
     extern s32 GBARead(s32 chan, void* dst, u8* status);
     extern s32 GBAWrite(s32 chan, void* src, u8* status);
@@ -2303,18 +2303,20 @@ u32 fn_8007B6D8(GbaBootContext* context) {
     u8 crc_byte;
     u32 recv_word;
     u32 send_word;
-    s32 channel;
-    u32 transfer_size;
     u32 handshake;
     u32 offset;
     u32 retries;
     u32 reply_crc;
-    u32 candidate;
     u32 decrypt_word;
     u32 expected_crc;
     u32 i;
     s32 result;
+    GbaBootContext* context;
+    u32 transfer_size;
+    s32 channel;
 
+    context = arg;
+    context = arg;
     channel = context->channel;
     context->state = 0;
 
@@ -2492,30 +2494,30 @@ u32 fn_8007B6D8(GbaBootContext* context) {
                                 &gba_status) != 0) {
                         GBA_BOOT_FAIL(context, 9);
                     }
-                    *(u32*)((u8*)context->reply + offset) =
+                    *(u32*)(context->reply + offset) =
                         recv_word ^ context->challenge;
                 }
 
-                expected_crc = GBA_BOOT_BSWAP(context->reply[0x40F]);
-                for (candidate = 0; candidate < 0x100; candidate++) {
-                    crc_byte = candidate;
+                expected_crc = GBA_BOOT_BSWAP(*(u32*)(context->reply + 0x103C));
+                for (i = 0; i < 0x100; i++) {
+                    crc_byte = i;
                     reply_crc = gbaBootCrc(context->crc, &crc_byte, 1);
-                    if (reply_crc == expected_crc) {
+                    if (expected_crc == reply_crc) {
                         break;
                     }
                 }
-                if (candidate == 0x100) {
+                if (i == 0x100) {
                     GBA_BOOT_FAIL(context, 7);
                 }
 
                 decrypt_word = gbaBootCrc(0xAA478422, &crc_byte, 1);
                 decrypt_word = GBA_BOOT_BSWAP(decrypt_word);
-                for (i = 0; i < 0x40F; i++) {
-                    context->reply[i] ^= decrypt_word;
+                for (i = 0; i < 0x103C; i += 4) {
+                    *(u32*)(context->reply + i) ^= decrypt_word;
                 }
 
-                expected_crc = GBA_BOOT_BSWAP(context->reply[0x40E]);
-                reply_crc = gbaBootCrc(context->crc, (u8*)context->reply, 0x1038);
+                expected_crc = GBA_BOOT_BSWAP(*(u32*)(context->reply + 0x1038));
+                reply_crc = gbaBootCrc(context->crc, context->reply, 0x1038);
                 if (reply_crc != expected_crc) {
                     GBA_BOOT_FAIL(context, 7);
                 }
@@ -2525,7 +2527,7 @@ u32 fn_8007B6D8(GbaBootContext* context) {
             gbaBootDelay(context);
         }
 
-        if (GBAGetStatus(channel, &gba_status) != 0) {
+        if (GBAGetStatus(channel, &gba_status) == 0) {
             GBA_BOOT_FAIL(context, 9);
         }
         if ((gba_status & 0x30) == 0) {
