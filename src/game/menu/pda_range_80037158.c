@@ -4991,6 +4991,30 @@ static inline u8 pda_8003D4C8_Color(u32 id)
     return 0;
 }
 
+/* pdaLoadPokemonId for the colour filter: tests the work slot, then reads it again into work. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D4C8_Load (fn_8003D4C8) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 pda_8003D4C8_Load(u32 id)
+{
+    u32 work;
+    u32 rnd;
+    u32 species = id;
+    u32 trainerRnd;
+
+    if (lbl_8047A4E0 != 0) {
+        work = lbl_8047A4E0;
+        if (id >= 0x8000) {
+            species = id & 0x3fff;
+        }
+        pokemonCreate(work, (u16)species, 10, gamedataGetStatus(0, 1));
+        rnd = memoDataGetPokemonRndFromID(0, species);
+        trainerRnd = memoDataGetPokemonTrainerRndFromID(0, species);
+        pokemonBiosSetRnd(work, rnd);
+        pokemonBiosSetCatchTrainerRnd(work, trainerRnd);
+        return lbl_8047A4E0;
+    }
+    return 0;
+}
+
 /* Copy the seen entries whose colour matches the active colour tab into buf; returns the count. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper pda_8003D4C8_Filter (fn_8003D4C8) - see docs/RULE_EXCEPTIONS.md */
 static inline u16 pda_8003D4C8_Filter(u16* buf)
@@ -4998,13 +5022,15 @@ static inline u16 pda_8003D4C8_Filter(u16* buf)
     u16 count;
     u16 i;
     u32 id;
+    u8 color;
 
     count = 0;
     for (i = 0; i < lbl_8047A4E8; i++) {
         id = lbl_8047A4E4[i];
         if (pdaMemoSeen(id)) {
-            pdaLoadPokemonId(id);
-            if (*(s8*)((u8*)&lbl_803A6818 + 0x159) == pda_8003D4C8_Color(id)) {
+            pda_8003D4C8_Load(id);
+            color = pda_8003D4C8_Color(id);
+            if (color == *(s8*)((u8*)&lbl_803A6818 + 0x159)) {
                 buf[count] = id;
                 count++;
             }
