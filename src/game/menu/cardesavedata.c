@@ -16,7 +16,8 @@
     !defined(CARDESAVEDATA_DECODE_TU) && \
     !defined(CARDESAVEDATA_EXACT_8007FD64_ONLY) && \
     !defined(CARDESAVEDATA_EXACT_800849B4_ONLY) && \
-    !defined(CARDESAVEDATA_EXACT_80084A8C_ONLY)
+    !defined(CARDESAVEDATA_EXACT_80084A8C_ONLY) && \
+    !defined(CARDESAVEDATA_80084038_ONLY)
 #define CARDESAVEDATA_8007FDBC_ONLY
 #endif
 
@@ -3152,7 +3153,8 @@ void* fn_80083CFC(void* ptr) {
 
 #endif
 
-#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_80084A8C_ONLY)
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_EXACT_80084A8C_ONLY) || \
+    defined(CARDESAVEDATA_80084038_ONLY)
 /* Update the four-controller Card-e connection/status display. */
 typedef struct CardEStatusWork {
     s32 state[4];
@@ -3196,7 +3198,65 @@ static inline CardEStatusWork* CardEGetStatusWork(u8* window)
 
 #endif
 
-#if defined(CARDESAVEDATA_ALL)
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_80084038_ONLY)
+/* The menuGBAC.c TU's .rodata pool (retail lbl_8026F2E8): the per-state
+ * sprite masks, the item messages, then the source file name its asserts use. */
+static const u32 sCardEStatusFlags[28] = {
+    0x0, 0x8, 0x1B, 0x1F, 0x1F, 0xBB, 0x7B, 0x7B, 0x700, 0x700, 0x1700, 0xF00, 0x8, 0x1, 0x0, 0x0, 0x8, 0x1, 0x1, 0x0, 0x8, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1
+};
+
+static const CardEMessageEntry sCardEStatusMessages[46] = {
+    {0x10D0, 0x126, 0x12C},
+    {0x10D1, 0x13C, 0x142},
+    {0x10D2, 0x13C, 0x142},
+    {0x10D3, 0x147, 0x14D},
+    {0x10D4, 0x147, 0x14D},
+    {0x10D5, 0x13C, 0x142},
+    {0x10D6, 0x13C, 0x142},
+    {0x10D7, 0x13C, 0x142},
+    {0x10D8, 0x147, 0x14D},
+    {0x10D9, 0x147, 0x14D},
+    {0x10DA, 0x13C, 0x142},
+    {0x10DB, 0x13C, 0x142},
+    {0x10DC, 0x13C, 0x142},
+    {0x10DD, 0x147, 0x14D},
+    {0x10DE, 0x147, 0x14D},
+    {0x10DF, 0x13C, 0x142},
+    {0x10E0, 0x13C, 0x142},
+    {0x10E1, 0x147, 0x14D},
+    {0x10E2, 0x147, 0x14D},
+    {0x10E3, 0x13C, 0x142},
+    {0x10E4, 0x13C, 0x142},
+    {0x10E5, 0x13C, 0x142},
+    {0x10E6, 0x147, 0x14D},
+    {0x10E7, 0x147, 0x14D},
+    {0x10E8, 0x13C, 0x142},
+    {0x10E9, 0x13C, 0x142},
+    {0x10EA, 0x147, 0x14D},
+    {0x10EB, 0x147, 0x14D},
+    {0x10EC, 0x13C, 0x142},
+    {0x10ED, 0x13C, 0x142},
+    {0x10EE, 0x147, 0x14D},
+    {0x10EF, 0x147, 0x14D},
+    {0x10F0, 0x13C, 0x142},
+    {0x10F1, 0x13C, 0x142},
+    {0x10F2, 0x13C, 0x142},
+    {0x10F3, 0x147, 0x14D},
+    {0x10F4, 0x147, 0x14D},
+    {0x10F5, 0x13C, 0x142},
+    {0x10F6, 0x147, 0x14D},
+    {0x10F7, 0x147, 0x14D},
+    {0x10F8, 0x147, 0x14D},
+    {0x10F9, 0x147, 0x14D},
+    {0x10FA, 0x147, 0x14D},
+    {0x10FB, 0x147, 0x14D},
+    {0x10FC, 0x126, 0x12C},
+    {0x10FD, 0x126, 0x12C},
+};
+
+static const char sCardEStatusFile[] = "menuGBAC.c";
+
+
 static inline void CardEShowStatusSprite(void* sprite, u32 bit)
 {
     if (sprite != NULL) {
@@ -3216,10 +3276,8 @@ static inline void CardESetStatusMessage(u8* window, void* sprite, s32 active)
     }
 }
 
-#pragma push
 void fn_80084038(u8* window)
 {
-    const u8* data = lbl_8026F2E8;
     CardEStatusWork* work;
     CardEStatusWork* status;
     void* sprite;
@@ -3239,7 +3297,7 @@ void fn_80084038(u8* window)
         }
         handle = ((u16 (*)(u32, u32))fn_800E2C04)(0xE0, 0x20);
         if (handle == 0) {
-            __assert((const char*)data + 0x184, 0xEA, lbl_8047C198);
+            __assert(sCardEStatusFile, 0xEA, lbl_8047C198);
         }
         status = ((CardEStatusWork* (*)(u16))fn_800E27B0)(handle);
         memset(status, 0, sizeof(CardEStatusWork));
@@ -3298,8 +3356,8 @@ void fn_80084038(u8* window)
 #undef FIND_STATUS_SPRITE
 
         for (n = 0; n < 46; n++) {
-            fn_801081F8(window, ((const CardEMessageEntry*)(data + 0x70))[n].itemId,
-                        ((const CardEMessageEntry*)(data + 0x70))[n].initialMessage);
+            fn_801081F8(window, sCardEStatusMessages[n].itemId,
+                        sCardEStatusMessages[n].initialMessage);
         }
         break;
     case 3:
@@ -3307,8 +3365,8 @@ void fn_80084038(u8* window)
             break;
         }
         for (n = 0; n < 46; n++) {
-            fn_801081F8(window, ((const CardEMessageEntry*)(data + 0x70))[n].itemId,
-                        ((const CardEMessageEntry*)(data + 0x70))[n].updatedMessage);
+            fn_801081F8(window, sCardEStatusMessages[n].itemId,
+                        sCardEStatusMessages[n].updatedMessage);
         }
         window[2] = 1;
         status->refreshMessages = 1;
@@ -3316,7 +3374,7 @@ void fn_80084038(u8* window)
     case 5:
         handle = ((u16 (*)(void*))fn_800E202C)(status);
         if (handle == 0) {
-            __assert((const char*)data + 0x184, 0xF3, lbl_8047C198);
+            __assert(sCardEStatusFile, 0xF3, lbl_8047C198);
         }
         fn_800E24B0(handle);
         fn_800E209C(handle);
@@ -3343,7 +3401,7 @@ void fn_80084038(u8* window)
         if (work->previousState[i] != work->state[i]) {
             changed = 1;
         }
-        work->previousState[i] = work->state[i];
+        work->previousState[i] = status->state[i];
     }
     if (!changed) {
         return;
@@ -3356,7 +3414,7 @@ void fn_80084038(u8* window)
         winSpriteSetDisp(work->headerSprite[1], 1);
     }
 
-    flags = ((const u32*)(data + 0))[work->state[0]];
+    flags = sCardEStatusFlags[work->state[0]];
     CardEShowStatusSprite(work->statusSprite[0], flags & 0x100);
     CardEShowStatusSprite(work->statusSprite[1], flags & 0x200);
     CardEShowStatusSprite(work->statusSprite[2], flags & 0x400);
@@ -3371,7 +3429,7 @@ void fn_80084038(u8* window)
     }
 
     for (i = 0; i <= 3; i++) {
-        flags = ((const u32*)(data + 0))[work->state[i]];
+        flags = sCardEStatusFlags[work->state[i]];
         CardEShowStatusSprite(work->optionSprite[0][i], flags & 0x01);
         CardEShowStatusSprite(work->optionSprite[1][i], flags & 0x02);
         CardEShowStatusSprite(work->optionSprite[2][i], flags & 0x04);
@@ -3410,8 +3468,6 @@ void fn_80084038(u8* window)
         }
     }
 }
-
-#pragma pop
 
 #endif
 
