@@ -78,6 +78,16 @@ static GStextureHandle* gsTexPool;       /* @sda21 lbl_8047ABF4 */
  *  Rearranges CI4 texture pixel data from linear to 4x4 block-tiled
  *  order. Only operates on format 0x44 (GS_CI4).
  * ======================================================================= */
+/* RULE-EXCEPTION(user-approved): single-use inline helper chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static u16 GStextureTiledIndex(u16 i, u16 width, u16 blocksPerRow) {
+    u16 block = i >> 4;
+    u16 tile = block / blocksPerRow;
+    u16 tileColumn = block % blocksPerRow;
+    u16 row = (i % 16) / 4;
+    u16 column = i % 4;
+    return ((tile * width + tileColumn) << 2) + row * width + column;
+}
+
 void fn_800EF098(GStextureHandle* tex) {
     /* RULE-EXCEPTION(user-approved): declaration order chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     u32 byteCount;
@@ -109,14 +119,7 @@ void fn_800EF098(GStextureHandle* tex) {
     converted = fn_800E27B0(handle);
     blocksPerRow = width >> 2;
     for (i = 0; i < pixelCount; i++) {
-        u16 block = i >> 4;
-        u16 tile = block / blocksPerRow;
-        u16 tileColumn = block - tile * blocksPerRow;
-        u16 row = (i % 16) / 4;
-        u16 column = i % 4;
-        u16 destIndex =
-            (tile * width + tileColumn) * 4 + row * width + column;
-        converted[destIndex] = source[i];
+        converted[GStextureTiledIndex(i, width, blocksPerRow)] = source[i];
     }
 
     memcpy(source, converted, byteCount);
