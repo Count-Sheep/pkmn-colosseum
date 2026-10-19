@@ -3599,11 +3599,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-schedule off"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: the 0.0f compare literal and both int-to-float biases.
             Object(
-                CodeCandidate,
-                "game/menu/pda_candidate_8003B85C.c",
+                Matching,
+                "game/menu/pda_exact_8003B85C.c",
+                constant_import=[{"symbol": "lbl_8047BAC4", "offset": 0, "expected": "00000000"},
+                                 {"symbol": "lbl_8047BAE0", "offset": 8, "expected": "4330000080000000"},
+                                 {"symbol": "lbl_8047BAE8", "offset": 16, "expected": "4330000000000000"}],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             # TEMPORARY constant_import: retail shares the int-to-float bias.
