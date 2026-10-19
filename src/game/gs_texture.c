@@ -81,8 +81,9 @@ static GStextureHandle* gsTexPool;       /* @sda21 lbl_8047ABF4 */
 /* RULE-EXCEPTION(user-approved): single-use inline helper chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
 static u16 GStextureTiledIndex(u16 i, u16 width, u16 blocksPerRow) {
     u16 block = i >> 4;
-    u16 tile = block / blocksPerRow;
-    u16 tileColumn = block % blocksPerRow;
+    int quotient = block / blocksPerRow;
+    u16 tile = quotient;
+    u16 tileColumn = block - quotient * blocksPerRow;
     u16 row = (i % 16) / 4;
     u16 column = i % 4;
     return ((tile * width + tileColumn) << 2) + row * width + column;
