@@ -147,7 +147,7 @@ static inline u32 evolutionCreateModel(u32 pkm, int kind)
   return model;
 }
 
-#if !defined(EVOLUTION_80260EBC_ONLY)
+#if !defined(EVOLUTION_80260EBC_ONLY) && !defined(EVOLUTION_80260910_ONLY)
 /* Address: 0x802600E4 | Size: 0x378 | Ghidra import */
 extern s8 menuSubOpenYesNo();
 extern int winMsgClose();
@@ -473,8 +473,10 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
 }
 
 #else
-/* EVOLUTION_80260EBC_ONLY (evolution_exact_80260EBC.c) links evolutionStart alone. */
+/* EVOLUTION_80260EBC_ONLY (evolution_exact_80260EBC.c) links evolutionStart alone;
+ * EVOLUTION_80260910_ONLY (evolution_candidate_80260910.c) links evolutionDemo alone. */
 int cbWazaForget(u32 r3, u32 r4, int r5);
+int doWazaSequence(u32 *r3, int r4, int r5, u32 r6);
 #endif /* !EVOLUTION_80260EBC_ONLY */
 
 #if !defined(EVOLUTION_802600E4_ONLY)
@@ -576,6 +578,7 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   return TRUE;
 }
 
+#if !defined(EVOLUTION_80260910_ONLY)
 /* Address: 0x80260EBC | Size: 0x414 | Ghidra import */
 u32
 evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
@@ -598,8 +601,10 @@ evolutionStart(u32 r3,u32 r4,u32 r5,u16 *r6,
   }
   return 1;
 }
+#endif /* !EVOLUTION_80260910_ONLY */
 
 #if !defined(EVOLUTION_80260EBC_ONLY)
+#if !defined(EVOLUTION_80260910_ONLY)
 /* Address: 0x8026132C | Size: 0x5C | Ghidra import */
 u32 evolutionOpen(u32 r3, u32 r4, u32 r5, u16 *r6, u32 r7, u8 *r8)
 {
@@ -635,6 +640,7 @@ void evolution(void)
     fn_800FF660();
     floorSetFadeScript(0, 0);
 }
+#endif /* !EVOLUTION_80260910_ONLY */
 
 extern u8 pokemonCheckValid();
 extern u32 pokemonDataBiosGetPtr(u16 id);
@@ -698,9 +704,12 @@ static inline BOOL evolutionSeqUpdate(EvoWork *work)
   u32 model;
   u16 id;
   u32 playing;
+  u32 seq;
 
-  model = evolutionGetSeqModel(work,work->seq);
-  id = lbl_8027A488[work->seq].id;
+  seq = work->seq;
+  model = evolutionGetSeqModel(work,seq);
+  /* RULE-EXCEPTION(user-approved): codegen-only cast (int) on the u16 id load - see docs/RULE_EXCEPTIONS.md */
+  id = (int)lbl_8027A488[seq].id;
   fn_801DB088();
   playing = fn_801DA94C(model,id,4);
   return (-playing | playing) >> 31;
@@ -723,10 +732,10 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   u32 trigger;
   u32 held;
   BOOL playing;
-  int state;
   BOOL first;
   u32 time;
   BOOL skipped;
+  int state;
   int wait;
   int level;
   f32 t;
@@ -821,7 +830,8 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   while (fn_801666BC(voice) == 2) {
     _threadSwitch();
   }
-  msgctrlSetValue(0x32,pokemonBiosGetNicknamePtr(before));
+  nickname = pokemonBiosGetNicknamePtr(before);
+  msgctrlSetValue(0x32,nickname);
   dataId = pokemonBiosGetPokemonDataId(after);
   msgctrlSetValue(0x4e,dataId);
   msgctrlSetValue(0x5d,0x3d2);

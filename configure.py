@@ -8403,9 +8403,13 @@ config.libs = [
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/evolution_candidate_80260910.c",
+                constant_import=[
+                    {"symbol": "lbl_8047E6B8", "offset": 0, "expected": "4330000000000000"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-O4,s", "-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
