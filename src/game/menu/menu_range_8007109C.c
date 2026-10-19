@@ -1994,13 +1994,36 @@ static inline u32 menuGbaCountHighBits(u32 value) {
     return count;
 }
 
+extern void OSReport(const char* fmt, ...);
+
 static inline u32 menuGbaCrcStep(u32 crc, u32 value) {
     crc ^= value;
     return menuGbaCrcRoll(crc);
 }
 
+/* The key C search (named by the retail report strings): find the
+ * candidate key whose CRC roll matches the GBA's checksum and report it. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_8007480C's key C search) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 menuGbaFindKeyC(const char* strings, u32 final_word, u32 checksum, u32 rolling_crc) {
+    u32 index;
+    u32 candidate;
+    u32 value;
+
+    for (index = 0; index < 0x100; index++) {
+        candidate = (index << 24) - 1;
+        value = menuGbaCrcStep(candidate, rolling_crc);
+        if (checksum == value) {
+            value = menuGbaCrcStep(candidate, 0xBB);
+            final_word = value | 0xBB000000;
+            OSReport(strings + 0x100, candidate, final_word);
+            return final_word;
+        }
+    }
+    OSReport(strings + 0x130, final_word, rolling_crc);
+    return 0;
+}
+
 s32 fn_8007480C(s32 channel, s32 use_primary_image) {
-    extern void OSReport(const char* fmt, ...);
     u8 status;
     u32 recv_word;
     u32 send_word;
@@ -2012,7 +2035,6 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
     u32 seed;
     u32 bit_count;
     u32 value;
-    u32 candidate;
     u32 timeout;
     u32 expected_status;
     u32 rolling_crc;
@@ -2196,21 +2218,7 @@ s32 fn_8007480C(s32 channel, s32 use_primary_image) {
                 OSReport(strings + 0xCC, final_word,
                          rolling_crc);
                 checksum = final_word >> 8;
-                for (offset = 0; offset < 0x100; offset++) {
-                    candidate = (offset << 24) - 1;
-                    value = menuGbaCrcStep(candidate, rolling_crc);
-                    if (checksum == value) {
-                        value = menuGbaCrcStep(candidate, 0xBB);
-                        final_word = value | 0xBB000000;
-                        OSReport(strings + 0x100,
-                                 candidate, final_word);
-                        goto found;
-                    }
-                }
-                OSReport(strings + 0x130, final_word,
-                         rolling_crc);
-                final_word = 0;
-            found:
+                final_word = menuGbaFindKeyC(strings, final_word, checksum, rolling_crc);
                 if (final_word == 0) {
                     return 0x12;
                 }
