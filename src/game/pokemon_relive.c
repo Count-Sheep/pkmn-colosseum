@@ -920,83 +920,81 @@ void reliveCeremonyAll(u32 r3)
 #if defined(POKEMON_RELIVE_MAIN_ONLY)
 /* Address: 0x8025ED4C | Ghidra import */
 
+typedef struct ReliveResetPair {
+    s32 mode;
+    u32 index;
+} ReliveResetPair;
+
+extern void* heroGetStatus(s32, s32, u16);
+extern u8 pokemonCheckValid(void*);
+extern void fn_800FF660(void);
+extern void floorSetFadeScript(s32, s32);
+extern void _threadSwitch(void);
+u32 loadSequence(int* r3, u32 r4, u16* r5, int r6);
+void fn_8025DE54(u32* r3, u16* r4, int r5, int r6, int r7, int r8);
+
 void reliveMain(void)
-
 {
-    struct ReliveResetPair { u32 first; u32 second; } *resetPair;
     extern u32 lbl_80478DA8;
-    extern u32 lbl_8047B668;
-    extern u32 lbl_8047B66C;
     extern f32 lbl_8047E680;
-  BOOL bVar1;
+    ReliveResetPair* resetPair;
+    BOOL ok;
+    void* pokemon;
+    s32 loaded;
+    u8 seq[16];
 
-		  u32 uVar2;
-		  u8 cVar4;
-		  int iVar3;
-
-  u8 auStack_18 [16];
-  
-  if ((lbl_804782BC[0] == 0) || (lbl_804782BC[0] == 1)) {
-    fn_801DADC0(1);
-    if (lbl_804782BC[0] == 0) {
-      uVar2 = heroGetStatus(0,3,lbl_804782BC[2] & 0xffff);
-      cVar4 = pokemonCheckValid();
-      if (cVar4 != '\x01') {
-        bVar1 = 0;
-      }
-      else {
-        pokemonGetStatus(uVar2,0,0x6e,0);
-        iVar3 = loadSequence((int*)auStack_18,uVar2,(u16*)&lbl_80478DA8,2);
-        if (iVar3 == 1) {
-          fn_8025DE54((u32*)auStack_18,(u16*)&lbl_80478DA8,2,1,1,0);
-          bVar1 = 1;
+    if ((lbl_804782BC[0] == 0) || (lbl_804782BC[0] == 1)) {
+        fn_801DADC0(1);
+        if (lbl_804782BC[0] == 0) {
+            pokemon = heroGetStatus(0, 3, lbl_804782BC[2] & 0xffff);
+            if (pokemonCheckValid(pokemon) != 1) {
+                ok = 0;
+            } else {
+                pokemonGetStatus(pokemon, 0, 0x6e, 0);
+                loaded = loadSequence((int*)seq, (u32)pokemon, (u16*)&lbl_80478DA8, 2);
+                if (loaded == 1) {
+                    fn_8025DE54((u32*)seq, (u16*)&lbl_80478DA8, 2, 1, 1, 0);
+                    ok = 1;
+                } else {
+                    ok = 0;
+                }
+            }
+            if (ok == 1) {
+                reliveCeremonyAll(lbl_804782BC[2]);
+            }
+        } else if (lbl_804782BC[0] == 1) {
+            pokemon = heroGetStatus(0, 3, lbl_804782BC[2] & 0xffff);
+            if (pokemonCheckValid(pokemon) != 1) {
+                ok = 0;
+            } else {
+                pokemonSetStatus(pokemon, 0, 0xc5, 0, 0);
+                pokemonGetStatus(pokemon, 0, 0x6e, 0);
+                loaded = loadSequence((int*)seq, (u32)pokemon, (u16*)lbl_8039A6A8, 4);
+                if (loaded == 1) {
+                    fn_8025DE54((u32*)seq, (u16*)lbl_8039A6A8, 4, 1, 1, 0);
+                    ok = 1;
+                } else {
+                    ok = 0;
+                }
+            }
+            if (ok == 1) {
+                reliveCeremonyAll(lbl_804782BC[2]);
+            }
         }
-        else {
-          bVar1 = 0;
-        }
-      }
-      if (bVar1 == 1) {
-        reliveCeremonyAll(lbl_804782BC[2]);
-      }
+        fadeSet((double)lbl_8047E680, 3);
+        fadeCheck(1);
+        wazaSequenceSysRelease();
+        lbl_804782BC[0] = -1;
+        resetPair = (ReliveResetPair*)&lbl_8047B668;
+        resetPair->mode = -1;
+        resetPair->index = 0xffffffff;
+        *(u16*)((u8*)lbl_804782BC + 4) = 0;
+        lbl_804782BC[2] = 0;
+        fn_800FF660();
+        floorSetFadeScript(0, 0);
+        _threadSwitch();
     }
-    else if (lbl_804782BC[0] == 1) {
-      uVar2 = heroGetStatus(0,3,lbl_804782BC[2] & 0xffff);
-      cVar4 = pokemonCheckValid();
-      if (cVar4 != '\x01') {
-        bVar1 = 0;
-      }
-      else {
-        pokemonSetStatus(uVar2,0,0xc5,0,0);
-        pokemonGetStatus(uVar2,0,0x6e,0);
-        iVar3 = loadSequence((int*)auStack_18,uVar2,(u16*)lbl_8039A6A8,4);
-        if (iVar3 == 1) {
-          fn_8025DE54((u32*)auStack_18,(u16*)lbl_8039A6A8,4,1,1,0);
-          bVar1 = 1;
-        }
-        else {
-          bVar1 = 0;
-        }
-      }
-      if (bVar1 == 1) {
-        reliveCeremonyAll(lbl_804782BC[2]);
-      }
-    }
-    fadeSet((double)lbl_8047E680,3);
-    fadeCheck(1);
-				    wazaSequenceSysRelease();
-						    lbl_804782BC[0] = -1;
-						    resetPair = (struct ReliveResetPair*)&lbl_8047B668;
-						    resetPair->first = 0xffffffff;
-						    resetPair->second = 0xffffffff;
-				    *(u16 *)((u8 *)lbl_804782BC + 4) = 0;
-    lbl_804782BC[2] = 0;
-    fn_800FF660();
-    floorSetFadeScript(0,0);
-    _threadSwitch();
-  }
-  return;
 }
-
 
 #endif
 
