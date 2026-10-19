@@ -17,13 +17,13 @@
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2436004",
-    "matched_code_percent": 97.248,
+    "matched_code": "2436712",
+    "matched_code_percent": 97.27627,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8626,
-    "matched_functions_percent": 99.41224,
-    "fuzzy_match_percent": 99.931786
+    "matched_functions": 8627,
+    "matched_functions_percent": 99.42377,
+    "fuzzy_match_percent": 99.9323
   },
   "unit_topology": [
     {
@@ -3662,7 +3662,7 @@
       "total_functions": 1
     },
     {
-      "name": "main/game/menu/pda_candidate_8003B814_r46_8003CF38_o4s",
+      "name": "main/game/menu/pda_exact_8003CF38",
       "sections": [
         {
           "name": ".text",
