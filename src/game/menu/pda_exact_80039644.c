@@ -64,16 +64,32 @@ static inline s32 pda_80039644_ItemNum(s32 target)
     return 0;
 }
 
+static inline s32 pda_80039644_Count(void)
+{
+    s32 slots;
+    s32 i;
+    s32 total;
+
+    total = 0;
+    slots = pcboxGetNbItemSlot(0);
+    for (i = 0; i < slots; i++) {
+        if ((u8)fn_801429E8(pcboxGetItem(0, (s16)i)) != 0) {
+            total++;
+        }
+    }
+    return total;
+}
+
 s32 fn_80039644(void* work, PdaSprite* sprite)
 {
     s32 start;
-    s32 i;
     s32 rowY;
     s32 slots;
     s32 j;
     s32 found;
     s32 total;
     s32 nameX;
+    s32 i;
     s32 y;
     s32 width;
     s32 itemId;
@@ -89,12 +105,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     rows = 8;
     yAdj = 0;
     total = 0;
-    slots = pcboxGetNbItemSlot(0);
-    for (i = 0; i < slots; i++) {
-        if ((u8)fn_801429E8(pcboxGetItem(0, (s16)i)) != 0) {
-            total++;
-        }
-    }
+    total = pda_80039644_Count();
     index = lbl_8047A4A8;
     msgctrlSetValue(0x34, 0x3e7);
     width = (s16)(GSmsgGetRect(0xca) >> 16);
