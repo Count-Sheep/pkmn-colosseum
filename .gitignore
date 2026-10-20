@@ -10,6 +10,8 @@ __pycache__
 # Original files
 orig/*/*
 !orig/*/.gitkeep
+# A local link to someone else's extracted disc; never tracked.
+orig/orig
 *.dol
 *.rel
 *.elf
