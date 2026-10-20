@@ -1,20 +1,20 @@
 /**
  * @file pkjb_candidate_80071AE4.c
- * @brief pkjb_uploader.c carve, 0x80071AE4 - 0x800722A0 (candidate).
+ * @brief pkjb_uploader.c carve, 0x80071AE4 - 0x80071E34 (fn_80071AE4).
  *
- * fn_80071E34 and fn_80071EA4 are exact; fn_80071AE4 is not yet. Its
- * buffer is the u8 block gbaCommunication.c passes (p + 0x4344, through
- * fn_80089D30). Retail reads and swaps the header once, after the hoisted
- * idle-callback addresses and in a block of its own (its temporaries reuse
- * those addresses' registers); reading it before the loop interleaves the
- * swap with the addresses, so this source reads it at the top of each
- * attempt, which gives retail's instruction order inside the loop but keeps
- * the swap in the loop and one register fewer (key is not spilled).
+ * fn_80071AE4's buffer is the u8 block gbaCommunication.c passes
+ * (p + 0x4344, through fn_80089D30). The command-0x22 helper takes the
+ * swapped header word and splits it into its own extra/count locals at its
+ * top; MWCC hoists the header read and swap out of the retry loop into a
+ * block of their own after the idle-callback addresses, as in retail, and
+ * the helper's count local keeps retail's register order. The hoist needs
+ * GC/2.5 or later (GC/2.0 keeps the swap in the loop).
  *
- * fn_80071EA4 receives into a byte buffer (gbaCommunication.c passes
- * u8 readBuffer[0xD8]) one word at a time at a byte offset; the body size
- * is an unsigned word count times 4. pkjb_candidate_80071EA4.c links it
- * alone (PKJB_80071EA4_ONLY).
+ * fn_80071E34 is pkjb_exact_80071E34.c. fn_80071EA4 receives into a byte
+ * buffer (gbaCommunication.c passes u8 readBuffer[0xD8]) one word at a time
+ * at a byte offset; the body size is an unsigned word count times 4.
+ * pkjb_candidate_80071EA4.c compiles it from this file alone
+ * (PKJB_80071EA4_ONLY); compiled directly, this file holds fn_80071AE4 only.
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
  */
 #include "game/menu/pkjb_uploader_shared.h"
@@ -61,12 +61,16 @@ static inline s32 pkjbSendBlockIdle(s32 chan, const u8* data, s32 size)
     return 0;
 }
 
-static inline s32 pkjbSend22(s32 chan, const u8* data, u16 count, u16 extra)
+static inline s32 pkjbSend22(s32 chan, const u8* data, u32 header)
 {
     u32 response;
+    u16 count;
     s32 result;
     s32 size;
+    u16 extra;
 
+    extra = header >> 16;
+    count = header;
     result = fn_80073C38(chan);
     if (result != 0) {
         return result;
@@ -99,8 +103,6 @@ s32 fn_80071AE4(s32 chan, const u8* data)
     u32 start;
     s32 expired;
     u32 packed;
-    u16 extra;
-    u16 count;
 
     key = chan + 1;
     gbaCommandSetKeyState(key, 2);
@@ -108,28 +110,15 @@ s32 fn_80071AE4(s32 chan, const u8* data)
     start = OSGetTick();
     do {
         packed = pkjbSwap32(*(u32*)(data + 12));
-        extra = packed >> 16;
-        count = packed;
         expired = OSGetTick() - start > timeout;
-        result = pkjbSend22(chan, data, count, extra);
+        result = pkjbSend22(chan, data, packed);
     } while (result == 1 && !expired);
     gbaCommandSetKeyState(key, result != 0 ? 1 : 3);
     return result;
 }
-
-/* 0x80071E34 | 0x70: fn_80071EA4 with the key state held. */
-s32 fn_80071E34(s32 chan, u8* data)
-{
-    s32 key;
-    s32 result;
-
-    key = chan + 1;
-    gbaCommandSetKeyState(key, 2);
-    result = fn_80071EA4(chan, data);
-    gbaCommandSetKeyState(key, 1);
-    return result;
-}
 #endif /* !PKJB_80071EA4_ONLY */
+
+#ifdef PKJB_80071EA4_ONLY
 
 static inline s32 pkjbRecvBlock(s32 chan, u8* data, s32 size)
 {
@@ -180,3 +169,4 @@ s32 fn_80071EA4(s32 chan, u8* data)
     }
     return 0;
 }
+#endif /* PKJB_80071EA4_ONLY */

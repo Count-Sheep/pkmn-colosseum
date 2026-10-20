@@ -5,7 +5,7 @@
  * The 0x11 keep-alive, the 0xAA key read, the link reset/handshake every
  * command starts with, and a constant accessor.
  *
- * Unit flags (GC/2.0, -O4,p, "-opt nopeephole"), set for every unit of
+ * Unit flags (GC/2.5, -O4,p, "-opt nopeephole"), set for every unit of
  * pkjb_uploader.c (0x800716C8 - 0x80075390) in configure.py. Evidence:
  * - with the peephole pass off, every function of the command layer
  *   (0x800716C8 - 0x80073E8C) that is exact is exact with no local pragma:
@@ -21,8 +21,10 @@
  *   (GC/1.2.5n) -> 83.8;
  * - version: GC/1.3 is out (fn_80073E8C ORs its boot key constant with
  *   oris/ori like the target only from GC/1.3.2 on; 1.3 emits lis/addi/or);
- *   GC/1.3.2 through GC/2.7 give identical output for the whole unit, and
- *   GC/2.0 matches the game's other GBA unit (gba_misc).
+ *   GC/1.3.2 through GC/2.7 give identical output for every other function
+ *   of the unit, but fn_80071AE4 needs GC/2.5 or later: only from 2.5 on
+ *   does MWCC hoist its header read and swap out of the retry loop as
+ *   retail does (GC/2.0 97.2%, GC/2.5-2.7 exact, GC/3.0 80.9%).
  * No function needs "-inline deferred" (it would inline fn_80073C38).
  */
 #include "game/menu/pkjb_uploader_shared.h"

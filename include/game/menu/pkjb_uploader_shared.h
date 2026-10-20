@@ -11,7 +11,7 @@
  * written by fn_80073E8C and checked by fn_80073C38), so they sit in the
  * same unit. It has no .data or .sdata2.
  *
- * Unit flags: GC/2.0, -O4,p, "-opt nopeephole" (see pkjb_exact_80073990.c
+ * Unit flags: GC/2.5, -O4,p, "-opt nopeephole" (see pkjb_exact_80073990.c
  * for the evidence). The unit is carved at function boundaries so its exact
  * functions can link; its data stays extern here.
  *
