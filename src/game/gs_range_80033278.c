@@ -1140,9 +1140,6 @@ static inline u8 sysvarsFloorSeen(CardEData* menu)
 void fn_80034FB4(void)
 {
     extern u8 lbl_8047A438;
-    extern u8 lbl_8047A439;
-    extern s32 lbl_8047A43C;
-    extern u32 lbl_8047A444;
     extern u8 lbl_8047A449;
     extern u8 lbl_8047A44A;
     extern u32 lbl_8047A44C;
@@ -1154,32 +1151,13 @@ void fn_80034FB4(void)
     extern u8 lbl_8047BA1C;
     extern void fn_8003258C(void);
     extern void fn_800327FC(void);
-    extern u8* fn_80082EA4(void*, s8, s8, s8);
-    extern void* fn_800836AC(void*, void*, u8);
     extern u8 fn_800FF52C(void);
     extern void fn_800FF660(void);
-    extern s32 menuOpen(s32, s32);
-    extern void menuClose(s32);
     extern u8 menuIsCheck(s32);
-    extern s32 menuOpenCustom(s32, ...);
-    extern void* savedataGetStatus(void*, u16);
-    extern void* heroBiosGetPokemonPtr(void*, u16);
-    extern u16 pokemonBiosGetItemDataId(void*);
-    extern void pokemonBiosSetItemDataId(void*, u16);
-    extern u16 fn_801D0AFC(s32);
-    extern u32 fn_80165668(u32, void*, u32);
     extern void fadeSet(u16, f32);
     extern s8 fadeCheck(u8);
     extern void floorLink(u32, s32);
-    extern void* GScharCpy(void*, const void*);
-    extern void* fightFloorDataBiosGetPtr(u16);
-    extern u32 fightFloorDataBiosGetName(void*);
-    extern void* GSmsgGetGSchar(u32);
-    extern void msgctrlSetValue(u32, u32);
     u8 duplicate;
-    u8 floor;
-    s8 region;
-    s8 variant;
     void* entry;
     u32 amount;
     s32 state;
@@ -1192,11 +1170,12 @@ void fn_80034FB4(void)
     s32 result;
     u8 selection;
     u8 valid;
-    u8* name;
+    u32 name;
 
     lbl_8047A438 = 1;
     menu = &lbl_803A3334;
-    name = lbl_803A3288;
+    /* RULE-EXCEPTION(user-approved): codegen-shaping type; the name buffer's address is kept as a u32 (as msgctrlSetValue takes it), which the native port accepts for 32-bit guest addresses - see docs/RULE_EXCEPTIONS.md */
+    name = (u32)lbl_803A3288;
     floorName = menu->floorName;
 
     while ((state = lbl_8047A458) > 0) {
@@ -1429,7 +1408,7 @@ void fn_80034FB4(void)
                     GScharCpy(lbl_803A3288, &lbl_8047BA1C);
                 }
             }
-            msgctrlSetValue(0x4D, (u32)name);
+            msgctrlSetValue(0x4D, name);
             winMsgOpen(8, 0x3B57, 1, 0);
             winMsgClose(1);
             lbl_8047A458 = 5;
