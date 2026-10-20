@@ -244,8 +244,8 @@ static inline s32 sysvarsFindEmptyLayer(CardEData* card)
 {
     s32 i;
     s8 row;
-    s8 column;
     s32 found;
+    s8 column;
 
     row = card->row;
     found = -1;
@@ -275,8 +275,8 @@ static inline u8 sysvarsLayerOpen(CardEData* card, s8 layer)
 
 static inline u8 sysvarsStageTwoReady(CardEData* card, s8 layer)
 {
-    u8 valid;
     s8 row;
+    u8 valid;
     s32 column;
 
     valid = 1;
@@ -296,8 +296,8 @@ static inline u8 sysvarsStageTwoReady(CardEData* card, s8 layer)
 
 static inline u8 sysvarsAllFilled(CardEData* card, s8 layer)
 {
-    s8 row;
     s32 column;
+    s8 row;
 
     if (card->bonus[layer] < 0) {
         return 0;
