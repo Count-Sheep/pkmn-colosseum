@@ -10,6 +10,11 @@
 
 #include "game/battle/battle_waza_types.h"
 
+struct GStextureHandle;
+extern void GStextureFree(struct GStextureHandle* texture);
+extern void GSgappTerminate(u32 taskId);
+extern void GSvecCopy(void* dst, void* src);
+
 /** Bare 3-float vector, as passed to the GSscene camera setters. */
 typedef struct WazaViewerVec {
     /* 0x0 */ f32 x;
@@ -65,7 +70,7 @@ void _wazaViewerFinalize(u8 r, u8 g, u8 b, f32 duration) {
     if (lbl_804673F8[0x87D] == 0) {
         fn_801E11F0();
     }
-    GSgappTerminate((void*)lbl_8047B3F8);
+    GSgappTerminate(lbl_8047B3F8);
     lbl_8047B3F8 = 0;
     wazaSequenceSysRelease();
 }

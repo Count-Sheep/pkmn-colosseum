@@ -77,6 +77,9 @@
  * External declarations
  * ========================================================================= */
 
+extern u32 menuDataBiosGetType(s32 idx);
+extern s32 menuCloseCustom(u32 id, u32 mode, u8 wait);
+
 /* Flag system */
 extern void fn_80190048(s32 flagId, s32 value);    /* GSflagSet */
 extern s32  fn_80190118(s32 flagId);                /* GSflagGet */

@@ -6,6 +6,9 @@
  */
 #include "dolphin/types.h"
 
+extern s32 fn_801429E8(u32 entry);
+extern u16 fn_801FCC3C(u8* ptr);
+
 extern s8 lbl_8047A470;
 extern void* lbl_8047A480;
 extern s8 lbl_8047A490;
@@ -325,7 +328,7 @@ static inline s32 pdaBoxItemId(s32 target)
     found = -1;
     for (i = 0; i < slots; i++) {
         item = pcboxGetItem(0, (s16)i);
-        if ((u8)fn_801429E8(item) != 0) {
+        if ((u8)fn_801429E8((u32)item) != 0) {
             found++;
             if (found >= target) {
                 return itemBiosGetItemDataId(item);
@@ -349,7 +352,7 @@ static inline s32 pdaBoxItemNum(s32 target)
     found = -1;
     for (i = 0; i < slots; i++) {
         item = pcboxGetItem(0, (s16)i);
-        if ((u8)fn_801429E8(item) != 0) {
+        if ((u8)fn_801429E8((u32)item) != 0) {
             found++;
             if (found >= target) {
                 return itemBiosGetNum(item);
@@ -576,7 +579,7 @@ extern void* pokemonDataBiosGetPtr(u32 id);
 extern void* pokemonDataBiosGetName(void* data);
 extern u32 GSmsgGetGSchar(u32 msg);
 extern void msgctrlSetValue(s32 id, u32 value);
-extern void* fightTrainerPokemonDataBiosGetPtr(void* data);
+extern void* fightTrainerPokemonDataBiosGetPtr(u16 slot);
 extern void* fightTrainerPokemonDataBiosGetNickname(void* entry);
 extern u8 fightTrainerPokemonDataBiosGetDarkPokemonFlag(void* entry);
 
@@ -597,7 +600,7 @@ static inline u32 pdaBattleCaption(u16 id)
         }
     } else {
         entry = fightTrainerPokemonDataBiosGetPtr(
-            (void*)fn_801FCC3C(fightTrainerDataBiosGetPtr(trainerId)));
+            fn_801FCC3C((u8*)fightTrainerDataBiosGetPtr(trainerId)));
         name = GSmsgGetGSchar(
             (u32)fightTrainerPokemonDataBiosGetNickname(entry));
         for (;;) {

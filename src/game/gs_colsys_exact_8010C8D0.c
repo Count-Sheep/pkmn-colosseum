@@ -20,6 +20,14 @@
 #include "dolphin/mtx.h"
 #include "game/gs_colsys.h"
 
+extern void PSMTXIdentity(Mtx m);
+extern void PSMTXCopy(const Mtx src, Mtx dst);
+extern void PSMTXConcat(const Mtx a, const Mtx b, Mtx ab);
+extern u32 PSMTXInverse(const Mtx src, Mtx inv);
+extern void PSMTXRotAxisRad(Mtx m, const Vec* axis, f32 rad);
+extern void PSMTXScaleApply(const Mtx src, Mtx dst, f32 xS, f32 yS, f32 zS);
+extern void PSMTXTransApply(const Mtx src, Mtx dst, f32 xT, f32 yT, f32 zT);
+
 extern GSColSysState lbl_80404C68;
 
 typedef struct ColAxes {

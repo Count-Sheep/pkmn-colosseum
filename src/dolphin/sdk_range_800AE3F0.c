@@ -408,6 +408,10 @@ extern s32 fn_800B588C(s32 chan, s32 fileNo, CARDDirEntry* entry,
 extern void __ARQInterruptServiceRoutine(void);
 extern void __ARHandler(__OSInterrupt interrupt, OSContext* context);
 extern void __ARChecksize(void);
+extern ARCallback ARRegisterDMACallback(ARCallback callback);
+extern void DCInvalidateRange(void* addr, u32 nBytes);
+extern s32 __CARDSeek(CARDFileInfo* fileInfo, s32 length, s32 offset,
+                      CARDControl** cardOut);
 extern void __DSPHandler(__OSInterrupt interrupt, OSContext* context);
 extern void __DSP_boot_task(DSPTaskInfo* task);
 extern void __DSP_insert_task(DSPTaskInfo* task);

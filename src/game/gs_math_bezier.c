@@ -21,6 +21,8 @@ extern void* memset(void* dst, int val, u32 size);
 
 /* External functions referenced from asm wrappers */
 extern void DCFlushRange(void* addr, u32 size);
+extern void fn_800E013C(void* a, void* b, f32 c);
+extern void GSvecAdd(void* a, void* b, void* c);
 extern u64 OSGetTime(void);
 extern void fn_800D3EC4(s32, f32, f32, f32, f32, f32, f32);
 extern void fn_800D4F98(u32, ...);

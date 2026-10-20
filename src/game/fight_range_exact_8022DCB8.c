@@ -547,6 +547,9 @@ u32 fn_8022E34C(u32 r3, u32 r4, char* r5)
 #undef fn_80207BF4
 
 /* fn_8022E410 */
+extern void pokemonSetStatus(u8* obj, u32 id, u32 selector, u32 subindex, u32 value);
+/* RULE-EXCEPTION(user-approved): fightOutPokemonGetUseWazaDataId is defined u16 in fight_out_pokemon.c, but retail keeps the result unextended here (mr, no clrlwi); declared u32 like the file's fn_80205184 - see docs/RULE_EXCEPTIONS.md */
+extern u32 fightOutPokemonGetUseWazaDataId(void* ctx);
 #define fn_801254B4 pokemonSetStatus
 #define fn_8012640C pokemonGetStatus
 #define fn_801F2934 fightFloorWriteJoutaiDataId
