@@ -1123,7 +1123,7 @@ void fn_8009567C(u8* context, u8* sprite)
             fn_800FB680(x, 0, color, 0x2B70);
             break;
         }
-        value = (u16)pokemonGetStatus(pokemon, 0, 0x75, 0);
+        value = pokemonGetStatus(pokemon, 0, 0x75, 0) & 0xFFFF;
         pos = x;
         divisor = 10000;
         for (i = 0; i < 5; i++) {
