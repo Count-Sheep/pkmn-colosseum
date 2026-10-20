@@ -21,8 +21,9 @@ extern u32 fn_801FCC7C(u8* ptr);
 extern void* fightTrainerDataBiosGetPtr(u16 slot);
 extern s32 fn_8003CE1C(s32 index);
 extern s32 fn_801EE614(u16 id);
-extern u32 fn_801EE750(u16 id);
-extern u8 fn_801EE8F4(u16 id);
+/* RULE-EXCEPTION(user-approved): codegen-only prototypes (u32 id where the definitions take u16) in fn_8003B478 - see docs/RULE_EXCEPTIONS.md */
+extern u32 fn_801EE750(u32 id);
+extern u8 fn_801EE8F4(u32 id);
 extern u8 fn_801EEAD0(u16 id);
 extern u8 fn_801EEC74(u16 id);
 extern u32 gamedataGetStatus(s32 a, s32 b);
@@ -80,6 +81,8 @@ void fn_8003B478(u8* context)
     case 1:
         pokemonBiosSetDarkpokemonDataId(model, 0);
         pokemonBiosSetDp(model, 0);
+        /* RULE-EXCEPTION(user-approved): no-op store (the id is already 16-bit) in fn_8003B478 - see docs/RULE_EXCEPTIONS.md */
+        battleId &= 0xFFFF;
         break;
     }
 
