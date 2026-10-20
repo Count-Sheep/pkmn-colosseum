@@ -114,6 +114,7 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
  */
 #if defined(GS_POKEMON_SUMMARY_80017CB8_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800159BC_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_80015E3C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
     defined(GS_POKEMON_SUMMARY_8001793C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80017E8C_ONLY) || \
@@ -714,7 +715,7 @@ s32 fn_800159BC(int x, s32 pageIndex, u16* packedRange) {
 #endif
 #endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_800159BC_ONLY */
 
-#if !defined(GS_POKEMON_SUMMARY_ISLAND)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_80015E3C_ONLY)
 
 /* fn_80015E3C - 0x80015E3C | size: 0x374 */
 extern void* lbl_8047A2F8;
@@ -726,8 +727,11 @@ asm void fn_80015E3C(void) {
 #include "src/game/gs_pokemon_summary_fn_80015E3C.inc"
 }
 #else
+/* The island unit turns the peephole pass off with -opt nopeephole. */
+#if !defined(GS_POKEMON_SUMMARY_80015E3C_ONLY)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80015E3C(int x, s32 pageIndex, u16* packedRange) {
     s32 validCount;
     s32 itemIndex;
@@ -738,6 +742,7 @@ s32 fn_80015E3C(int x, s32 pageIndex, u16* packedRange) {
     int y;
     u32 name;
     s16 width;
+    s32 rowX;
 
     displayLine = 0;
     lineLimit = 8;
@@ -754,19 +759,21 @@ s32 fn_80015E3C(int x, s32 pageIndex, u16* packedRange) {
         scroll = (s32)SUMMARY_F32(lbl_8047A2D0);
     }
 
+    /* RULE-EXCEPTION(user-approved): carrier copy of x for the name and pocket-total columns, chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+    rowX = x;
     for (visibleIndex = displayLine; visibleIndex < lineLimit && itemIndex < validCount;
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
             name = itemDataBiosGetName(itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex)));
             if (name != 0) {
-                fn_800FB680(x, y, -1, name);
+                fn_800FB680(rowX, y, -1, name);
             }
 
             msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
             width += (s16)(GSmsgGetRect(0x12E) >> 16);
-            fn_800FB680(x + 0x11A - width, y, -1, 0x12E);
+            fn_800FB680(rowX + 0x11A - width, y, -1, 0x12E);
 
             msgctrlSetValue(0x34, SummaryPageItemNum(pageIndex, itemIndex));
             fn_800FB680(x + 0x11A - (s16)(GSmsgGetRect(0xCA) >> 16), y, -1, 0xCA);
@@ -778,10 +785,12 @@ s32 fn_80015E3C(int x, s32 pageIndex, u16* packedRange) {
     }
     return 0;
 }
+#if !defined(GS_POKEMON_SUMMARY_80015E3C_ONLY)
 #pragma pop
 #endif
+#endif
 
-#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_80015E3C_ONLY */
 
 #if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800161B0_ONLY)
 /* fn_800161B0 - 0x800161B0 | size: 0x198 */
