@@ -2439,7 +2439,8 @@ static inline u32 shopGetRoom(u8 mode, ShopWork* work, u32 item)
         return (u16)pcboxGetItemCapacity(0, item);
     case 3:
         if (work != NULL) {
-            return shopCountSpace((u8*)work, work->count, item, 999);
+            /* RULE-EXCEPTION(user-approved): codegen-only (u16) cast on the u16 count numbers its hoisted load after the inline loop's locals - see docs/RULE_EXCEPTIONS.md */
+            return shopCountSpace((u8*)work, (u16)work->count, item, 999);
         }
         return 0;
     default:
@@ -2572,6 +2573,22 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u8 mode)
  * Shop types 2 and 3 work on a copy of the save state held in the menu
  * work block; type 4 first checks the player can afford the cheapest item.
  */
+/* Start of the save block that the PC-box shop backs up. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_8002C408's save backup (its return copy adds retail's prologue interference) - see docs/RULE_EXCEPTIONS.md */
+static inline void* shopSaveData(void)
+{
+    extern u32 savedataGetStatus(u8* obj, u16 sel);
+    return (void*)savedataGetStatus(NULL, 3);
+}
+
+/* Loads the PC-box shop's stock into `work`; 0 on failure. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for fn_8002C408's stock load (its return copy adds retail's prologue interference) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 shopLoadStock(ShopWork* work)
+{
+    extern s32 fn_80029CC0(u8* buf);
+    return fn_80029CC0((u8*)work);
+}
+
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -2666,12 +2683,12 @@ void fn_8002C408(s32 mapIdx, u8 mode)
         params.work.credit0 = 0;
         params.work.credit1 = 0;
         params.work.exitFlag = 0;
-        memcpy((void*)lbl_8047A3DC, (void*)savedataGetStatus(NULL, 3), 0x7198);
+        memcpy((void*)lbl_8047A3DC, shopSaveData(), 0x7198);
         lbl_8047A3D8 = heroGetStatus(NULL, 0xd, 0);
         ok = 1;
         break;
     case 3:
-        ok = fn_80029CC0((u8*)&params.work);
+        ok = shopLoadStock(&params.work);
         break;
     default:
         ok = 1;
