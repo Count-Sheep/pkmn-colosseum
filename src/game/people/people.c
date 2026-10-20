@@ -223,6 +223,7 @@
  * fn_8018D7D0 was not exact under GC/1.3 (retail computes
  * (index & 0x7FFF0000) in r3 and the constant in r0, GC/1.3 swaps them);
  * it is exact since the unit moved to GC/2.0 (above).
+ * The RULE-EXCEPTION forms above are listed in docs/RULE_EXCEPTIONS.md.
  */
 #include "dolphin/types.h"
 #include "game/people/people.h"

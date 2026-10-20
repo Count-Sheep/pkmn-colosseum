@@ -22,7 +22,7 @@ extern f32 lbl_8047BCF4;
 #pragma push
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
-/* RULE-EXCEPTION(user-approved): allocation-shaping temporaries preserve the retail conversion spill order. */
+/* RULE-EXCEPTION(user-approved): allocation-shaping temporaries preserve the retail conversion spill order. See docs/RULE_EXCEPTIONS.md. */
 void fn_80043CD8(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     f32 numerator;

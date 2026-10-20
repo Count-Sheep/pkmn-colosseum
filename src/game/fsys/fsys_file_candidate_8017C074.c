@@ -25,6 +25,7 @@
  * is applied although nothing in the target shows such a statement (no
  * free precedes it, unlike fn_8017E30C's free-then-clear); a clean fix
  * needs the real statement that gives `job` its extra reference.
+ * The RULE-EXCEPTION forms above are listed in docs/RULE_EXCEPTIONS.md.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"

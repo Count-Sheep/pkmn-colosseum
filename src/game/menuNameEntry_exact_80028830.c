@@ -1,6 +1,7 @@
 /* Name-entry backdrop sprite drawing, 0x80028830-0x80028948.
  * RULE-EXCEPTION(user-approved): retained register-qualified locals;
  * Shared conversion pool ownership/export is also documented there.
+ * The RULE-EXCEPTION forms above are listed in docs/RULE_EXCEPTIONS.md.
  */
 #include "dolphin/types.h"
 

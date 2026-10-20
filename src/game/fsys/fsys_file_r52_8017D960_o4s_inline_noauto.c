@@ -27,6 +27,7 @@
  * the dead copy into `i`. (A dead copy into `callback` also keeps the mr
  * but raises `callback` above the lookup temporaries.) A clean fix needs
  * the real instruction-free second use of `entry`.
+ * The RULE-EXCEPTION forms above are listed in docs/RULE_EXCEPTIONS.md.
  */
 #include "dolphin/types.h"
 #include "game/fsys/fsys_entry.h"

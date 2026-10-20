@@ -9,6 +9,7 @@
  * fingerprint, so under the strict policy it is a rule exception: linked
  * under the byte-match-first decision with RULE-EXCEPTION(user-approved).
  * Unit flags and shared helpers: see game/menu/pkjb_uploader_shared.h.
+ * The RULE-EXCEPTION forms above are listed in docs/RULE_EXCEPTIONS.md.
  */
 #include "game/menu/pkjb_uploader_shared.h"
 

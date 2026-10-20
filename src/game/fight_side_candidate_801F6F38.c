@@ -27,7 +27,7 @@ u16 fightSideGetHikaeFightPokemonNum(u32 side, u32 trainerLimit, u32 param_3, u3
 }
 
 /* RULE-EXCEPTION(user-approved): inline helper and local declaration order
- * preserve the retail count loop's register allocation. */
+ * preserve the retail count loop's register allocation. See docs/RULE_EXCEPTIONS.md. */
 static inline u16 countFightPokemon(u32 side, u32 trainerLimit, u32 pokemonLimit) {
     u32 trainer;
     int trainerIndex;
@@ -60,7 +60,7 @@ u16 fightSideGetFightPokemonNum(u32 side, u32 trainerLimit, u32 pokemonLimit) {
 }
 
 /* RULE-EXCEPTION(user-approved): the inline helper, accumulator pointer, and
- * declaration order reproduce the retail HP loops' register allocation. */
+ * declaration order reproduce the retail HP loops' register allocation. See docs/RULE_EXCEPTIONS.md. */
 static inline void sumFightPokemonHp(s32* total, u32 side, u32 trainerLimit, u32 pokemonLimit, u16 field) {
     extern u32 pokemonGetStatus(u32, u32, u16, u32);
     int pokemonIndex;

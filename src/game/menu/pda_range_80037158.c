@@ -170,7 +170,7 @@ void fn_8003715C(void)
 
     flag = lbl_8047A470;
     lbl_8047A470 = 1;
-    /* RULE-EXCEPTION(user-approved): preserve retail's dead computation. */
+    /* RULE-EXCEPTION(user-approved): preserve retail's dead computation. See docs/RULE_EXCEPTIONS.md. */
     flag = 1 - flag;
 }
 #endif /* !PDA_80039128_ONLY */
@@ -2249,7 +2249,7 @@ void fn_80041B5C(PdaSprite* sprite, PdaEvent* event)
 
 #pragma push
 #pragma peephole off
-/* RULE-EXCEPTION(user-approved): allocation-shaping temporaries preserve the retail conversion spill order. */
+/* RULE-EXCEPTION(user-approved): allocation-shaping temporaries preserve the retail conversion spill order. See docs/RULE_EXCEPTIONS.md. */
 void fn_80043CD8(PdaSprite* alphaSprite, PdaSprite* sprite)
 {
     extern u8 lbl_802EF0A8[];

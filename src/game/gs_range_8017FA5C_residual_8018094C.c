@@ -43,6 +43,7 @@
  * entry->callback for the indirect call) makes the function 100%, but
  * nothing in the instruction stream distinguishes such a local from the
  * direct call, so it would be a register-only construct and is not used.
+ * The RULE-EXCEPTION forms above are listed in docs/RULE_EXCEPTIONS.md.
  */
 #include "game/gs_range_8017FA5C_shared.h"
 

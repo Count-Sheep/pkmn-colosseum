@@ -15,9 +15,9 @@ extern u32 lbl_80478EC4;
 extern u32 lbl_80478EC0;
 }
 
-// RULE-EXCEPTION(user-approved): scalar wrappers and C++ compilation with
-// -opt nopeephole,nopropagation retain retail's register allocation.
-// See docs/RULE_EXCEPTIONS.md and docs/recon/fn_80116D30_retry_20261008.md.
+/* RULE-EXCEPTION(user-approved): scalar wrappers and C++ compilation with
+   -opt nopeephole,nopropagation retain retail's register allocation.
+   See docs/RULE_EXCEPTIONS.md and docs/recon/fn_80116D30_retry_20261008.md. */
 template <class T> struct Scalar {
     T value;
 

@@ -169,7 +169,7 @@ static const float value0_6 = 0.6f;
 static const double i2fMagic = 4.503601774854144E15;
 
 /* RULE-EXCEPTION(title-path): authentic handwritten MusyX assembly, not C;
- * admitted by docs/asm_evidence/musyx_reverb.md and its registry entry. */
+ * admitted by docs/asm_evidence/musyx_reverb.md and its registry entry. See docs/RULE_EXCEPTIONS.md. */
 asm void DoCrossTalk(s32* a, s32* b, f32 start, f32 end) {
   nofralloc
   stwu r1, -0x30(r1)
@@ -276,7 +276,7 @@ L_00000710:
 }
 
 /* RULE-EXCEPTION(title-path): authentic handwritten MusyX assembly, not C;
- * admitted by docs/asm_evidence/musyx_reverb.md and its registry entry. */
+ * admitted by docs/asm_evidence/musyx_reverb.md and its registry entry. See docs/RULE_EXCEPTIONS.md. */
 asm void HandleReverb(s32*, SND_AUX_REVERBHI* rev, s32) {
   nofralloc
   stwu r1, -0xc0(r1)
