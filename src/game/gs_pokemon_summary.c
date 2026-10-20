@@ -113,6 +113,7 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
  * address range, so the exact islands can link on their own.
  */
 #if defined(GS_POKEMON_SUMMARY_80017CB8_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_800159BC_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
     defined(GS_POKEMON_SUMMARY_8001793C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80017E8C_ONLY) || \
@@ -609,6 +610,9 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
 #pragma pop
 #endif
 
+#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800159BC_ONLY)
 /* fn_800159BC - 0x800159BC | size: 0x480 */
 extern void* lbl_8047A2F8;
 extern const f32 lbl_8047B748;
@@ -619,8 +623,11 @@ asm void fn_800159BC(void) {
 #include "src/game/gs_pokemon_summary_fn_800159BC.inc"
 }
 #else
+/* The island unit turns the peephole pass off with -opt nopeephole. */
+#if !defined(GS_POKEMON_SUMMARY_800159BC_ONLY)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_800159BC(int x, s32 pageIndex, u16* packedRange) {
     s32 validCount;
     s32 itemIndex;
@@ -701,8 +708,13 @@ s32 fn_800159BC(int x, s32 pageIndex, u16* packedRange) {
     }
     return 0;
 }
+#if !defined(GS_POKEMON_SUMMARY_800159BC_ONLY)
 #pragma pop
 #endif
+#endif
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_800159BC_ONLY */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 
 /* fn_80015E3C - 0x80015E3C | size: 0x374 */
 extern void* lbl_8047A2F8;
