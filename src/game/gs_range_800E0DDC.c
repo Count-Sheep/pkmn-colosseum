@@ -646,7 +646,6 @@ static inline u16 gsMemChecksum(GSMemHandle* handle) {
 u32 fn_800E1544(void)
 {
     extern const char lbl_80270BB8[];
-    GSMemHandle** entry;
     GSMemHandle* bottom;
     u32 sum;
     u32 total;
@@ -716,11 +715,9 @@ u32 fn_800E1544(void)
                 continue;
             }
 
-            candidates[0] = NULL;
-            candidates[1] = NULL;
-            candidates[2] = NULL;
-            candidates[3] = NULL;
-            entry = candidates;
+            for (k = 0; k < 4; k++) {
+                candidates[k] = NULL;
+            }
             count = 0;
             total = 0;
             for (desc = top; desc >= bottom; desc--) {
@@ -764,11 +761,11 @@ u32 fn_800E1544(void)
             }
             destination = (u8*)block;
             for (k = 0; k < count; k++) {
-                source = (*entry)->data;
-                gsMemCopy(destination, source, (*entry)->size);
-                (*entry)->data = destination;
-                destination += (*entry)->size;
-                remaining -= (*entry)->size;
+                source = candidates[k]->data;
+                gsMemCopy(destination, source, candidates[k]->size);
+                candidates[k]->data = destination;
+                destination += candidates[k]->size;
+                remaining -= candidates[k]->size;
                 before = NULL;
                 for (scan = lbl_8047AB30; scan != NULL && scan < (GSFreeBlock*)source; scan = scan->next) {
                     before = scan;
@@ -782,7 +779,7 @@ u32 fn_800E1544(void)
                     freed->next = lbl_8047AB30;
                     lbl_8047AB30 = freed;
                 }
-                freed->size = (*entry)->size;
+                freed->size = candidates[k]->size;
                 if (freed->prev != NULL) {
                     freed->prev->next = freed;
                 }
@@ -791,7 +788,6 @@ u32 fn_800E1544(void)
                 }
                 gsMemMergeNext(freed);
                 gsMemMergePrev(freed);
-                entry++;
             }
             if (remaining >= sizeof(GSFreeBlock)) {
                 fresh = (GSFreeBlock*)destination;
