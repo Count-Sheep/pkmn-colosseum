@@ -20,12 +20,14 @@ extern void msgctrlSetValue(s32 id, u32 value);
 extern u32 GSmsgGetRect(s32 id);
 extern void fn_800FB680(s32 arg0, s32 arg1, s32 arg2, void* data);
 
+/* The slot count of PC box 0. */
 static inline s32 pda_80039644_Slots(void)
 {
     return pcboxGetNbItemSlot(0);
 }
 
 /* The data id of the target-th listed item in PC box 0. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_80039644_ItemId in fn_80039644 - see docs/RULE_EXCEPTIONS.md */
 static inline s32 pda_80039644_ItemId(s32 target)
 {
     s32 slots;
@@ -48,6 +50,7 @@ static inline s32 pda_80039644_ItemId(s32 target)
 }
 
 /* The count of the target-th listed item in PC box 0. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_80039644_ItemNum in fn_80039644 - see docs/RULE_EXCEPTIONS.md */
 static inline s32 pda_80039644_ItemNum(s32 target)
 {
     void* item;
@@ -69,6 +72,8 @@ static inline s32 pda_80039644_ItemNum(s32 target)
     return 0;
 }
 
+/* The number of listed items in PC box 0. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper pda_80039644_Count in fn_80039644 - see docs/RULE_EXCEPTIONS.md */
 static inline s32 pda_80039644_Count(void)
 {
     s32 slots;
@@ -87,11 +92,9 @@ static inline s32 pda_80039644_Count(void)
 
 s32 fn_80039644(void* work, PdaSprite* sprite)
 {
+    s16 rectWidth;
     s32 start;
     s32 rowY;
-    s32 slots;
-    s32 j;
-    s32 found;
     s32 total;
     s32 nameX;
     s32 y;
@@ -99,22 +102,21 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     s32 width;
     s32 itemId;
     u16 count;
-    void* item;
     void* name;
     s32 index;
     s32 rows;
     s32 yAdj;
-    s16 w2;
+    s16 countWidth;
 
     (void)work;
     start = 0;
     rows = 8;
     yAdj = 0;
-    total = 0;
     total = pda_80039644_Count();
     index = lbl_8047A4A8;
     msgctrlSetValue(0x34, 0x3e7);
-    width = (s16)(GSmsgGetRect(0xca) >> 16);
+    rectWidth = GSmsgGetRect(0xca) >> 16;
+    width = rectWidth;
     width += (s16)(GSmsgGetRect(0x12e) >> 16);
     if (lbl_8047BAB0 != lbl_8047A4C0 && lbl_8047A4BC != 0) {
         if (lbl_8047A4C0 < lbl_8047BAB0) {
@@ -144,8 +146,8 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
         fn_800FB680(nameX, y, (s32)sprite, (void*)0x12e);
         count = pda_80039644_ItemNum(index);
         msgctrlSetValue(0x34, count);
-        w2 = GSmsgGetRect(0xca) >> 16;
-        fn_800FB680(0x11a - w2, y, (s32)sprite, (void*)0xca);
+        countWidth = GSmsgGetRect(0xca) >> 16;
+        fn_800FB680(0x11a - countWidth, y, (s32)sprite, (void*)0xca);
     }
     if (i < rows) {
         fn_800FB680(0, i * 0x1f - yAdj, (s32)sprite, (void*)0x1b67);
