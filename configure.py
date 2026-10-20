@@ -6561,6 +6561,9 @@ config.libs = [
             Object(
                 CodeCandidate,
                 "game/menu/menuCB_range_80063D14.c",
+                constant_import=[
+                    {"symbol": "lbl_8047BFE8", "offset": 0, "expected": "00000000"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=[
                     "-use_lmw_stmw on",

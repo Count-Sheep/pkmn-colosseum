@@ -4,8 +4,6 @@
  */
 #include "dolphin/types.h"
 
-extern u8 lbl_803A9F08[];
-extern f32 lbl_8047BFE8;
 extern s32 toolentryTaisenGetBattleType(void);
 extern s32 toolentryTaisenGetEntryPlayerNum(void);
 extern s32 fn_8006B1D4(void);
@@ -69,7 +67,8 @@ typedef struct MenuCBEntryWork {
     /* 0xCE5C */ s32 message;
 } MenuCBEntryWork;
 
-#define MENUCB_WORK ((MenuCBEntryWork*)lbl_803A9F08)
+extern MenuCBEntryWork lbl_803A9F08;
+#define MENUCB_WORK (&lbl_803A9F08)
 
 static inline s32 menuCBMin(u16 a, u16 b)
 {
@@ -81,7 +80,7 @@ static inline s32 menuCBMin(u16 a, u16 b)
 
 static inline void menuCBSetEntryState(s32 next)
 {
-    *(s32*)&lbl_803A9F08[0x00] = next;
+    lbl_803A9F08.state = next;
 }
 
 static inline u16 menuCBIsHomeBattle(void)
@@ -116,7 +115,7 @@ static inline void menuCBClearEntrySlots(MenuCBEntryWork* state)
     s32 j;
 
     state->cursor = 0;
-    ((MenuCBEntryWork*)lbl_803A9F08)->slotsDirty = 0;
+    lbl_803A9F08.slotsDirty = 0;
     for (i = 0; i < 4; i++) {
         player = &state->player[i];
         for (j = 0; j < 6; j++) {
@@ -169,7 +168,7 @@ static inline void menuCBEntryInit(void)
     playerCount = toolentryTaisenGetEntryPlayerNum();
     MENUCB_WORK->cancelled = 1;
     MENUCB_WORK->message = -1;
-    MENUCB_WORK->scale = lbl_8047BFE8;
+    MENUCB_WORK->scale = 0.0f;
     MENUCB_WORK->frame = 0;
     MENUCB_WORK->cursor = 0;
     MENUCB_WORK->timer = 0;
@@ -206,7 +205,7 @@ s32 fn_80063D14(void* work)
 
     keepRunning = 1;
     fn_80165A20(0x1E, 0, 0xFF);
-    memcpy(((MenuCBEntryWork*)lbl_803A9F08)->copy, work, 0xCC2C);
+    memcpy(lbl_803A9F08.copy, work, 0xCC2C);
 
     menuCBEntryInit();
 
@@ -237,7 +236,7 @@ s32 fn_80063D14(void* work)
     }
 
     do {
-        switch (*(s32*)&lbl_803A9F08[0x00]) {
+        switch (lbl_803A9F08.state) {
         case 0:
             menuSetEnablePort(0);
             menuResult = menuOpen(0xC6, 1);
@@ -252,7 +251,7 @@ s32 fn_80063D14(void* work)
             break;
         case 1:
             if (menuOpen(0xC5, 1) == 0) {
-                lbl_803A9F08[4] = 1;
+                lbl_803A9F08.ready[0] = 1;
                 menuCloseCustom(0xC5, 0, 1);
                 menuCBSetEntryState(0);
             } else {
