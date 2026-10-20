@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2234
+    "total_units": 2231
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2136,
-    "source_backed_units": 2135,
+    "named_units": 2133,
+    "source_backed_units": 2132,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2487264",
-    "matched_code_percent": 99.29435,
+    "matched_code": "2499656",
+    "matched_code_percent": 99.78906,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8668,
-    "matched_functions_percent": 99.89628,
-    "fuzzy_match_percent": 99.97437
+    "matched_functions": 8674,
+    "matched_functions_percent": 99.96542,
+    "fuzzy_match_percent": 99.998245
   },
   "unit_topology": [
     {
@@ -2592,19 +2592,6 @@
       "total_functions": 1
     },
     {
-      "name": "main/game/data/bss_803A3278",
-      "sections": [
-        {
-          "name": ".bss",
-          "size": 3040,
-          "virtual_address": 2151297656
-        }
-      ],
-      "total_code": 0,
-      "total_data": 3040,
-      "total_functions": 0
-    },
-    {
       "name": "main/game/menuPokemonChange_r41_8002E460_gc125n",
       "sections": [
         {
@@ -2964,40 +2951,19 @@
       "name": "main/game/gs_range_80033278",
       "sections": [
         {
+          "name": ".bss",
+          "size": 3040,
+          "virtual_address": 2151297656
+        },
+        {
           "name": ".text",
-          "size": 4104,
+          "size": 10704,
           "virtual_address": 2147693176
         }
       ],
-      "total_code": 4104,
-      "total_data": 0,
-      "total_functions": 1
-    },
-    {
-      "name": "main/game/gs_range_exact_80034280",
-      "sections": [
-        {
-          "name": ".text",
-          "size": 3380,
-          "virtual_address": 2147697280
-        }
-      ],
-      "total_code": 3380,
-      "total_data": 0,
-      "total_functions": 14
-    },
-    {
-      "name": "main/game/gs_range_suffix_80034FB4",
-      "sections": [
-        {
-          "name": ".text",
-          "size": 3220,
-          "virtual_address": 2147700660
-        }
-      ],
-      "total_code": 3220,
-      "total_data": 0,
-      "total_functions": 1
+      "total_code": 10704,
+      "total_data": 3040,
+      "total_functions": 16
     },
     {
       "name": "main/game/gs_exact_80035C48",

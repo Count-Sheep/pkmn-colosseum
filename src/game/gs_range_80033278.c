@@ -376,6 +376,7 @@ static inline s32 sysvarsAskRetry(void)
 s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
 {
     u8* name;
+    CardEData* card;
     s32 result;
     s32 action;
     s8 open;
@@ -396,6 +397,8 @@ s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
         return 2;
     }
 
+    /* RULE-EXCEPTION(user-approved): carrier; the card pointer set before name puts retail's card address (base+0xBC) ahead of the name address in the loop preheader - see docs/RULE_EXCEPTIONS.md */
+    card = &lbl_803A3334;
     name = lbl_803A3288;
 
 restart:
@@ -442,7 +445,7 @@ restart:
         return 0;
     }
 
-    action = sysvarsCheckCard(&lbl_803A3334);
+    action = sysvarsCheckCard(card);
 
     switch (action) {
     case 2:

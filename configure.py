@@ -3330,28 +3330,26 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_range_80033278.c",
                 constant_import=[
                     {"symbol": "lbl_8047BA08", "offset": 0, "expected": "4330000080000000"},
                     {"symbol": "lbl_8047BA10", "offset": 8, "expected": "4330000000000000"},
                 ],
-                # Combined unit (scaffold, CodeCandidate): .text 0x80033278-0x80035C48
-                # and the Card-e .bss 0x803A3278-0x803A3E58. The three switch tables
-                # are retail-owned by gs_npc_event_candidate_800324A0 (.data +0x4C,
-                # +0x6C, +0xC4). The importer checks the compiled tables byte for
-                # byte, so it can only be enabled once every function is exact:
-                # jump_table_import={
-                #     "function": "fn_80034280",
-                #     "owner": "game/gs_npc_event_candidate_800324A0.c",
-                #     "tables": [
-                #         {"symbol": "jumptable_802E502C", "owner_offset": 0x4C,
-                #          "function": "_sysvarsProcessData__FP16sysvarsFuncEntryPc"},
-                #         {"symbol": "jumptable_802E504C", "owner_offset": 0x6C},
-                #         {"symbol": "jumptable_802E50A4", "owner_offset": 0xC4,
-                #          "function": "fn_80034FB4"},
-                #     ],
-                # },
+                # Combined unit: .text 0x80033278-0x80035C48 and the Card-e .bss
+                # 0x803A3278-0x803A3E58. The three switch tables are retail-owned by
+                # gs_npc_event_candidate_800324A0 (.data +0x4C, +0x6C, +0xC4).
+                jump_table_import={
+                    "function": "fn_80034280",
+                    "owner": "game/gs_npc_event_candidate_800324A0.c",
+                    "tables": [
+                        {"symbol": "jumptable_802E502C", "owner_offset": 0x4C,
+                         "function": "_sysvarsProcessData__FP16sysvarsFuncEntryPc"},
+                        {"symbol": "jumptable_802E504C", "owner_offset": 0x6C},
+                        {"symbol": "jumptable_802E50A4", "owner_offset": 0xC4,
+                         "function": "fn_80034FB4"},
+                    ],
+                },
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
