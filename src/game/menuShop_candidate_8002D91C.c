@@ -94,10 +94,12 @@ void fn_8002D91C(u32 location_index)
     u8 text0;
 
     location = location_index;
+    /* RULE-EXCEPTION(user-approved): no-op OR carrier for the location copy - see docs/RULE_EXCEPTIONS.md */
+    location |= location_index;
     state = (ShopTravelState*)&lbl_8047A3FC;
-    state->active = 0;
     location_entry = &lbl_80478E54[location];
     state->location = location_index;
+    state->active = 0;
     type = location_entry->type;
 
     switch (type) {
@@ -124,7 +126,7 @@ void fn_8002D91C(u32 location_index)
         break;
     }
     case 1:
-        fn_8002CE6C((u8*)location, type);
+        fn_8002CE6C((u8*)location_index, type);
         break;
     default: {
         u32 message;
