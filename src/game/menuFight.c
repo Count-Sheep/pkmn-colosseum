@@ -1411,7 +1411,8 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
     }
 
     if (selected >= 0) {
-        if (menuFightGetSecretPokemon(base, selected) == 0) {
+        /* RULE-EXCEPTION(user-approved): codegen-only (u16) cast on the slot argument - see docs/RULE_EXCEPTIONS.md */
+        if (menuFightGetSecretPokemon(base, (u16)selected) == 0) {
             selected = -1;
         }
         if (selected >= 0) {
@@ -1447,7 +1448,8 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
                 *(s32*)lbl_8047885C = 3;
             }
             if (*(s32*)lbl_8047885C >= 0) {
-                if (menuFightGetSecretPokemon(base, *(s32*)lbl_8047885C) == 0) {
+                /* RULE-EXCEPTION(user-approved): codegen-only (u16) cast on the slot argument - see docs/RULE_EXCEPTIONS.md */
+                if (menuFightGetSecretPokemon(base, (u16)*(s32*)lbl_8047885C) == 0) {
                     *(s32*)lbl_8047885C = -1;
                 }
             }

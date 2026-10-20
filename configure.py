@@ -4450,7 +4450,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gbaCommunication_candidate_80093B4C.c",
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
@@ -9244,7 +9244,6 @@ config.libs = [
                     (Matching, "game/menuFight_exact_8000E204.c"),
                     (Matching, "game/menuFight_r51_8000E290.c"),
                     (Matching, "game/menuFight_exact_8000EA10.c"),
-                    (CodeCandidate, "game/menuFight_candidate_8000ED34.c"),
                     (Matching, "game/menuFight_exact_8000F310.c"),
                     (Matching, "game/menuFight_exact_800100C0.c"),
                     (Matching, "game/menuFight_exact_80010294.c"),
@@ -9252,6 +9251,20 @@ config.libs = [
                     (Matching, "game/menuFight_exact_80010C98.c"),
                 ]
             ],
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/menuFight_candidate_8000ED34.c",
+                constant_import=[
+                    {"symbol": "lbl_8047B700", "offset": 0, "expected": "00000000"},
+                    {"symbol": "lbl_8047B704", "offset": 4, "expected": "3f490fdb"},
+                    {"symbol": "lbl_8047B708", "offset": 8, "expected": "4016cbe4"},
+                    {"symbol": "lbl_8047B710", "offset": 16, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             # menuFightDrawSecretWazaDoc: one-function carve, built without
             # copy propagation (unit flag instead of the old local pragma).
             Object(
