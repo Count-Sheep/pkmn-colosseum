@@ -14,6 +14,7 @@
  */
 #include "dolphin/types.h"
 
+#if defined(GS_RANGE_EXACT_80034280) || defined(GS_RANGE_SUFFIX_80034FB4)
 extern void GBAInit(void);
 extern void fn_8007B090(s32);
 extern s32 windowGetActiveID(void);
@@ -119,11 +120,118 @@ extern u16 pcboxDelItem(s32, u16, s32);
 extern void fn_80165668(s32, s32, s32);
 extern void fn_800832C8(s32, void*, s32);
 
+#else
+/*
+ * _sysvarsProcessData (menuCardE, 0x80033278) is this unit's only function.
+ * The original translation unit defines the Card-e work buffers as separate
+ * .bss objects, so MWCC addresses them off one pooled base register
+ * (lbl_803A3278 + 0x10 / 0xB0 / 0xBC) and keeps the 0xBC object offset out
+ * of field displacements. The real prototypes of the cardesavedata.c and
+ * menu_carde_matrix.c callees are declared here.
+ */
+
+typedef struct CardEData {
+    s32 card_type;        /* 0x000 */
+    u8 pad_004[4];
+    u8 cardId;            /* 0x008 */
+    u8 pad_009;
+    u8 title[0x1A];       /* 0x00A */
+    s8 row;               /* 0x024 */
+    u8 pad_025;
+    s8 column;            /* 0x026 */
+    u8 pad_027;
+    u8 names[3][0x10];    /* 0x028 */
+    s8 layerCount;        /* 0x058 */
+    u8 pad_059;
+    s8 columnCount;       /* 0x05A */
+    s8 menu1[3];          /* 0x05B */
+    s8 menu2[3];          /* 0x05E */
+    s8 bonus[3];          /* 0x061 */
+    u16 items[3];         /* 0x064 */
+    u8 pad_06A[0x3AC - 0x6A];
+    u8 menus[0x2E][0x28]; /* 0x3AC */
+    u8 pad_ADC[0xAFC - 0xADC];
+    u32 floorId;          /* 0xAFC */
+    u16 floorName[0x12];  /* 0xB00 */
+} CardEData;
+
+typedef struct CardEGridEntry {
+    u16 id;
+    u8 pad02[0x18];
+    u8 key;
+    s8 layers;
+    s8 rows;
+    s8 columns;
+    u8 rowType[6];
+} CardEGridEntry;
+
+u8 lbl_803A3278[0x10];
+u8 lbl_803A3288[0xA0];
+u16 lbl_803A3328[6];
+CardEData lbl_803A3334;
+extern u8 lbl_8047A439;
+extern CardEGridEntry* lbl_8047A434;
+extern u32 lbl_8047A444;
+extern s8 lbl_8047A448;
+extern const f32 lbl_8047B9F8;
+extern const f32 lbl_8047BA18;
+extern u8 lbl_8047BA1C;
+extern const char lbl_80266FAC[];
+extern const char lbl_80266FB8[];
+extern const char lbl_8047BA20[6];
+
+extern void fn_8007C764(u8);
+extern void fn_8007C7A8(u8);
+extern s32 menuOpen(s32, s32);
+extern void menuClose(s32);
+extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, ...);
+extern s32 fn_80034280(void);
+extern u8* GScharCpy(void*, const void*);
+extern void* fightFloorDataBiosGetPtr(u16);
+extern void* fightFloorDataBiosGetName(void*);
+extern void* GSmsgGetGSchar(void*);
+extern void fn_8007CB54(void*);
+extern void msgctrlSetValue(u32, u32);
+extern void winMsgOpen(s32, u32, s32, s32);
+extern void winMsgClose(s32);
+extern void __assert(const char*, s32, const char*);
+extern void fn_8007CAB0(void);
+extern CardEGridEntry* fn_800836AC(u8*, CardEData*, u8);
+extern void fn_8007C7EC(void);
+extern u8* fn_80082EA4(CardEGridEntry*, s8, s8, s8);
+extern u8* fn_80082FE4(CardEGridEntry*, s8);
+extern void fn_8007C450(u8, s8, s8, s8, s32);
+extern void fn_8007C414(void);
+extern u8* fn_80082CF0(CardEGridEntry*, CardEData*, s8);
+extern u8* fn_80082BA4(CardEGridEntry*, CardEData*, s8);
+extern void fn_80082960(CardEGridEntry*, CardEData*, s8);
+extern void fn_80166A28(u32);
+extern void _threadSwitch(void);
+extern s32 fn_800D37CC(void);
+extern u32 fn_800D3088(void);
+extern void fn_801D0AFC(s32);
+extern void* savedataGetStatus(s32, s32);
+extern void* heroBiosGetPokemonPtr(void*, u8);
+extern void pokemonBiosSetItemDataId(void*, u16);
+extern u32 fn_80032ED8(void*, s32, s32);
+extern s32 windowGetActiveID(void);
+extern void fn_8007C300(u8, s8);
+extern u8 fn_80082738(CardEGridEntry*, CardEData*, s8);
+extern void fn_8007C634(void);
+extern void fn_80082650(CardEGridEntry*);
+extern void fn_80166AB8(s32, s32, s32);
+extern void heroAddPokecoupon(s32, s32);
+extern s32 heroItemAddItemDataId(void*, u16, s32, s32);
+extern u16 pcboxDelItem(void*, u16, s32);
+extern void fn_80165668(s32, s32, s32);
+extern void fn_800832C8(u8*, CardEData*, s8);
+#endif
+
 #pragma push
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
 #if !defined(GS_RANGE_EXACT_80034280) && !defined(GS_RANGE_SUFFIX_80034FB4)
-static void sysvarsWaitForTransfer(void)
+static inline void sysvarsWaitForTransfer(void)
 {
     f32 progress;
 
@@ -150,809 +258,378 @@ static inline void sysvarsWaitTwoSeconds(void)
 #endif
 
 #if !defined(GS_RANGE_EXACT_80034280) && !defined(GS_RANGE_SUFFIX_80034FB4)
-s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(
-    void* unusedEntry,
-    char* unusedText)
+static inline void sysvarsRestoreItems(void)
 {
-    extern u8 lbl_8047BA1C;
-    u8* base;
-    u8* name;
-    u16* partyItems;
-    u8* sv;
+    void* save;
+    s32 i;
 
-    s32 state;
+    fn_801D0AFC(0);
+    save = savedataGetStatus(0, 2);
+    for (i = 0; i < 6; i++) {
+        pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(save, i), lbl_803A3328[i]);
+    }
+}
+
+static inline s32 sysvarsFindEmptyLayer(CardEData* card)
+{
+    s32 i;
+    s8 row;
+    s8 column;
+    s32 found;
+
+    row = card->row;
+    found = -1;
+    column = card->column;
+    for (i = 0; i < (s8)card->layerCount; i++) {
+        if (fn_80082EA4(lbl_8047A434, i, row, column)[0xC] == 0) {
+            found = i;
+            break;
+        }
+    }
+    return found;
+}
+
+static inline u8 sysvarsLayerOpen(CardEData* card, s8 layer)
+{
+    s32 row;
+
+    row = card->row;
+    if (row == card->row && lbl_803A3334.menu2[layer] < 0) {
+        return 0;
+    }
+    if (fn_80082FE4(lbl_8047A434, layer)[0x1C + row * 0xE] != 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static inline u8 sysvarsStageTwoReady(CardEData* card, s8 layer)
+{
+    u8 valid;
+    s8 row;
+    s32 column;
+
+    valid = 1;
+    row = card->row;
+    if (card->menu2[layer] < 0) {
+        valid = 0;
+    } else {
+        for (column = 0; column < (s8)card->columnCount; column++) {
+            if (fn_80082EA4(lbl_8047A434, layer, row, column)[0xC] == 0) {
+                valid = 0;
+                break;
+            }
+        }
+    }
+    return valid;
+}
+
+static inline u8 sysvarsAllFilled(CardEData* card, s8 layer)
+{
+    s8 row;
+    s32 column;
+
+    if (card->bonus[layer] < 0) {
+        return 0;
+    }
+    for (row = 0; row < lbl_8047A434->rows; row++) {
+        for (column = 0; column < (s8)card->columnCount; column++) {
+            if (fn_80082EA4(lbl_8047A434, layer, row, column)[0xC] == 0) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
+{
+    CardEData* card;
+    u8* name;
+    s32 result;
     s32 action;
     s32 secondary;
     s32 empty;
-    s32 i;
-    s32 j;
-    s32 slot;
-    s32 region;
-    s32 menuResult;
-    s32 choice;
-
-    u8 valid;
-    u8* ptr;
-    s32 area;
-    s32 mode;
-    u8 chosen;
-    s32 index;
-    void* save;
-    void* pokemon;
-
-    u16 item;
+    s8 open;
+    u32 menuResult;
     u32 message;
+    u16 item;
+    u8 valid;
+    void* floor;
 
-    (void)unusedEntry;
-    (void)unusedText;
-
-    base = lbl_803A3278;
-
-    /*
-     * Original:
-     *   fn_8007C764(lbl_8047A439 == 0);
-     *   fn_8007C7A8(1);
-     *   menuOpen(0xA6, 1);
-     */
     fn_8007C764(lbl_8047A439 == 0);
-
     fn_8007C7A8(1);
-    state = menuOpen(0xA6, 1);
+    result = menuOpen(0xA6, 1);
     fn_8007C7A8(0);
-
-    if (state != 0) {
+    if (result != 0) {
         return 1;
     }
-
     if (lbl_8047A439 != 0) {
         return 2;
     }
 
-    sv = base + 0xBC;
-    name = base + 0x10;
-    partyItems = (u16*)(base + 0xB0);
+
+    card = &lbl_803A3334;
+    name = lbl_803A3288;
 
 restart:
-
-    state = fn_80034280();
-
-    switch (state) {
+    switch (fn_80034280()) {
     case 0:
         return 0;
-
     case 1:
         return 2;
-
-    case 3:
-    default:
+    case 2:
         break;
     }
 
-    /*
-     * sv[0..3] is a state/mode field.
-     */
-    if (*(s32*)sv == 1) {
-        lbl_8047A444 = *(u32*)(sv + 0xAFC);
-
-        if (*(u16*)(sv + 0xB00) != 0) {
-            GScharCpy(name, sv + 0xB00);
+    if (lbl_803A3334.card_type == 1) {
+        u16* floorName;
+        lbl_8047A444 = lbl_803A3334.floorId;
+        floorName = lbl_803A3334.floorName;
+        if (floorName[0] != 0) {
+            GScharCpy(lbl_803A3288, floorName);
         } else {
-            ptr = fightFloorDataBiosGetPtr((u16)lbl_8047A444);
-
-            if (ptr != NULL) {
-                ptr = fightFloorDataBiosGetName(ptr);
-                ptr = GSmsgGetGSchar(ptr);
-                GScharCpy(name, ptr);
+            floor = fightFloorDataBiosGetPtr(lbl_8047A444);
+            if (floor != NULL) {
+                GScharCpy(lbl_803A3288, GSmsgGetGSchar(fightFloorDataBiosGetName(floor)));
             } else {
-                GScharCpy(name, &lbl_8047BA1C);
+                GScharCpy(lbl_803A3288, &lbl_8047BA1C);
             }
         }
-
-        fn_8007CB54(name);
-
-        msgctrlSetValue(0x4D, (u32)name);
-
+        fn_8007CB54(lbl_803A3288);
+        msgctrlSetValue(0x4D, (u32)lbl_803A3288);
         winMsgOpen(8, 0x3B55, 1, 0);
         winMsgClose(1);
-
         return 2;
     }
 
-    if (*(s32*)sv != 0) {
+    if (lbl_803A3334.card_type != 0) {
         __assert(lbl_80266FAC, 0x6C8, lbl_80266FB8);
     }
 
     fn_8007CAB0();
-
-    lbl_8047A434 = fn_800836AC(0, base + 0xBC, 1);
-
+    lbl_8047A434 = fn_800836AC(0, &lbl_803A3334, 1);
     fn_8007C7EC();
-
     if (lbl_8047A434 == NULL) {
         __assert(lbl_80266FAC, 0x6DB, lbl_8047BA20);
-
         winMsgOpen(8, 0x3B91, 1, 0);
-
         return 0;
     }
 
-    /*
-     * Determine which path is currently possible.
-     *
-     * 2 = failure/message path
-     * 3 = alternate availability path
-     * 4 = normal path
-     */
     action = 4;
-
-    slot = (s8)(sv[0x58] - 1);
-
-    ptr = fn_80082EA4(
-        lbl_8047A434,
-        slot,
-        sv[0x24],
-        sv[0x26]);
-
-    if (ptr[0x0C] != 0) {
+    if (fn_80082EA4(lbl_8047A434, card->layerCount - 1, card->row, card->column)[0xC] != 0) {
         action = 2;
     } else {
         secondary = 4;
-        empty = -1;
-
-        area = sv[0x24];
-        mode = sv[0x26];
-
-        i = 0;
-
-        while (i < (s8)sv[0x58]) {
-            ptr = fn_80082EA4(
-                lbl_8047A434,
-                (s8)i,
-                area,
-                mode);
-
-            if (ptr[0x0C] == 0) {
-                empty = i;
-                break;
-            }
-
-            i++;
-        }
-
+        empty = sysvarsFindEmptyLayer(card);
         switch (empty) {
         case -1:
             secondary = 2;
             break;
-
         case 1:
         case 2:
-            j = 0;
-
-            while ((s8)j < empty) {
-                region = (s8)sv[0x24];
-
-                /*
-                 * The target assembly literally contains a self-compare
-                 * here (cmpw r21,r21). Preserve this odd shape initially;
-                 * it may be the result of an optimized source condition.
-                 */
-                if (region == (s8)sv[0x24] &&
-                    (s8)sv[0x5E + j] < 0) {
-                    valid = 0;
-                } else {
-                    ptr = fn_80082FE4(lbl_8047A434, j);
-
-                    if (ptr[0x1C + region * 0x0E] != 0) {
-                        valid = 0;
-                    } else {
-                        valid = 1;
-                    }
-                }
-
-                if (valid != 0) {
+            for (open = 0; open < empty; open++) {
+                if (sysvarsLayerOpen(card, open)) {
                     secondary = 3;
                     break;
                 }
-
-                j++;
             }
-
             break;
         }
-
         if (secondary != 4) {
             action = secondary;
         }
     }
 
     switch (action) {
-    /*
-     * action == 2 (and any other non-normal value).
-     */
     case 2:
     default:
         winMsgOpen(8, 0x3B58, 1, 0);
         winMsgClose(1);
-
         return 2;
 
-    /*
-     * Alternate availability/error path.
-     */
     case 3:
-        slot = 0;
-
-        while ((s8)slot < (s8)sv[0x58]) {
-            region = (s8)sv[0x24];
-
-            /*
-             * The second instance also compiles to a self-compare in
-             * the original assembly.
-             */
-            if (region == (s8)sv[0x24] &&
-                (s8)sv[0x5E + slot] < 0) {
-                valid = 0;
-            } else {
-                ptr = fn_80082FE4(lbl_8047A434, slot);
-
-                if (ptr[0x1C + region * 0x0E] != 0) {
-                    valid = 0;
-                } else {
-                    valid = 1;
-                }
-            }
-
-            if (valid != 0) {
+        for (open = 0; open < card->layerCount; open++) {
+            if (sysvarsLayerOpen(card, open)) {
                 break;
             }
-
-            slot++;
         }
-
-        /*
-         * Message chosen from the byte at lbl_8047A434 +
-         * 0x1E + region.
-         *
-         * The assembly contains a real 8-entry jump table here.
-         */
-        switch (((u8*)lbl_8047A434)[
-            0x1E + (s8)sv[0x24]]) {
+        switch (lbl_8047A434->rowType[(s8)card->row]) {
         case 0:
             message = 0x3C7C;
             break;
-
         case 1:
             message = 0x3C7D;
             break;
-
         case 2:
             message = 0x3C7F;
             break;
-
         case 3:
             message = 0x3C81;
             break;
-
         case 4:
             message = 0x3C83;
             break;
-
         case 5:
             message = 0x3C85;
             break;
-
         case 6:
             message = 0x3C88;
             break;
-
         case 7:
             message = 0x3C8B;
             break;
-
         default:
             message = 0x3C7C;
             break;
         }
-
         msgctrlSetValue(0x31, message);
-
-        msgctrlSetValue(
-            0x4D,
-            (u32)(sv + 0x28 + (s8)slot * 0x10));
-
-        msgctrlSetValue(
-            0x57,
-            (u32)(sv + 0x28 +
-                  ((s8)slot + 1) * 0x10));
-
-        fn_8007C450(
-            sv[8],
-            slot,
-            sv[0x24],
-            sv[0x26],
-            6);
-
+        msgctrlSetValue(0x4D, (u32)lbl_803A3334.names[open]);
+        msgctrlSetValue(0x57, (u32)lbl_803A3334.names[open + 1]);
+        fn_8007C450(card->cardId, open, card->row, card->column, 6);
         winMsgOpen(8, 0x3B5B, 1, 0);
         winMsgClose(1);
-
         fn_8007C414();
-
         return 2;
 
     case 4:
         break;
     }
 
-    /*
-     * Locate first empty candidate.
-     */
-    area = sv[0x24];
-    slot = -1;
-    mode = sv[0x26];
-    i = 0;
-
-    while (i < (s8)sv[0x58]) {
-        ptr = fn_80082EA4(
-            lbl_8047A434,
-            (s8)i,
-            area,
-            mode);
-
-        if (ptr[0x0C] == 0) {
-            slot = i;
-            break;
-        }
-
-        i++;
-    }
-
-    lbl_8047A448 = (s8)slot;
-
+    lbl_8047A448 = sysvarsFindEmptyLayer(card);
     winMsgClose(1);
-
-    fn_80082CF0(
-        lbl_8047A434,
-        base + 0xBC,
-        (u8)lbl_8047A448);
-
-    fn_8007C450(
-        sv[8],
-        (u8)lbl_8047A448,
-        sv[0x24],
-        sv[0x26],
-        1);
-
+    fn_80082CF0(lbl_8047A434, &lbl_803A3334, lbl_8047A448);
+    fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 1);
     fn_80166A28(0x4C5);
-
     sysvarsWaitForTransfer();
-
     winMsgOpen(8, 0x3B6D, 1, 0);
     winMsgClose(1);
-
-    fn_801D0AFC(0);
-    save = savedataGetStatus(0, 2);
-    for (index = 0; index < 6; index++) {
-        pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-        pokemonBiosSetItemDataId(pokemon, partyItems[index]);
-    }
+    sysvarsRestoreItems();
 
 first_menu:
-
-    /*
-     * NOTE OFFSET 0x5B HERE.
-     */
-    menuResult = fn_80032ED8(
-        sv + 0x3AC +
-            (s8)sv[0x5B + (s8)lbl_8047A448] *
-                0x28,
-        8,
-        0);
-
-    /*
-     * This call really is variadic in terms of generated ABI:
-     * the target has a crclr immediately before menuOpenCustom.
-     */
-    menuOpenCustom(
-        0xA6,
-        windowGetActiveID(),
-        0,
-        0,
-        0,
-        1,
-        name);
-
-    fn_8007C300(
-        sv[8],
-        (u8)lbl_8047A448);
+    menuResult = fn_80032ED8(card->menus[card->menu1[lbl_8047A448]], 8, 0);
+    menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
+    fn_8007C300(card->cardId, lbl_8047A448);
 
     if (menuResult != 2) {
-        fn_801D0AFC(0);
-        save = savedataGetStatus(0, 2);
-        for (index = 0; index < 6; index++) {
-            pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-            pokemonBiosSetItemDataId(pokemon, partyItems[index]);
-        }
-
+        sysvarsRestoreItems();
         winMsgOpen(8, 0x3B70, 0, 0);
-
-        choice = menuOpen(0xA9, 1);
-
+        result = menuOpen(0xA9, 1);
         menuClose(0xA9);
         winMsgClose(1);
-
-        if (choice == 0) {
+        if (result == 0) {
             goto first_menu;
         }
-
-        fn_8007C450(
-            sv[8],
-            (u8)lbl_8047A448,
-            sv[0x24],
-            sv[0x26],
-            7);
-
+        fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 7);
         fn_80166A28(0x4C6);
-
         sysvarsWaitForTransfer();
-
         fn_8007CAB0();
-
-        if (fn_80082738(
-                lbl_8047A434,
-                base + 0xBC,
-                (u8)lbl_8047A448) != 0) {
-
+        if (fn_80082738(lbl_8047A434, &lbl_803A3334, lbl_8047A448) != 0) {
             fn_8007C414();
             fn_8007C634();
-
             fn_8007CAB0();
             fn_80082650(lbl_8047A434);
         }
-
         fn_8007C414();
         fn_8007C7EC();
-
         return 2;
     }
 
-    /*
-     * First menu accepted.
-     */
-    fn_8007C450(
-        sv[8],
-        (u8)lbl_8047A448,
-        sv[0x24],
-        sv[0x26],
-        2);
-
+    fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 2);
     sysvarsWaitForTransfer();
-
-    fn_8007C450(
-        sv[8],
-        (u8)lbl_8047A448,
-        sv[0x24],
-        sv[0x26],
-        4);
-
+    fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 4);
     fn_80166A28(0x3C6);
-
     sysvarsWaitForTransfer();
-
     fn_80166AB8(0x3CC, 0, 0);
-
     heroAddPokecoupon(0, 0x32);
-
     winMsgOpen(8, 0x3B72, 1, 0);
 
-    /*
-     * Check whether the second stage is available.
-     */
-    chosen = lbl_8047A448;
-    valid = 1;
-    area = sv[0x24];
-
-    if ((s8)sv[0x5E + (s8)chosen] < 0) {
-        valid = 0;
-    } else {
-        i = 0;
-
-        while (i < (s8)sv[0x5A]) {
-            ptr = fn_80082EA4(
-                lbl_8047A434,
-                chosen,
-                area,
-                (s8)i);
-
-            if (ptr[0x0C] == 0) {
-                valid = 0;
-                break;
-            }
-
-            i++;
-        }
-    }
-
-    if (valid == 0) {
-        goto post_validate;
-    }
-
-    fn_80082BA4(
-        lbl_8047A434,
-        base + 0xBC,
-        (u8)lbl_8047A448);
-
-    fn_8007C450(
-        sv[8],
-        (u8)lbl_8047A448,
-        sv[0x24],
-        -1,
-        1);
-
-    fn_80166A28(0x4C5);
-
-    sysvarsWaitForTransfer();
-
-    winMsgOpen(8, 0x3B74, 1, 0);
-    winMsgClose(1);
-
-    /*
-     * NOTE OFFSET 0x5E HERE, unlike the first menu's 0x5B.
-     */
-    menuResult = fn_80032ED8(
-        sv + 0x3AC +
-            (s8)sv[
-                0x5E + (s8)lbl_8047A448] *
-                0x28,
-        9,
-        0);
-
-    menuOpenCustom(
-        0xA6,
-        windowGetActiveID(),
-        0,
-        0,
-        0,
-        1,
-        name);
-
-    fn_8007C300(
-        sv[8],
-        (u8)lbl_8047A448);
-
-    /*
-     * Second menu cancelled/rejected.
-     */
-    if (menuResult != 2) {
-        fn_8007C450(
-            sv[8],
-            (u8)lbl_8047A448,
-            sv[0x24],
-            -1,
-            7);
-
-        fn_80166A28(0x4C6);
-
+    if (sysvarsStageTwoReady(card, lbl_8047A448)) {
+        fn_80082BA4(lbl_8047A434, &lbl_803A3334, lbl_8047A448);
+        fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 1);
+        fn_80166A28(0x4C5);
         sysvarsWaitForTransfer();
+        winMsgOpen(8, 0x3B74, 1, 0);
+        winMsgClose(1);
 
-        fn_80082960(
-            lbl_8047A434,
-            base + 0xBC,
-            (u8)lbl_8047A448);
+        menuResult = fn_80032ED8(lbl_803A3334.menus[card->menu2[lbl_8047A448]], 9, 0);
+        menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
+        fn_8007C300(card->cardId, lbl_8047A448);
 
-        fn_8007C450(
-            sv[8],
-            (u8)lbl_8047A448,
-            sv[0x24],
-            sv[0x26],
-            8);
-
-        fn_80166A28(0x4C6);
-
-        sysvarsWaitForTransfer();
-
-        fn_8007CAB0();
-
-        if (fn_80082738(
-                lbl_8047A434,
-                base + 0xBC,
-                (u8)lbl_8047A448) != 0) {
-
-            fn_8007C414();
-            fn_8007C634();
-
+        if (menuResult != 2) {
+            fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 7);
+            fn_80166A28(0x4C6);
+            sysvarsWaitForTransfer();
+            fn_80082960(lbl_8047A434, &lbl_803A3334, lbl_8047A448);
+            fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 8);
+            fn_80166A28(0x4C6);
+            sysvarsWaitForTransfer();
             fn_8007CAB0();
-            fn_80082650(lbl_8047A434);
-        }
-
-        fn_8007C414();
-        fn_8007C7EC();
-
-        winMsgOpen(8, 0x3B78, 1, 0);
-
-        fn_8007C414();
-
-        fn_801D0AFC(0);
-        save = savedataGetStatus(0, 2);
-        for (index = 0; index < 6; index++) {
-            pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-            pokemonBiosSetItemDataId(pokemon, partyItems[index]);
-        }
-
-        winMsgOpen(8, 0x3B7C, 0, 0);
-
-        choice = menuOpen(0xA9, 1);
-
-        menuClose(0xA9);
-        winMsgClose(1);
-
-        if (choice == 0) {
-            goto restart;
-        }
-
-        return 2;
-    }
-
-    /*
-     * Second menu accepted.
-     */
-    fn_8007C450(
-        sv[8],
-        (u8)lbl_8047A448,
-        sv[0x24],
-        -1,
-        2);
-
-    sysvarsWaitForTransfer();
-
-    fn_8007C450(
-        sv[8],
-        (u8)lbl_8047A448,
-        sv[0x24],
-        -1,
-        4);
-
-    fn_80166A28(0x3C6);
-
-    sysvarsWaitForTransfer();
-
-    fn_80166AB8(0x3CC, 0, 0);
-
-    /*
-     * This branch awards 80, versus the earlier branch's 50.
-     */
-    heroAddPokecoupon(0, 0x50);
-
-    winMsgOpen(8, 0x3B76, 1, 0);
-
-    item = *(u16*)(
-        sv +
-        0x64 +
-        (s8)lbl_8047A448 * 2);
-
-    valid = 1;
-
-    if (item == 0) {
-        valid = 0;
-    } else if (
-        heroItemAddItemDataId(
-            0,
-            item,
-            1,
-            -1) != 0) {
-
-        if (pcboxDelItem(
-                0,
-                item,
-                1) != 0) {
-
-            valid = 0;
-        }
-    }
-
-    if (valid != 0) {
-        msgctrlSetValue(
-            0x2D,
-            item);
-
-        winMsgOpen(
-            8,
-            0x4273,
-            1,
-            0);
-    }
-
-    fn_8007C414();
-
-post_validate:
-
-    valid = 0;
-
-    if ((s8)sv[
-            0x61 + (s8)lbl_8047A448] >= 0) {
-
-        valid = 1;
-
-        i = 0;
-
-        while ((s8)i <
-               (s8)((u8*)lbl_8047A434)[0x1C]) {
-
-            j = 0;
-
-            while (j < (s8)sv[0x5A]) {
-                ptr = fn_80082EA4(
-                    lbl_8047A434,
-                    (u8)lbl_8047A448,
-                    i,
-                    (s8)j);
-
-                if (ptr[0x0C] == 0) {
-                    valid = 0;
-                    goto validation_done;
-                }
-
-                j++;
+            if (fn_80082738(lbl_8047A434, &lbl_803A3334, lbl_8047A448) != 0) {
+                fn_8007C414();
+                fn_8007C634();
+                fn_8007CAB0();
+                fn_80082650(lbl_8047A434);
             }
-
-            i++;
+            fn_8007C414();
+            fn_8007C7EC();
+            winMsgOpen(8, 0x3B78, 1, 0);
+            fn_8007C414();
+            sysvarsRestoreItems();
+            winMsgOpen(8, 0x3B7C, 0, 0);
+            result = menuOpen(0xA9, 1);
+            menuClose(0xA9);
+            winMsgClose(1);
+            if (result == 0) {
+                goto restart;
+            }
+            return 2;
         }
+
+        fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 2);
+        sysvarsWaitForTransfer();
+        fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 4);
+        fn_80166A28(0x3C6);
+        sysvarsWaitForTransfer();
+        fn_80166AB8(0x3CC, 0, 0);
+        heroAddPokecoupon(0, 0x50);
+        winMsgOpen(8, 0x3B76, 1, 0);
+
+        item = lbl_803A3334.items[lbl_8047A448];
+        valid = 1;
+        if (item == 0) {
+            valid = 0;
+        } else if (heroItemAddItemDataId(0, item, 1, -1) != 0) {
+            if (pcboxDelItem(0, item, 1) != 0) {
+                valid = 0;
+            }
+        }
+        if (valid) {
+            msgctrlSetValue(0x2D, item);
+            winMsgOpen(8, 0x4273, 1, 0);
+        }
+        fn_8007C414();
     }
 
-validation_done:
-
-    if (valid == 0) {
+    if (!sysvarsAllFilled(card, lbl_8047A448)) {
         fn_8007C414();
-
-        fn_801D0AFC(0);
-        save = savedataGetStatus(0, 2);
-        for (index = 0; index < 6; index++) {
-            pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-            pokemonBiosSetItemDataId(pokemon, partyItems[index]);
-        }
-
+        sysvarsRestoreItems();
         winMsgOpen(8, 0x3B7C, 0, 0);
-
-        choice = menuOpen(0xA9, 1);
-
+        result = menuOpen(0xA9, 1);
         menuClose(0xA9);
         winMsgClose(1);
-
-        if (choice == 0) {
+        if (result == 0) {
             goto restart;
         }
-
         return 2;
     }
 
-    fn_80165668(
-        0x4CF,
-        0,
-        0xFF);
-
-    fn_800832C8(
-        0,
-        base + 0xBC,
-        (u8)lbl_8047A448);
-
-    msgctrlSetValue(
-        0x4D,
-        (u32)(sv + 0x0A));
-
-    msgctrlSetValue(
-        0x57,
-        (u32)(
-            sv +
-            0x28 +
-            (s8)lbl_8047A448 * 0x10));
-
-    winMsgOpen(
-        8,
-        0x3B7A,
-        1,
-        0);
-
+    fn_80165668(0x4CF, 0, 0xFF);
+    fn_800832C8(0, &lbl_803A3334, lbl_8047A448);
+    msgctrlSetValue(0x4D, (u32)lbl_803A3334.title);
+    msgctrlSetValue(0x57, (u32)lbl_803A3334.names[lbl_8047A448]);
+    winMsgOpen(8, 0x3B7A, 1, 0);
     winMsgClose(1);
-
     return 0;
 }
 #endif
