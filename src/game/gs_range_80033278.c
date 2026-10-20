@@ -1067,6 +1067,58 @@ void fn_80034F84(void) {
 void fn_80034FB0(void) {
 }
 
+extern s32 lbl_8047A43C;
+extern u16 pokemonBiosGetItemDataId(void*);
+
+static inline void sysvarsStoreItems(void)
+{
+    s32 i;
+    void* save;
+
+    save = savedataGetStatus(0, 2);
+    for (i = 0; i < 6; i++) {
+        lbl_803A3328[i] = pokemonBiosGetItemDataId(heroBiosGetPokemonPtr(save, (u8)i));
+    }
+}
+
+static inline void sysvarsLoadItems(void)
+{
+    s32 i;
+    void* save;
+
+    save = savedataGetStatus(0, 2);
+    for (i = 0; i < 6; i++) {
+        pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(save, (u8)i), lbl_803A3328[i]);
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper; it numbers the search locals as retail does - see docs/RULE_EXCEPTIONS.md */
+static inline u8 sysvarsFloorSeen(CardEData* menu)
+{
+    s32 index;
+    s8 variant;
+    u8 found;
+    s8 region;
+    u8 floor;
+    SysvarsFloorHistory* entry;
+
+    found = 0;
+    if (lbl_8047A43C > 0) {
+        floor = menu->cardId;
+        region = menu->row;
+        variant = menu->column;
+        for (index = 0, entry = (SysvarsFloorHistory*)lbl_803A3278; index < lbl_8047A43C; index++, entry++) {
+            if (floor == entry->floor &&
+                region == entry->region &&
+                variant == entry->variant) {
+                found = 1;
+                break;
+            }
+        }
+    }
+    return found;
+}
+
 /* fn_80034FB4 - 0x80034FB4 | size: 0xC94 */
 void fn_80034FB4(void)
 {
@@ -1083,7 +1135,6 @@ void fn_80034FB4(void)
     extern const f32 lbl_8047B9FC;
     extern const f32 lbl_8047BA00;
     extern u8 lbl_8047BA1C;
-    extern s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void);
     extern void fn_8003258C(void);
     extern void fn_800327FC(void);
     extern u8* fn_80082EA4(void*, s8, s8, s8);
@@ -1108,31 +1159,32 @@ void fn_80034FB4(void)
     extern u32 fightFloorDataBiosGetName(void*);
     extern void* GSmsgGetGSchar(u32);
     extern void msgctrlSetValue(u32, u32);
-    
-    CardEData* menu;
-    u8* name;
-    u16* floorName;
-    u16* heldItems;
-    SysvarsFloorHistory* history;
-    void* save;
-    void* pokemon;
-    void* entry;
-    s32 result;
-    s32 index;
-    u32 amount;
-    u8 value;
-    s8 selection;
-    u8 valid;
     u8 duplicate;
+    u8 floor;
+    s8 region;
+    s8 variant;
+    SysvarsFloorHistory* history;
+    void* entry;
+    u32 amount;
+    s32 state;
+    u8 value;
+    CardEData* menu;
+    void* save;
+    s32 index;
+    u16* floorName;
     f32 progress;
+    s32 result;
+    u8 selection;
+    u8 valid;
+    u8* name;
 
     lbl_8047A438 = 1;
     menu = &lbl_803A3334;
     name = lbl_803A3288;
     floorName = menu->floorName;
 
-    while (lbl_8047A458 > 0) {
-        switch (lbl_8047A458) {
+    while ((state = lbl_8047A458) > 0) {
+        switch (state) {
         case 1:
             if (lbl_8047A454 == 1) {
                 fadeSet(2, lbl_8047BA00);
@@ -1172,21 +1224,15 @@ void fn_80034FB4(void)
             fadeSet(2, lbl_8047BA00);
             menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
             fadeCheck(1);
-            save = savedataGetStatus(0, 2);
-            heldItems = lbl_803A3328;
-            for (index = 0; index < 6; index++) {
-                pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                heldItems[index] = pokemonBiosGetItemDataId(pokemon);
-            }
+            sysvarsStoreItems();
             while (lbl_8047A458 == 2) {
+                /* RULE-EXCEPTION(user-approved): no-argument call to the two-parameter _sysvarsProcessData, which ignores both parameters; retail does a bare bl - see docs/RULE_EXCEPTIONS.md */
+                extern s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void);
+
                 lbl_8047A458 = _sysvarsProcessData__FP16sysvarsFuncEntryPc();
             }
             fn_801D0AFC(0);
-            save = savedataGetStatus(0, 2);
-            for (index = 0; index < 6; index++) {
-                pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
-            }
+            sysvarsLoadItems();
             if (lbl_8047A439 != 0) {
                 lbl_8047A458 = 0;
             }
@@ -1199,12 +1245,7 @@ void fn_80034FB4(void)
             break;
 
         case 3:
-            save = savedataGetStatus(0, 2);
-            heldItems = lbl_803A3328;
-            for (index = 0; index < 6; index++) {
-                pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                heldItems[index] = pokemonBiosGetItemDataId(pokemon);
-            }
+            sysvarsStoreItems();
             lbl_8047A450 = 0;
             lbl_8047A44A = 0;
             lbl_8047A43C = 0;
@@ -1248,12 +1289,7 @@ void fn_80034FB4(void)
                 ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
                 ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
             }
-            save = savedataGetStatus(0, 2);
-            heldItems = lbl_803A3328;
-            for (index = 0; index < 6; index++) {
-                pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
-            }
+            sysvarsLoadItems();
             lbl_8047A458 = 0;
             break;
 
@@ -1286,15 +1322,7 @@ void fn_80034FB4(void)
                 entry = fn_80082EA4(lbl_8047A434, (s8)(menu->layerCount - 1),
                                     menu->row, menu->column);
                 if (((u8*)entry)[0xC] != 0) {
-                    duplicate = 0;
-                    for (index = 0; index < lbl_8047A43C; index++) {
-                        if (menu->cardId == ((SysvarsFloorHistory*)lbl_803A3278)[index].floor &&
-                            menu->row == ((SysvarsFloorHistory*)lbl_803A3278)[index].region &&
-                            menu->column == ((SysvarsFloorHistory*)lbl_803A3278)[index].variant) {
-                            duplicate = 1;
-                            break;
-                        }
-                    }
+                    duplicate = sysvarsFloorSeen(menu);
                     if (duplicate == 0) {
                         history = &((SysvarsFloorHistory*)lbl_803A3278)[lbl_8047A43C];
                         history->floor = menu->cardId;
@@ -1337,10 +1365,10 @@ void fn_80034FB4(void)
             menuClose(0xA9);
             winMsgClose(1);
             switch (result) {
-            case -1:
+            case 1:
                 lbl_8047A458 = 5;
                 continue;
-            case 1:
+            case -1:
                 lbl_8047A458 = 5;
                 continue;
             case 0:
@@ -1364,12 +1392,7 @@ void fn_80034FB4(void)
             if (lbl_8047A449 != 0) {
                 fn_801D0AFC(0);
             }
-            save = savedataGetStatus(0, 2);
-            heldItems = lbl_803A3328;
-            for (index = 0; index < 6; index++) {
-                pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
-            }
+            sysvarsLoadItems();
             result = 1;
             lbl_8047A458 = result;
             if (result != 0) {
@@ -1410,8 +1433,9 @@ void fn_80034FB4(void)
             break;
 
         case 10:
-            fn_80034B5C(&valid, &selection, &value);
-            fn_80034830(valid, (u8)selection,
+            /* RULE-EXCEPTION(user-approved): codegen-only cast; the s8 selection is read back as a u8 local - see docs/RULE_EXCEPTIONS.md */
+            fn_80034B5C(&valid, (s8*)&selection, &value);
+            fn_80034830(valid, selection,
                         &lbl_803A3334.opponents[(s8)value]);
             amount = lbl_8047A450 + 1;
             if (amount > 0x98967F) {
@@ -1456,10 +1480,10 @@ void fn_80034FB4(void)
             case 0:
                 lbl_8047A458 = 3;
                 continue;
-            case -1:
+            case 1:
                 lbl_8047A458 = 1;
                 break;
-            case 1:
+            case -1:
                 lbl_8047A458 = 1;
                 break;
             default:
@@ -1470,12 +1494,7 @@ void fn_80034FB4(void)
                 _threadSwitch();
                 progress += (f32)fn_800D3088() / (f32)fn_800D37CC();
             }
-            save = savedataGetStatus(0, 2);
-            heldItems = lbl_803A3328;
-            for (index = 0; index < 6; index++) {
-                pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
-            }
+            sysvarsLoadItems();
             if (lbl_8047A458 != 0) {
                 fadeSet(3, lbl_8047BA00);
                 fadeCheck(1);
