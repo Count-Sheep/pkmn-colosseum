@@ -3158,8 +3158,7 @@ void* fn_80083CFC(void* ptr) {
     defined(CARDESAVEDATA_80084038_ONLY)
 /* Update the four-controller Card-e connection/status display. */
 typedef struct CardEStatusWork {
-    s32 state[4];
-    s32 previousState[4];
+    s32 state[8]; /* [0..3] current port states, [4..7] last displayed */
     u8 refreshMessages;
     s8 port;
     u8 pad22[2];
@@ -3267,10 +3266,10 @@ static const CardEMessageEntry sCardEStatusMessages[46] = {
 static const char sCardEStatusFile[] = "menuGBAC.c";
 
 
-static inline void CardEShowStatusSprite(void* sprite, u32 bit)
+static inline void CardEShowStatusSprite(void* sprite, u8 enable)
 {
     if (sprite != NULL) {
-        winSpriteSetDisp(sprite, bit != 0);
+        winSpriteSetDisp(sprite, enable);
     }
 }
 
@@ -3286,16 +3285,59 @@ static inline void CardESetStatusMessage(u8* window, void* sprite, s32 active)
     }
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's initial item messages) - see docs/RULE_EXCEPTIONS.md */
+static inline void CardEShowInitialMessages(u8* window)
+{
+    u32 n;
+
+    for (n = 0; n < 46; n++) {
+        fn_801081F8(window, sCardEStatusMessages[n].itemId,
+                    sCardEStatusMessages[n].initialMessage);
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's updated item messages) - see docs/RULE_EXCEPTIONS.md */
+static inline void CardEShowUpdatedMessages(u8* window)
+{
+    u32 n;
+
+    for (n = 0; n < 46; n++) {
+        fn_801081F8(window, sCardEStatusMessages[n].itemId,
+                    sCardEStatusMessages[n].updatedMessage);
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's status-work allocation) - see docs/RULE_EXCEPTIONS.md */
+static inline CardEStatusWork* CardEAllocStatus(void)
+{
+    u16 handle = ((u16 (*)(u32, u32))fn_800E2C04)(0xE0, 0x20);
+
+    if (handle == 0) {
+        __assert(sCardEStatusFile, 0xEA, lbl_8047C198);
+    }
+    return ((CardEStatusWork* (*)(u16))fn_800E27B0)(handle);
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's status-work release) - see docs/RULE_EXCEPTIONS.md */
+static inline void CardEFreeStatus(CardEStatusWork* status)
+{
+    u16 handle = ((u16 (*)(void*))fn_800E202C)(status);
+
+    if (handle == 0) {
+        __assert(sCardEStatusFile, 0xF3, lbl_8047C198);
+    }
+    fn_800E24B0(handle);
+    fn_800E209C(handle);
+}
+
 void fn_80084038(u8* window)
 {
     u8 changed;
     CardEStatusWork* status;
     CardEStatusWork* work;
     u8 selected;
-    u16 handle;
     s32 i;
     s32 flags;
-    u32 n;
     void* sprite;
 
     status = *(CardEStatusWork**)((void* (*)(u8*))windowGetFreeWork)(CardEStatusWindow(window));
@@ -3305,16 +3347,12 @@ void fn_80084038(u8* window)
         if ((s8)window[2] != 0) {
             break;
         }
-        handle = ((u16 (*)(u32, u32))fn_800E2C04)(0xE0, 0x20);
-        if (handle == 0) {
-            __assert(sCardEStatusFile, 0xEA, lbl_8047C198);
-        }
-        status = ((CardEStatusWork* (*)(u16))fn_800E27B0)(handle);
+        status = CardEAllocStatus();
         memset(status, 0, sizeof(CardEStatusWork));
         work = status;
         *(CardEStatusWork**)(((void* (*)(u8*))windowGetFreeWork)(window)) = status;
         for (i = 0; i < 4; i++) {
-            status->previousState[i] = 0;
+            status->state[i + 4] = 0;
             status->state[i] = 0;
         }
         status->refreshMessages = 1;
@@ -3365,29 +3403,18 @@ void fn_80084038(u8* window)
         FIND_STATUS_SPRITE(optionSprite[7][3], 0x10F4);
 #undef FIND_STATUS_SPRITE
 
-        for (n = 0; n < 46; n++) {
-            fn_801081F8(window, sCardEStatusMessages[n].itemId,
-                        sCardEStatusMessages[n].initialMessage);
-        }
+        CardEShowInitialMessages(window);
         break;
     case 3:
         if ((s8)window[2] != 0) {
             break;
         }
-        for (n = 0; n < 46; n++) {
-            fn_801081F8(window, sCardEStatusMessages[n].itemId,
-                        sCardEStatusMessages[n].updatedMessage);
-        }
+        CardEShowUpdatedMessages(window);
         window[2] = 1;
         status->refreshMessages = 1;
         break;
     case 5:
-        handle = ((u16 (*)(void*))fn_800E202C)(status);
-        if (handle == 0) {
-            __assert(sCardEStatusFile, 0xF3, lbl_8047C198);
-        }
-        fn_800E24B0(handle);
-        fn_800E209C(handle);
+        CardEFreeStatus(status);
         return;
     }
 
@@ -3408,10 +3435,11 @@ void fn_80084038(u8* window)
     }
 
     for (i = 0; i < 4; i++) {
-        if (work->previousState[i] != work->state[i]) {
+        if (work->state[i + 4] != work->state[i]) {
             changed = 1;
         }
-        work->previousState[i] = status->state[i];
+        /* RULE-EXCEPTION(user-approved): codegen-only cast (fn_80084038's state copy reload) - see docs/RULE_EXCEPTIONS.md */
+        work->state[i + 4] = ((CardEStatusWork*)work)->state[i];
     }
     if (!changed) {
         return;
@@ -3425,14 +3453,15 @@ void fn_80084038(u8* window)
     }
 
     flags = sCardEStatusFlags[work->state[0]];
-    CardEShowStatusSprite(work->statusSprite[0], flags & 0x100);
-    CardEShowStatusSprite(work->statusSprite[1], flags & 0x200);
-    CardEShowStatusSprite(work->statusSprite[2], flags & 0x400);
-    CardEShowStatusSprite(work->statusSprite[3], flags & 0x800);
-    CardEShowStatusSprite(work->statusSprite[4], flags & 0x1000);
+    CardEShowStatusSprite(work->statusSprite[0], (flags & 0x100) != 0);
+    CardEShowStatusSprite(work->statusSprite[1], (flags & 0x200) != 0);
+    CardEShowStatusSprite(work->statusSprite[2], (flags & 0x400) != 0);
+    CardEShowStatusSprite(work->statusSprite[3], (flags & 0x800) != 0);
+    CardEShowStatusSprite(work->statusSprite[4], (flags & 0x1000) != 0);
 
     if (work->refreshMessages == 0) {
-        /* i is left at 4 by the loop above. */
+        /* i is left at 4 by the loop above: state[4] is port 0's
+         * last displayed state, just copied from state[0]. */
         selected = work->state[i] == 9;
         CardESetStatusMessage(window, work->statusSprite[0], selected);
         CardESetStatusMessage(window, work->statusSprite[2], selected);
@@ -3440,14 +3469,14 @@ void fn_80084038(u8* window)
 
     for (i = 0; i <= 3; i++) {
         flags = sCardEStatusFlags[work->state[i]];
-        CardEShowStatusSprite(work->optionSprite[0][i], flags & 0x01);
-        CardEShowStatusSprite(work->optionSprite[1][i], flags & 0x02);
-        CardEShowStatusSprite(work->optionSprite[2][i], flags & 0x04);
-        CardEShowStatusSprite(work->optionSprite[3][i], flags & 0x08);
-        CardEShowStatusSprite(work->optionSprite[4][i], flags & 0x10);
-        CardEShowStatusSprite(work->optionSprite[5][i], flags & 0x20);
-        CardEShowStatusSprite(work->optionSprite[6][i], flags & 0x40);
-        CardEShowStatusSprite(work->optionSprite[7][i], flags & 0x80);
+        CardEShowStatusSprite(work->optionSprite[0][i], (flags & 0x01) != 0);
+        CardEShowStatusSprite(work->optionSprite[1][i], (flags & 0x02) != 0);
+        CardEShowStatusSprite(work->optionSprite[2][i], (flags & 0x04) != 0);
+        CardEShowStatusSprite(work->optionSprite[3][i], (flags & 0x08) != 0);
+        CardEShowStatusSprite(work->optionSprite[4][i], (flags & 0x10) != 0);
+        CardEShowStatusSprite(work->optionSprite[5][i], (flags & 0x20) != 0);
+        CardEShowStatusSprite(work->optionSprite[6][i], (flags & 0x40) != 0);
+        CardEShowStatusSprite(work->optionSprite[7][i], (flags & 0x80) != 0);
 
         switch (work->state[i]) {
         case 6:
