@@ -354,7 +354,9 @@ void fn_80094650(u8* context, u8* sprite)
     extern u8 fn_801EE064(u16 id);
     extern u16 fn_801EE0A8(u8 kind);
     extern void fn_8001E58C(s32 x, s32 y, s32 w, s32 h, MenuStatusColor color);
-    extern void fn_800FB8C8();
+    extern void fn_800FB680(s32 x, s32 y, s32 color, u32 key);
+    extern void fn_800FB8C8(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
+    extern void fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     extern void windowDrawSprite(s32 x, s32 y, void* win, u16 sprite, u32 data);
     s32 color;
     u16 slot;
@@ -611,7 +613,7 @@ void fn_80094650(u8* context, u8* sprite)
         break;
     case 0x170:
     case 0x1B8:
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         switch (move) {
         case 0:
         case 0x164:
@@ -630,19 +632,19 @@ void fn_80094650(u8* context, u8* sprite)
         break;
     case 0x18B:
     case 0x1D3:
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color,
                     fn_801EE034(fn_801EE07C(wazaGetStatus(0, move, 0x23, 0))));
         break;
     case 0x18C:
     case 0x1D4:
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         fn_800FBB34(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color,
                     wazaGetStatus(0, move, 0x22, 0));
         break;
     case 0x18D:
     case 0x1D5:
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         value = wazaGetStatus(0, move, 6, 0);
         if (value <= 1) {
             fn_800FB8C8(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, 0x2BE2);
@@ -653,7 +655,7 @@ void fn_80094650(u8* context, u8* sprite)
         break;
     case 0x18F:
     case 0x1D7:
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         value = wazaGetStatus(0, move, 7, 0);
         if (value <= 1) {
             fn_800FB8C8(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color, 0x2BE2);
@@ -728,7 +730,7 @@ void fn_80094650(u8* context, u8* sprite)
             slot = 8;
             break;
         }
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         if (move != 0) {
             level = fn_801EE064(fn_801EE07C(wazaGetStatus(0, move, 0x23, 0)));
         } else {
@@ -802,7 +804,7 @@ void fn_80094650(u8* context, u8* sprite)
             slot = 8;
             break;
         }
-        move = menuStatusGetMove(pokemon, (s8)lbl_803FB380[2]);
+        move = menuStatusGetMove(pokemon, *(s8*)(lbl_803FB380 + 2));
         if (move != 0) {
             level = fn_801EE04C(fn_801EE07C(wazaGetStatus(0, move, 0x23, 0)));
         } else {
