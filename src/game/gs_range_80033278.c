@@ -1094,6 +1094,7 @@ static inline void sysvarsStoreItems(void)
 
     save = savedataGetStatus(0, 2);
     for (i = 0; i < 6; i++) {
+        /* RULE-EXCEPTION(user-approved): codegen-only cast; (u8) before the u16 index parameter gives retail's clrlwi 24 (i < 6, so the value is unchanged) - see docs/RULE_EXCEPTIONS.md */
         lbl_803A3328[i] = pokemonBiosGetItemDataId(heroBiosGetPokemonPtr(save, (u8)i));
     }
 }
@@ -1105,6 +1106,7 @@ static inline void sysvarsLoadItems(void)
 
     save = savedataGetStatus(0, 2);
     for (i = 0; i < 6; i++) {
+        /* RULE-EXCEPTION(user-approved): codegen-only cast; (u8) before the u16 index parameter gives retail's clrlwi 24 (i < 6, so the value is unchanged) - see docs/RULE_EXCEPTIONS.md */
         pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(save, (u8)i), lbl_803A3328[i]);
     }
 }
