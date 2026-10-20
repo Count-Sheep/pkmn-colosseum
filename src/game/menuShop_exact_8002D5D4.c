@@ -25,7 +25,7 @@ extern void fn_8002A1C4(u8* location, s32 message, s32 terminator, ...);
 extern void fn_8002A2CC(u8* location, s32 message, s32 terminator, ...);
 extern void fn_8002CE6C(u8* location, u8 type);
 extern void fn_8002D154(s32 location, u8 type);
-extern void fn_8002C408(s32 location, u32 type);
+extern void fn_8002C408(s32 location, u8 type);
 extern void fn_8002C284(u32 location, u32 type);
 extern void winMsgOpenWithSE(s32 kind, u32 message, s32 arg2, s32 arg3,
                              u8 format);
