@@ -496,16 +496,20 @@ static inline GSMemHandle* gsMemFindHandleIn(GSMemHandle* top, GSMemHandle* bott
     return NULL;
 }
 
-/* Forward copy used to slide allocations down; word-wise when the
- * regions are at least a word apart. */
-static inline void gsMemCopy(u8* dst, u8* src, u32 size) {
+/* Forward copy of an allocation's bytes (handle->size of them) used to
+ * slide allocations down; word-wise when the regions are at least a word
+ * apart. The size is read inside the helper, so it is a helper local. */
+static inline void gsMemCopy(u8* dst, u8* src, GSMemHandle* handle) {
     u8* byteDst;
     u32* wordSrc;
     u8* byteSrc;
     u32* wordDst;
     u32 words;
-    u32 distance = src - dst;
+    u32 size;
+    u32 distance;
 
+    size = handle->size;
+    distance = src - dst;
     if ((distance > 0 ? distance : -distance) >= 4) {
         wordSrc = (u32*)src;
         wordDst = (u32*)dst;
@@ -711,7 +715,7 @@ u32 fn_800E1544(void)
                 if (block->next != NULL) {
                     block->next->prev = fresh;
                 }
-                gsMemCopy((u8*)block, desc->data, desc->size);
+                gsMemCopy((u8*)block, desc->data, desc);
                 desc->data = (u8*)block;
                 fresh->prev = prev;
                 fresh->next = next;
@@ -771,7 +775,7 @@ u32 fn_800E1544(void)
             destination = (u8*)block;
             for (k = 0; k < count; k++) {
                 source = candidates[k]->data;
-                gsMemCopy(destination, source, candidates[k]->size);
+                gsMemCopy(destination, source, candidates[k]);
                 candidates[k]->data = destination;
                 destination += candidates[k]->size;
                 remaining -= candidates[k]->size;
