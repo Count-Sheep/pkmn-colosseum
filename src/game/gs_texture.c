@@ -29,8 +29,9 @@
  *     GStextureFree, GStextureLoad and GStextureInit are confirmed real
  *     names (matched against the XD reference binary's GStexture.cpp
  *     function order/sizes), replacing the previous fn_ scaffold names.
- *     fn_800EF098 has no confirmed name yet and remains an honest
- *     unmatched TODO stub.
+ *     fn_800EF098 has no confirmed name yet. It is exact and linked from
+ *     this unit, which compiles only that function
+ *     (-DGS_TEXTURE_800EF098_ONLY).
  *
  * Debug strings:
  *   "GStexture: invalid texture format"
@@ -61,16 +62,21 @@ extern const char lbl_80270FBC[]; /* "GStexture: warning -- texture size adjuste
 /* ===== Display descriptor ===== */
 extern u8 lbl_80466BC0[];  /* current display descriptor */
 
+extern u16 _toolentryAlloc__FUl(u32 size); /* GSmemAllocRaw */
+extern void* fn_800E27B0(u16 handle); /* GSmemGetPtr */
+
+/* The linked unit compiles only fn_800EF098 (-DGS_TEXTURE_800EF098_ONLY);
+ * the rest of the TU is linked from its own gs_texture_exact_* partitions. */
+#if !defined(GS_TEXTURE_800EF098_ONLY)
 /* ===== Global state (sbss/sdata) ===== */
 /* lbl_8047ABF0 : u16 -- texture pool allocation handle */
 static u16 gsTexPoolHandle;
 
-extern u16 _toolentryAlloc__FUl(u32 size); /* GSmemAllocRaw */
-extern void* fn_800E27B0(u16 handle); /* GSmemGetPtr */
 /* lbl_8047ABF8 : u32 -- max texture count */
 static u32 gsTexMaxCount;               /* @sda21 lbl_8047ABF8 */
 /* lbl_8047ABF4 : GStextureHandle* -- base pointer to texture pool */
 static GStextureHandle* gsTexPool;       /* @sda21 lbl_8047ABF4 */
+#endif
 
 #if !defined(GS_TEXTURE_800EF548_SUFFIX_ACTIVE)
 /* =======================================================================
@@ -79,18 +85,31 @@ static GStextureHandle* gsTexPool;       /* @sda21 lbl_8047ABF4 */
  *  order. Only operates on format 0x44 (GS_CI4).
  * ======================================================================= */
 /* RULE-EXCEPTION(user-approved): single-use inline helper chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
-static u16 GStextureTiledIndex(u16 i, u16 width, u16 blocksPerRow) {
-    u16 block = i >> 4;
-    int quotient = block / blocksPerRow;
-    u16 tile = quotient;
-    u16 tileColumn = block - quotient * blocksPerRow;
-    u16 row = (i % 16) / 4;
-    u16 column = i % 4;
-    return ((tile * width + tileColumn) << 2) + row * width + column;
+static inline u16 GStextureTiledIndex(u16 i, u16 width, u16 blocksPerRow) {
+    u16 block;
+    u16 tile;
+    u16 row;
+    u16 column;
+
+    block = i >> 4;
+    tile = block / blocksPerRow;
+    block %= blocksPerRow; /* block column within its tile row */
+    row = (i % 16) / 4;
+    column = i % 4;
+    return ((tile * width + block) << 2) + row * width + column;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void GStextureTileImage(u16* converted, u16* source, u16 pixelCount,
+                                      u16 width, u16 blocksPerRow) {
+    u16 i;
+
+    for (i = 0; i < pixelCount; i++) {
+        converted[GStextureTiledIndex(i, width, blocksPerRow)] = source[i];
+    }
 }
 
 void fn_800EF098(GStextureHandle* tex) {
-    /* RULE-EXCEPTION(user-approved): declaration order chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
     u32 byteCount;
     u16* source;
     u16* converted;
@@ -98,7 +117,6 @@ void fn_800EF098(GStextureHandle* tex) {
     u16 pixelCount;
     u16 handle;
     u16 blocksPerRow;
-    u16 i;
 
     if (tex->format != 0x44) {
         return;
@@ -119,9 +137,7 @@ void fn_800EF098(GStextureHandle* tex) {
 
     converted = fn_800E27B0(handle);
     blocksPerRow = width >> 2;
-    for (i = 0; i < pixelCount; i++) {
-        converted[GStextureTiledIndex(i, width, blocksPerRow)] = source[i];
-    }
+    GStextureTileImage(converted, source, pixelCount, width, blocksPerRow);
 
     memcpy(source, converted, byteCount);
     DCFlushRange(tex->mipData[0], tex->totalSize);
@@ -131,6 +147,7 @@ void fn_800EF098(GStextureHandle* tex) {
     fn_800E209C(handle);
 }
 
+#if !defined(GS_TEXTURE_800EF098_ONLY)
 /* =======================================================================
  *  GStextureConvertFromHW | 0x1F8
  *  Copies the embedded EFB region into a texture image.
@@ -204,6 +221,7 @@ u8 GStextureConvertFromHW(GStextureHandle* tex, u8 clear) {
     tex->refCount--;
     return 1;
 }
+#endif /* !GS_TEXTURE_800EF098_ONLY */
 
 #endif
 
