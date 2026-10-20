@@ -312,13 +312,45 @@ static inline u8 sysvarsAllFilled(CardEData* card, s8 layer)
     return 1;
 }
 
+static inline s32 sysvarsCheckCard(CardEData* card)
+{
+    s32 secondary;
+    s32 action;
+    s32 empty;
+    s8 open;
+
+    action = 4;
+    if (fn_80082EA4(lbl_8047A434, card->layerCount - 1, card->row, card->column)[0xC] != 0) {
+        action = 2;
+    } else {
+        secondary = 4;
+        empty = sysvarsFindEmptyLayer(card);
+        switch (empty) {
+        case -1:
+            secondary = 2;
+            break;
+        case 1:
+        case 2:
+            for (open = 0; open < empty; open++) {
+                if (sysvarsLayerOpen(card, open)) {
+                    secondary = 3;
+                    break;
+                }
+            }
+            break;
+        }
+        if (secondary != 4) {
+            action = secondary;
+        }
+    }
+    return action;
+}
+
 s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
 {
     u8* name;
     s32 result;
     s32 action;
-    s32 secondary;
-    s32 empty;
     s8 open;
     u32 menuResult;
     u32 message;
@@ -383,30 +415,7 @@ restart:
         return 0;
     }
 
-    action = 4;
-    if (fn_80082EA4(lbl_8047A434, lbl_803A3334.layerCount - 1, lbl_803A3334.row, lbl_803A3334.column)[0xC] != 0) {
-        action = 2;
-    } else {
-        secondary = 4;
-        empty = sysvarsFindEmptyLayer(&lbl_803A3334);
-        switch (empty) {
-        case -1:
-            secondary = 2;
-            break;
-        case 1:
-        case 2:
-            for (open = 0; open < empty; open++) {
-                if (sysvarsLayerOpen(&lbl_803A3334, open)) {
-                    secondary = 3;
-                    break;
-                }
-            }
-            break;
-        }
-        if (secondary != 4) {
-            action = secondary;
-        }
-    }
+    action = sysvarsCheckCard(&lbl_803A3334);
 
     switch (action) {
     case 2:
