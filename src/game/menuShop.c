@@ -2462,7 +2462,7 @@ static inline u16 shopStockId(ShopWork* work, s32 i, u16* num)
         return 0;
     }
     slot = (u8*)work;
-    slot += i * 4;
+    slot += i * sizeof(u32);
     id = itemBiosGetItemDataId(slot);
     if (id != 0) {
         *num = itemBiosGetNum(slot);
@@ -2531,7 +2531,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u8 mode)
         return 0;
     }
     if (mode == 3) {
-        name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
+        name = *(u8*)(lbl_80478E4C + ((ShopMapEntry*)lbl_80478E54)[mapIdx].name * 0x4c);
         winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
         memset(&inv, 0, sizeof(inv));
         inv.credit0 = work->credit0;
