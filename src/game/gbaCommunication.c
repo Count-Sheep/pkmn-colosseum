@@ -125,9 +125,11 @@ extern RibbonSpriteInfo lbl_802EED44[];
 /* GBA_COMMUNICATION_STATUS_ONLY carves (one status renderer per unit): each
  * wrapper also defines GBA_COMMUNICATION_<ADDR>_ONLY for the function it keeps. */
 #if !defined(GBA_COMMUNICATION_STATUS_ONLY) || defined(GBA_COMMUNICATION_80093B4C_ONLY)
+#if !defined(GBA_COMMUNICATION_80093B4C_ONLY)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_80093B4C(s32 context, void* widget)
 {
     s32 index;
@@ -236,7 +238,9 @@ void fn_80093B4C(s32 context, void* widget)
         break;
     }
 }
+#if !defined(GBA_COMMUNICATION_80093B4C_ONLY)
 #pragma pop
+#endif
 #endif
 
 typedef struct MenuStatusColor {
