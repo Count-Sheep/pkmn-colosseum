@@ -10864,25 +10864,14 @@ config.libs = [
                 ]
             ],
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuShop_candidate_8002B1A0.c",
-                # Whole-file compile: the pool also holds fn_8002B880's float
-                # literals (0x18-0x34), mapped as in its linked carve.
-                constant_import=[
-                    {"symbol": "lbl_8047B988", "offset": 0, "expected": "40c90fdb"},
-                    {"symbol": "lbl_8047B98C", "offset": 4, "expected": "40490fdb"},
-                    {"symbol": "lbl_8047B990", "offset": 8, "expected": "c0490fdb"},
-                    {"symbol": "lbl_8047B998", "offset": 16, "expected": "4330000080000000"},
-                    {"symbol": "lbl_8047B9A4", "offset": 0x18, "expected": "40000000"},
-                    {"symbol": "lbl_8047B9A0", "offset": 0x1C, "expected": "3f000000"},
-                    {"symbol": "lbl_8047B978", "offset": 0x20, "expected": "437f0000"},
-                    {"symbol": "lbl_8047B9AC", "offset": 0x24, "expected": "42340000"},
-                    {"symbol": "lbl_8047B97C", "offset": 0x28, "expected": "3f800000"},
-                    {"symbol": "lbl_8047B9B0", "offset": 0x2C, "expected": "3e800000"},
-                    {"symbol": "lbl_8047B9B4", "offset": 0x30, "expected": "3f400000"},
-                ],
+                # menuShopDrawListText only (MENUSHOP_CANDIDATE_8002B1A0_ONLY
+                # carve); the unit-level -opt nopeephole replaces the file's
+                # local pragma, and -opt nopropagation keeps the function's
+                # single-use locals as their own registers, as retail does.
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-opt nopropagation"],
                 progress_category="game",
             ),
             Object(

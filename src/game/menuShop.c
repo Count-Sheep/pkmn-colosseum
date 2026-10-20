@@ -28,12 +28,14 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_candidate_8002AE9C.c -> fn_8002AE9C, fn_8002AEF8
  *   menuShop_candidate_8002B594.c -> fn_8002B594
  *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880
+ *   menuShop_candidate_8002B1A0.c -> menuShopDrawListText
  *   menuShop_candidate_8002C284.c -> fn_8002C284
  *   menuShop_exact_80029AC8.c -> fn_80029AC8
  *   menuShop_exact_80029CC0.c -> fn_80029CC0 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AB00_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002AE9C_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002B1A0_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002B594_ONLY) || \
     defined(MENUSHOP_R40_8002B880_ONLY) || \
     defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
@@ -1261,6 +1263,8 @@ end:
 #endif
 #endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002B1A0_ONLY)
 /* menuShopDrawListText - 0x8002B1A0 | size: 0x26c */
 extern void fn_800FE38C(void);
 extern u32 itemDataBiosGetName(void);
@@ -1285,18 +1289,15 @@ asm void menuShopDrawListText(void) {
 /* One row of the shop list: icon, then price or coupon text at the row's
  * x position; x_mid is the price column. */
 /* RULE-EXCEPTION(user-approved): single-use inline helper for menuShopDrawListText's row (its x_mid parameter is retail's hoisted preheader copy) - see docs/RULE_EXCEPTIONS.md */
-static inline void shopDrawListRow(u8* ctx, u8* draw, s32 slot_i, s32 x_pos, int x_mid)
+static inline void shopDrawListRow(u8* ctx, u8* draw, u32 slot_id, s32 x_pos, int x_mid)
 {
     extern void msgctrlSetValue(s32, void*);
     extern u32 GSmsgGetRect(u32);
     extern void fn_800FB680(s32, s32, s32, u32);
     extern void itemDataBiosGetPtr(u32);
-    u32 slot_id;
     u32 icon;
     u32 value;
     u8 mode;
-
-    slot_id = shopListItem(ctx, slot_i);
 
     itemDataBiosGetPtr(slot_id);
     icon = itemDataBiosGetName();
@@ -1321,8 +1322,18 @@ static inline void shopDrawListRow(u8* ctx, u8* draw, s32 slot_i, s32 x_pos, int
     }
 }
 
+/* Number of items in the shop list `ctx`. */
+/* RULE-EXCEPTION(user-approved): single-use inline helper for menuShopDrawListText's list count (its return value is retail's late-numbered count register) - see docs/RULE_EXCEPTIONS.md */
+static inline s32 shopListCount(u8* ctx)
+{
+    return *(s32*)(ctx + 0x8);
+}
+
+#if !defined(MENUSHOP_CANDIDATE_8002B1A0_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 s32 menuShopDrawListText(void* arg0, u8* arg1)
 {
     extern void fn_800FE38C(s32, s32, s32, s32);
@@ -1340,18 +1351,22 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     extern u8 lbl_802EF0A8[];
 
     u8* tbl;
-    u8* entry;
-    s32 slot_count;
     u8* ctx;
+    s32 loop_i;
     s32 slot_i;
-    s32 loop_lim;
+    s32 x_pos;
     s32 dir_off;
-    s32 scroll_px;
+    u8* entry;
+    u32 slot_id;
     s32 x_mid;
     u32 w;
+    u32 w2;
+    s32 right;
+    f32* scroll_p;
+    s32 loop_lim;
+    s32 scroll_px;
+    s32 slot_count;
     f32 scroll_f;
-    s32 loop_i;
-    s32 x_pos;
 
     tbl = lbl_802EF0A8;
     ctx = *(u8**)((u8*)arg0 + 0x60);
@@ -1366,13 +1381,16 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
                 *(s16*)(tbl + 0x4932), *(s16*)(tbl + 0x4934));
 
     slot_i = *(s8*)((u8*)arg0 + 0x94);
-    slot_count = *(s32*)(ctx + 0x8);
+    slot_count = shopListCount(ctx);
     msgctrlSetValue(0x50, (void*)0x270f);
     w = GSmsgGetRect(0xdb) >> 16;
-    x_mid = *(s16*)(arg1 + 0x54) - w - (GSmsgGetRect(0x14f) >> 16);
+    w2 = GSmsgGetRect(0x14f) >> 16;
+    right = *(s16*)(arg1 + 0x54);
+    x_mid = right - w - w2;
 
     /* scroll animation */
-    if (lbl_8047B980 != (scroll_f = **(f32**)(ctx + 0xc)) && **(s32**)(ctx + 0x14) != 0) {
+    scroll_p = *(f32**)(ctx + 0xc);
+    if (lbl_8047B980 != (scroll_f = *scroll_p) && **(s32**)(ctx + 0x14) != 0) {
         if (scroll_f < lbl_8047B980) {
             slot_i--;
             dir_off = -1;
@@ -1389,7 +1407,13 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
         }
 
         x_pos = loop_i * 0x1f - scroll_px;
-        shopDrawListRow(ctx, arg1, slot_i, x_pos, x_mid);
+        /* the list item for this slot, or 0 when out of range */
+        if (slot_i < 0 || slot_i >= *(s32*)(ctx + 0x8)) {
+            slot_id = 0;
+        } else {
+            slot_id = (*(u16**)(ctx + 0x4))[slot_i];
+        }
+        shopDrawListRow(ctx, arg1, slot_id, x_pos, x_mid);
     }
 
     /* trailing "add"/"locked" button if visual columns remain */
@@ -1401,9 +1425,13 @@ s32 menuShopDrawListText(void* arg0, u8* arg1)
     fn_800FE35C();
     return 0;
 }
+#if !defined(MENUSHOP_CANDIDATE_8002B1A0_ONLY)
 #pragma pop
 #endif
+#endif
 
+#endif /* guard split */
+#if !defined(MENUSHOP_ISLAND_ONLY)
 /* fn_8002B40C - 0x8002B40C | size: 0x188 */
 extern u8 lbl_802E4F68[];
 extern f64 lbl_8047B998;
