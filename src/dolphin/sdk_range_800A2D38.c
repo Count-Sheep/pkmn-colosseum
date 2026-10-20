@@ -421,7 +421,6 @@ void __PSMTXRotAxisRadInternal(register Mtx m, const register Vec* axis,
 }
 #endif
 
-#pragma peephole off
 #if !defined(SDK_PSMTXROTAXISRAD_EXCLUDE)
 void PSMTXRotAxisRad(Mtx m, const Vec* axis, f32 rad)
 {
@@ -435,7 +434,6 @@ void PSMTXRotAxisRad(Mtx m, const Vec* axis, f32 rad)
     __PSMTXRotAxisRadInternal(m, axis, sinA, cosA);
 }
 #endif
-#pragma peephole reset
 
 #if !defined(SDK_PSMTXTRANS_EXCLUDE)
 void PSMTXTrans(register Mtx m, register f32 xT, register f32 yT,
@@ -637,7 +635,6 @@ void C_MTXLookAt(Mtx m, const Vec* cameraPosition, const Vec* cameraUp,
 #endif
 
 #if !defined(SDK_MTXLOOKAT_AFTER_EXCLUDE)
-#pragma peephole off
 void C_MTXLightFrustum(Mtx m, f32 top, f32 bottom, f32 left, f32 right, f32 near,
                        f32 scaleS, f32 scaleT, f32 transS, f32 transT)
 {
@@ -665,9 +662,7 @@ void C_MTXLightFrustum(Mtx m, f32 top, f32 bottom, f32 left, f32 right, f32 near
     m[2][2] = lbl_8047C29C;
     m[2][3] = lbl_8047C28C;
 }
-#pragma peephole reset
 
-#pragma peephole off
 void C_MTXLightPerspective(Mtx m, f32 fovY, f32 aspect, f32 scaleS, f32 scaleT,
                            f32 transS, f32 transT)
 {
@@ -695,7 +690,6 @@ void C_MTXLightPerspective(Mtx m, f32 fovY, f32 aspect, f32 scaleS, f32 scaleT,
     m[2][2] = lbl_8047C29C;
     m[2][3] = lbl_8047C28C;
 }
-#pragma peephole reset
 #endif
 #endif
 

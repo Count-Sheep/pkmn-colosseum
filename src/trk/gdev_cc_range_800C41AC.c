@@ -83,7 +83,6 @@ s32 gdev_cc_write(void* data, s32 size) {
 }
 
 /* gdev_cc_read - Read data from the GDEV debug port. */
-#pragma use_lmw_stmw on
 s32 gdev_cc_read(u8* buffer, s32 size) {
     u8 readBuffer[0x500];
     u32 readSize;
@@ -119,4 +118,3 @@ s32 gdev_cc_read(u8* buffer, s32 size) {
     }
     return error;
 }
-#pragma use_lmw_stmw reset

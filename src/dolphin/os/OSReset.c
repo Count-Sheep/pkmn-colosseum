@@ -319,6 +319,9 @@ static inline void CancelThreads(void) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): peephole off for __OSDoHotReset, OSResetSystem
+   and OSGetResetCode; unit-level -opt nopeephole changes __OSResetSWInterruptHandler
+   in the same unit - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
 void __OSDoHotReset(u32 resetCode) {
@@ -331,10 +334,7 @@ void __OSDoHotReset(u32 resetCode) {
     Reset(resetCode * 8);
 #endif
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 void OSResetSystem(BOOL reset, u32 resetCode, BOOL forceMenu) {
     BOOL rc;
     BOOL padcal;
@@ -395,10 +395,7 @@ void OSResetSystem(BOOL reset, u32 resetCode, BOOL forceMenu) {
 
     __PADDisableRecalibration(padcal);
 }
-#pragma pop
 
-#pragma push
-#pragma peephole off
 u32 OSGetResetCode(void) {
     u32 resetCode;
     volatile u32* pi;

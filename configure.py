@@ -522,14 +522,16 @@ config.libs = [
                 "trk/ddh_cc_range_800C3C00.c",
                 mw_version="GC/2.6",
                 progress_category="runtime",
-                extra_cflags=["-rostr"],
+                # ddh_cc_read saves registers with stmw/lmw (was a source pragma).
+                extra_cflags=["-rostr", "-use_lmw_stmw on"],
             ),  # BANK_TRK
             Object(
                 Matching,
                 "trk/gdev_cc_range_800C41AC.c",
                 mw_version="GC/2.6",
                 progress_category="runtime",
-                extra_cflags=["-rostr"],
+                # gdev_cc_read saves registers with stmw/lmw (was a source pragma).
+                extra_cflags=["-rostr", "-use_lmw_stmw on"],
             ),  # BANK_TRK
             Object(Matching, "trk/gdev_cc_range_800C4444.c", mw_version="GC/1.3", progress_category="runtime"),  # BANK_TRK
             # HAL sysdolphin mtx.c, the whole translation unit, built with the
@@ -998,6 +1000,8 @@ config.libs = [
                 Matching,
                 "dolphin/os/OSTime.c",
                 source="dolphin/os/calendar/OSTime.c",
+                # OSTime.c: peephole off, GetDates not inlined (were source pragmas).
+                extra_cflags=["-opt nopeephole", "-inline off"],
                 progress_category="sdk",
             ),
             Object(
@@ -4515,6 +4519,9 @@ config.libs = [
                 Matching,
                 "dolphin/sdk_r48_80098108_prefix.c",
                 mw_version="GC/1.2.5n",
+                # EXIBios.c is built at optimization level 0 for space with
+                # the scheduler off (formerly per-function pragmas).
+                extra_cflags=["-opt level=0", "-opt space", "-schedule off"],
                 progress_category="sdk",
             ),
             Object(
@@ -4653,6 +4660,8 @@ config.libs = [
                 Matching,
                 "dolphin/sdk_range_800A2B9C.c",
                 mw_version="GC/1.2.5n",
+                # __init_cpp is built with peephole off (was a source pragma).
+                extra_cflags=["-opt nopeephole"],
                 progress_category="sdk",
             ),
             *[
@@ -4669,9 +4678,16 @@ config.libs = [
                 )
                 for status, path, version, use_o2 in [
                     (Matching, "dolphin/sdk_r58_800A2D38_prefix.c", "GC/1.2.5n", False),
-                    (Matching, "dolphin/sdk_r59_800A3194_prefix.c", "GC/1.2.5n", False),
                 ]
             ],
+            Object(
+                Matching,
+                "dolphin/sdk_r59_800A3194_prefix.c",
+                mw_version="GC/1.2.5n",
+                # PSMTXRotAxisRad is built with peephole off (was a source pragma).
+                extra_cflags=["-opt nopeephole"],
+                progress_category="sdk",
+            ),
             # The O2 middle of the sdk_range_800A2D38 owner also wants
             # -opt nopeephole (90.11% -> 94.21% under the flag sweep).
             Object(
@@ -4706,13 +4722,16 @@ config.libs = [
                 Matching,
                 "dolphin/sdk_candidate_800A35E4_suffix.c",
                 mw_version="GC/1.2.5n",
-                extra_cflags=["-fp_contract off"],
+                # C_MTXLightFrustum/C_MTXLightPerspective: peephole off (was a source pragma).
+                extra_cflags=["-fp_contract off", "-opt nopeephole"],
                 progress_category="sdk",
             ),
             Object(
                 Matching,
                 "dolphin/sdk_exact_800A3744.c",
                 mw_version="GC/1.2.5n",
+                # C_MTXLightOrtho is built without fused multiply-add (was #pragma fp_contract off).
+                extra_cflags=["-fp_contract off"],
                 progress_category="sdk",
             ),
             Object(
@@ -5292,6 +5311,8 @@ config.libs = [
                 Matching,
                 "crt/math_kernel_rem_pio2.c",
                 mw_version="GC/1.3",
+                # __kernel_rem_pio2 saves registers with stmw/lmw (was a source pragma).
+                extra_cflags=["-use_lmw_stmw on"],
                 progress_category="runtime",
             ),
             Object(
@@ -7000,6 +7021,8 @@ config.libs = [
                 # .sdata, .bss and .sbss.
                 "dolphin/si/SI_range_800CF764.c",
                 mw_version="GC/1.2.5n",
+                # No automatic inlining: SIGetStatus stays a call (was #pragma dont_inline on).
+                extra_cflags=["-inline noauto"],
                 progress_category="sdk",
             ),
             # fn_8018FE30 alone (GS_RANGE_8018FE30_FN_8018FE30_ONLY): the
@@ -11939,6 +11962,8 @@ config.libs = [
             Object(
                 Matching,
                 "dolphin/os/OSCache.c",
+                # L2GlobalInvalidate is never inlined into __OSCacheInit (was #pragma dont_inline on).
+                extra_cflags=["-inline off"],
                 progress_category="sdk",
             ),
             Object(

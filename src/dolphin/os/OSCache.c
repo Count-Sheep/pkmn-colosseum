@@ -379,9 +379,6 @@ _loop_lcqw:
  * The syncs are MWCC's __sync() intrinsic (the same `sync` instruction as
  * an inline asm block).
  */
-#pragma push
-#pragma peephole off
-#pragma dont_inline on
 void L2GlobalInvalidate(void) {
     __sync();
     PPCMtl2cr(PPCMfl2cr() & 0x7FFFFFFF);
@@ -398,7 +395,6 @@ void L2GlobalInvalidate(void) {
         DBPrintf(">>> L2 INVALIDATE : SHOULD NEVER HAPPEN\n");
     }
 }
-#pragma pop
 
 void DMAErrorHandler(u16 error, OSContext* context, ...) {
     u32 hid2 = PPCMfhid2();

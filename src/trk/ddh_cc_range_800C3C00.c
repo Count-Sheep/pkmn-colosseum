@@ -75,7 +75,6 @@ s32 ddh_cc_write(void* data, s32 size) {
 }
 
 /* ddh_cc_read - Read data from the AMC debug port. */
-#pragma use_lmw_stmw on
 s32 ddh_cc_read(u8* buffer, s32 size) {
     typedef struct CircleBuffer CircleBuffer;
     extern s32 lbl_8047A9E0;
@@ -116,4 +115,3 @@ s32 ddh_cc_read(u8* buffer, s32 size) {
     }
     return error;
 }
-#pragma use_lmw_stmw reset

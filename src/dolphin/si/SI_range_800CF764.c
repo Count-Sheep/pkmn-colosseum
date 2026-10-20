@@ -415,7 +415,6 @@ int __SITransfer(s32 chan, void* output, u32 outputBytes, void* input,
     return 1;
 }
 
-#pragma dont_inline on
 u32 SIGetStatus(s32 chan) {
     BOOL enabled;
     u32 sr;
@@ -433,7 +432,6 @@ u32 SIGetStatus(s32 chan) {
     OSRestoreInterrupts(enabled);
     return sr;
 }
-#pragma dont_inline reset
 
 void fn_800D0338(s32 chan, u32 command) {
     __SIChannelRegs[chan].reg = command;

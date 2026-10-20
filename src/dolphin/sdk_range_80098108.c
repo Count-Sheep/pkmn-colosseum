@@ -119,9 +119,9 @@ void* memset(void* dst, int value, size_t n);
 #if !defined(SDK_OS_SUFFIX_ONLY) && !defined(SDK_EXI_GETID_ONLY)
 
 /* 0x80098108 | size: 0x8 */
+/* The push/pop keeps the asm function from changing the code generation of
+   the C functions after it (the unit flags set the EXIBios.c options). */
 #pragma push
-#pragma optimization_level 0
-#pragma optimizewithasm off
 asm void PPCSetFpNonIEEEMode(void) {
     nofralloc
     mtfsb1 29
@@ -129,10 +129,6 @@ asm void PPCSetFpNonIEEEMode(void) {
 }
 #pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 void fn_80098110(volatile s32 chan, EXIControl* exi) {
     EXIControl* exi2 = &lbl_803FB3C8[2];
 
@@ -160,18 +156,12 @@ void fn_80098110(volatile s32 chan, EXIControl* exi) {
         break;
     }
 }
-#pragma scheduling reset
-#pragma pop
 
 static inline u8* EXIGetBytes(void* buffer)
 {
     return buffer;
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXIImm(s32 chan, void* buf, s32 len, u32 type, EXICallback callback)
 {
     EXIControl* exi;
@@ -208,12 +198,7 @@ BOOL EXIImm(s32 chan, void* buf, s32 len, u32 type, EXICallback callback)
     OSRestoreInterrupts(enabled);
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL fn_80098368(s32 chan, u8* buf, s32 len, volatile u32 type) {
     while (len != 0) {
         s32 xfer;
@@ -237,13 +222,7 @@ BOOL fn_80098368(s32 chan, u8* buf, s32 len, volatile u32 type) {
 
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXIDma(s32 chan, void* buf, s32 len, u32 type, EXICallback callback) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled = OSDisableInterrupts();
@@ -267,8 +246,6 @@ BOOL EXIDma(s32 chan, void* buf, s32 len, u32 type, EXICallback callback) {
     OSRestoreInterrupts(enabled);
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
 static inline void CompleteTransfer(s32 chan) {
     EXIControl* exi;
@@ -292,10 +269,6 @@ static inline void CompleteTransfer(s32 chan) {
     }
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXISync(s32 chan) {
     EXIControl* exi;
     s32 result;
@@ -323,13 +296,7 @@ BOOL EXISync(s32 chan) {
 
     return result;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 u32 fn_800986A0(s32 chan, s32 exi, s32 tc, s32 ext) {
     u32 csr = __EXIRegs[chan * 5];
     u32 oldCsr = csr;
@@ -349,13 +316,7 @@ u32 fn_800986A0(s32 chan, s32 exi, s32 tc, s32 ext) {
     __EXIRegs[chan * 5] = csr;
     return oldCsr;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 EXICallback fn_8009870C(s32 chan, EXICallback volatile callback) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     EXICallback oldCallback;
@@ -372,13 +333,7 @@ EXICallback fn_8009870C(s32 chan, EXICallback volatile callback) {
     OSRestoreInterrupts(enabled);
     return oldCallback;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL fn_80098790(s32 chan) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled;
@@ -419,13 +374,7 @@ BOOL fn_80098790(s32 chan) {
 
     return probe;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL fn_80098944(s32 chan) {
     BOOL probe;
     EXIControl* exi = &lbl_803FB3C8[chan];
@@ -437,8 +386,6 @@ BOOL fn_80098944(s32 chan) {
     }
     return probe;
 }
-#pragma scheduling reset
-#pragma pop
 
 static inline BOOL fn_800989C0_probe(s32 chan, EXIControl* base) {
     EXIControl* exi;
@@ -474,10 +421,6 @@ static inline BOOL fn_800989C0_attach(s32 chan, EXICallback extCallback, EXICont
     return TRUE;
 }
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL fn_800989C0(s32 chan, EXICallback extCallback) {
     EXIControl* base;
     EXIControl* exi;
@@ -498,13 +441,7 @@ BOOL fn_800989C0(s32 chan, EXICallback extCallback) {
     OSRestoreInterrupts(enabled);
     return result;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL fn_80098AE8(s32 chan) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled = OSDisableInterrupts();
@@ -523,13 +460,7 @@ BOOL fn_80098AE8(s32 chan) {
     OSRestoreInterrupts(enabled);
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXISelect(s32 chan, u32 dev, u32 freq) {
     EXIControl* exi;
     u32 csr;
@@ -565,13 +496,7 @@ BOOL EXISelect(s32 chan, u32 dev, u32 freq) {
     OSRestoreInterrupts(enabled);
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXIDeselect(s32 chan) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     u32 csr;
@@ -606,13 +531,7 @@ BOOL EXIDeselect(s32 chan) {
 
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 void fn_80098DDC(volatile s16 interrupt, OSContext* context) {
     OSContext exceptionContext;
     s32 chan = (interrupt - 9) / 3;
@@ -633,13 +552,7 @@ void fn_80098DDC(volatile s16 interrupt, OSContext* context) {
         OSSetCurrentContext(context);
     }
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 void fn_80098E9C(s16 interrupt, OSContext* context) {
     OSContext exceptionContext;
     s32 chan = (interrupt - 10) / 3;
@@ -661,13 +574,7 @@ void fn_80098E9C(s16 interrupt, OSContext* context) {
         OSSetCurrentContext(context);
     }
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 void fn_80098FF8(volatile s16 interrupt, OSContext* context) {
     OSContext exceptionContext;
     s32 chan = (interrupt - 11) / 3;
@@ -688,12 +595,7 @@ void fn_80098FF8(volatile s16 interrupt, OSContext* context) {
         OSSetCurrentContext(context);
     }
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma scheduling off
 void EXIInit(void) {
     __OSMaskInterrupts(0x7F8000);
     ExiHw->regs[0].csr = 0;
@@ -716,13 +618,7 @@ void EXIInit(void) {
         fn_80098790(1);
     }
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXILock(s32 chan, u32 dev, EXICallback unlockedCallback) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled = OSDisableInterrupts();
@@ -752,13 +648,7 @@ BOOL EXILock(s32 chan, u32 dev, EXICallback unlockedCallback) {
     OSRestoreInterrupts(enabled);
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma optimize_for_size on
-#pragma scheduling off
 BOOL EXIUnlock(s32 chan) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     BOOL enabled = OSDisableInterrupts();
@@ -783,33 +673,19 @@ BOOL EXIUnlock(s32 chan) {
     OSRestoreInterrupts(enabled);
     return TRUE;
 }
-#pragma scheduling reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma peephole off
-#pragma scheduling off
 void OSRegisterVersion(const char* version);
 u32 fn_800993A8(s32 chan) {
     EXIControl* exi = &lbl_803FB3C8[chan];
     return exi->state;
 }
-#pragma scheduling reset
-#pragma peephole reset
-#pragma pop
 
-#pragma push
-#pragma optimization_level 0
-#pragma scheduling off
 BOOL fn_800993D0(s32 chan) {
     u32 id;
     u32 unused;
 
     return fn_80099400(chan, 0, &id);
 }
-#pragma scheduling reset
-#pragma pop
 
 /*
  * EXIGetID - 0x80099400 | size: 0x390

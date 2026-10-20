@@ -7,7 +7,6 @@
 f64 floor(f64 x);
 f64 ldexp(f64 x, s32 n);
 
-#pragma use_lmw_stmw on
 s32 __kernel_rem_pio2(f64* x, f64* y, s32 e0, s32 nx, s32 prec,
                       const s32* ipio2)
 {
@@ -229,4 +228,3 @@ recompute:
 #undef K_HALF
 #undef K_ONE
 }
-#pragma use_lmw_stmw off

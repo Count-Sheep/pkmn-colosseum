@@ -11,7 +11,6 @@ extern const f32 lbl_8047C288;
 extern const f32 lbl_8047C28C;
 extern const f32 lbl_8047C298;
 
-#pragma fp_contract off
 void C_MTXLightOrtho(Mtx m, f32 top, f32 bottom, f32 left, f32 right,
                      f32 scaleS, f32 scaleT, f32 transS, f32 transT)
 {
@@ -37,4 +36,3 @@ void C_MTXLightOrtho(Mtx m, f32 top, f32 bottom, f32 left, f32 right,
     m[2][2] = lbl_8047C28C;
     m[2][3] = lbl_8047C288;
 }
-#pragma fp_contract reset

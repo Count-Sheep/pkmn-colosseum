@@ -2621,6 +2621,9 @@ void fn_800B18C8(s32 chan, s32 result) {
     }
 }
 
+/* RULE-EXCEPTION(user-approved): dont_inline keeps fn_800B19A4 a call in its
+   EraseCallback callers; no unit-level -inline setting reproduces the unit - see
+   docs/RULE_EXCEPTIONS.md */
 #pragma dont_inline on
 s32 fn_800B19A4(s32 chan, u32 addr, u32 length, void* buffer, CARDCallback callback) {
     CARDControl* card = &lbl_803FC620[chan];
@@ -2635,7 +2638,7 @@ s32 fn_800B19A4(s32 chan, u32 addr, u32 length, void* buffer, CARDCallback callb
     card->buffer = buffer;
     return fn_800AFEC4(chan, fn_800B18C8);
 }
-#pragma dont_inline off
+#pragma dont_inline reset
 
 void* __CARDGetFatBlock(CARDControl* card) {
     return card->fatBlock;

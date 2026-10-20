@@ -15,9 +15,6 @@ typedef struct OSCalendarTime {
     s32 usec;
 } OSCalendarTime;
 
-#pragma peephole off
-#pragma push
-#pragma dont_inline on
 void GetDates(s32 days, OSCalendarTime* td) {
     extern int lbl_80311878[];
     extern int lbl_803118A8[];
@@ -46,7 +43,6 @@ void GetDates(s32 days, OSCalendarTime* td) {
     td->mon = month;
     td->mday = days - md[month] + 1;
 }
-#pragma pop
 
 void OSTicksToCalendarTime(s64 ticks, OSCalendarTime* td) {
     s32 seconds;
