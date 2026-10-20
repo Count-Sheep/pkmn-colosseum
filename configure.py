@@ -9958,8 +9958,17 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gs_pokemon_summary_r57b_800150E4_o4s.c",
+                # fn_800150E4 only (GS_POKEMON_SUMMARY_800150E4_ONLY island);
+                # the unit-level -opt nopeephole replaces the file's local pragma.
+                mw_version="GC/1.3",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
+            Object(
+                CodeCandidate,
+                "game/gs_pokemon_summary_r57b_80015374_o4s.c",
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
                 progress_category="game",
