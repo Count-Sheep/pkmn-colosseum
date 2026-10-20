@@ -44,7 +44,15 @@ active build/report path is `configure.py` -> `ninja` ->
   generated build products.
 - Do not move archived campaign material back into the active tree unless it is
   reintroduced through the dtk-template pipeline.
-- Do not rename symbols or change splits without a concrete build/report reason.
+- Do not change splits without a concrete build/report reason. Rename
+  symbols only (a) with a concrete build/report reason, or (b) under the
+  function-naming campaign in `docs/NAMING_SCHEME.md` (user decision,
+  2026-10-20): `fn_` functions only; every rename is recorded in
+  `docs/function_renames.csv`, tagged `NAME-T<n>` at its definition, and
+  lands only in a batch that passes `tools/check_naming.py`, the full link
+  with SHA-1 checks, the remapped regression check and the object-map
+  freeze. Never edit a string literal, a unit or file name, or a name that
+  is not `fn_`; a T1 conflict with an existing name goes to human review.
 - Keep source changes scoped to objects declared in `configure.py`.
 
 ## Validation
@@ -123,6 +131,9 @@ Measure through the maintainer's diff bridge instead:
 - Never commit the bridge's output: it contains retail disassembly.
 
 ## Naming
+
+Original names (T1) outrank reconstructed (T2) and context (T3) names; see
+`docs/NAMING_SCHEME.md` for the evidence each tier needs.
 
 Rename conservatively and preserve address traceability. A nontrivial rename
 needs evidence from callsites, strings, known SDK patterns, data tables, or
