@@ -3266,10 +3266,19 @@ static const CardEMessageEntry sCardEStatusMessages[46] = {
 static const char sCardEStatusFile[] = "menuGBAC.c";
 
 
+/* Show or hide one per-port option sprite. */
 static inline void CardEShowStatusSprite(void* sprite, u8 enable)
 {
     if (sprite != NULL) {
         winSpriteSetDisp(sprite, enable);
+    }
+}
+
+/* Show or hide one of the five status sprites from its state-mask bit. */
+static inline void CardEShowStatusBit(void* sprite, u32 bit)
+{
+    if (sprite != NULL) {
+        winSpriteSetDisp(sprite, bit != 0);
     }
 }
 
@@ -3453,11 +3462,11 @@ void fn_80084038(u8* window)
     }
 
     flags = sCardEStatusFlags[work->state[0]];
-    CardEShowStatusSprite(work->statusSprite[0], (flags & 0x100) != 0);
-    CardEShowStatusSprite(work->statusSprite[1], (flags & 0x200) != 0);
-    CardEShowStatusSprite(work->statusSprite[2], (flags & 0x400) != 0);
-    CardEShowStatusSprite(work->statusSprite[3], (flags & 0x800) != 0);
-    CardEShowStatusSprite(work->statusSprite[4], (flags & 0x1000) != 0);
+    CardEShowStatusBit(work->statusSprite[0], flags & 0x100);
+    CardEShowStatusBit(work->statusSprite[1], flags & 0x200);
+    CardEShowStatusBit(work->statusSprite[2], flags & 0x400);
+    CardEShowStatusBit(work->statusSprite[3], flags & 0x800);
+    CardEShowStatusBit(work->statusSprite[4], flags & 0x1000);
 
     if (work->refreshMessages == 0) {
         /* i is left at 4 by the loop above: state[4] is port 0's
