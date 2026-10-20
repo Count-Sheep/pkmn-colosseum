@@ -93,7 +93,8 @@ extern u32 GSmsgGetGSchar(u32 id);
 extern u32 GSmsgGetRect(u32 id);
 extern void msgctrlSetValue(u32 id, u32 value);
 extern void windowDrawSprite(s32 x, s32 y, void* win, u32 sprite, u32 data);
-extern void windowDrawSprite2(s32 x, s32 y, s16 w, s16 h, s32 color, s32 data, s32 sprite, s32 arg7);
+extern void windowDrawSprite2(s16 x, s16 y, s16 width, s16 height, u32 color, void* context,
+                              s32 spriteId, u32 flags);
 extern void* menuModelRender(void* data);
 extern void fn_800D88DC(u32 arg);
 extern void fn_800D888C(u32 arg);
@@ -130,7 +131,7 @@ extern RibbonSpriteInfo lbl_802EED44[];
 #pragma push
 #pragma peephole off
 #endif
-void fn_80093B4C(s32 context, void* widget)
+void fn_80093B4C(void* context, void* widget)
 {
     s32 index;
     s32 resource;
@@ -139,7 +140,7 @@ void fn_80093B4C(s32 context, void* widget)
     u8* item;
     u8 value;
     s16 y;
-    s32 color;
+    u32 color;
     u8* sprite;
     s32 row;
     s32 ribbon;
@@ -1173,7 +1174,7 @@ void fn_8009567C(u8* context, u8* sprite)
         range = next_exp - current_exp;
         value = pokemonGetStatus(pokemon, 0, 0x79, 0) - current_exp;
         windowDrawSprite2(0, 0, (range - 1 + value * *(s16*)(sprite + 0x54)) / range,
-                          *(s16*)(sprite + 0x56), color, (s32)context, 0x117, 0);
+                          *(s16*)(sprite + 0x56), color, context, 0x117, 0);
         break;
     case 0x595:
     case 0x12B8:
@@ -1220,11 +1221,11 @@ void fn_8009567C(u8* context, u8* sprite)
         }
         if (fill > slot) {
             windowDrawSprite2(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color,
-                              (s32)context, 0x116, 0);
+                              context, 0x116, 0);
         } else if (fill == slot) {
             ratio = (ratio - lbl_8047C218 * fill) * lbl_8047C21C;
             windowDrawSprite2(0, 0, (u32)(*(s16*)(sprite + 0x54) * ratio),
-                              *(s16*)(sprite + 0x56), color, (s32)context, 0x116, 0);
+                              *(s16*)(sprite + 0x56), color, context, 0x116, 0);
         }
         break;
     }
