@@ -3341,13 +3341,29 @@ static inline void CardEFreeStatus(CardEStatusWork* status)
     fn_800E209C(handle);
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's lost-port loop) - see docs/RULE_EXCEPTIONS.md */
+static inline void CardEDropLostPorts(CardEStatusWork* work)
+{
+    s32 i;
+
+    for (i = 0; i <= 3; i++) {
+        if ((work->state[i] == 5 || work->state[i] == 4) &&
+            !((u8 (*)(s32))fn_8008ABA0)(i + 1)) {
+            ((void (*)(u8))menuSetEnablePort)(
+                ((u32 (*)(void))menuGetEnablePort)() & ~lbl_80478950[i]);
+            work->state[i] = 7;
+            work->field28 = 8;
+        }
+    }
+}
+
 void fn_80084038(u8* window)
 {
+    s32 i;
     u8 changed;
     CardEStatusWork* status;
     CardEStatusWork* work;
     u8 selected;
-    s32 i;
     s32 flags;
     void* sprite;
 
@@ -3435,15 +3451,7 @@ void fn_80084038(u8* window)
         changed = 1;
     }
 
-    for (i = 0; i <= 3; i++) {
-        if ((work->state[i] == 5 || work->state[i] == 4) &&
-            !((u8 (*)(s32))fn_8008ABA0)(i + 1)) {
-            ((void (*)(u8))menuSetEnablePort)(
-                ((u32 (*)(void))menuGetEnablePort)() & ~lbl_80478950[i]);
-            work->state[i] = 7;
-            work->field28 = 8;
-        }
-    }
+    CardEDropLostPorts(work);
 
     for (i = 0; i < 4; i++) {
         if (work->state[i + 4] != work->state[i]) {
