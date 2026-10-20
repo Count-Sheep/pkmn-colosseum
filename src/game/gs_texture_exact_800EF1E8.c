@@ -30,6 +30,7 @@ extern void fn_800B962C(u16 left, u16 top, u16 width, u16 height);
 extern void fn_800B96F8(u16 width, u16 height, s32 format, u8 mipmap);
 extern void fn_800B9FE4(void* dest, u8 clear);
 extern void fn_800B8E74(void);
+extern void GXSetZMode(u8 compare_enable, u32 func, u8 update_enable);
 
 /* 0x800EF1E8 | 0x1F8 */
 u8 GStextureConvertFromHW(GStextureHandle* tex, u8 clear) {

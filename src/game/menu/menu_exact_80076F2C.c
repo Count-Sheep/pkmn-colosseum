@@ -8,6 +8,8 @@
 #include "game/hero.h"
 #include "game/win_sprite.h"
 
+extern void __assert(const char* file, s32 line, const char* expr);
+
 typedef struct MenuDVDFileInfo {
     u8 pad[0x34];
     u32 length;

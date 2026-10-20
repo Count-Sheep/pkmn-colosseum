@@ -227,6 +227,8 @@ extern s32 fightTrainerAiWazaValueJibaku();
 extern s32 fightTrainerAiWazaValueNull();
 
 /* 0x80217E20 size 0x1F8: fn_80217E20 (owner line 13060) */
+/* RULE-EXCEPTION(user-approved): fightOutPokemonGetUseWazaDataId is defined u16 in fight_out_pokemon.c, but retail uses the result here unextended (mr, no clrlwi); declared u32 like the file's fn_80205184 - see docs/RULE_EXCEPTIONS.md */
+extern u32 fightOutPokemonGetUseWazaDataId(void* ctx);
 #define fn_801F025C fightTargetGetPtrAsNowFightType
 #define fn_8012640C pokemonGetStatus
 #define fn_80205184 fightOutPokemonGetUseWazaDataId

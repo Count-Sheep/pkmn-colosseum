@@ -15,6 +15,10 @@
 #include "dolphin/mtx.h"
 #include "game/battle/waza_camera_stop.h"
 
+/* camera.c defines cameraUpdate with an unused u32 parameter; it never reads r3 and no caller sets it. */
+extern void cameraUpdate(void);
+extern void GSvecAdd(void* a, void* b, void* c);
+
 /* Camera parameters computed per move (lbl_804673A0, 0x34 bytes). */
 typedef struct WazaSequenceCameraParams {
     s32 motion;         /* 0x00 */
@@ -839,7 +843,6 @@ void _wazaSequenceCameraDoDollyPosition__FP21TemplateExpFileHeaderP24wazaSequenc
     extern void GSscene_GetCameraPositionVector(Vec*);
     extern void fn_800E0168(Vec*, Vec*, Vec*);
     extern void fn_800E013C(Vec*, Vec*, f32);
-    extern void GSvecAdd(Vec*, Vec*, Vec*);
     extern s32 fn_800D37CC(void);
     extern void cameraMovePosition(s32, Vec*, f32);
     u8* file = header;

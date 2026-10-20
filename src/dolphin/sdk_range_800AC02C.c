@@ -406,6 +406,7 @@ extern void InitCallback(void* task);
 extern void DoneCallback(void* task);
 extern void __AIDHandler(__OSInterrupt interrupt, OSContext* context);
 extern void __AISHandler(__OSInterrupt interrupt, OSContext* context);
+extern void __AI_set_stream_sample_rate(u32 rate);
 
 #define OSNanosecondsToTicks(nsec) (((nsec) * (OS_TIMER_CLOCK / 125000)) / 8000)
 

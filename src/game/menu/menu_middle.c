@@ -120,6 +120,7 @@ extern void winSetSequence();
 /* ... and 50 more external functions */
 extern void* memset(void* dst, int val, u32 size);
 extern void* memcpy(void* dst, const void* src, u32 size);
+extern void __assert(const char* file, s32 line, const char* expr);
 
 /* ===== SDA globals ===== */
 extern u8 lbl_80478938;
@@ -872,7 +873,6 @@ void fn_8006A824(u32 r28, u32 r29) {
     extern void fn_8006A990();
     extern u8 heroBiosGetHomePlace(u32);
     extern u8 heroBiosGetSexDataId(u32);
-    extern void __assert(u32, u32, u32);
     u32 r0 = 0;
     u32 r30 = 0;
     u32 r31 = 0;
@@ -885,7 +885,7 @@ void fn_8006A824(u32 r28, u32 r29) {
             r30 = 0x1;
             r0 = heroBiosGetSexDataId(r29) & 0xFF;
             if (r0 != (u32)0x0) {
-                __assert(r31 + 0x10, 0x281, r31 + 0x20);
+                __assert((const char*)(r31 + 0x10), 0x281, (const char*)(r31 + 0x20));
             }
             break;
         case 1:
@@ -895,7 +895,7 @@ void fn_8006A824(u32 r28, u32 r29) {
                 case 1: r30 = 0x3; break;
                 case 2:
                 default:
-                    __assert(r31 + 0x10, 0x28a, r31 + 0x4c);
+                    __assert((const char*)(r31 + 0x10), 0x28a, (const char*)(r31 + 0x4c));
                     break;
             }
             break;
@@ -906,12 +906,12 @@ void fn_8006A824(u32 r28, u32 r29) {
                 case 1: r30 = 0x308; break;
                 case 2:
                 default:
-                    __assert(r31 + 0x10, 0x294, r31 + 0x4c);
+                    __assert((const char*)(r31 + 0x10), 0x294, (const char*)(r31 + 0x4c));
                     break;
             }
             break;
         default:
-            __assert(r31 + 0x10, 0x299, r31 + 0x60);
+            __assert((const char*)(r31 + 0x10), 0x299, (const char*)(r31 + 0x60));
             break;
     }
     fn_8006A990(r28, r29, r30);
@@ -998,7 +998,7 @@ void fn_8006AABC(void* destination, u16 trainerId) {
     fightTrainerCreateFightTrainerDataIdToHero(
         trainerId, *(u32*)bios, hero);
     if (heroCheckValid(hero) == 0) {
-        __assert((u8*)bios + 0x10, 0x258, (u8*)bios + 0x7C);
+        __assert((const char*)bios + 0x10, 0x258, (const char*)bios + 0x7C);
     }
     heroBiosSetHizukiFlag(hero, 0);
 
@@ -1354,7 +1354,7 @@ void fn_8006B2A4(s32 idx, s32 sub) {
 /* 0x8006B354 | size: 0x74 */
 void fn_8006B354(s32 index) {
     extern u8* savedataGetStatus(s32 idx, s32 type);
-    extern void __assert(char* file, s32 line, char* expr);
+    extern void __assert(const char* file, s32 line, const char* expr);
     s32 r30;
     u32 r31;
 
@@ -1364,7 +1364,7 @@ void fn_8006B354(s32 index) {
             goto valid_index;
         }
     }
-    __assert((char*)&lbl_80267DE8, 0xe4, (char*)&lbl_8047C040);
+    __assert((const char*)&lbl_80267DE8, 0xe4, (const char*)&lbl_8047C040);
     return;
 valid_index:
     r31 = 1;
@@ -1676,7 +1676,6 @@ void fn_8006B9B8(void* menu) {
     defined(MENU_MIDDLE_EXACT_8006BB34_ONLY)
 /* 0x8006BB34 | size: 0x4E4 */
 extern void fn_80166A28(s32 sndId);
-extern void __assert(const void* file, s32 line, const void* expr);
 
 typedef struct CursorArg_8006BB34 {
     u8 pad;
@@ -1827,7 +1826,7 @@ void fn_8006BB34(void* menu) {
         /* fallthrough */
     case 0xA0D:
         if (p->val14 < 0) {
-            __assert(asrt + 0x7d8, 0xE73, asrt + 0x7e8);
+            __assert((const char*)(asrt + 0x7d8), 0xE73, (const char*)(asrt + 0x7e8));
         }
         if (!(ki->flags4 & 0x30)) break;
         menuSetCursor(m->menuId, menuGetCursorFromItemID(m->menuId, 0x9FA));
@@ -1837,7 +1836,7 @@ void fn_8006BB34(void* menu) {
         /* fallthrough */
     case 0xE33:
         if (p->val16 < 0) {
-            __assert(asrt + 0x7d8, 0xE7F, asrt + 0x808);
+            __assert((const char*)(asrt + 0x7d8), 0xE7F, (const char*)(asrt + 0x808));
         }
         if (!(ki->flags4 & 0x30)) break;
         menuSetCursor(m->menuId, menuGetCursorFromItemID(m->menuId, 0x9FB));

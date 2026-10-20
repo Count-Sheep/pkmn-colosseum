@@ -12,6 +12,10 @@
  */
 #include "dolphin/types.h"
 #include "game/cursor_bios.h"
+#include "game/win_sprite.h"
+
+/* RULE-EXCEPTION(user-approved): mailGetNbMailInMailbox is defined u16 in mail.c, but every retail caller here uses the result unextended; the u16 prototype adds clrlwi - see docs/RULE_EXCEPTIONS.md */
+extern s32 mailGetNbMailInMailbox(void);
 
 /* Small PDA-mail state byte pair, shared with pda_range_80037158.c
  * (the sibling PDA-body TU) and initialized by fn_8004B7EC. Only
@@ -425,7 +429,7 @@ extern void menuButtonNormal(void* p);
 
 /* winSpriteSetDisp (gs_worldmap.c): set a window-sprite field-handle's
  * display/visibility value. */
-extern void winSpriteSetDisp(void* fieldHandle, s32 value);
+extern void winSpriteSetDisp(void* node, u32 enable);
 
 typedef struct PdaMailWindowB {
     u8 pad00[0x60];
@@ -559,7 +563,7 @@ s32 fn_8004C5B0(void* unused, PdaMailSpriteField* field)
 #endif /* MENU_PDA_MAIL_PARTIAL */
 
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_HIGHLIGHT_ONLY)
-extern void winSpriteSetDisp(void* fieldHandle, s32 value);
+extern void winSpriteSetDisp(void* node, u32 enable);
 
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
@@ -728,7 +732,6 @@ s32 fn_8004CF78(u8* window)
             s8 row;
         } position;
     } PdaMailCursorState;
-    extern s32 mailGetNbMailInMailbox(void);
     PdaMailCursorState cursor;
     u16 persistedPosition;
     u8* input;
@@ -834,7 +837,6 @@ s32 fn_8004D34C(s32 index)
             s8 row;
         } position;
     } PdaMailCursorPosition;
-    extern s32 mailGetNbMailInMailbox(void);
     extern s32 mailGetSortMode(void);
     extern s32 fn_8004DC18(s32 mode);
     extern void fn_8004BFB0(void);
@@ -1143,7 +1145,6 @@ asm void fn_8004BFB0(void) {
 #pragma peephole off
 void fn_8004BFB0(void)
 {
-    extern s32 mailGetNbMailInMailbox(void);
     s32 ascIndex;
     s32 recentIndex;
     s32 alphaCount;
@@ -1267,7 +1268,6 @@ asm s32 fn_8004D7D0(PdaMailWindowA* window) {
 #else
 s32 fn_8004D7D0(PdaMailWindowA* window)
 {
-    extern s32 mailGetNbMailInMailbox(void);
     s32** field = window->field_0x60;
     u8* state = windowGetKeyInfo();
     s32 index = **field;

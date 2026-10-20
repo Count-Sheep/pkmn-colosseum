@@ -6,6 +6,7 @@
 
 extern u32 fightOutPokemonGetPokemonPtr();
 extern u16 fn_800E0C54(void);
+extern u16 fightSideGetHikaeFightPokemonNum(u32 side, u32 trainerLimit, u32 param_3, u32 param_4);
 extern s32 fightTrainerAiGetValueAryMaxBanme(s32*, u16, u8);
 extern s32 fightTrainerAiAddValue(s32, s32);
 

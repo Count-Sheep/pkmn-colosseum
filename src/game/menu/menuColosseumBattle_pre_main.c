@@ -89,6 +89,7 @@ typedef struct ColosseumPokemonBlob {
 } ColosseumPokemonBlob;
 
 /* ===== External function declarations (menuColosseumBattleMain only) ===== */
+extern s32 fn_80057DE8(void* pokemon);
 extern void fn_800347B8(void);
 extern void fn_800347C4(void);
 extern void fn_800347E8(s32);

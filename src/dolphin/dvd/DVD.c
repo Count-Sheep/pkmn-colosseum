@@ -710,6 +710,8 @@ extern u32 lbl_804789DC;
 extern u32 lbl_80311B48[3];
 extern DVDDiskID lbl_803FC380;
 
+u32 CategorizeError(u32 error);
+
 #if !defined(DVD_BANK_EXACT_ACTIVE) || \
     defined(DVD_EXACT_800A5918_800A59CC)
 u32 CategorizeError(u32 error)

@@ -1,6 +1,8 @@
 /** Exact shop list callbacks, 0x8002B03C - 0x8002B1A0. */
 #include "dolphin/types.h"
 
+extern s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key);
+
 extern u32 lbl_8047A3E4;
 extern f32 lbl_8047B97C;
 extern f32 lbl_8047A3E8;

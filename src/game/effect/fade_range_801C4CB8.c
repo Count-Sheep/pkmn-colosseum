@@ -110,6 +110,7 @@ extern void fn_800E042C(void* mtx, GSvec* scale);
 extern void fn_800E02E8(void* mtx, f32 angle);
 extern void fn_800E03B4(void* mtx, GSvec* trans);
 extern void GSvecTransform(GSvec* dst, void* mtx, GSvec* src);
+extern void GSvecCopy(void* dst, void* src);
 extern void fn_800D67BC(u32 arg0);
 extern void fn_800D6680(f32 x, f32 y, f32 z);
 #ifndef FADE_EFFECT_TU

@@ -1107,6 +1107,7 @@ asm void PSQUATMultiply(const register Quaternion* lhs,
 #if !defined(SDK_CQUATROT_EXCLUDE)
 void C_QUATRotAxisRad(Quaternion* quat, const Vec* axis, f32 rad)
 {
+    extern void PSVECNormalize(Vec* src, Vec* dst);
     extern f32 sinf(f32 x);
     extern f32 cosf(f32 x);
     extern const f32 lbl_8047C2D0;
