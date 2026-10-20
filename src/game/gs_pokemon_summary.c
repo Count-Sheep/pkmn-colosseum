@@ -621,18 +621,18 @@ asm void fn_800155B0(void) {
 #pragma peephole off
 #endif
 s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
-    s32 textX;
-    s32 validCount;
-    s32 itemIndex;
-    s32 visibleIndex;
-    s32 displayLine;
-    s32 lineLimit;
-    s32 scroll;
-    s32 y;
-    u16 itemId;
-    u8 berryNo;
+    s16 numWidth;
     s16 width;
-    u32 name;
+    u8 berryNo;
+    u16 itemId;
+    s32 y;
+    s32 scroll;
+    s32 lineLimit;
+    s32 displayLine;
+    s32 visibleIndex;
+    s32 itemIndex;
+    s32 validCount;
+    s32 textX;
 
     displayLine = 0;
     lineLimit = 8;
@@ -667,8 +667,7 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
             fn_800FB680(textX, y, -1, 0xCA);
             textX += (u16)(GSmsgGetRect(0xCA) >> 16);
             /* RULE-EXCEPTION(user-approved): no-op mask of the u16 item id for the call, chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
-            name = itemDataBiosGetName(itemDataBiosGetPtr(itemId & 0xFFFF));
-            fn_800FB680(textX + 9, y, -1, name);
+            fn_800FB680(textX + 9, y, -1, itemDataBiosGetName(itemDataBiosGetPtr(itemId & 0xFFFF)));
 
             msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
@@ -676,7 +675,8 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
             fn_800FB680(x + 0x11A - width, y, -1, 0x12E);
 
             msgctrlSetValue(0x34, SummaryPageItemNum(pageIndex, itemIndex));
-            fn_800FB680(x + 0x11A - (s16)(GSmsgGetRect(0xCA) >> 16), y, -1, 0xCA);
+            numWidth = (s16)(GSmsgGetRect(0xCA) >> 16);
+            fn_800FB680(x + 0x11A - numWidth, y, -1, 0xCA);
         }
     }
 
