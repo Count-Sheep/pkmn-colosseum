@@ -490,13 +490,14 @@ asm void fn_80015374(void) {
 #else
 #pragma push
 #pragma peephole off
-s32 fn_80015374(s32 x, s32 pageIndex, u16* packedRange) {
-    s32 scroll;
+s32 fn_80015374(int x, s32 pageIndex, u16* packedRange) {
     s32 validCount;
     s32 itemIndex;
     s32 lineLimit;
+    s32 scroll;
     s32 y;
     u32 name;
+    s32 lineX;
     s32 displayLine;
     s32 visibleIndex;
 
@@ -515,13 +516,15 @@ s32 fn_80015374(s32 x, s32 pageIndex, u16* packedRange) {
         scroll = (s32)SUMMARY_F32(lbl_8047A2D0);
     }
 
+    /* RULE-EXCEPTION(user-approved): s32 carrier copy of x for the row draw - see docs/RULE_EXCEPTIONS.md */
+    lineX = x;
     for (visibleIndex = displayLine; visibleIndex < lineLimit && itemIndex < validCount;
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
             name = itemDataBiosGetName(itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex)));
             if (name != 0) {
-                fn_800FB680(x, y, -1, name);
+                fn_800FB680(lineX, y, -1, name);
             }
         }
     }
