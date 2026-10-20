@@ -258,6 +258,22 @@ static inline void sysvarsWaitTwoSeconds(void)
 #endif
 
 #if !defined(GS_RANGE_EXACT_80034280) && !defined(GS_RANGE_SUFFIX_80034FB4)
+/*
+ * MWCC lays out the pooled .bss in first-reference order. In the original
+ * translation unit, earlier functions (0x800301B0..) used the Card-e head
+ * first, then the name, items and card data. This never-called stand-in
+ * references them in that order, so the pool offsets (0x10, 0xB0, 0xBC)
+ * match retail. Nothing calls it, so the linker strips it.
+ */
+/* RULE-EXCEPTION(user-approved): stripped stand-in that only reproduces the TU's .bss pool order - see docs/RULE_EXCEPTIONS.md */
+void sysvarsCardEPoolOrder(void)
+{
+    lbl_803A3278[0] = 0;
+    lbl_803A3288[0] = 0;
+    lbl_803A3328[0] = 0;
+    lbl_803A3334.card_type = 0;
+}
+
 static inline void sysvarsRestoreItems(void)
 {
     void* save;
