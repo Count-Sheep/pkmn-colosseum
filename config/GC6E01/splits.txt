@@ -588,9 +588,6 @@ game/menuPokemonChange_r51_8002DF10_suffix.c:
 	.text       start:0x8002E26C end:0x8002E460
 	.bss        start:0x803A2518 end:0x803A3278
 
-game/data/bss_803A3278.c:
-	.bss        start:0x803A3278 end:0x803A3E58
-
 game/menuPokemonChange_r41_8002E460_gc125n.c:
 	.text       start:0x8002E460 end:0x8002EA5C
 
@@ -674,13 +671,8 @@ game/gs_npc_event_candidate_80032ED8.c:
 	.text       start:0x80032ED8 end:0x80033278
 
 game/gs_range_80033278.c:
-	.text       start:0x80033278 end:0x80034280
-
-game/gs_range_exact_80034280.c:
-	.text       start:0x80034280 end:0x80034FB4
-
-game/gs_range_suffix_80034FB4.c:
-	.text       start:0x80034FB4 end:0x80035C48
+	.text       start:0x80033278 end:0x80035C48
+	.bss        start:0x803A3278 end:0x803A3E58
 
 game/gs_exact_80035C48.c:
 	.text       start:0x80035C48 end:0x80035DD4
