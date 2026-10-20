@@ -15,7 +15,7 @@
 
 #ifndef POKECONV_EXACT_SUFFIX
 /* fn_80089048 - 0x80089048 | size: 0x338 */
-s32 fn_80089048(u8* destination, const u8* source, void* pokemon)
+s32 fn_80089048(u8* __restrict destination, const u8* source, void* pokemon)
 {
     extern u8 pokemonCheckValid(void*);
     extern u16 pokemonBiosGetPokemonDataId(void*);
@@ -36,7 +36,6 @@ s32 fn_80089048(u8* destination, const u8* source, void* pokemon)
     u32 items;
     const u8* input;
     u8* output;
-    u8* ribbons;
 
     if (pokemon != NULL && pokemonCheckValid(pokemon) == 0) {
         return 0;
@@ -66,21 +65,20 @@ s32 fn_80089048(u8* destination, const u8* source, void* pokemon)
     }
 
     input = source;
-    count = *(const u16*)(source + 0xE);
-    for (i = count; i > 0; i--) {
+    for (i = 0; i < *(const u16*)(source + 0xE); i++) {
         value = *(const u16*)(input + 0x10);
         value |= *(const u16*)(input + 0x12) << 16;
         input += 4;
-        value = BSWAP32(value);
-        *(u32*)output = value;
+        *(u32*)output = BSWAP32(value);
         output += 4;
     }
     if (pokemon != NULL) {
         fn_8008AE18(pokemon, output);
         memset(output + 0x64, 0, 0xC);
-        ribbons = output + 0x64;
+        /* RULE-EXCEPTION(user-approved): scalar reuse - the finished destination parameter holds the ribbon cursor instead of a fresh local, which gives retail's r28/r29 - see docs/RULE_EXCEPTIONS.md */
+        destination = output + 0x64;
         for (i = 0; i < 11; i++) {
-            *ribbons++ = exribbonGetNo(i);
+            *destination++ = exribbonGetNo(i);
         }
     }
     return 1;
