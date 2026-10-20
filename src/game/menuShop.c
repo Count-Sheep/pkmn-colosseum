@@ -94,6 +94,8 @@ typedef struct ShopItemSlot {
 } ShopItemSlot;
 
 void itemBiosSetNum(void*, u16);
+/* RULE-EXCEPTION(user-approved): caller-side prototype with an s32 item id (the definition takes u16); retail passes the untruncated id (mr r4, no clrlwi) - see docs/RULE_EXCEPTIONS.md */
+void itemBiosSetItemDataId(u8* p, s32 val);
 
 typedef struct ShopInventory {
     ShopItemSlot primary[235];
@@ -137,7 +139,7 @@ static inline s32 shopAddToSlot(ShopItemSlot* slots, s32 count, s32 item_id, s32
         return (u16)quantity;
     }
     if (current_id == 0) {
-        itemBiosSetItemDataId(slots, item_id);
+        itemBiosSetItemDataId((u8*)slots, item_id);
         current_quantity = 0;
     } else {
         current_quantity = itemBiosGetNum(slots);
@@ -166,7 +168,7 @@ static inline s32 shopAddToSlotOnce(ShopItemSlot* slots, s32 count, s32 item_id,
         return (u16)quantity;
     }
     if (current_id == 0) {
-        itemBiosSetItemDataId(slots, item_id);
+        itemBiosSetItemDataId((u8*)slots, item_id);
         current_quantity = 0;
     } else {
         current_quantity = itemBiosGetNum(slots);
@@ -200,7 +202,7 @@ static inline s32 shopFillSlot(ShopItemSlot* slots, u16 count, s32 item_id,
         return quantity;
     }
     if (current_id == 0) {
-        itemBiosSetItemDataId(slots, item_id);
+        itemBiosSetItemDataId((u8*)slots, item_id);
         current_quantity = 0;
     } else {
         current_quantity = itemBiosGetNum(slots);
@@ -230,7 +232,7 @@ static inline s32 shopFillSlotOnce(ShopItemSlot* slots, u16 count, u32 item_id,
         return quantity;
     }
     if (current_id == 0) {
-        itemBiosSetItemDataId(slots, item_id);
+        itemBiosSetItemDataId((u8*)slots, item_id);
         current_quantity = 0;
     } else {
         current_quantity = itemBiosGetNum(slots);
@@ -1127,6 +1129,8 @@ extern void itemDataBiosGetPtr(u32);
 extern u32 itemDataBiosGetKind(void);
 extern u32 heroItemGetItemKindToItemAryPtr(s32, u32, u16*, s32, s32, s32);
 extern u32 itemGetStatus(u32, s32, s32, s32);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 fn_800FB680(s32 x, s32 y, s32 color, u32 key);
 
 /* Total quantity of `item` across the hero's inventory pocket for its kind. */
 /* RULE-EXCEPTION(user-approved): single-function inline helper (fn_8002AEF8) — see docs/RULE_EXCEPTIONS.md */
@@ -1162,8 +1166,8 @@ s32 fn_8002AEF8(void* r3, u8* r4) {
         item = shopListItem(ctx, (s8)((u8*)r3)[0x95] + (s8)((u8*)r3)[0x94]);
         if ((u16)item != 0) {
             owned = shopCountOwned(item);
-            msgctrlSetValue(0x2d, (void*)(u32)(u16)item);
-            msgctrlSetValue(0x34, (void*)owned);
+            msgctrlSetValue(0x2d, (u32)(u16)item);
+            msgctrlSetValue(0x34, (u32)owned);
             fn_800FB680(0, 0, -1, 0x2b2f);
         }
     }
@@ -1951,6 +1955,8 @@ s32 fn_8002BCE8(ShopPositionOwner* owner, ShopPositionDrawData* draw) {
 
 /* fn_8002BE08 - 0x8002BE08 | size: 0x20c */
 extern u32 itemDataBiosGetDoc(void);
+/* RULE-EXCEPTION(user-approved): caller-side prototype with a u32 item id (the definition takes u16); retail passes the untruncated id, and the u16 parameter changes fn_8002BE08's register allocation - see docs/RULE_EXCEPTIONS.md */
+extern u8* itemDataBiosGetPtr(u32 index);
 extern f32 lbl_8047B9B8;
 extern f32 lbl_8047B9BC;
 extern u32 lbl_8047A3E4;

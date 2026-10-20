@@ -19,6 +19,8 @@ extern s32 menuOpen(s32 menu, s32 flag);
 extern void menuClose(s32 menu);
 extern void menuCloseSync(s32 menu, s32 flag);
 extern u32 heroGetStatus(u8* ptr, u32 selector, u32 index);
+/* RULE-EXCEPTION(user-approved): caller-side prototype with s32 parameters (the definition in menuPokemon.c takes u32); the u32 conversion of the s32 location adds a register copy - see docs/RULE_EXCEPTIONS.md */
+extern void fn_80018F54(s32 a, s32 b, s32 c);
 extern u32 fn_8002A0B8(u8* buffer, s32 location, s32 field, s32 value, ...);
 extern u32 fn_80029FAC(u8* buffer, s32 location, s32 field, s32 value, ...);
 extern void fn_8002A1C4(u8* location, s32 message, s32 terminator, ...);

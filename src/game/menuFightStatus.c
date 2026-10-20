@@ -35,7 +35,7 @@ extern void* menuItemBiosGetPtr(s16 npcId);                  /* Lookup NPC data 
 /* Text/dialog system */
 extern void  windowDrawSprite();
 extern void  winSeqSetMenu(void* ctx, s32 state);       /* Set dialog state */
-extern void  fn_801081F8(void* ctx, s32 msgId, s32 flags); /* Display message */
+extern void  fn_801081F8(void* ctx, u16 msgId, u16 flags); /* Display message */
 
 /* Rendering */
 extern u32   GSmsgGetRect();                           /* Get model dimensions */
@@ -170,9 +170,10 @@ asm void menuFightStatusSetActive(void) {
 #include "src/game/gs_npc_interact_fn_80011D9C.inc"
 }
 #else
+extern void fn_80103F74(void* head, u16 key, u32 data);
 void menuFightStatusSetActive(s32 id, s32 do_extra) {
     u32 resolved;
-    s32 kind;
+    u16 kind;
     kind = 0;
     resolved = windowSearchID(id);
     if (resolved == 0) return;
@@ -185,10 +186,10 @@ void menuFightStatusSetActive(s32 id, s32 do_extra) {
         break;
     }
     if (do_extra != 0) {
-        fn_80103F74(resolved, kind, 1);
+        fn_80103F74((void*)resolved, kind, 1);
         fn_801081F8((void*)resolved, kind, 0x2d);
     } else {
-        fn_80103F74(resolved, kind, 0);
+        fn_80103F74((void*)resolved, kind, 0);
     }
 }
 #endif
