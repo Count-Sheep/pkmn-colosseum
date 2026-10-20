@@ -500,9 +500,9 @@ static inline GSMemHandle* gsMemFindHandleIn(GSMemHandle* top, GSMemHandle* bott
  * slide allocations down; word-wise when the regions are at least a word
  * apart. The size is read inside the helper, so it is a helper local. */
 static inline void gsMemCopy(u8* dst, u8* src, GSMemHandle* handle) {
-    u8* byteDst;
-    u32* wordSrc;
     u8* byteSrc;
+    u32* wordSrc;
+    u8* byteDst;
     u32* wordDst;
     u32 words;
     u32 size;
