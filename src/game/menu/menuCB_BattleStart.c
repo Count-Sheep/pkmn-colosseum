@@ -413,6 +413,8 @@ void fn_8005E690(MenuCBBattleStartButton* button) {
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
+void fn_8005DFC8(void* arg);
+
 void fn_8005E730(void* arg) {
     fn_8005DFC8(arg);
 }
@@ -1192,6 +1194,11 @@ void fn_80061BBC(void*, UICmdMsg*, s32, s32, s32);
 u8 fn_80061D34(void*, UICmdMsg*, s32, s32, s32);
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_8005E7F0_ONLY)
+void fn_80060434(MenuCBBattleStartMessageContext* context, UICmdMsg* message);
+void fn_800608C4(void* context, MenuCBBattleStartDrawParams* params);
+void fn_800609B4(MenuCBBattleStartSpriteContext* context,
+                 MenuCBBattleStartSprite* sprite, f32 xOffset);
+
 /* Battle-start command dispatcher. */
 void fn_8005E7F0(void* ctx, void* arg1)
 {
