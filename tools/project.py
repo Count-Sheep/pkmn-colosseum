@@ -1257,7 +1257,10 @@ def generate_build_ninja(
                     if set(table) != {"function", "owner", "tables"} or \
                             not isinstance(entries, list) or len(entries) < 2 or \
                             any(not isinstance(entry, dict) or
-                                set(entry) != {"symbol", "owner_offset"} or
+                                not {"symbol", "owner_offset"} <= set(entry) or
+                                not set(entry) <= {"symbol", "owner_offset", "function"} or
+                                not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*",
+                                                 entry.get("function", "x")) or
                                 not isinstance(entry["owner_offset"], int) or
                                 entry["owner_offset"] < 0 or
                                 not re.fullmatch(r"[A-Za-z_][A-Za-z_0-9]*", entry["symbol"])
@@ -1266,6 +1269,7 @@ def generate_build_ninja(
                         sys.exit(f"Invalid MWCC jump-table import for {obj.name}")
                     table_args = " ".join(
                         f'--table {entry["symbol"]}:{entry["owner_offset"]}'
+                        + (f':{entry["function"]}' if "function" in entry else "")
                         for entry in entries)
                 else:
                     if not {"symbol", "function", "owner"} <= set(table) or \

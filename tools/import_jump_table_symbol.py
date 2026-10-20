@@ -23,6 +23,7 @@ from import_constant_symbol import (
 
 
 def table_layout(sections, function):
+    allowed = {function} if isinstance(function, str) else set(function)
     names = {section["name"]: i for i, section in enumerate(sections)}
     if ".data" not in names or ".rela.data" not in names:
         raise ValueError("expected one relocated .data switch table")
@@ -40,9 +41,9 @@ def table_layout(sections, function):
         offset, info, addend = struct.unpack_from(">IIi", rela["data"], at)
         index, kind = info >> 8, info & 0xFF
         if index >= len(symbols) or offset != at // 12 * 4 or kind != 1 or \
-                symbols[index]["name"] != function:
+                symbols[index]["name"] not in allowed:
             raise ValueError("switch-table relocation differs from function-offset array")
-        records.append((offset, kind, addend, function))
+        records.append((offset, kind, addend, symbols[index]["name"]))
     if len(records) * 4 != len(data["data"]):
         raise ValueError("switch-table entries do not cover .data")
     return names, symtab_index, symbols, records
@@ -208,7 +209,15 @@ def import_table(path, owner_path, table, function, owner_offset=0):
 
 
 def import_multiple_tables(path, owner_path, tables, function):
-    if len(tables) < 2 or len({name for name, _ in tables}) != len(tables):
+    """tables: (symbol, owner_offset) or (symbol, owner_offset, function) entries.
+
+    A table without its own function belongs to `function`. Tables of several
+    functions are allowed when the compiled unit holds all of them; each
+    table's entries must point into its own function.
+    """
+    tables = [(entry[0], entry[1], entry[2] if len(entry) > 2 and entry[2] else function)
+              for entry in tables]
+    if len(tables) < 2 or len({entry[0] for entry in tables}) != len(tables):
         raise ValueError("expected at least two distinct switch tables")
     original = path.read_bytes()
     header, sections = read_elf(original)
@@ -217,17 +226,20 @@ def import_multiple_tables(path, owner_path, tables, function):
     if ".data" not in names:
         _, symbols = parse_symbols(sections)
         if all(sum(s["name"] == name and s["shndx"] == 0 and s["info"] == 0x10
-                   for s in symbols) == 1 for name, _ in tables):
+                   for s in symbols) == 1 for name, _, _ in tables):
             return False
         raise ValueError("table section missing without imported symbols")
 
-    names, symtab_index, symbols, records = table_layout(sections, function)
+    owners = {entry[2] for entry in tables}
+    names, symtab_index, symbols, records = table_layout(sections, owners)
     data_index = names[".data"]
-    functions = [s for s in symbols if s["name"] == function and
-                 s["info"] == 0x12 and s["shndx"] == names.get(".text")]
-    if len(functions) != 1 or any(addend < 0 or addend >= functions[0]["size"]
-                                   for _, _, addend, _ in records):
-        raise ValueError("table entries do not point inside the compiled function")
+    for owner in owners:
+        functions = [s for s in symbols if s["name"] == owner and
+                     s["info"] == 0x12 and s["shndx"] == names.get(".text")]
+        if len(functions) != 1 or any(addend < 0 or addend >= functions[0]["size"]
+                                       for _, _, addend, target in records
+                                       if target == owner):
+            raise ValueError("table entries do not point inside the compiled function")
 
     removed_symbols = {i for i, s in enumerate(symbols) if s["shndx"] == data_index}
     local_tables = sorted((i for i in removed_symbols if symbols[i]["info"] == 1),
@@ -238,13 +250,13 @@ def import_multiple_tables(path, owner_path, tables, function):
     ordered = sorted(tables, key=lambda entry: entry[1])
     start_offset = ordered[0][1]
     cursor = 0
-    for index, (name, owner_offset) in zip(local_tables, ordered):
+    for index, (name, owner_offset, owner) in zip(local_tables, ordered):
         symbol = symbols[index]
         start, size = symbol["value"], symbol["size"]
         if start != cursor or owner_offset != start_offset + cursor or size <= 0:
             raise ValueError("compiled switch tables are not contiguous at retail offsets")
         owner_data, owner_records = owner_table_layout(
-            owner_sections, name, function, owner_offset, size)
+            owner_sections, name, owner, owner_offset, size)
         local_records = [(at - start, kind, addend, target)
                          for at, kind, addend, target in records if start <= at < start + size]
         if sections[data_index]["data"][start:start + size] != owner_data or \
@@ -261,14 +273,14 @@ def import_multiple_tables(path, owner_path, tables, function):
     kept = [i for i in range(len(symbols)) if i not in removed_symbols]
     remap = {old: new for new, old in enumerate(kept)}
     new_symbols = [dict(symbols[i]) for i in kept]
-    imported_names = {name for name, _ in ordered}
+    imported_names = {name for name, _, _ in ordered}
     if any(s["name"] in imported_names for s in new_symbols):
         raise ValueError("table symbol is already present in compiled object")
     strtab_index = sections[symtab_index]["fields"][6]
     strtab = bytearray(sections[strtab_index]["data"])
     imports = {}
     name_offsets = []
-    for index, (name, _) in zip(local_tables, ordered):
+    for index, (name, _, _) in zip(local_tables, ordered):
         name_offsets.append(len(strtab))
         strtab.extend(name.encode("ascii") + b"\0")
         imports[index] = len(new_symbols)
@@ -343,7 +355,7 @@ def import_multiple_tables(path, owner_path, tables, function):
         raise ValueError("import changed allocated sections other than .data")
     _, checked_symbols = parse_symbols(checked_sections)
     if any(sum(s["name"] == name and s["shndx"] == 0 and s["info"] == 0x10
-               for s in checked_symbols) != 1 for name, _ in tables):
+               for s in checked_symbols) != 1 for name, _, _ in tables):
         raise ValueError("import did not create one undefined symbol per table")
     path.write_bytes(output)
     return True
@@ -354,7 +366,7 @@ def main():
     parser.add_argument("--object", required=True, type=Path)
     parser.add_argument("--owner", required=True, type=Path)
     parser.add_argument("--symbol")
-    parser.add_argument("--table", action="append", metavar="SYMBOL:OFFSET")
+    parser.add_argument("--table", action="append", metavar="SYMBOL:OFFSET[:FUNCTION]")
     parser.add_argument("--function", required=True)
     parser.add_argument("--owner-offset", type=lambda value: int(value, 0), default=0)
     args = parser.parse_args()
@@ -362,10 +374,15 @@ def main():
         if args.symbol:
             parser.error("--table and --symbol are mutually exclusive")
         try:
-            tables = [(name, int(offset, 0)) for name, offset in
-                      (entry.rsplit(":", 1) for entry in args.table)]
+            tables = []
+            for entry in args.table:
+                parts = entry.split(":")
+                if len(parts) not in (2, 3):
+                    raise ValueError(entry)
+                tables.append((parts[0], int(parts[1], 0),
+                               parts[2] if len(parts) == 3 else None))
         except ValueError:
-            parser.error("--table requires SYMBOL:OFFSET")
+            parser.error("--table requires SYMBOL:OFFSET[:FUNCTION]")
         import_multiple_tables(args.object, args.owner, tables, args.function)
     elif args.symbol:
         import_table(args.object, args.owner, args.symbol, args.function, args.owner_offset)

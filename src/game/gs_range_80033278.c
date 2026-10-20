@@ -1,158 +1,96 @@
 /**
  * @file gs_range_80033278.c
- * @brief gs-engine code, 0x80033278 - 0x80035C48 (16 fns).
+ * @brief menuCardE / colosseum sysvars code, 0x80033278 - 0x80035C48 (16 fns).
+ *
+ * One unit for the whole span so that the Card-e work buffers at
+ * 0x803A3278-0x803A3E58 are .bss objects defined in this translation unit,
+ * as they were in the original: MWCC then addresses them off one pooled base
+ * register in _sysvarsProcessData and fn_80034FB4 (lbl_803A3278 + 0x10 /
+ * 0xB0 / 0xBC), and keeps the 0xBC object offset out of field displacements.
  *
  * fn_80035C48, fn_80035D70 and fn_80035DA0 live in game/gs_exact_80035C48.c.
  *
  * fn_80035DD4 (formerly the last function here) is the opening-demo
  * finish callback of the movie TU and now lives in game/movie.c.
- *
- * Range unit assigned from the propagated subsystem map
- * (tools/subsystem_propagation.py, >=80% single-label dominance;
- * campaign 2026-07-01). All functions asm-only until matched; the
- * range name stays honest until internal TU structure is proven.
  */
 #include "dolphin/types.h"
 
-#if defined(GS_RANGE_EXACT_80034280) || defined(GS_RANGE_SUFFIX_80034FB4)
-extern void GBAInit(void);
-extern void fn_8007B090(s32);
-extern s32 windowGetActiveID(void);
-extern u8* windowGetKeyInfo(void);
-extern void fn_8007AAFC(void);
-extern void fn_8007AAA8(void);
-extern s32 fn_8007AB10(s32, s32*);
-extern void fn_80166A28(u32);
-extern void winMsgClose(s32);
-extern void winMsgOpen(s32, u32, s32, s32);
-extern void _threadSwitch(void);
-extern s32 fn_800D37CC(void);
-extern u32 fn_800D3088(void);
-extern void fn_80080310(void*, const void*, u32);
-extern u8 lbl_803A3334[];
-extern u8 lbl_803F7A30[];
-extern const f32 lbl_8047B9F8;
-extern const f32 lbl_8047BA28;
+/* One opponent record of the colosseum menu block (0x28 bytes). */
+typedef struct SysvarsOpponentSource {
+    u8 name[0x0C];
+    u8 category;
+    s8 moveIndex[4];
+    u8 pad_11;
+    u16 field_12;
+    u16 field_14;
+    u16 field_16;
+    u16 field_18;
+    u32 field_1C;
+    u16 field_20;
+    u8 pad_22[2];
+    u8 field_24;
+} SysvarsOpponentSource;
 
-#if !defined(GS_RANGE_SUFFIX_80034FB4)
-extern u8 lbl_803A3278[];
-#endif
+typedef struct SysvarsMoveSnapshot {
+    u8 data[0x2A];
+} SysvarsMoveSnapshot;
 
-extern u8 lbl_8047A439;
-extern void* lbl_8047A434;
-extern u32 lbl_8047A444;
-extern s8 lbl_8047A448;
-
-extern const f32 lbl_8047BA18;
-
-extern char lbl_80266FAC[];
-extern char lbl_80266FB8[];
-extern char lbl_8047BA20[];
-
-extern void fn_8007C764(u8);
-extern void fn_8007C7A8(s32);
-
-extern s32 menuOpen(s32, s32);
-extern void menuClose(s32);
-extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, ...);
-
-extern s32 fn_80034280(void);
-
-extern void GScharCpy(void*, const void*);
-extern void* fightFloorDataBiosGetPtr(u16);
-extern void* fightFloorDataBiosGetName(void*);
-extern void* GSmsgGetGSchar(void*);
-
-extern void fn_8007CB54(void*);
+typedef struct SysvarsOpponentSnapshot {
+    u8 trainerType;
+    u8 region;
+    u8 variant;
+    u8 enabled;
+    u8 selection;
+    u8 pad_05;
+    u8 name[0x0C];
+    u8 category;
+    u8 pad_13;
+    u16 field_14;
+    u16 field_16;
+    u16 field_18;
+    u16 field_1A;
+    u8 field_1C;
+    u8 pad_1D;
+    u16 field_1E;
+    u8 field_20;
+    u8 pad_21;
+    SysvarsMoveSnapshot moves[4];
+} SysvarsOpponentSnapshot;
 
 /*
- * The repository elsewhere declares this as two fixed 32-bit arguments.
- * Keeping it non-variadic is important on PPC because variadic calls affect
- * the generated CR setup.
+ * Savedata block 0xD, as handed out by savedataGetStatus(0, 0xD). Only the
+ * recent-opponent history is modelled; the offset is part of the member so
+ * the loads keep the retail 0x41E4-based displacements.
  */
-extern void msgctrlSetValue(u32, u32);
+typedef struct SysvarsSaveWork {
+    u8 pad_0000[0x41E4];
+    SysvarsOpponentSnapshot history[10];
+} SysvarsSaveWork;
 
-extern void winMsgOpen(s32, u32, s32, s32);
-extern void winMsgClose(s32);
-
-extern void __assert(const char*, s32, const char*);
-
-extern void fn_8007CAB0(void);
-extern void* fn_800836AC(s32, void*, s32);
-extern void fn_8007C7EC(void);
-
-extern u8* fn_80082EA4(void*, s32, s32, s32);
-extern u8* fn_80082FE4(void*, s32);
-
-extern void fn_8007C450(s32, s32, s32, s32, s32);
-extern void fn_8007C414(void);
-
-extern void fn_80082CF0(void*, void*, s32);
-extern void fn_80082BA4(void*, void*, s32);
-extern void fn_80082960(void*, void*, s32);
-
-extern void fn_80166A28(u32);
-
-extern void _threadSwitch(void);
-extern s32 fn_800D37CC(void);
-extern u32 fn_800D3088(void);
-
-extern void fn_801D0AFC(s32);
-extern void* savedataGetStatus(s32, s32);
-extern void* heroBiosGetPokemonPtr(void*, u8);
-extern void pokemonBiosSetItemDataId(void*, u16);
-
-extern u32 fn_80032ED8(void*, s32, s32);
-extern s32 windowGetActiveID(void);
-
-extern void fn_8007C300(s32, s32);
-
-extern u8 fn_80082738(void*, void*, s32);
-extern void fn_8007C634(void);
-extern void fn_80082650(void*);
-
-extern void fn_80166AB8(s32, s32, s32);
-extern void heroAddPokecoupon(s32, s32);
-
-extern s32 heroItemAddItemDataId(s32, u16, s32, s32);
-extern u16 pcboxDelItem(s32, u16, s32);
-
-extern void fn_80165668(s32, s32, s32);
-extern void fn_800832C8(s32, void*, s32);
-
-#else
-/*
- * _sysvarsProcessData (menuCardE, 0x80033278) is this unit's only function.
- * The original translation unit defines the Card-e work buffers as separate
- * .bss objects, so MWCC addresses them off one pooled base register
- * (lbl_803A3278 + 0x10 / 0xB0 / 0xBC) and keeps the 0xBC object offset out
- * of field displacements. The real prototypes of the cardesavedata.c and
- * menu_carde_matrix.c callees are declared here.
- */
-
+/* The Card-e data block (lbl_803A3334, 0xB24 bytes). */
 typedef struct CardEData {
-    s32 card_type;        /* 0x000 */
+    s32 card_type;                          /* 0x000 */
     u8 pad_004[4];
-    u8 cardId;            /* 0x008 */
+    u8 cardId;                              /* 0x008 */
     u8 pad_009;
-    u8 title[0x1A];       /* 0x00A */
-    s8 row;               /* 0x024 */
+    u8 title[0x1A];                         /* 0x00A */
+    s8 row;                                 /* 0x024 */
     u8 pad_025;
-    s8 column;            /* 0x026 */
+    s8 column;                              /* 0x026 */
     u8 pad_027;
-    u8 names[3][0x10];    /* 0x028 */
-    s8 layerCount;        /* 0x058 */
+    u8 names[3][0x10];                      /* 0x028 */
+    s8 layerCount;                          /* 0x058 */
     u8 pad_059;
-    s8 columnCount;       /* 0x05A */
-    s8 menu1[3];          /* 0x05B */
-    s8 menu2[3];          /* 0x05E */
-    s8 bonus[3];          /* 0x061 */
-    u16 items[3];         /* 0x064 */
+    s8 columnCount;                         /* 0x05A */
+    s8 menu1[3];                            /* 0x05B */
+    s8 menu2[3];                            /* 0x05E */
+    s8 bonus[3];                            /* 0x061 */
+    u16 items[3];                           /* 0x064 */
     u8 pad_06A[0x3AC - 0x6A];
-    u8 menus[0x2E][0x28]; /* 0x3AC */
+    SysvarsOpponentSource opponents[0x2E];  /* 0x3AC */
     u8 pad_ADC[0xAFC - 0xADC];
-    u32 floorId;          /* 0xAFC */
-    u16 floorName[0x12];  /* 0xB00 */
+    u32 floorId;                            /* 0xAFC */
+    u16 floorName[0x12];                    /* 0xB00 */
 } CardEData;
 
 typedef struct CardEGridEntry {
@@ -165,27 +103,49 @@ typedef struct CardEGridEntry {
     u8 rowType[6];
 } CardEGridEntry;
 
+/* One entry of the recent-floor history (lbl_803A3278). */
+typedef struct SysvarsFloorHistory {
+    u8 floor;
+    s8 region;
+    s8 variant;
+} SysvarsFloorHistory;
+
+/* Card-e work buffers, .bss 0x803A3278 - 0x803A3E58. */
 u8 lbl_803A3278[0x10];
 u8 lbl_803A3288[0xA0];
 u16 lbl_803A3328[6];
 CardEData lbl_803A3334;
-extern u8 lbl_8047A439;
+
+/* Byte view of the card block, for the record copies that walk it raw. */
+#define CARD_E_BYTES ((u8*)&lbl_803A3334)
+
+extern SysvarsSaveWork* lbl_8047A430;
 extern CardEGridEntry* lbl_8047A434;
+extern u8 lbl_8047A439;
 extern u32 lbl_8047A444;
 extern s8 lbl_8047A448;
+extern u8 lbl_803F7A30[];
 extern const f32 lbl_8047B9F8;
 extern const f32 lbl_8047BA18;
+extern const f32 lbl_8047BA28;
 extern u8 lbl_8047BA1C;
 extern const char lbl_80266FAC[];
 extern const char lbl_80266FB8[];
 extern const char lbl_8047BA20[6];
 
+extern void GBAInit(void);
+extern void fn_8007B090(s32);
+extern s32 windowGetActiveID(void);
+extern u8* windowGetKeyInfo(void);
+extern void fn_8007AAFC(void);
+extern void fn_8007AAA8(void);
+extern s32 fn_8007AB10(s32, s32*);
+extern void fn_80080310(void*, const void*, u32);
 extern void fn_8007C764(u8);
 extern void fn_8007C7A8(u8);
 extern s32 menuOpen(s32, s32);
 extern void menuClose(s32);
 extern s32 menuOpenCustom(s32, s32, s32, s32, s32, s32, ...);
-extern s32 fn_80034280(void);
 extern u8* GScharCpy(void*, const void*);
 extern void* fightFloorDataBiosGetPtr(u16);
 extern void* fightFloorDataBiosGetName(void*);
@@ -196,7 +156,7 @@ extern void winMsgOpen(s32, u32, s32, s32);
 extern void winMsgClose(s32);
 extern void __assert(const char*, s32, const char*);
 extern void fn_8007CAB0(void);
-extern CardEGridEntry* fn_800836AC(u8*, CardEData*, u8);
+extern CardEGridEntry* fn_800836AC(void*, CardEData*, u8);
 extern void fn_8007C7EC(void);
 extern u8* fn_80082EA4(CardEGridEntry*, s8, s8, s8);
 extern u8* fn_80082FE4(CardEGridEntry*, s8);
@@ -214,7 +174,6 @@ extern void* savedataGetStatus(s32, s32);
 extern void* heroBiosGetPokemonPtr(void*, u8);
 extern void pokemonBiosSetItemDataId(void*, u16);
 extern u32 fn_80032ED8(void*, s32, s32);
-extern s32 windowGetActiveID(void);
 extern void fn_8007C300(u8, s8);
 extern u8 fn_80082738(CardEGridEntry*, CardEData*, s8);
 extern void fn_8007C634(void);
@@ -225,12 +184,11 @@ extern s32 heroItemAddItemDataId(void*, u16, s32, s32);
 extern u16 pcboxDelItem(void*, u16, s32);
 extern void fn_80165668(s32, s32, s32);
 extern void fn_800832C8(u8*, CardEData*, s8);
-#endif
+extern s32 fn_80034280(void);
+extern void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut);
+extern void fn_80034830(u8 enabled, s32 selection,
+                        SysvarsOpponentSource* source);
 
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
-#if !defined(GS_RANGE_EXACT_80034280) && !defined(GS_RANGE_SUFFIX_80034FB4)
 static inline void sysvarsWaitForTransfer(void)
 {
     f32 progress;
@@ -241,9 +199,7 @@ static inline void sysvarsWaitForTransfer(void)
         progress += (f32)fn_800D3088() / (f32)fn_800D37CC();
     }
 }
-#endif
 
-#if defined(GS_RANGE_EXACT_80034280)
 /* The same wait for two seconds (fn_80034280's GBA link retries). */
 static inline void sysvarsWaitTwoSeconds(void)
 {
@@ -255,9 +211,7 @@ static inline void sysvarsWaitTwoSeconds(void)
         progress += (f32)fn_800D3088() / (f32)fn_800D37CC();
     }
 }
-#endif
 
-#if !defined(GS_RANGE_EXACT_80034280) && !defined(GS_RANGE_SUFFIX_80034FB4)
 /*
  * MWCC lays out the pooled .bss in first-reference order. In the original
  * translation unit, earlier functions (0x800301B0..) used the Card-e head
@@ -382,7 +336,6 @@ s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
     if (lbl_8047A439 != 0) {
         return 2;
     }
-
 
     name = lbl_803A3288;
 
@@ -521,7 +474,7 @@ restart:
     sysvarsRestoreItems();
 
 first_menu:
-    menuResult = fn_80032ED8(lbl_803A3334.menus[lbl_803A3334.menu1[lbl_8047A448]], 8, 0);
+    menuResult = fn_80032ED8(&lbl_803A3334.opponents[lbl_803A3334.menu1[lbl_8047A448]], 8, 0);
     menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
     fn_8007C300(lbl_803A3334.cardId, lbl_8047A448);
 
@@ -566,7 +519,7 @@ first_menu:
         winMsgOpen(8, 0x3B74, 1, 0);
         winMsgClose(1);
 
-        menuResult = fn_80032ED8(lbl_803A3334.menus[lbl_803A3334.menu2[lbl_8047A448]], 9, 0);
+        menuResult = fn_80032ED8(&lbl_803A3334.opponents[lbl_803A3334.menu2[lbl_8047A448]], 9, 0);
         menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
         fn_8007C300(lbl_803A3334.cardId, lbl_8047A448);
 
@@ -646,9 +599,7 @@ first_menu:
     winMsgClose(1);
     return 0;
 }
-#endif
 
-#if defined(GS_RANGE_EXACT_80034280)
 /* Run the GBA transfer UI until it finishes or the user cancels it. */
 s32 fn_80034280(void)
 {
@@ -730,20 +681,14 @@ s32 fn_80034280(void)
 
         case 20:
             fn_8007AAA8();
-            fn_80080310(lbl_803A3334, lbl_803F7A30 + 0x2388,
+            fn_80080310(&lbl_803A3334, lbl_803F7A30 + 0x2388,
                         0x1040);
             return 2;
         }
     }
 }
-#endif
-#pragma pop
 
-#if defined(GS_RANGE_EXACT_80034280)
 /* fn_800345A4 - 0x800345A4 | size: 0x164 */
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_800345A4(void* unused, u8* sprite) {
     extern u32 lbl_802E61D8[];
     extern void winSpriteSetDisp(void*, u32);
@@ -790,12 +735,8 @@ void fn_800345A4(void* unused, u8* sprite) {
         break;
     }
 }
-#pragma pop
 
 /* fn_80034708 - 0x80034708 | size: 0xB0 */
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_80034708(void* unused, u8* sprite) {
     extern u32 lbl_8047A458;
     extern u32 lbl_80266FA0[];
@@ -825,7 +766,6 @@ void fn_80034708(void* unused, u8* sprite) {
         winSpriteSetDisp(sprite, 0);
     }
 }
-#pragma pop
 
 /* fn_800347B8 - 0x800347B8 | size: 0xC */
 void fn_800347B8(void) {
@@ -867,60 +807,6 @@ void fn_8003480C(void) {
 }
 #pragma pop
 
-#endif
-
-typedef struct SysvarsOpponentSource {
-    u8 name[0x0C];
-    u8 category;
-    s8 moveIndex[4];
-    u8 pad_11;
-    u16 field_12;
-    u16 field_14;
-    u16 field_16;
-    u16 field_18;
-    u32 field_1C;
-    u16 field_20;
-    u8 pad_22[2];
-    u8 field_24;
-} SysvarsOpponentSource;
-
-typedef struct SysvarsMoveSnapshot {
-    u8 data[0x2A];
-} SysvarsMoveSnapshot;
-
-typedef struct SysvarsOpponentSnapshot {
-    u8 trainerType;
-    u8 region;
-    u8 variant;
-    u8 enabled;
-    u8 selection;
-    u8 pad_05;
-    u8 name[0x0C];
-    u8 category;
-    u8 pad_13;
-    u16 field_14;
-    u16 field_16;
-    u16 field_18;
-    u16 field_1A;
-    u8 field_1C;
-    u8 pad_1D;
-    u16 field_1E;
-    u8 field_20;
-    u8 pad_21;
-    SysvarsMoveSnapshot moves[4];
-} SysvarsOpponentSnapshot;
-
-/*
- * Savedata block 0xD, as handed out by savedataGetStatus(0, 0xD). Only the
- * recent-opponent history is modelled; the offset is part of the member so
- * the loads keep the retail 0x41E4-based displacements.
- */
-typedef struct SysvarsSaveWork {
-    u8 pad_0000[0x41E4];
-    SysvarsOpponentSnapshot history[10];
-} SysvarsSaveWork;
-
-#if defined(GS_RANGE_EXACT_80034280)
 /*
  * Record the current opponent in the recent-opponent history. Nothing happens
  * if this trainer/region/variant triple is already listed; otherwise the ten
@@ -930,14 +816,9 @@ typedef struct SysvarsSaveWork {
  * the four 0x2A-byte move slots, which is how the retail code addresses them
  * (base advancing by 0x2A, move payload at displacement 0x22).
  */
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_80034830(u8 enabled, s32 selection,
                  SysvarsOpponentSource* source)
 {
-    extern u8 lbl_803A3334[];
-    extern SysvarsSaveWork* lbl_8047A430;
     extern void GScharCpy(void*, const void*);
     s32 region;
     s32 variant;
@@ -947,10 +828,10 @@ void fn_80034830(u8 enabled, s32 selection,
     u8 isNew;
 
     isNew = 1;
-    region = *(s8*)(lbl_803A3334 + 0x24);
-    variant = *(s8*)(lbl_803A3334 + 0x26);
+    region = lbl_803A3334.row;
+    variant = lbl_803A3334.column;
     for (i = 0; i < 10; i++) {
-        if (lbl_8047A430->history[i].trainerType == lbl_803A3334[8] &&
+        if (lbl_8047A430->history[i].trainerType == lbl_803A3334.cardId &&
             lbl_8047A430->history[i].region == region &&
             lbl_8047A430->history[i].variant == variant) {
             isNew = 0;
@@ -964,9 +845,9 @@ void fn_80034830(u8 enabled, s32 selection,
         }
 
         destination = (u8*)&lbl_8047A430->history[9];
-        destination[0] = lbl_803A3334[8];
-        destination[1] = lbl_803A3334[0x24];
-        destination[2] = lbl_803A3334[0x26];
+        destination[0] = lbl_803A3334.cardId;
+        destination[1] = lbl_803A3334.row;
+        destination[2] = lbl_803A3334.column;
         destination[3] = enabled;
         destination[4] = selection;
         GScharCpy(destination + 6, source->name);
@@ -985,14 +866,13 @@ void fn_80034830(u8 enabled, s32 selection,
                 *(u16*)(destination + 0x22) = 0;
             } else {
                 *(SysvarsMoveSnapshot*)(destination + 0x22) =
-                    *(SysvarsMoveSnapshot*)(lbl_803A3334 + 0x514 +
+                    *(SysvarsMoveSnapshot*)(CARD_E_BYTES + 0x514 +
                                             moveIndex * 0x2A);
             }
             destination += 0x2A;
         }
     }
 }
-#pragma pop
 
 /* The highest required level among a battle group's four members.
  * RULE-EXCEPTION(user-approved): single-use inline helper; only inlining
@@ -1000,7 +880,6 @@ void fn_80034830(u8 enabled, s32 selection,
  * docs/RULE_EXCEPTIONS.md */
 static inline u8 sysvarsGroupMaxLevel(u8* group)
 {
-    extern u8 lbl_803A3334[];
     u16 slot;
     u8 maxRequired;
     s32 index;
@@ -1010,7 +889,7 @@ static inline u8 sysvarsGroupMaxLevel(u8* group)
     for (slot = 0; slot < 4; slot++) {
         index = (s8)group[0x3B9 + slot];
         if (index >= 0) {
-            required = lbl_803A3334[index * 0x2A + 0x517];
+            required = CARD_E_BYTES[index * 0x2A + 0x517];
             if (maxRequired < required) {
                 maxRequired = required;
             }
@@ -1019,13 +898,8 @@ static inline u8 sysvarsGroupMaxLevel(u8* group)
     return maxRequired;
 }
 
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
 {
-    extern u8 lbl_803A3334[];
-    extern void* lbl_8047A434;
     extern void* heroGetStatus(s32, s32, u16);
     extern u8 pokemonCheckValid(void*);
     extern u32 pokemonGetStatus(void*, s32, s32, s32);
@@ -1051,7 +925,7 @@ void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
 
     best = 0;
     ties = 1;
-    region = lbl_803A3334[0x24];
+    region = CARD_E_BYTES[0x24];
     maxLevel = 1;
     for (party = 0; party < 6; party++) {
         pokemon = heroGetStatus(0, 3, party);
@@ -1063,11 +937,11 @@ void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
         }
     }
 
-    for (candidate = 0; candidate < (s8)lbl_803A3334[0x58]; candidate++) {
+    for (candidate = 0; candidate < (s8)CARD_E_BYTES[0x58]; candidate++) {
         score[candidate] = 0x7FFFFFFF;
         layer = fn_80082FE4(lbl_8047A434, candidate);
         if (layer[0x1C + (s8)region * 0xE] != 0) {
-            group = lbl_803A3334 + (s8)lbl_803A3334[0x5E + candidate] * 0x28;
+            group = CARD_E_BYTES + lbl_803A3334.menu2[candidate] * 0x28;
             maxRequired = sysvarsGroupMaxLevel(group);
             difference = maxLevel - maxRequired;
             sign = difference >> 31;
@@ -1087,18 +961,14 @@ void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut)
     *valid = score[best] < 0x7FFFFFFF;
     if (*valid != 0) {
         *selectionOut = best;
-        *valueOut = lbl_803A3334[0x5E + *selectionOut];
+        *valueOut = lbl_803A3334.menu2[*selectionOut];
     } else {
-        *selectionOut = (s8)(lbl_803A3334[0x58] - 1);
-        *valueOut = lbl_803A3334[0x5B + *selectionOut];
+        *selectionOut = (s8)(CARD_E_BYTES[0x58] - 1);
+        *valueOut = lbl_803A3334.menu1[*selectionOut];
     }
 }
-#pragma pop
 
 /* fn_80034DC0 - 0x80034DC0 | size: 0x78 */
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_80034DC0(u8* arg0, u8* arg1) {
     extern u32 lbl_8047A44C;
     extern void fn_800FB680(s32, s32, u32, u16);
@@ -1115,12 +985,8 @@ void fn_80034DC0(u8* arg0, u8* arg1) {
     msgctrlSetValue(0x34, lbl_8047A44C);
     fn_800FBB34(0, 0, *(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56), combined, 0x3CC9);
 }
-#pragma pop
 
 /* fn_80034E38 - 0x80034E38 | size: 0xB8 */
-#pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 void fn_80034E38(u8* arg0, u8* arg1) {
     extern u32 lbl_8047A44C;
     extern u32 lbl_8047A450;
@@ -1147,12 +1013,9 @@ void fn_80034E38(u8* arg0, u8* arg1) {
     }
     fn_800FBB34(0, 0, *(s16*)(arg1 + 0x54), *(s16*)(arg1 + 0x56), value, 0x3CC9);
 }
-#pragma pop
 
 /* fn_80034EF0 - 0x80034EF0 | size: 0x94 */
 #pragma push
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
 #pragma optimization_level 1
 void fn_80034EF0(u8* arg0, u8* arg1) {
@@ -1186,66 +1049,18 @@ void fn_80034EF0(u8* arg0, u8* arg1) {
 #pragma optimize_for_size on
 void fn_80034F84(void) {
     extern void msgctrlSetValue();
-    extern u8 lbl_803A3288[];
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma kept for byte match - see docs/RULE_EXCEPTIONS.md */
-#pragma peephole off
     msgctrlSetValue(0x37, lbl_803A3288);
 }
-#pragma peephole on
 #pragma optimize_for_size reset
 #pragma pop
 
 /* fn_80034FB0 - 0x80034FB0 | size: 0x4 */
 void fn_80034FB0(void) {
 }
-#endif
-
-#if defined(GS_RANGE_SUFFIX_80034FB4)
-/* One entry of the recent-floor history at the start of the sysvars work. */
-typedef struct SysvarsFloorHistory {
-    u8 floor;
-    s8 region;
-    s8 variant;
-} SysvarsFloorHistory;
-
-/* The colosseum menu block at work + 0xBC (lbl_803A3334). */
-typedef struct SysvarsMenuWork {
-    s32 mode;                               /* 0x000 */
-    u8 pad_004[4];
-    u8 floor;                               /* 0x008 */
-    u8 pad_009[0x1B];
-    s8 region;                              /* 0x024 */
-    u8 pad_025;
-    s8 variant;                             /* 0x026 */
-    u8 pad_027[0x31];
-    s8 count;                               /* 0x058 */
-    u8 pad_059[0x353];
-    SysvarsOpponentSource opponents[46];    /* 0x3AC */
-    u8 pad_ADC[0x20];
-    u32 floorId;                            /* 0xAFC */
-    u16 floorName[1];                       /* 0xB00 */
-} SysvarsMenuWork;
-
-/* lbl_803A3278 */
-typedef struct SysvarsWork {
-    SysvarsFloorHistory history[5];         /* 0x00 */
-    u8 pad_0F;
-    u16 name[0x50];                         /* 0x10 */
-    u16 heldItems[6];                       /* 0xB0 */
-    SysvarsMenuWork menu;                   /* 0xBC */
-} SysvarsWork;
-
-extern SysvarsWork lbl_803A3278;
-
-extern void fn_80034B5C(u8* valid, s8* selectionOut, u8* valueOut);
-extern void fn_80034830(u8 enabled, s32 selection,
-                        SysvarsOpponentSource* source);
 
 /* fn_80034FB4 - 0x80034FB4 | size: 0xC94 */
 void fn_80034FB4(void)
 {
-    extern u32 lbl_8047A430;
-    extern void* lbl_8047A434;
     extern u8 lbl_8047A438;
     extern u8 lbl_8047A439;
     extern s32 lbl_8047A43C;
@@ -1284,9 +1099,9 @@ void fn_80034FB4(void)
     extern u32 fightFloorDataBiosGetName(void*);
     extern void* GSmsgGetGSchar(u32);
     extern void msgctrlSetValue(u32, u32);
-    SysvarsWork* work;
-    SysvarsMenuWork* menu;
-    u16* name;
+    
+    CardEData* menu;
+    u8* name;
     u16* floorName;
     u16* heldItems;
     SysvarsFloorHistory* history;
@@ -1302,10 +1117,9 @@ void fn_80034FB4(void)
     u8 duplicate;
     f32 progress;
 
-    work = &lbl_803A3278;
     lbl_8047A438 = 1;
-    menu = &lbl_803A3278.menu;
-    name = work->name;
+    menu = &lbl_803A3334;
+    name = lbl_803A3288;
     floorName = menu->floorName;
 
     while (lbl_8047A458 > 0) {
@@ -1350,7 +1164,7 @@ void fn_80034FB4(void)
             menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
             fadeCheck(1);
             save = savedataGetStatus(0, 2);
-            heldItems = work->heldItems;
+            heldItems = lbl_803A3328;
             for (index = 0; index < 6; index++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
                 heldItems[index] = pokemonBiosGetItemDataId(pokemon);
@@ -1377,7 +1191,7 @@ void fn_80034FB4(void)
 
         case 3:
             save = savedataGetStatus(0, 2);
-            heldItems = work->heldItems;
+            heldItems = lbl_803A3328;
             for (index = 0; index < 6; index++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
                 heldItems[index] = pokemonBiosGetItemDataId(pokemon);
@@ -1386,9 +1200,9 @@ void fn_80034FB4(void)
             lbl_8047A44A = 0;
             lbl_8047A43C = 0;
             for (index = 0; index < 5; index++) {
-                work->history[index].floor = 0;
-                work->history[index].region = 0;
-                work->history[index].variant = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].floor = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
             }
             if (menuIsCheck(0xA5) != 0) {
                 menuClose(0xA5);
@@ -1421,12 +1235,12 @@ void fn_80034FB4(void)
             winMsgClose(1);
             lbl_8047A43C = 0;
             for (index = 0; index < 5; index++) {
-                work->history[index].floor = 0;
-                work->history[index].region = 0;
-                work->history[index].variant = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].floor = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
             }
             save = savedataGetStatus(0, 2);
-            heldItems = work->heldItems;
+            heldItems = lbl_803A3328;
             for (index = 0; index < 6; index++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
                 pokemonBiosSetItemDataId(pokemon, heldItems[index]);
@@ -1447,7 +1261,7 @@ void fn_80034FB4(void)
             default:
                 break;
             }
-            switch (work->menu.mode) {
+            switch (lbl_803A3334.card_type) {
             case 1:
                 lbl_8047A458 = 7;
                 continue;
@@ -1457,26 +1271,26 @@ void fn_80034FB4(void)
                 continue;
             }
             save = savedataGetStatus(0, 0xD);
-            lbl_8047A434 = fn_800836AC(save, &work->menu, 0);
+            lbl_8047A434 = fn_800836AC(save, &lbl_803A3334, 0);
             if (lbl_8047A434 != 0) {
                 result = 4;
-                entry = fn_80082EA4(lbl_8047A434, (s8)(menu->count - 1),
-                                    menu->region, menu->variant);
+                entry = fn_80082EA4(lbl_8047A434, (s8)(menu->layerCount - 1),
+                                    menu->row, menu->column);
                 if (((u8*)entry)[0xC] != 0) {
                     duplicate = 0;
                     for (index = 0; index < lbl_8047A43C; index++) {
-                        if (menu->floor == work->history[index].floor &&
-                            menu->region == work->history[index].region &&
-                            menu->variant == work->history[index].variant) {
+                        if (menu->cardId == ((SysvarsFloorHistory*)lbl_803A3278)[index].floor &&
+                            menu->row == ((SysvarsFloorHistory*)lbl_803A3278)[index].region &&
+                            menu->column == ((SysvarsFloorHistory*)lbl_803A3278)[index].variant) {
                             duplicate = 1;
                             break;
                         }
                     }
                     if (duplicate == 0) {
-                        history = &work->history[lbl_8047A43C];
-                        history->floor = menu->floor;
-                        history->region = menu->region;
-                        history->variant = menu->variant;
+                        history = &((SysvarsFloorHistory*)lbl_803A3278)[lbl_8047A43C];
+                        history->floor = menu->cardId;
+                        history->region = menu->row;
+                        history->variant = menu->column;
                         lbl_8047A43C++;
                         if (lbl_8047A43C >= 5) {
                             lbl_8047A43C = 4;
@@ -1542,7 +1356,7 @@ void fn_80034FB4(void)
                 fn_801D0AFC(0);
             }
             save = savedataGetStatus(0, 2);
-            heldItems = work->heldItems;
+            heldItems = lbl_803A3328;
             for (index = 0; index < 6; index++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
                 pokemonBiosSetItemDataId(pokemon, heldItems[index]);
@@ -1559,13 +1373,13 @@ void fn_80034FB4(void)
         case 7:
             lbl_8047A444 = menu->floorId;
             if (*floorName != 0) {
-                GScharCpy(work->name, floorName);
+                GScharCpy(lbl_803A3288, floorName);
             } else {
                 entry = fightFloorDataBiosGetPtr((u16)lbl_8047A444);
                 if (entry != 0) {
-                    GScharCpy(work->name, GSmsgGetGSchar(fightFloorDataBiosGetName(entry)));
+                    GScharCpy(lbl_803A3288, GSmsgGetGSchar(fightFloorDataBiosGetName(entry)));
                 } else {
-                    GScharCpy(work->name, &lbl_8047BA1C);
+                    GScharCpy(lbl_803A3288, &lbl_8047BA1C);
                 }
             }
             msgctrlSetValue(0x4D, (u32)name);
@@ -1589,7 +1403,7 @@ void fn_80034FB4(void)
         case 10:
             fn_80034B5C(&valid, &selection, &value);
             fn_80034830(valid, (u8)selection,
-                        &work->menu.opponents[(s8)value]);
+                        &lbl_803A3334.opponents[(s8)value]);
             amount = lbl_8047A450 + 1;
             if (amount > 0x98967F) {
                 amount = 0x98967F;
@@ -1620,9 +1434,9 @@ void fn_80034FB4(void)
             }
             lbl_8047A43C = 0;
             for (index = 0; index < 5; index++) {
-                work->history[index].floor = 0;
-                work->history[index].region = 0;
-                work->history[index].variant = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].floor = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
+                ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
             }
             fn_801D0AFC(0);
             winMsgOpen(8, 0x3BD7, 1, 0);
@@ -1648,7 +1462,7 @@ void fn_80034FB4(void)
                 progress += (f32)fn_800D3088() / (f32)fn_800D37CC();
             }
             save = savedataGetStatus(0, 2);
-            heldItems = work->heldItems;
+            heldItems = lbl_803A3328;
             for (index = 0; index < 6; index++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
                 pokemonBiosSetItemDataId(pokemon, heldItems[index]);
@@ -1685,4 +1499,3 @@ void fn_80034FB4(void)
     }
     lbl_8047A438 = 0;
 }
-#endif
