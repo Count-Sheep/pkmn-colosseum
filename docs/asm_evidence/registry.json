@@ -2028,6 +2028,208 @@
         "sync"
       ],
       "evidence": "docs/asm_evidence/os_reset.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMfmsr",
+      "mnemonics": [
+        "blr",
+        "mfmsr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtmsr",
+      "mnemonics": [
+        "blr",
+        "mtmsr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMfhid0",
+      "mnemonics": [
+        "blr",
+        "mfspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMthid0",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMfl2cr",
+      "mnemonics": [
+        "blr",
+        "mfspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtl2cr",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtdec",
+      "mnemonics": [
+        "blr",
+        "mtdec"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCSync",
+      "mnemonics": [
+        "blr",
+        "sc"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCHalt",
+      "mnemonics": [
+        "b",
+        "li",
+        "nop",
+        "sync"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtmmcr0",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtmmcr1",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtpmc1",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtpmc2",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtpmc3",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtpmc4",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMfhid2",
+      "mnemonics": [
+        "blr",
+        "mfspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMthid2",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/os/PPCArch.c",
+      "function": "PPCMtwpar",
+      "mnemonics": [
+        "blr",
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/sdk_range_80098108.c",
+      "function": "PPCSetFpNonIEEEMode",
+      "mnemonics": [
+        "blr",
+        "mtfsb1"
+      ],
+      "evidence": "docs/asm_evidence/ppcarch.md"
+    },
+    {
+      "path": "src/dolphin/thp/THP_range_801E1B54.c",
+      "function": "__THPGQRSetup",
+      "mnemonics": [
+        "li",
+        "mfspr",
+        "mtspr",
+        "oris"
+      ],
+      "evidence": "docs/asm_evidence/thp_dec.md"
+    },
+    {
+      "path": "src/dolphin/thp/THP_range_801E1B54.c",
+      "function": "__THPGQRRestore",
+      "mnemonics": [
+        "mtspr"
+      ],
+      "evidence": "docs/asm_evidence/thp_dec.md"
+    },
+    {
+      "path": "src/dolphin/thp/THP_range_801E1B54.c",
+      "function": "THPInit",
+      "mnemonics": [
+        "li",
+        "mtspr",
+        "oris"
+      ],
+      "evidence": "docs/asm_evidence/thp_dec.md"
     }
   ]
 }

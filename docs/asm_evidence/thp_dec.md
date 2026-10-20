@@ -71,3 +71,27 @@ Retail address 0x801EC368, size 0x6A8.
 - Why it cannot be C: the V-block twin of `__THPHuffDecodeDCTCompU`: the same inline-asm bit extractor over register-pinned state, with branches from one asm block into the refill path of the next (`_notEnoughBits...`, `_Done...`). The branches cross asm blocks, which no C statement produces.
 - Other decompilations: [projectPiki/pikmin2, commit 999140f3, `src/Dolphin/thp/THPDec.c`](https://github.com/projectPiki/pikmin2/blob/999140f3521e22619547d5d61862a6577ea73882/src/Dolphin/thp/THPDec.c#L2177-L2302) keeps `__THPHuffDecodeDCTCompV` as the same C function with inline `asm` blocks.
 - Origin: Nintendo Dolphin SDK THP library, `THPDec.c`, inline assembly in the vendor source.
+
+## __THPGQRSetup
+
+Inline; expanded into `__THPDecompressYUV` before the MCU rows are decoded.
+
+- Why it cannot be C: it saves the graphics quantisation registers GQR5 and GQR6 with `mfspr` (SPR 917/918) and loads the decoder's own quantisation modes with `li`/`oris`/`mtspr` (GQR5 = s16 dequantise for the coefficient loads, GQR6 = u8 quantise with scale for the pixel stores). MWCC never emits `mfspr`/`mtspr` from C.
+- Other decompilations: [projectPiki/pikmin2, commit 999140f3, `src/Dolphin/thp/THPDec.c`](https://github.com/projectPiki/pikmin2/blob/999140f3521e22619547d5d61862a6577ea73882/src/Dolphin/thp/THPDec.c#L453-L477) keeps `__THPGQRSetup` as the same static inline function with the same two `asm` blocks.
+- Origin: Nintendo Dolphin SDK THP library, `THPDec.c`, inline assembly in the vendor source.
+
+## __THPGQRRestore
+
+Inline; expanded into `__THPDecompressYUV` after the MCU rows are decoded.
+
+- Why it cannot be C: it writes the saved GQR5 and GQR6 values back with `mtspr` (SPR 917/918). MWCC never emits `mtspr` from C.
+- Other decompilations: [projectPiki/pikmin2, commit 999140f3, `src/Dolphin/thp/THPDec.c`](https://github.com/projectPiki/pikmin2/blob/999140f3521e22619547d5d61862a6577ea73882/src/Dolphin/thp/THPDec.c#L479-L491) keeps `__THPGQRRestore` as the same static inline function with the same `asm` block.
+- Origin: Nintendo Dolphin SDK THP library, `THPDec.c`, inline assembly in the vendor source.
+
+## THPInit
+
+Retail address 0x801ECA10, size 0xA0.
+
+- Why it cannot be C: after setting up the locked-cache work pointers it programs GQR2-GQR5 for the fast u8/u16/s8/s16 casts (`li`/`oris`/`mtspr` to SPR 914-917), the body of the SDK's `OSInitFastCast`. MWCC never emits `mtspr` from C.
+- Other decompilations: [projectPiki/pikmin2, commit 999140f3, `src/Dolphin/thp/THPDec.c`](https://github.com/projectPiki/pikmin2/blob/999140f3521e22619547d5d61862a6577ea73882/src/Dolphin/thp/THPDec.c#L2309-L2334) has `THPInit` call `OSInitFastCast()`, which is the same `asm` block of four `li`/`oris`/`mtspr` triples in [`include/Dolphin/OS/OSFastCast.h`](https://github.com/projectPiki/pikmin2/blob/999140f3521e22619547d5d61862a6577ea73882/include/Dolphin/OS/OSFastCast.h#L28-L46). Colosseum's source writes that inline function's asm in place.
+- Origin: Nintendo Dolphin SDK THP library, `THPDec.c` (with the OS library's inline `OSInitFastCast` from `OSFastCast.h`), inline assembly in the vendor source.

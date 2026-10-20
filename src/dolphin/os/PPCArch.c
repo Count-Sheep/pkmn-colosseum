@@ -6,54 +6,63 @@
  */
 #include "dolphin/os/PPCArch.h"
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm u32 PPCMfmsr(void) {
     nofralloc
     mfmsr r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtmsr(register u32 val) {
     nofralloc
     mtmsr r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm u32 PPCMfhid0(void) {
     nofralloc
     mfspr r3, HID0
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMthid0(register u32 val) {
     nofralloc
     mtspr HID0, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm u32 PPCMfl2cr(void) {
     nofralloc
     mfspr r3, L2CR
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtl2cr(register u32 val) {
     nofralloc
     mtspr L2CR, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtdec(register u32 val) {
     nofralloc
     mtdec r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCSync(void) {
     nofralloc
     sc
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCHalt(void) {
     nofralloc
     sync
@@ -64,36 +73,42 @@ _ppc_halt_loop:
     b _ppc_halt_loop
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtmmcr0(register u32 val) {
     nofralloc
     mtspr MMCR0, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtmmcr1(register u32 val) {
     nofralloc
     mtspr MMCR1, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtpmc1(register u32 val) {
     nofralloc
     mtspr PMC1, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtpmc2(register u32 val) {
     nofralloc
     mtspr PMC2, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtpmc3(register u32 val) {
     nofralloc
     mtspr PMC3, r3
     blr
 }
 
+/* Hardware primitive (special-register access); evidence: docs/asm_evidence/ppcarch.md */
 asm void PPCMtpmc4(register u32 val) {
     nofralloc
     mtspr PMC4, r3

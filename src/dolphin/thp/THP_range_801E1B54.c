@@ -605,6 +605,7 @@ void __THPRestartDefinition(void)
 #endif
 
 #if defined(THP_DECODER_BUILD_MIDDLE)
+/* Hand-written Dolphin SDK THP asm (GQR setup); evidence: docs/asm_evidence/thp_dec.md */
 static inline void __THPGQRSetup(void)
 {
     register u32 tmp1, tmp2;
@@ -631,6 +632,7 @@ static inline void __THPGQRSetup(void)
     // clang-format on
 }
 
+/* Hand-written Dolphin SDK THP asm (GQR setup); evidence: docs/asm_evidence/thp_dec.md */
 static inline void __THPGQRRestore(void)
 {
     register u32 tmp1, tmp2;
@@ -2471,6 +2473,7 @@ static void __THPHuffDecodeDCTCompV(register THPFileInfo *info, THPCoeff *block)
 extern void OSRegisterVersion(char *version);
 extern char *lbl_80478D08; /* version string, passed to OSRegisterVersion */
 
+/* Hand-written Dolphin SDK THP asm (GQR setup); evidence: docs/asm_evidence/thp_dec.md */
 BOOL THPInit(void)
 {
     u8 *base;

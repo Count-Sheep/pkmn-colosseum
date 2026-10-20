@@ -119,7 +119,8 @@ void* memset(void* dst, int value, size_t n);
 #if !defined(SDK_OS_SUFFIX_ONLY) && !defined(SDK_EXI_GETID_ONLY)
 
 /* 0x80098108 | size: 0x8 */
-/* The push/pop keeps the asm function from changing the code generation of
+/* Hardware primitive (PPCArch.c, FPSCR bit); evidence: docs/asm_evidence/ppcarch.md
+   The push/pop keeps the asm function from changing the code generation of
    the C functions after it (the unit flags set the EXIBios.c options). */
 #pragma push
 asm void PPCSetFpNonIEEEMode(void) {
