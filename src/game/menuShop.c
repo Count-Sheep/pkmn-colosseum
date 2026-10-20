@@ -402,8 +402,8 @@ asm void fn_80029EF4(void) {
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
-void fn_80029EF4(void* price, s32 item_id, s32 quantity, s32 currency, ShopInventory* inventory) {
-    switch ((u8)currency) {
+void fn_80029EF4(void* price, s32 item_id, s32 quantity, u8 currency, ShopInventory* inventory) {
+    switch (currency) {
     case 2:
         heroDecPokecoupon(0, price);
         pcboxDelItem(0, item_id, quantity);
@@ -2472,7 +2472,7 @@ static inline u16 shopStockId(ShopWork* work, s32 i, u16* num)
 
 /* Asks whether to leave the shop of type `mode`; a PC-box shop (3) that
  * changed its stock writes the stock back first. Returns 1 to leave. */
-static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
+static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u8 mode)
 {
     extern u32   savedataGetStatus(u8* obj, u16 sel);
     extern void  heroSetStatus(u8* ptr, u32 selector, u32 value);
@@ -2519,7 +2519,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
         if (answer == 1 || answer == -1) {
             return 0;
         }
-        if ((u8)mode == 3) {
+        if (mode == 3) {
             fn_8002A1C4((u8*)mapIdx, 0xe, -1);
         }
         return 1;
@@ -2530,7 +2530,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
     if (answer == 1 || answer == -1) {
         return 0;
     }
-    if ((u8)mode == 3) {
+    if (mode == 3) {
         name = *(u8*)(lbl_80478E4C + *(u8*)(lbl_80478E54 + mapIdx * 4) * 0x4c);
         winMsgOpenWithSE(2, 0x3d83, 0, 0, name);
         memset(&inv, 0, sizeof(inv));
@@ -2575,7 +2575,7 @@ static inline s32 shopConfirmLeave(ShopWork* work, s32 mapIdx, u32 mode)
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
-void fn_8002C408(s32 mapIdx, u32 mode)
+void fn_8002C408(s32 mapIdx, u8 mode)
 {
     extern void  fn_80142A88(void* buf, s32 v);
     extern s32   fn_80029CC0(u8* buf);
@@ -2588,7 +2588,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     extern u16   itemBiosGetNum(void* slot);
     extern u32   pcboxGetItemCapacity(s32 a, u32 item);
     extern s32   heroItemCheckAddItemDataId(u8* ptr, u32 item);
-    extern void  fn_80029EF4(void* a, s32 b, s32 c, s32 d, void* e);
+    extern void  fn_80029EF4(void* a, s32 b, s32 c, u8 d, void* e);
     extern void  fn_8002A1C4(u8* idx, s32 msgId, s32 term, ...);
     extern u32   fn_80029FAC(u8* idx, s32 a, s32 b, s32 c, ...);
     extern void  winMsgOpenWithSE(s32 a, u32 str, s32 c, s32 d, u8 e);
@@ -2680,7 +2680,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
     if (ok == 0) {
         return;
     }
-    if ((u8)mode == 4) {
+    if (mode == 4) {
         money = shopGetMoney(type, &params.work);
         cheapest = 0x98967F;
         list = (u16*)lbl_80478E44 + *(u16*)(lbl_80478E54 + 2 + mapIdx * 4);
@@ -2702,7 +2702,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
             return;
         }
     }
-    kind = mode;
+    kind = (u8)mode;
     while (done == 0) {
     for (;;) {
         if ((s32)lbl_804788A8 != 0) {
@@ -2773,7 +2773,7 @@ void fn_8002C408(s32 mapIdx, u32 mode)
         fn_8002A1C4((u8*)mapIdx, 6, -1);
         fn_80029EF4((void*)total, item, qty, mode, &params.work);
         fn_80166AB8(0x3cc, 0, 0);
-        if ((u8)mode != 4) {
+        if (mode != 4) {
             continue;
         }
         winMsgOpenWithSE(2, fn_80029FAC(&se, mapIdx, 7, -1), 1, 0, se);
