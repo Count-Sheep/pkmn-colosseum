@@ -4478,7 +4478,7 @@ config.libs = [
                     {"symbol": "lbl_8047C228", "offset": 8, "expected": "4330000080000000"},
                 ],
                 mw_version="GC/2.0",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-fp_contract off"],
                 progress_category="game",
             ),
             # fn_800965C8 carve: GC/2.0 -O3, peephole off.

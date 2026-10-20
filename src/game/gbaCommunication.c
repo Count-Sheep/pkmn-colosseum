@@ -1203,8 +1203,8 @@ void fn_8009567C(u8* context, u8* sprite)
             windowDrawSprite2(0, 0, *(s16*)(sprite + 0x54), *(s16*)(sprite + 0x56), color,
                               (s32)context, 0x116, 0);
         } else if (fill == slot) {
-            ratio -= lbl_8047C218 * fill;
-            windowDrawSprite2(0, 0, (u32)(*(s16*)(sprite + 0x54) * (lbl_8047C21C * ratio)),
+            ratio = (ratio - lbl_8047C218 * fill) * lbl_8047C21C;
+            windowDrawSprite2(0, 0, (u32)(*(s16*)(sprite + 0x54) * ratio),
                               *(s16*)(sprite + 0x56), color, (s32)context, 0x116, 0);
         }
         break;
