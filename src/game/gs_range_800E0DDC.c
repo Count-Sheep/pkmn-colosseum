@@ -413,7 +413,7 @@ extern u32 lbl_8047AB40;
 extern u32 lbl_8047AB44;
 
 
-#if !defined(GS_RANGE_800E0E14_ONLY)
+#if !defined(GS_RANGE_800E0E14_ONLY) && !defined(GS_RANGE_800E1544_ONLY)
 u32 fn_800E0DDC(void)
 {
     typedef struct GSFreeBlock {
@@ -657,6 +657,45 @@ static inline GSFreeBlock* gsMemBlockAfter(GSFreeBlock* block, u32 size) {
     return (GSFreeBlock*)((u8*)block + size);
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline copy of gsMemCopy for the compaction loop; its byte-only branch uses its own pointers, which gives retail's registers there - see docs/RULE_EXCEPTIONS.md */
+static inline void gsMemCopyMoved(u8* dst, u8* src, GSMemHandle* handle) {
+    u8* byteSrc;
+    u32* wordSrc;
+    u8* byteDst;
+    u32* wordDst;
+    u8* toByte;
+    u8* fromByte;
+    u32 words;
+    u32 size;
+    u32 distance;
+
+    size = handle->size;
+    distance = src - dst;
+    if ((distance > 0 ? distance : -distance) >= 4) {
+        wordSrc = (u32*)src;
+        wordDst = (u32*)dst;
+        words = size >> 2;
+        size = size & 3;
+        while (words != 0) {
+            *wordDst++ = *wordSrc++;
+            words--;
+        }
+        byteDst = (u8*)wordDst;
+        byteSrc = (u8*)wordSrc;
+        while (size != 0) {
+            *byteDst++ = *byteSrc++;
+            size--;
+        }
+    } else {
+        fromByte = src;
+        toByte = dst;
+        while (size != 0) {
+            *toByte++ = *fromByte++;
+            size--;
+        }
+    }
+}
+
 /* Compact the movable allocations in the GS scratch heap. */
 u32 fn_800E1544(void)
 {
@@ -775,7 +814,7 @@ u32 fn_800E1544(void)
             destination = (u8*)block;
             for (k = 0; k < count; k++) {
                 source = candidates[k]->data;
-                gsMemCopy(destination, source, candidates[k]);
+                gsMemCopyMoved(destination, source, candidates[k]);
                 candidates[k]->data = destination;
                 destination += candidates[k]->size;
                 remaining -= candidates[k]->size;
@@ -836,6 +875,7 @@ u32 fn_800E1544(void)
 }
 #endif
 
+#if !defined(GS_RANGE_800E1544_ONLY)
 extern u8 lbl_80270658[];
 struct GSFreeBlock;
 extern struct GSFreeBlock* lbl_8047AB30;
@@ -1007,4 +1047,5 @@ u8 fn_800E0E14(u8 verbose, u8 dumpMap) {
     }
     return ok;
 }
+#endif /* !GS_RANGE_800E1544_ONLY */
 #endif
