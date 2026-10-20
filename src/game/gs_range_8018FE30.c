@@ -68,8 +68,10 @@ typedef struct FlagInitState {
     u32* buffer3;
 } FlagInitState;
 
+#if !defined(GS_RANGE_8018FE30_FN_8018FE30_ONLY)
 void fn_801903B0(s32 flagId);
 void _flagSet(s32 flagId, u32 value);
+#endif
 extern u32 fn_800FF56C(void);
 extern void* savedataGetStatus(u8* data, u16 index);
 extern s32 heroItemDecItemDataId(u8* ptr, u32 itemId, u32 count, s32 arg4);
@@ -151,14 +153,26 @@ static inline void flagSetValue(u32* buffer, FlagDefinition* defs, s32 flagId,
 extern FlagDefinition* lbl_80478F9C;
 extern FlagStateEntry* lbl_80478EEC;
 
+/* fn_8018FE30's own unit (GS_RANGE_8018FE30_FN_8018FE30_ONLY, set by
+ * configure.py) links only fn_8018FE30: the setters it expands inline stay
+ * defined there, as static inline copies, and fn_80190528 / GSflagClear are
+ * left to their own units. */
+#if defined(GS_RANGE_8018FE30_FN_8018FE30_ONLY)
+/* RULE-EXCEPTION(user-approved): static inline copies of fn_801903B0 and _flagSet so the one-function carve can expand them without defining them - see docs/RULE_EXCEPTIONS.md */
+#define GS_FLAG_SETTER static inline
+#else
+#define GS_FLAG_SETTER
+#endif
+
 #if !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
-void fn_801903B0(s32 flagId)
+GS_FLAG_SETTER void fn_801903B0(s32 flagId)
 {
     flagSetValue(
         lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer,
         lbl_80478F9C, flagId, 0);
 }
 
+#if !defined(GS_RANGE_8018FE30_FN_8018FE30_ONLY)
 void fn_80190528(s32 flagId)
 {
     flagSetValue(
@@ -166,8 +180,9 @@ void fn_80190528(s32 flagId)
         lbl_80478F9C, flagId, 1);
 }
 #endif
+#endif
 #if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY)
-void _flagSet(s32 flagId, u32 value)
+GS_FLAG_SETTER void _flagSet(s32 flagId, u32 value)
 {
     flagSetValue(
         lbl_80478EEC[(lbl_80478F9C[flagId].typeAndWidth & 0xC0) >> 6].buffer,
@@ -224,11 +239,22 @@ static inline void flagApplyEvent(u32 event)
                    lbl_80478EFC[event].posY, lbl_80478EFC[event].posZ);
 }
 
+/* The item-swap table is read as byte offset plus table address, with the
+ * index scaled first: retail's `lhzx rD,index,base` operand order. */
+static inline void flagSwapItems(u8 itemSwap)
+{
+    extern FlagItemSwap* lbl_80478EF4;
+
+    /* RULE-EXCEPTION(user-approved): codegen-only casts - the scaled index as the pointer operand and the table address as an integer give retail's index-first lhzx and base+2 addi - see docs/RULE_EXCEPTIONS.md */
+    heroItemDecItemDataId(0, *(u16*)((u8*)(itemSwap * 4) + (u32)lbl_80478EF4 + 2), 1, -1);
+    /* RULE-EXCEPTION(user-approved): codegen-only casts - same index-first form for the added item - see docs/RULE_EXCEPTIONS.md */
+    heroItemAddItemDataId(0, *(u16*)((u8*)(itemSwap * 4) + (u32)lbl_80478EF4), 1, -1);
+}
+
 void fn_8018FE30(int flagId)
 {
     extern FlagConfig* lbl_80478F98;
     extern u32* lbl_80478ED4;
-    extern FlagItemSwap* lbl_80478EF4;
     int current;
     u32 target;
     u8 itemSwap;
@@ -254,16 +280,14 @@ void fn_8018FE30(int flagId)
         }
         itemSwap = lbl_80478F9C[current].itemSwap;
         if (itemSwap != 0) {
-            heroItemDecItemDataId(0, lbl_80478EF4[itemSwap].removeItem, 1, -1);
-            heroItemAddItemDataId(0, lbl_80478EF4[itemSwap].addItem, 1, -1);
+            flagSwapItems(itemSwap);
         }
         current = lbl_80478F9C[current].next;
     }
 
     itemSwap = lbl_80478F9C[target].itemSwap;
     if (itemSwap != 0) {
-        heroItemDecItemDataId(0, lbl_80478EF4[itemSwap].removeItem, 1, -1);
-        heroItemAddItemDataId(0, lbl_80478EF4[itemSwap].addItem, 1, -1);
+        flagSwapItems(itemSwap);
     }
 
     if (lbl_80478F9C[current].event != 0) {
@@ -276,7 +300,8 @@ void fn_8018FE30(int flagId)
  * from gs_flag_get_exact_801906A0.c. _flagSet (0x8019075C) is scored from
  * this file through gs_range_8018FE30_suffix_8019075C.c. */
 
-#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY)
+#if !defined(GS_RANGE_8018FE30_SUFFIX_801903B0_ONLY) && !defined(GS_RANGE_8018FE30_SUFFIX_8019075C_ONLY) && \
+    !defined(GS_RANGE_8018FE30_FN_8018FE30_ONLY)
 void GSflagClear(s32 level)
 {
     extern FlagStateEntry* lbl_80478EEC;

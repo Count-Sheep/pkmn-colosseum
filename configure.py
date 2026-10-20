@@ -6998,6 +6998,20 @@ config.libs = [
                 mw_version="GC/1.2.5n",
                 progress_category="sdk",
             ),
+            # fn_8018FE30 alone (GS_RANGE_8018FE30_FN_8018FE30_ONLY): the
+            # setters it inlines are static inline copies there.
+            Object(
+                Matching,
+                "game/gs_range_8018FE30.c",
+                mw_version="GC/1.3",
+                extra_cflags=[
+                    "-use_lmw_stmw on",
+                    "-sdata 8",
+                    "-sdata2 8",
+                    "-DGS_RANGE_8018FE30_FN_8018FE30_ONLY",
+                ],
+                progress_category="game",
+            ),
             *[
                 Object(
                     status,
@@ -7007,7 +7021,6 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path in [
-                    (CodeCandidate, "game/gs_range_8018FE30.c"),
                     (Matching, "game/gs_flag_test_exact_801902E0.c"),
                     (Matching, "game/gs_range_8018FE30_suffix_801903B0.c"),
                     (Matching, "game/gs_flag_get_exact_801906A0.c"),
@@ -9902,7 +9915,7 @@ config.libs = [
                     {"symbol": "lbl_8047B768", "offset": 0x20, "expected": "4330000080000000"},
                 ],
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-fp_contract off"],
                 progress_category="game",
             ),
             Object(
