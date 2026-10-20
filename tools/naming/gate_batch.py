@@ -18,8 +18,8 @@ apply_renames journal and the exit status is 1):
      manifest); plus: every remapped base function is present in head, and the
      number of 100% functions did not drop.
   6. python3 tools/check_object_map_freeze.py
-  7. .github/scripts/check_asm_wrappers.py src, and .github/scripts/quality_scan.py
-     on the batch commit when --commit is used (it needs two revisions).
+  7. .github/scripts/quality_scan.py HEAD <temporary commit of the batch> (run
+     right after step 2, so it fails fast), and .github/scripts/check_asm_wrappers.py src.
   8. tools/verify_decomp_rules.py --no-sha1 if the file exists: no fail-class
      count may grow relative to the base run (the tree is not 100% matched yet,
      so the absolute result is not required to be PASS).
@@ -197,6 +197,18 @@ def main() -> int:
 
         # 2. checker.
         gate.step("check_naming --base HEAD", lambda: gate.run([PY, "tools/check_naming.py", "--base", head]))
+        # 2b. quality scan: it diffs two revisions, so scan a temporary commit
+        # of the batch and drop the commit again (the files stay changed).
+        def quality():
+            files = list(json.loads(journal.read_text())["files"].keys())
+            gate.run(["git", "add", "--", *files])
+            gate.run(["git", "commit", "-q", "--no-verify", "-m", "naming gate: temporary quality-scan commit"])
+            tmp = git(root, "rev-parse", "HEAD")
+            try:
+                gate.run([PY, ".github/scripts/quality_scan.py", head, tmp], tail=6)
+            finally:
+                subprocess.run(["git", "reset", "-q", "--mixed", head], cwd=root, check=True)
+        gate.step("quality scan", quality)
         # 3. fresh link.
         gate.step(f"fresh link ({args.expect_files} files OK)", lambda: fresh_link(gate, args.expect_files))
         # 4. report.
@@ -246,9 +258,7 @@ def main() -> int:
                 gate.run(["git", "add", "--", *files])
                 msg = args.message or default_message(root, batch)
                 gate.run(["git", "commit", "-q", "-m", msg])
-                new = git(root, "rev-parse", "HEAD")
-                gate.run([PY, ".github/scripts/quality_scan.py", head, new])
-            gate.step("commit + quality scan", commit)
+            gate.step("commit", commit)
         result = "PASS"
         return 0
     except GateFail as e:

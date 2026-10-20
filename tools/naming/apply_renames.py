@@ -27,8 +27,12 @@ Safety:
   * A row is refused when its old name occurs inside a string or character
     literal, inside an ASSERT-style macro invocation, or when the function body
     uses __FUNCTION__/__func__ (all of these put the name into data bytes).
-  * A row is refused when the new name already exists in any symbols.txt or as
-    an identifier anywhere in the C sources.
+  * A row is refused when the new name already exists in any symbols.txt or is
+    defined in the C sources as a different function or macro (a header
+    prototype or a `#define NEW fn_X` alias is fine; the alias line is dropped).
+  * A row is refused when its old name sits inside an asm block that includes
+    a .inc file (a dead asm-wrapper stub): .github/scripts/quality_scan.py
+    rejects any edit there.
   * All-or-nothing: every edit is computed in memory and checked first; nothing
     is written unless the whole batch is valid. The original content of each
     touched file is saved to a journal, and `--rollback JOURNAL` restores it.
@@ -55,6 +59,8 @@ sys.path.insert(0, str(TOOLS))
 import check_naming as cn  # noqa: E402
 
 REPO_ROOT = TOOLS.parent
+sys.path.insert(0, str(REPO_ROOT / ".github" / "scripts"))
+import quality_scan as qs  # noqa: E402
 FILE_EXT_AFTER = re.compile(r"\.(?:c|h|cpp|hpp|cp|s|S|inc|o|txt|json|md|py|map|elf|dol|rel)\b")
 ASSERT_CALL = re.compile(r"\b\w*ASSERT\w*\s*\(")
 FUNC_MACROS = re.compile(r"\b(__FUNCTION__|__func__|__PRETTY_FUNCTION__)\b")
@@ -331,6 +337,17 @@ def plan(root: Path, batch: list[dict[str, str]], ledger_rows: list[dict[str, st
             for _s, bo, bc in cn.find_definitions(code, old):
                 if FUNC_MACROS.search(code, bo, bc):
                     errors.append(f"{rel}: {old} uses __FUNCTION__/__func__; its name is data")
+        # The quality scan rejects any added line inside an asm block that
+        # includes a .inc file (a dead `#if 0` asm wrapper counts too), so a
+        # rename may not touch one. Clean the wrapper up first.
+        if ".inc" in text and "asm" in text:
+            for region in qs.find_asm_regions(text):
+                if not any(qs.INC_INCLUDE.match(ln) for ln in region["body"].splitlines()):
+                    continue
+                lines = text.split("\n")[region["start_line"] - 1:region["end_line"]]
+                for old in set(old_pat.findall("\n".join(lines))):
+                    errors.append(f"{rel}:{region['start_line']}: {old} appears in a .inc asm wrapper "
+                                  f"(dead stub); the quality scan rejects edits there, remove the stub first")
         nt, k = replace_c(text, mapping, old_pat)
         nt = drop_alias_defines(nt, tags)
         nt, _ = add_tags(nt, tags)
