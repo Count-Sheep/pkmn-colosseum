@@ -4471,12 +4471,20 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gbaCommunication_candidate_8009567C.c",
+                # TEMPORARY constant_import and jump_table_import: the carved
+                # renderer shares the file's conversion literals and switch pool.
                 constant_import=[
                     {"symbol": "lbl_8047C220", "offset": 0, "expected": "4330000000000000"},
                     {"symbol": "lbl_8047C228", "offset": 8, "expected": "4330000080000000"},
                 ],
+                jump_table_import={
+                    "symbol": "jumptable_802EF01C",
+                    "function": "fn_8009567C",
+                    "owner": "game/data/data_802EEB78.c",
+                    "owner_offset": 0x4A4,
+                },
                 mw_version="GC/2.0",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole", "-fp_contract off"],
                 progress_category="game",
