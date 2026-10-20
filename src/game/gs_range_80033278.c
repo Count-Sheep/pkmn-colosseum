@@ -361,6 +361,18 @@ static inline s32 sysvarsCheckCard(CardEData* card)
     return action;
 }
 
+static inline s32 sysvarsAskRetry(void)
+{
+    s32 result;
+
+    sysvarsRestoreItems();
+    winMsgOpen(8, 0x3B7C, 0, 0);
+    result = menuOpen(0xA9, 1);
+    menuClose(0xA9);
+    winMsgClose(1);
+    return result;
+}
+
 s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
 {
     u8* name;
@@ -566,12 +578,7 @@ first_menu:
             fn_8007C7EC();
             winMsgOpen(8, 0x3B78, 1, 0);
             fn_8007C414();
-            sysvarsRestoreItems();
-            winMsgOpen(8, 0x3B7C, 0, 0);
-            result = menuOpen(0xA9, 1);
-            menuClose(0xA9);
-            winMsgClose(1);
-            if (result == 0) {
+            if (sysvarsAskRetry() == 0) {
                 goto restart;
             }
             return 2;
@@ -604,12 +611,7 @@ first_menu:
 
     if (!sysvarsAllFilled(&lbl_803A3334, lbl_8047A448)) {
         fn_8007C414();
-        sysvarsRestoreItems();
-        winMsgOpen(8, 0x3B7C, 0, 0);
-        result = menuOpen(0xA9, 1);
-        menuClose(0xA9);
-        winMsgClose(1);
-        if (result == 0) {
+        if (sysvarsAskRetry() == 0) {
             goto restart;
         }
         return 2;
