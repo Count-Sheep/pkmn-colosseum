@@ -2,8 +2,6 @@
 #include "dolphin/types.h"
 #include "game/effect/effect_util_types.h"
 
-/* RULE-EXCEPTION(user-approved): local peephole control for retail codegen;
- * see docs/RULE_EXCEPTIONS.md. */
 u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset)
 {
     EffectUtilEntry* result;

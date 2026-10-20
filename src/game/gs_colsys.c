@@ -116,7 +116,6 @@ extern char lbl_80272000[];
 extern char lbl_8035B4E8[];
 extern void GSlogWrite(char*, char*, ...);
 
-/* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
 u32 fn_8010C388(u16 idx) {
     u8* entry;
     u16 i = idx;

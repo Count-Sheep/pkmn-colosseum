@@ -1,6 +1,6 @@
 /** Exact menuShop display callback, 0x8002A5B0 - 0x8002A618.
- * RULE-EXCEPTION(user-approved): inherited scheduling/nopeephole mode; see
- * docs/RULE_EXCEPTIONS.md.
+ * Built with the menuShop unit flags in configure.py (-schedule on,
+ * -opt nopeephole).
  */
 #include "dolphin/types.h"
 
