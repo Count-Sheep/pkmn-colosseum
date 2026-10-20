@@ -3188,15 +3188,6 @@ typedef struct CardEStatusData {
     /* 0x184 */ char file[1];
 } CardEStatusData;
 
-/* RULE-EXCEPTION(user-approved): single-use inline helper (fn_80084038's window lookup) - see docs/RULE_EXCEPTIONS.md */
-static inline u8* CardEStatusWindow(u8* window)
-{
-    if (window == NULL) {
-        window = ((u8* (*)(u32))windowSearchID)(0xA6);
-    }
-    return window;
-}
-
 static inline CardEStatusWork* CardEGetStatusWork(u8* window)
 {
     if (window == NULL) {
@@ -3367,7 +3358,7 @@ void fn_80084038(u8* window)
     s32 flags;
     void* sprite;
 
-    status = *(CardEStatusWork**)((void* (*)(u8*))windowGetFreeWork)(CardEStatusWindow(window));
+    status = CardEGetStatusWork(window);
     work = status;
     switch ((s8)window[1]) {
     case 0:
