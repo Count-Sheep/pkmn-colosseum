@@ -1,5 +1,6 @@
 #include "dolphin/types.h"
 
+/* Hand-written Dolphin SDK asm (OSReset.c Reset); evidence: docs/asm_evidence/os_reset.md */
 asm void Reset_8009FF50(register u32 resetCode) {
     nofralloc
     b skip1

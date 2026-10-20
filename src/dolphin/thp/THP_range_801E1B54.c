@@ -743,6 +743,7 @@ void __THPDecompressYUV(void *tileY, void *tileU, void *tileV)
     __THPGQRRestore();
 }
 
+/* Hand-written Dolphin SDK THP asm; evidence: docs/asm_evidence/thp_dec.md */
 inline void __THPInverseDCTNoYPos(register THPCoeff *in, register u32 xPos)
 {
     register f32 *q, *ws;
@@ -1049,6 +1050,7 @@ inline void __THPInverseDCTNoYPos(register THPCoeff *in, register u32 xPos)
     }
 }
 
+/* Hand-written Dolphin SDK THP asm; evidence: docs/asm_evidence/thp_dec.md */
 inline void __THPInverseDCTY8(register THPCoeff *in, register u32 xPos)
 {
     register f32 *q, *ws;
@@ -1422,6 +1424,7 @@ static void __THPDecompressiMCURow512x448(void)
     __THPInfo->dLC[2] += 0x800;
 }
 
+/* Hand-written Dolphin SDK THP asm; evidence: docs/asm_evidence/thp_dec.md */
 inline s32 __THPHuffDecodeTab(register THPFileInfo *info, register THPHuffmanTab *h)
 {
     register s32 code;
@@ -1455,7 +1458,7 @@ _done:
         register u32 maxcodebase;
         register u32 tmp2;
 
-    _FailedCheckEnoughBits:
+    asm { _FailedCheckEnoughBits: }
         maxcodebase = (u32) & (h->maxCode);
         cnt += 5;
 
@@ -1506,7 +1509,7 @@ _done:
         }
         // clang-format on
     }
-_FCEB_Done:
+asm { _FCEB_Done: }
     info->cnt = cnt;
     return (h->Vij[(s32)(tmp + h->valPtr[code])]);
 
@@ -1554,7 +1557,7 @@ _FCEB_Done:
     // clang-format on
     return tmp;
 
-_Read4 : {
+asm { _Read4: } {
     register u32 maxcodebase = (u32) & (h->maxCode);
     register u32 tmp2;
 
@@ -1586,7 +1589,7 @@ _Read4 : {
 __CODE_PLUS_VP_CNT:
     return (h->Vij[(s32)(code + h->valPtr[cnt])]);
 
-_getfullword:
+asm { _getfullword: }
     // clang-format off
 	asm
     {
@@ -1606,7 +1609,7 @@ _getfullword:
     // clang-format on
     return (s32)cnt;
 
-_FailedCheckEnoughbits_Updated:
+asm { _FailedCheckEnoughbits_Updated: }
 
     cnt = 5;
     do {
@@ -1623,7 +1626,7 @@ _FailedCheckEnoughbits_Updated:
     info->cnt = cnt + 1;
     goto __CODE_PLUS_VP_CNT;
 
-_FailedCheckNoBits0:
+asm { _FailedCheckNoBits0: }
 _FailedCheckNoBits1 :
 
 {
@@ -1804,6 +1807,7 @@ static void __THPDecompressiMCURowNxN(void)
     __THPInfo->dLC[2] += ((sizeof(u8) * 64) * (x / 16));
 }
 
+/* Hand-written Dolphin SDK THP asm; evidence: docs/asm_evidence/thp_dec.md */
 static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
 {
     {
@@ -1920,7 +1924,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
                 register u32 maxcodebase;
                 register u32 tmp2;
 
-            _FailedCheckEnoughBits:
+            asm { _FailedCheckEnoughBits: }
                 cnt += 5;
                 maxcodebase = (u32) & (h->maxCode);
                 // clang-format off
@@ -1971,7 +1975,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
                 }
                 // clang-format on
             }
-        _FCEB_Done:
+        asm { _FCEB_Done: }
             ssss = (h->Vij[(s32)(tmp + h->valPtr[code])]);
             goto _DoneDecodeTab;
 
@@ -2000,7 +2004,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
             cnt = (u32)code;
             goto _DoneDecodeTab;
 
-        _getfullword : {
+        asm { _getfullword: } {
             // clang-format off
 			asm
             {
@@ -2017,7 +2021,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
         }
             goto _DoneDecodeTab;
 
-        _FailedCheckEnoughbits_Updated:
+        asm { _FailedCheckEnoughbits_Updated: }
             ssss = 5;
             do {
                 // clang-format off
@@ -2035,7 +2039,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
 
             goto _DoneDecodeTab;
 
-        _1bitleft:
+        asm { _1bitleft: }
             // clang-format off
 			asm {
                 lwzu    cb, 4(tmp);
@@ -2052,7 +2056,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
 
             goto _DoneDecodeTab;
 
-        _Read4 : {
+        asm { _Read4: } {
             register u32 maxcodebase = (u32) & (h->maxCode);
             register u32 tmp2;
 
@@ -2081,7 +2085,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
             ssss = (h->Vij[(s32)(code + h->valPtr[cnt])]);
             goto _DoneDecodeTab;
 
-        _FailedCheckNoBits0:
+        asm { _FailedCheckNoBits0: }
         _FailedCheckNoBits1:
         _REALFAILEDCHECKNOBITS : {
             register u32 mask = 0xFFFFFFFF << (33 - cnt);
@@ -2125,7 +2129,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
 
             goto _DoneDecodeTab;
 
-        _DoneDecodeTab:
+        asm { _DoneDecodeTab: }
             // clang-format off
 			asm {
                 andi.   rrrr, ssss, 15;
@@ -2182,7 +2186,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
             }
 
             {
-            _RECV_SSSS_ZERO:
+            asm { _RECV_SSSS_ZERO: }
                 if (ssss != 15) {
                     break;
                 }
@@ -2202,6 +2206,7 @@ static void __THPHuffDecodeDCTCompY(register THPFileInfo *info, THPCoeff *block)
     }
 }
 
+/* Hand-written Dolphin SDK THP asm; evidence: docs/asm_evidence/thp_dec.md */
 static void __THPHuffDecodeDCTCompU(register THPFileInfo *info, THPCoeff *block)
 {
     register s32 t;
@@ -2330,6 +2335,7 @@ static void __THPHuffDecodeDCTCompU(register THPFileInfo *info, THPCoeff *block)
     }
 }
 
+/* Hand-written Dolphin SDK THP asm; evidence: docs/asm_evidence/thp_dec.md */
 static void __THPHuffDecodeDCTCompV(register THPFileInfo *info, THPCoeff *block)
 {
     register s32 t;
