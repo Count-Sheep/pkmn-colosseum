@@ -89,6 +89,7 @@ void fn_8002D91C(u32 location_index)
 
     location = location_index;
     lbl_8047A3FC.location = location_index;
+    /* RULE-EXCEPTION(user-approved): assignment inside the store chosen for codegen - see docs/RULE_EXCEPTIONS.md */
     (state = &lbl_8047A3FC)->active = 0;
     location_entry = &lbl_80478E54[location];
     type = location_entry->type;
