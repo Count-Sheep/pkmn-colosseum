@@ -499,30 +499,31 @@ static inline GSMemHandle* gsMemFindHandleIn(GSMemHandle* top, GSMemHandle* bott
 /* Forward copy used to slide allocations down; word-wise when the
  * regions are at least a word apart. */
 static inline void gsMemCopy(u8* dst, u8* src, u32 size) {
+    u8* byteDst;
+    u32* wordSrc;
+    u8* byteSrc;
+    u32* wordDst;
+    u32 words;
     u32 distance = src - dst;
 
     if ((distance > 0 ? distance : -distance) >= 4) {
-        u32* wordSrc = (u32*)src;
-        u32* wordDst = (u32*)dst;
-        u32 words = size >> 2;
-        u32 bytes = size & 3;
-        u8* byteSrc;
-        u8* byteDst;
-
+        wordSrc = (u32*)src;
+        wordDst = (u32*)dst;
+        words = size >> 2;
+        size = size & 3;
         while (words != 0) {
             *wordDst++ = *wordSrc++;
             words--;
         }
         byteDst = (u8*)wordDst;
         byteSrc = (u8*)wordSrc;
-        while (bytes != 0) {
+        while (size != 0) {
             *byteDst++ = *byteSrc++;
-            bytes--;
+            size--;
         }
     } else {
-        u8* byteSrc = src;
-        u8* byteDst = dst;
-
+        byteSrc = src;
+        byteDst = dst;
         while (size != 0) {
             *byteDst++ = *byteSrc++;
             size--;
@@ -641,12 +642,21 @@ static inline u16 gsMemChecksum(GSMemHandle* handle) {
     return sum;
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline accessor; its result temp numbers block->next where retail's allocator expects it - see docs/RULE_EXCEPTIONS.md */
+static inline GSFreeBlock* gsMemNextOf(GSFreeBlock* block) {
+    return block->next;
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper; returning the slid block from an inline instance gives retail's register for it - see docs/RULE_EXCEPTIONS.md */
+static inline GSFreeBlock* gsMemBlockAfter(GSFreeBlock* block, u32 size) {
+    return (GSFreeBlock*)((u8*)block + size);
+}
+
 #if !defined(GS_RANGE_800E0E14_ONLY)
 /* Compact the movable allocations in the GS scratch heap. */
 u32 fn_800E1544(void)
 {
     extern const char lbl_80270BB8[];
-    GSMemHandle* bottom;
     u32 sum;
     u32 total;
     u8 wasHead;
@@ -679,11 +689,10 @@ u32 fn_800E1544(void)
     if (block != NULL && block->next != NULL) {
         while (block != NULL) {
             size = block->size;
-            bottom = (GSMemHandle*)lbl_8047AB38;
             data = (u8*)block + size;
-            if (data != (u8*)bottom) {
+            if (data != (u8*)lbl_8047AB38) {
             top = (GSMemHandle*)lbl_8047AB34;
-            desc = gsMemFindHandleIn(top, bottom, data);
+            desc = gsMemFindHandleIn(top, (GSMemHandle*)lbl_8047AB38, data);
             if (desc == NULL) {
                 GSlogWrite(lbl_80270BB8);
                 return 0;
@@ -694,8 +703,8 @@ u32 fn_800E1544(void)
                     wasHead = 1;
                 }
                 prev = block->prev;
-                next = block->next;
-                fresh = (GSFreeBlock*)((u8*)block + desc->size);
+                next = gsMemNextOf(block);
+                fresh = gsMemBlockAfter(block, desc->size);
                 if (block->prev != NULL) {
                     block->prev->next = fresh;
                 }
@@ -720,7 +729,7 @@ u32 fn_800E1544(void)
             }
             count = 0;
             total = 0;
-            for (desc = top; desc >= bottom; desc--) {
+            for (desc = top; desc >= (GSMemHandle*)lbl_8047AB38; desc--) {
                 if (desc->used == 0 || desc->locked != 0 || desc->size > block->size ||
                     desc->data <= (u8*)block || desc->pinned != 0) {
                     continue;
