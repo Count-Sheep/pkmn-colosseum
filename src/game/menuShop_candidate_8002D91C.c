@@ -1,4 +1,4 @@
-/* World-map arrival dialog and travel request, 0x8002D91C-0x8002DD24. */
+/* World-map arrival dialog, 0x8002D91C-0x8002DC6C. menuShopOpen lives in menuShop_exact_8002DC6C.c. */
 #include "dolphin/types.h"
 
 typedef struct ShopLocationEntry {
@@ -36,14 +36,6 @@ extern void fn_800E24B0(u32 handle);
 extern void fn_800E209C(u32 handle);
 extern void fn_800FF660(void);
 extern void floorSetFadeScript(s32 mode, u32 value);
-extern void mailMainReceiveTerminate(void);
-extern u32 fn_800D37CC(void);
-extern void menuCreateOffScreen(f32 duration);
-extern void _flagSet(s32 flag, s32 value);
-extern void fn_800FF730(s32 event);
-extern void _threadSwitch(void);
-extern void menuReleaseOffScreen(f32 duration);
-extern f32 lbl_8047B9CC;
 
 /* These menu helpers are also expanded in fn_8002D5D4. */
 static inline s32 shopQueryMenu(s32 menu)
@@ -174,25 +166,4 @@ void fn_8002D91C(u32 location_index)
         fn_800FF660();
         floorSetFadeScript(0, 0);
     }
-}
-
-void menuShopOpen(u32 flag)
-{
-    ShopTravelState* state;
-    f32 duration;
-
-    mailMainReceiveTerminate();
-    duration = (f32)(s32)fn_800D37CC();
-    duration = lbl_8047B9CC / duration;
-    menuCreateOffScreen(duration);
-    state = (ShopTravelState*)&lbl_8047A3FC;
-    state->location = flag;
-    state->active = 1;
-    _flagSet(1, 2);
-    fn_800FF730(0x38F);
-    floorSetFadeScript(0, 0);
-    _threadSwitch();
-    duration = (f32)(s32)fn_800D37CC();
-    duration = lbl_8047B9CC / duration;
-    menuReleaseOffScreen(duration);
 }

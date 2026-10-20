@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2233
+    "total_units": 2234
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2135,
-    "source_backed_units": 2134,
+    "named_units": 2136,
+    "source_backed_units": 2135,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2484524",
-    "matched_code_percent": 99.184975,
+    "matched_code": "2487264",
+    "matched_code_percent": 99.29435,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8665,
-    "matched_functions_percent": 99.8617,
-    "fuzzy_match_percent": 99.97234
+    "matched_functions": 8668,
+    "matched_functions_percent": 99.89628,
+    "fuzzy_match_percent": 99.97437
   },
   "unit_topology": [
     {
@@ -2526,13 +2526,26 @@
       "sections": [
         {
           "name": ".text",
-          "size": 1032,
+          "size": 848,
           "virtual_address": 2147670300
         }
       ],
-      "total_code": 1032,
+      "total_code": 848,
       "total_data": 0,
-      "total_functions": 2
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/menuShop_exact_8002DC6C",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 184,
+          "virtual_address": 2147671148
+        }
+      ],
+      "total_code": 184,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
       "name": "main/game/menuPokemonChange_r51_8002DD24_o4s",
