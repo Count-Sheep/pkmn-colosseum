@@ -938,8 +938,8 @@ void fn_8009567C(u8* context, u8* sprite)
         break;
     case 0x13C:
     case 0x57D:
-        value = (u8)pokemonDataBiosGetZokuseiDataId(pokemon_data, 0);
-        count = (u8)pokemonDataBiosGetZokuseiDataId(pokemon_data, 1);
+        value = pokemonDataBiosGetZokuseiDataId(pokemon_data, 0);
+        count = pokemonDataBiosGetZokuseiDataId(pokemon_data, 1);
         if (value != count) {
             windowDrawSprite(0, 0, context, fn_8010C46C(count), 0);
         }
