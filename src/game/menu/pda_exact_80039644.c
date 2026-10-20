@@ -89,8 +89,8 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     s32 found;
     s32 total;
     s32 nameX;
-    s32 i;
     s32 y;
+    s32 i;
     s32 width;
     s32 itemId;
     u16 count;
@@ -99,6 +99,7 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
     s32 index;
     s32 rows;
     s32 yAdj;
+    s16 w2;
 
     (void)work;
     start = 0;
@@ -138,8 +139,8 @@ s32 fn_80039644(void* work, PdaSprite* sprite)
         fn_800FB680(nameX, y, (s32)sprite, (void*)0x12e);
         count = pda_80039644_ItemNum(index);
         msgctrlSetValue(0x34, count);
-        fn_800FB680(0x11a - (s16)(GSmsgGetRect(0xca) >> 16), y, (s32)sprite,
-                    (void*)0xca);
+        w2 = GSmsgGetRect(0xca) >> 16;
+        fn_800FB680(0x11a - w2, y, (s32)sprite, (void*)0xca);
     }
     if (i < rows) {
         fn_800FB680(0, i * 0x1f - yAdj, (s32)sprite, (void*)0x1b67);
