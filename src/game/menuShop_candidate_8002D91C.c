@@ -1,4 +1,4 @@
-/* World-map arrival dialog, 0x8002D91C-0x8002DC6C. menuShopOpen lives in menuShop_exact_8002DC6C.c. */
+/* World-map arrival dialog, 0x8002D91C-0x8002DC6C. menuShopOpen follows in menuShop_exact_8002DC6C.c. */
 #include "dolphin/types.h"
 
 typedef struct ShopLocationEntry {
@@ -12,7 +12,8 @@ typedef struct ShopTravelState {
     u32 active;
 } ShopTravelState;
 
-extern u32 lbl_8047A3FC;
+/* lbl_8047A3FC: the 8-byte travel request in .sbss (sda-addressed under -sdata 8). */
+extern ShopTravelState lbl_8047A3FC;
 extern ShopLocationEntry* lbl_80478E54;
 extern void* lbl_8047A3DC;
 extern s32 menuOpen(s32 menu, s32 flag);
@@ -23,6 +24,7 @@ extern u32 fn_8002A0B8(u8* buffer, s32 location, s32 field, s32 value, ...);
 extern u32 fn_80029FAC(u8* buffer, s32 location, s32 field, s32 value, ...);
 extern void fn_8002A1C4(u8* location, s32 message, s32 terminator, ...);
 extern void fn_8002A2CC(u8* location, s32 message, s32 terminator, ...);
+extern void fn_80018F54(u32 a, u32 b, u32 c);
 extern void fn_8002CE6C(u8* location, u8 type);
 extern void fn_8002D154(s32 location, u8 type);
 extern void fn_8002C408(s32 location, u8 type);
@@ -86,12 +88,9 @@ void fn_8002D91C(u32 location_index)
     u8 text0;
 
     location = location_index;
-    /* RULE-EXCEPTION(user-approved): no-op OR carrier for the location copy - see docs/RULE_EXCEPTIONS.md */
-    location |= location_index;
-    state = (ShopTravelState*)&lbl_8047A3FC;
+    lbl_8047A3FC.location = location_index;
+    (state = &lbl_8047A3FC)->active = 0;
     location_entry = &lbl_80478E54[location];
-    state->location = location_index;
-    state->active = 0;
     type = location_entry->type;
 
     switch (type) {
