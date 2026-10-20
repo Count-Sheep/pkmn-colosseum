@@ -119,7 +119,8 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
     defined(GS_POKEMON_SUMMARY_8001793C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80017E8C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800166BC_ONLY) || \
-    defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
+    defined(GS_POKEMON_SUMMARY_80016ABC_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_800167D0_ONLY)
 #define GS_POKEMON_SUMMARY_ISLAND
 #endif
 
@@ -1065,45 +1066,36 @@ s32 fn_800166BC(SummaryPageContext* ctx, u8* item) {
 
 #endif /* 0x800166BC - 0x800167D0 */
 
-#if !defined(GS_POKEMON_SUMMARY_ISLAND)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800167D0_ONLY)
 /* fn_800167D0 - 0x800167D0 | size: 0x2ec */
-extern void fn_800CDBE0(void);
-extern void fn_800CE148(void);
-extern const f32 lbl_8047B748;
-extern const f32 lbl_8047B744;
-extern const f32 lbl_8047B768;
-extern const f32 lbl_8047B75C;
-extern const f32 lbl_8047B770;
-extern const f32 lbl_8047B774;
-extern const f32 lbl_8047B778;
 #if 0
 asm void fn_800167D0(void) {
 #include "src/game/gs_pokemon_summary_fn_800167D0.inc"
 }
 #else
-#pragma push
-#pragma peephole off
+/* Trace a point around a rounded-end gauge outline: straight top edge,
+   right semicircle, straight bottom edge, left semicircle. */
 void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha) {
-    f32 stops[5];
+    f32 t;
     f32 width;
     f32 height;
+    f32 angle;
+    f32 stops[5];
     f32 radius;
     f32 total;
-    f32 t;
-    f32 angle;
-    s32 segment;
+    int segment;
     s32 x;
     s32 y;
 
     width = *(s16*)(item + 0x54);
     height = *(s16*)(item + 0x56);
-    radius = SUMMARY_F32(lbl_8047B75C) * height * SUMMARY_F32(lbl_8047B770);
-    total = SUMMARY_F32(lbl_8047B774) * (width + radius);
-    stops[0] = SUMMARY_F32(lbl_8047B748);
+    radius = 3.14159274f * height / 2.0f;
+    total = 2.0f * (width + radius);
+    stops[0] = 0.0f;
     stops[1] = width / total;
     stops[2] = (width + radius) / total;
-    stops[3] = (lbl_8047B774 * width + radius) / total;
-    stops[4] = SUMMARY_F32(lbl_8047B744);
+    stops[3] = (2.0f * width + radius) / total;
+    stops[4] = 1.0f;
 
     for (segment = 0; segment < 4; segment++) {
         if (stops[segment] <= phase && stops[segment + 1] > phase) {
@@ -1117,26 +1109,25 @@ void fn_800167D0(u8* owner, u8* item, f32 phase, u16 iconId, u8 alpha) {
         y = 0;
     }
     if (segment == 1) {
-        angle = SUMMARY_F32(lbl_8047B75C) * t - SUMMARY_F32(lbl_8047B778);
-        x = (height - SUMMARY_F32(lbl_8047B774)) * (f32)cos(angle) * SUMMARY_F32(lbl_8047B770) + width;
-        y = height * SUMMARY_F32(lbl_8047B770) + (height - SUMMARY_F32(lbl_8047B774)) * (f32)sin(angle) * SUMMARY_F32(lbl_8047B770);
+        angle = 3.14159274f * t - 1.57079637f;
+        x = (height - 2.0f) * (f32)cos(angle) / 2.0f + width;
+        y = height / 2.0f + (height - 2.0f) * (f32)sin(angle) / 2.0f;
     }
     if (segment == 2) {
-        x = height - SUMMARY_F32(lbl_8047B774);
-        y = (lbl_8047B744 - t) * width;
+        x = (1.0f - t) * width;
+        y = height - 2.0f;
     }
     if (segment == 3) {
-        angle = SUMMARY_F32(lbl_8047B75C) * t + SUMMARY_F32(lbl_8047B778);
-        x = (height - SUMMARY_F32(lbl_8047B774)) * (f32)cos(angle) * SUMMARY_F32(lbl_8047B770);
-        y = height * SUMMARY_F32(lbl_8047B770) + (height - SUMMARY_F32(lbl_8047B774)) * (f32)sin(angle) * SUMMARY_F32(lbl_8047B770);
+        angle = 3.14159274f * t + 1.57079637f;
+        x = (height - 2.0f) * (f32)cos(angle) / 2.0f;
+        y = height / 2.0f + (height - 2.0f) * (f32)sin(angle) / 2.0f;
     }
 
     windowDrawSprite2(x, y, 2, 2, alpha | 0xFFFFFF00, (s32)owner, iconId, 0);
 }
-#pragma pop
 #endif
 
-#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_800167D0_ONLY */
 
 #if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_80016ABC_ONLY)
 /* Defined in the preceding region, which the 80016ABC carve leaves out. */

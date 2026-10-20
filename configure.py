@@ -9907,10 +9907,28 @@ config.libs = [
                     progress_category="game",
                 )
                 for status, path, version in [
-                    (CodeCandidate, "game/gs_pokemon_summary_r41_800167D0_gc20.c", "GC/2.0"),
                     (Matching, "game/gs_pokemon_summary_exact_800178EC.c", "GC/1.3"),
                 ]
             ],
+            # TEMPORARY constant_import
+            Object(
+                Matching,
+                "game/gs_pokemon_summary_r41_800167D0_gc20.c",
+                # fn_800167D0 only (GS_POKEMON_SUMMARY_800167D0_ONLY island);
+                # its float literals are the TU's shared .sdata2 (sdata2_8047B740).
+                constant_import=[
+                    {"symbol": "lbl_8047B75C", "offset": 0x00, "expected": "40490fdb"},
+                    {"symbol": "lbl_8047B770", "offset": 0x04, "expected": "3f000000"},
+                    {"symbol": "lbl_8047B774", "offset": 0x08, "expected": "40000000"},
+                    {"symbol": "lbl_8047B748", "offset": 0x0C, "expected": "00000000"},
+                    {"symbol": "lbl_8047B744", "offset": 0x10, "expected": "3f800000"},
+                    {"symbol": "lbl_8047B778", "offset": 0x14, "expected": "3fc90fdb"},
+                    {"symbol": "lbl_8047B768", "offset": 0x18, "expected": "4330000080000000"},
+                ],
+                mw_version="GC/2.0",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
+                progress_category="game",
+            ),
             # TEMPORARY constant_import
             Object(
                 Matching,
