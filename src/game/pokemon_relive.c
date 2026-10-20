@@ -953,6 +953,7 @@ void reliveMain(void)
     extern u32 lbl_80478DA8;
     extern f32 lbl_8047E680;
     ReliveResetPair* resetPair;
+    s32 none;
     BOOL ok;
     void* pokemon;
     s32 loaded;
@@ -999,10 +1000,12 @@ void reliveMain(void)
         fadeSet((double)lbl_8047E680, 3);
         fadeCheck(1);
         wazaSequenceSysRelease();
-        lbl_804782BC[0] = -1;
+        /* RULE-EXCEPTION(user-approved): scalar carrier; one minus-one local stored to all three fields numbers it below the pair address under the unit's -opt nopropagation - see docs/RULE_EXCEPTIONS.md */
+        none = -1;
+        lbl_804782BC[0] = none;
         resetPair = (ReliveResetPair*)&lbl_8047B668;
-        resetPair->mode = -1;
-        resetPair->index = 0xffffffff;
+        resetPair->mode = none;
+        resetPair->index = none;
         *(u16*)((u8*)lbl_804782BC + 4) = 0;
         lbl_804782BC[2] = 0;
         fn_800FF660();
