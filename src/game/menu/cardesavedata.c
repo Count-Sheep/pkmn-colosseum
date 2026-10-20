@@ -4201,16 +4201,16 @@ static inline void cardGridCountRow(const CardGridTiles* tiles, CardGridTiles* r
     for (x = 0; x < 3; x++) {
         if (occupied[x] != 0) {
             u16 tile;
+            s32 k;
 
             /* RULE-EXCEPTION(user-approved): carrier copy (fn_80087C64's tile-grid stack copies, retail slot order) - see docs/RULE_EXCEPTIONS.md */
             *read = *row;
             tile = cardGridTileAt(read, x, y);
-            if (tile == expected[0]) {
-                (*matches)++;
-            } else if (tile == expected[1]) {
-                (*matches)++;
-            } else if (tile == expected[2]) {
-                (*matches)++;
+            for (k = 0; k < 3; k++) {
+                if (tile == expected[k]) {
+                    (*matches)++;
+                    break;
+                }
             }
         }
     }
