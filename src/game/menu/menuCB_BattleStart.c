@@ -818,10 +818,10 @@ static inline void battleStartInitHp(void)
     extern u16 pokemonBiosGetHp(void*);
     extern const f32 lbl_8047BF60;
     extern const f32 lbl_8047BFAC;
-    MenuCBBattleStartPlayerLayout* layout;
+    s32 player;
     void* pokemon;
     s32 slot;
-    s32 player;
+    MenuCBBattleStartPlayerLayout* layout;
 
     for (player = 0; player < 4; player++) {
         layout = &lbl_803A9A60.players[player];
@@ -872,6 +872,7 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     void* trainerKind;
     s32 battleId;
     u8* dst;
+    s32 trainerId;
 
     if (battleStartTypeCompatible() != 0) {
         trainer = toolentryTaisenGetHeroPtr(1);
@@ -882,8 +883,8 @@ void menuCBBattleStartInit(void* menu, s32 mode)
         } else {
             GScharCpy(dst, GSmsgGetGSchar(1));
         }
-        trainerData = fightTrainerDataBiosGetPtr(
-            toolentryTaisenGetTrainerDataID(1));
+        trainerId = toolentryTaisenGetTrainerDataID(1);
+        trainerData = fightTrainerDataBiosGetPtr(trainerId);
         trainerKind = fightTrainerKindDataBiosGetPtr(
             fightTrainerDataBiosGetKindDataId(trainerData));
         lbl_803A9A60.model.trainerPrefix =
