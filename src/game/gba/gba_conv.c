@@ -5069,27 +5069,53 @@ static inline u16 gbaConvGridAt(GbaConvSpeciesGrid grid, s32 row, s32 col) {
     return grid.ids[row][col];
 }
 
-static inline s32 gbaConvGridSearch(GbaConvSpeciesGrid grid, u16 id) {
-    s32 row;
-    s32 col;
+/* Checks that every id in state->ids appears in the species grid; returns 2
+ * when one is missing, otherwise waits for the GBA side and returns its
+ * result. */
+static inline u32 gbaConvCheckIds(GbaConvChannelState* state) {
+    extern void fn_800FF730(s32 id);
+    extern void _threadSwitch(void);
+    s32 i;
+    GbaConvSpeciesGrid grid;
+    u16* id;
 
-    for (row = 0; row < 3; row++) {
-        /* RULE-EXCEPTION(user-approved): carrier copy of the grid per row - see docs/RULE_EXCEPTIONS.md */
-        GbaConvSpeciesGrid g = grid;
-        for (col = 0; col < 3; col++) {
-            /* RULE-EXCEPTION(user-approved): carrier copy of the grid per column - see docs/RULE_EXCEPTIONS.md */
-            GbaConvSpeciesGrid h = g;
-            u16 v = gbaConvGridAt(h, row, col);
-            if (v == id) {
-                return 1;
+    /* lbl_8026F488 starts with the 3x3 grid {{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}. */
+    /* RULE-EXCEPTION(user-approved): typed view of the retail rodata blob lbl_8026F488 - see docs/RULE_EXCEPTIONS.md */
+    grid = *(const GbaConvSpeciesGrid*)lbl_8026F488;
+    id = state->ids;
+    for (i = 0; i < 3; id++, i++) {
+        u16 target = *id;
+        GbaConvSpeciesGrid search = grid;
+        /* RULE-EXCEPTION(user-approved): carrier copy of the grid per id - see docs/RULE_EXCEPTIONS.md */
+        GbaConvSpeciesGrid rows = search;
+        s32 found;
+        s32 row;
+
+        for (row = 0; row < 3; row++) {
+            /* RULE-EXCEPTION(user-approved): carrier copy of the grid per row - see docs/RULE_EXCEPTIONS.md */
+            GbaConvSpeciesGrid g = rows;
+            s32 col;
+
+            for (col = 0; col < 3; col++) {
+                /* RULE-EXCEPTION(user-approved): carrier copy of the grid per column - see docs/RULE_EXCEPTIONS.md */
+                GbaConvSpeciesGrid h = g;
+                u16 v = gbaConvGridAt(h, row, col);
+
+                if (v == target) {
+                    found = 1;
+                    goto checked;
+                }
             }
         }
+        found = 0;
+    checked:
+        if (!found) {
+            return 2;
+        }
     }
-    return 0;
-}
-
-static inline s32 gbaConvGridHas(GbaConvSpeciesGrid grid, u16 id) {
-    return gbaConvGridSearch(grid, id);
+    fn_800FF730(0x387);
+    _threadSwitch();
+    return ((GbaConvChannelState*)lbl_803FB2F8)->result;
 }
 
 #endif
@@ -5122,27 +5148,12 @@ void fn_80088428(void) {
 #if !defined(GBA_CONV_800889E4_ONLY)
 /* 0x800884BC | size: 0x214 */
 u32 fn_800884BC(u16 a, u16 b, u16 c) {
-    extern void fn_800FF730(s32 id);
-    extern void _threadSwitch(void);
     GbaConvChannelState* state = (GbaConvChannelState*)lbl_803FB2F8;
-    s32 i;
-    GbaConvSpeciesGrid grid;
 
     state->ids[0] = a;
     state->ids[1] = b;
     state->ids[2] = c;
-    /* lbl_8026F488 starts with the 3x3 grid {{0xB9, 0xC8, 0xF4}, {0x11F, 0x9C, 0xF3}, {0x99, 0xF5, 0x9F}}. */
-    /* RULE-EXCEPTION(user-approved): typed view of the retail rodata blob lbl_8026F488 - see docs/RULE_EXCEPTIONS.md */
-    grid = *(const GbaConvSpeciesGrid*)lbl_8026F488;
-    for (i = 0; i < 3; i++) {
-        u16 id = state->ids[i];
-        if (!gbaConvGridHas(grid, id)) {
-            return 2;
-        }
-    }
-    fn_800FF730(0x387);
-    _threadSwitch();
-    return ((GbaConvChannelState*)lbl_803FB2F8)->result;
+    return gbaConvCheckIds(state);
 }
 #endif
 #endif

@@ -8963,7 +8963,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/gba/gba_conv_r49_800884BC_gc125_o2.c",
                 mw_version="GC/2.6",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
