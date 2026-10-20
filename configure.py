@@ -10918,10 +10918,10 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuPokemonChange_r51_8002DF10_suffix.c",
-                mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                mw_version="GC/1.3.2",
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-lang=c++", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(
@@ -12417,6 +12417,11 @@ config.libs = [
             Object(
                 DataCandidate,
                 "game/data/bss_803A2040.c",
+                progress_category="game",
+            ),
+            Object(
+                DataCandidate,
+                "game/data/bss_803A3278.c",
                 progress_category="game",
             ),
             Object(

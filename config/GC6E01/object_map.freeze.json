@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2230
+    "total_units": 2231
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2132,
-    "source_backed_units": 2131,
+    "named_units": 2133,
+    "source_backed_units": 2132,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2460796",
-    "matched_code_percent": 98.237724,
+    "matched_code": "2468612",
+    "matched_code_percent": 98.54974,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8645,
-    "matched_functions_percent": 99.63121,
-    "fuzzy_match_percent": 99.95201
+    "matched_functions": 8655,
+    "matched_functions_percent": 99.74645,
+    "fuzzy_match_percent": 99.962395
   },
   "unit_topology": [
     {
@@ -1482,12 +1482,12 @@
       "sections": [
         {
           "name": ".bss",
-          "size": 7704,
+          "size": 1240,
           "virtual_address": 2151292992
         }
       ],
       "total_code": 0,
-      "total_data": 7704,
+      "total_data": 1240,
       "total_functions": 0
     },
     {
@@ -2538,14 +2538,32 @@
       "name": "main/game/menuPokemonChange_r51_8002DF10_suffix",
       "sections": [
         {
+          "name": ".bss",
+          "size": 3424,
+          "virtual_address": 2151294232
+        },
+        {
           "name": ".text",
           "size": 500,
           "virtual_address": 2147672684
         }
       ],
       "total_code": 500,
-      "total_data": 0,
+      "total_data": 3424,
       "total_functions": 1
+    },
+    {
+      "name": "main/game/data/bss_803A3278",
+      "sections": [
+        {
+          "name": ".bss",
+          "size": 3040,
+          "virtual_address": 2151297656
+        }
+      ],
+      "total_code": 0,
+      "total_data": 3040,
+      "total_functions": 0
     },
     {
       "name": "main/game/menuPokemonChange_r41_8002E460_gc125n",

@@ -87,7 +87,8 @@ static inline void menuPokemonChangeAlert(u32 msgId) {
 #if defined(MENU_POKEMON_CHANGE_EXACT_8002DD24_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002DF10_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002E460_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F284_ONLY) || \
     defined(MENU_POKEMON_CHANGE_EXACT_8002EE74_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002F79C_ONLY) || \
-    defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY)
+    defined(MENU_POKEMON_CHANGE_EXACT_8002EA5C_ONLY) || defined(MENU_POKEMON_CHANGE_EXACT_8002FC58_ONLY) || \
+    defined(MENU_POKEMON_CHANGE_EXACT_8002E26C_ONLY)
 /* A wrapper unit that links one exact function of this file. */
 #define MENU_POKEMON_CHANGE_EXACT_ISLAND
 #endif
@@ -326,15 +327,33 @@ void stateFunctionEvolution(void) {
 #endif
 
 #endif /* guard split */
-#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND)
+#if !defined(MENU_POKEMON_CHANGE_EXACT_ISLAND) || defined(MENU_POKEMON_CHANGE_EXACT_8002E26C_ONLY)
+#if defined(MENU_POKEMON_CHANGE_EXACT_8002E26C_ONLY)
+/* The translation unit's .bss (0x803A2518-0x803A3278), in definition order:
+ * the scratch Pokemon bios, the NPC-event queue popped by fn_80030170, the
+ * partner's hero (party) record and the two menu models of the traded
+ * Pokemon. MWCC addresses them off one pooled base register. The other
+ * units of this file reach them through extern declarations. */
+u8 lbl_803A2518[0x138];
+u8 lbl_803A2650[0x38];
+u8 lbl_803A2688[0xB60];
+u8 lbl_803A31E8[0x48];
+u8 lbl_803A3230[0x48];
+#else
+extern u8 lbl_803A2518[];
+extern u8 lbl_803A2688[];
+extern u8 lbl_803A31E8[];
+extern u8 lbl_803A3230[];
+#endif
 /* 0x8002E26C | size: 0x1F4
  * Swaps the two traded Pokemon through the scratch bios at the start of the
  * work area, then replays the trade camera and rebuilds both menu models. */
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002E26C_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void stateFunctionExChangeMain(void) {
-    extern u8 lbl_803A2518[];
     extern u32 lbl_8047A424;
     extern u32 lbl_8047A420;
     extern f32 lbl_8047B9D0;
@@ -344,7 +363,7 @@ void stateFunctionExChangeMain(void) {
     extern u32 lbl_8047A42C;
     extern void pokemonInit(void* bios);
     extern void* heroGetStatus(void* hero, u32 selector, u16 index);
-    extern void pokemonBiosCopy(u32* dst, u32* src);
+    extern void pokemonBiosCopy(void* dst, void* src);
     extern void menuClose(s32 id);
     extern void fn_8010A420(void* model);
     extern void GSmodelSetVisibility(void* obj, s32 flag);
@@ -361,20 +380,18 @@ void stateFunctionExChangeMain(void) {
     extern void menuModelInit(void* model, s32 w, s32 h);
     extern void fn_80109C88(void* model, void* pokemon);
     extern s32 menuOpen(s32 id, s32 flag);
-    MenuWork* work;
     void* pokemonA;
     void* pokemonB;
 
-    work = (MenuWork*)lbl_803A2518;
-    pokemonInit(work->bios);
+    pokemonInit(lbl_803A2518);
     pokemonA = heroGetStatus(NULL, 3, lbl_8047A424);
-    pokemonB = heroGetStatus(work->hero, 3, lbl_8047A420);
-    pokemonBiosCopy(work->bios, pokemonB);
+    pokemonB = heroGetStatus(lbl_803A2688, 3, lbl_8047A420);
+    pokemonBiosCopy(lbl_803A2518, pokemonB);
     pokemonBiosCopy(pokemonB, pokemonA);
-    pokemonBiosCopy(pokemonA, work->bios);
+    pokemonBiosCopy(pokemonA, lbl_803A2518);
     menuClose(0xDE);
-    fn_8010A420(work->modelA);
-    fn_8010A420(work->modelB);
+    fn_8010A420(lbl_803A3230);
+    fn_8010A420(lbl_803A31E8);
     lbl_8047A41C = 0;
     GSmodelSetVisibility((void*)lbl_8047A414, 0);
     fadeSet(lbl_8047B9D0, 3);
@@ -391,10 +408,10 @@ void stateFunctionExChangeMain(void) {
     fadeSet(lbl_8047B9D8, 3);
     fadeCheck(1);
     fn_80112260(0);
-    menuModelInit(work->modelA, 0xE8, 0x11C);
-    menuModelInit(work->modelB, 0xE8, 0x11C);
-    fn_80109C88(work->modelA, pokemonA);
-    fn_80109C88(work->modelB, pokemonB);
+    menuModelInit(lbl_803A3230, 0xE8, 0x11C);
+    menuModelInit(lbl_803A31E8, 0xE8, 0x11C);
+    fn_80109C88(lbl_803A3230, pokemonA);
+    fn_80109C88(lbl_803A31E8, pokemonB);
     cameraPlayAnime(0x37C, 0x0FFF1800, 0, 1);
     GSmodelSetVisibility((void*)lbl_8047A414, 1);
     menuOpen(0xDE, 1);
@@ -403,7 +420,9 @@ void stateFunctionExChangeMain(void) {
     fadeCheck(1);
     lbl_8047A42C = 0x10;
 }
+#if !defined(MENU_POKEMON_CHANGE_EXACT_8002E26C_ONLY)
 #pragma pop
+#endif
 
 #endif
 
