@@ -1465,12 +1465,14 @@ void fn_80034FB4(void)
                                     menu->region, menu->variant);
                 if (((u8*)entry)[0xC] != 0) {
                     duplicate = 0;
-                    for (index = 0; index < lbl_8047A43C; index++) {
-                        if (menu->floor == work->history[index].floor &&
-                            menu->region == work->history[index].region &&
-                            menu->variant == work->history[index].variant) {
-                            duplicate = 1;
-                            break;
+                    if (lbl_8047A43C > 0) {
+                        for (index = 0; index < lbl_8047A43C; index++) {
+                            if (menu->floor == work->history[index].floor &&
+                                menu->region == work->history[index].region &&
+                                menu->variant == work->history[index].variant) {
+                                duplicate = 1;
+                                break;
+                            }
                         }
                     }
                     if (duplicate == 0) {
@@ -1515,10 +1517,10 @@ void fn_80034FB4(void)
             menuClose(0xA9);
             winMsgClose(1);
             switch (result) {
-            case -1:
+            case 1:
                 lbl_8047A458 = 5;
                 continue;
-            case 1:
+            case -1:
                 lbl_8047A458 = 5;
                 continue;
             case 0:
@@ -1634,10 +1636,10 @@ void fn_80034FB4(void)
             case 0:
                 lbl_8047A458 = 3;
                 continue;
-            case -1:
+            case 1:
                 lbl_8047A458 = 1;
                 break;
-            case 1:
+            case -1:
                 lbl_8047A458 = 1;
                 break;
             default:
