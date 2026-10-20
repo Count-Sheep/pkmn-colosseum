@@ -17,7 +17,8 @@
     !defined(CARDESAVEDATA_EXACT_8007FD64_ONLY) && \
     !defined(CARDESAVEDATA_EXACT_800849B4_ONLY) && \
     !defined(CARDESAVEDATA_EXACT_80084A8C_ONLY) && \
-    !defined(CARDESAVEDATA_80084038_ONLY)
+    !defined(CARDESAVEDATA_80084038_ONLY) && \
+    !defined(CARDESAVEDATA_80087C64_ONLY)
 #define CARDESAVEDATA_8007FDBC_ONLY
 #endif
 
@@ -4056,7 +4057,7 @@ u8 fn_80084A8C(s32 mode, u32 command, void* input, void* output)
 #pragma pop
 #endif
 
-#if defined(CARDESAVEDATA_ALL)
+#if defined(CARDESAVEDATA_ALL) || defined(CARDESAVEDATA_80087C64_ONLY)
 #define CARDE_GRID_TABLE ((CardEGridTable*)lbl_8026F488)
 #define CARDE_SHOW_MODEL(model_id, anim_id)                                      \
     do {                                                                         \
@@ -4107,8 +4108,6 @@ typedef struct CardGridChoice {
     s32 y;
 } CardGridChoice;
 
-extern const u32 lbl_8047C1C0;
-extern const u32 lbl_8047C1C4;
 extern CardGridKeyInfo* windowGetPortKeyInfo(u32 port);
 extern void GSmodelSetAnimFrame(void* model, f32 frame);
 extern void GSmodelSetAnimRate(void* model, f32 rate);
@@ -4126,17 +4125,19 @@ static inline void cardGridAnimate(void* model, s16 anim)
     }
 }
 
+/* Animate a grid model if fn_800F92D4 found it. */
+static inline void cardGridPlayModel(void* model, s16 anim)
+{
+    if (model != 0) {
+        cardGridAnimate(model, anim);
+    }
+}
+
 static inline void cardGridSelectCell(CardGridCells cells, s32 x, s32 y)
 {
     if (x >= 0 && x < 3 && y >= 0 && y < 3) {
-        void* model;
-        s32 anim;
-
-        anim = cells.cell[y][x].selectAnim;
-        model = fn_800F92D4(cells.cell[y][x].modelId);
-        if (model != 0) {
-            cardGridAnimate(model, anim);
-        }
+        s32 anim = cells.cell[y][x].selectAnim;
+        cardGridPlayModel(fn_800F92D4(cells.cell[y][x].modelId), anim);
     }
 }
 
@@ -4144,10 +4145,7 @@ static inline void cardGridResetCell(CardGridCells cells, s32 x, s32 y)
 {
     if (x >= 0 && x < 3 && y >= 0 && y < 3) {
         s32 anim = cells.cell[y][x].resetAnim;
-        void* model = fn_800F92D4(cells.cell[y][x].modelId);
-        if (model != 0) {
-            cardGridAnimate(model, anim);
-        }
+        cardGridPlayModel(fn_800F92D4(cells.cell[y][x].modelId), anim);
     }
 }
 
@@ -4169,16 +4167,11 @@ static inline void cardGridResetAll(const CardGridData* data,
 
 static inline void cardGridShowCount(s32 count)
 {
-    s16 anims[4];
+    s16 anims[4] = {0, 1, 2, 3};
 
-    ((u32*)anims)[0] = lbl_8047C1C0;
-    ((u32*)anims)[1] = lbl_8047C1C4;
     if (count >= 0 && count < 4) {
         s32 anim = anims[count];
-        void* model = fn_800F92D4(0x107E100B);
-        if (model != 0) {
-            cardGridAnimate(model, anim);
-        }
+        cardGridPlayModel(fn_800F92D4(0x107E100B), anim);
     }
 }
 
@@ -4229,18 +4222,23 @@ static inline s32 cardGridCountMatches(CardGridTiles tiles, CardGridTiles* row,
     return matches;
 }
 
+/* Animate the cursor model once and wait for the animation to finish. */
+static inline void cardGridPlayCursor(void* model, s16 anim)
+{
+    if (model != 0) {
+        cardGridAnimate(model, anim);
+        GSmodelSetAnimType(model, 0);
+        while (GSmodelIsAnimating(model) != 0) {
+            _threadSwitch();
+        }
+    }
+}
+
 static inline void cardGridShowCursor(const CardGridCursor* cursor, s32 x, s32 y)
 {
     if (x >= 0 && x < 3 && y >= 0 && y < 3) {
         s32 anim = cursor->anim[y][x];
-        void* model = fn_800F92D4(0x107E1009);
-        if (model != 0) {
-            cardGridAnimate(model, anim);
-            GSmodelSetAnimType(model, 0);
-            while (GSmodelIsAnimating(model) != 0) {
-                _threadSwitch();
-            }
-        }
+        cardGridPlayCursor(fn_800F92D4(0x107E1009), anim);
     }
 }
 

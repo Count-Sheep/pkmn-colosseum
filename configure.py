@@ -4377,9 +4377,15 @@ config.libs = [
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import: the cardGridShowCount anims[4]
+            # initialiser {0, 1, 2, 3} is retail's lbl_8047C1C0/lbl_8047C1C4.
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/cardesavedata_candidate_80087AE8.c",
+                constant_import=[
+                    {"symbol": "lbl_8047C1C0", "offset": 0, "expected": "00000001"},
+                    {"symbol": "lbl_8047C1C4", "offset": 4, "expected": "00020003"},
+                ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
