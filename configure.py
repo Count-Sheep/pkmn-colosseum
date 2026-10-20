@@ -6500,19 +6500,11 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart_candidate_80062334.c",
-                # TEMPORARY constant_import: retail shares the TU's literal pool.
+                # TEMPORARY constant_import: the closing stores' 0.0f is retail's shared lbl_8047BF60.
                 constant_import=[
                     {"symbol": "lbl_8047BF60", "offset": 0, "expected": "00000000"},
-                    {"symbol": "lbl_8047BF80", "offset": 8, "expected": "4330000080000000"},
-                    {"symbol": "lbl_8047BF88", "offset": 16, "expected": "4330000000000000"},
-                    {"symbol": "lbl_8047BF58", "offset": 24, "expected": "00060006"},
-                    {"symbol": "lbl_8047BF5C", "offset": 28, "expected": "00060006"},
-                    {"symbol": "lbl_8047BF94", "offset": 32, "expected": "41200000"},
-                    {"symbol": "lbl_8047BF98", "offset": 36, "expected": "41a00000"},
-                    {"symbol": "lbl_8047BF9C", "offset": 40, "expected": "c1a00000"},
-                    {"symbol": "lbl_8047BF90", "offset": 44, "expected": "3f800000"},
                 ],
                 mw_version="GC/1.3",
                 extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],

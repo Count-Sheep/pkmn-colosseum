@@ -28,7 +28,8 @@
     defined(MENUCB_BATTLESTART_800626CC_ONLY) || \
     defined(MENUCB_BATTLESTART_80062834_ONLY) || \
     defined(MENUCB_BATTLESTART_8005DFC8_ONLY) || \
-    defined(MENUCB_BATTLESTART_8005FFE4_ONLY)
+    defined(MENUCB_BATTLESTART_8005FFE4_ONLY) || \
+    defined(MENUCB_BATTLESTART_80062334_ONLY)
 #define MENUCB_BATTLESTART_SPLIT_UNIT
 #endif
 
@@ -965,7 +966,7 @@ s32 fn_80062284(s32 trainer) {
 }
 #endif
 
-#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT)
+#if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80062334_ONLY)
 void fn_80062334(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);
@@ -1012,13 +1013,14 @@ void fn_80062334(void)
     reverse[4] = lbl_8047BFA8;
     reverse[5] = lbl_8047BFA4;
     state = &lbl_803A9A60;
-    fwd = forward;
-    rev = reverse;
 
     for (player = 0; player < 4; player++) {
         view = &lbl_803A9A60.players[player].view;
         if (battleType == 2) {
-            for (slot = 0; slot < 6; slot++) {
+            /* &table[slot] (slot = 0) is hoisted out of the player loop, which
+             * gives retail's fwd r9 / rev r10 / state r11 numbering. */
+            for (slot = 0, fwd = &forward[slot], rev = &reverse[slot]; slot < 6;
+                 slot++) {
                 switch (lbl_803A9A60.status) {
                 case 0:
                     view->header.marker[slot] = 3;
