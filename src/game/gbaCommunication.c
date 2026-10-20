@@ -349,6 +349,7 @@ static inline u8 menuStatusMoveDetailVisible(u8* sprite)
 void fn_80094650(u8* context, u8* sprite)
 {
     extern u32 pokemonGetStatus();
+    extern u8 pokemonWazaCheckValid(u32 pokemon, s32 waza);
     extern u32 wazaGetStatus(u32, u16, u32, u32);
     extern u16 fn_8010C46C(u16 type);
     extern u8 pokemonWazaGetMaxPP(u32 pokemon, u16 slot);
@@ -363,11 +364,12 @@ void fn_80094650(u8* context, u8* sprite)
     extern void fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
     extern void windowDrawSprite(s32 x, s32 y, void* win, u16 sprite, u32 data);
     s32 color;
-    u16 slot;
     u32 pokemon;
+    u16 slot;
     u16 move;
     u32 icon;
     u32 value;
+    int moveSlot;
     s16 x;
     s32 level;
 
@@ -584,7 +586,16 @@ void fn_80094650(u8* context, u8* sprite)
             slot = 4;
             break;
         }
-        move = menuStatusGetMove(pokemon, slot);
+        /* RULE-EXCEPTION(user-approved): carrier copy of slot (int, as the move helper's parameter) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+        moveSlot = slot;
+        if ((u16)moveSlot == 4) {
+            move = *(u16*)(lbl_803FB380 + 0x18);
+        } else {
+            move = pokemonGetStatus(pokemon, 0, 0x7F, moveSlot);
+            if (pokemonWazaCheckValid(pokemon, moveSlot) == 0) {
+                move = 0;
+            }
+        }
         x = (*(s16*)(sprite + 0x54) - (s16)(GSmsgGetRect(0x2BD4) >> 16)) / 2;
         fn_800FB680(x, 0, color, 0x2BD4);
         switch (move) {
