@@ -134,15 +134,15 @@ extern RibbonSpriteInfo lbl_802EED44[];
 void fn_80093B4C(void* context, void* widget)
 {
     s32 index;
-    s32 resource;
-    s32 column;
-    s16 x;
-    u8* item;
-    u8 value;
     s16 y;
     u32 color;
-    u8* sprite;
     s32 row;
+    s32 resource;
+    s16 x;
+    s32 column;
+    u8* item;
+    u8 value;
+    u8* sprite;
     s32 ribbon;
     s32* ribbonKind;
 
@@ -224,7 +224,7 @@ void fn_80093B4C(void* context, void* widget)
         }
         column = *(s8*)(lbl_803FB380 + 0x1A) % 9;
         row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
-        ribbon = (s8)(lbl_803FB380 + column * 4)[0x20 + row];
+        ribbon = *(s8*)(lbl_803FB380 + column * 4 + 0x20 + row);
         if (ribbon < 0) {
             break;
         }
