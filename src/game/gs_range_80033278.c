@@ -1294,6 +1294,7 @@ void fn_80034FB4(void)
     void* pokemon;
     void* entry;
     s32 result;
+    s32 state;
     s32 index;
     u32 amount;
     u8 value;
@@ -1308,8 +1309,8 @@ void fn_80034FB4(void)
     name = work->name;
     floorName = menu->floorName;
 
-    while (lbl_8047A458 > 0) {
-        switch (lbl_8047A458) {
+    while ((state = lbl_8047A458) > 0) {
+        switch (state) {
         case 1:
             if (lbl_8047A454 == 1) {
                 fadeSet(2, lbl_8047BA00);
