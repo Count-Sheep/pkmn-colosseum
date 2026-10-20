@@ -3267,6 +3267,7 @@ static const char sCardEStatusFile[] = "menuGBAC.c";
 
 
 /* Show or hide one per-port option sprite. */
+/* RULE-EXCEPTION(user-approved): duplicate helper chosen for register allocation (fn_80084038's option sprites take a u8 enable; the status sprites use CardEShowStatusBit) - see docs/RULE_EXCEPTIONS.md */
 static inline void CardEShowStatusSprite(void* sprite, u8 enable)
 {
     if (sprite != NULL) {
@@ -3275,6 +3276,7 @@ static inline void CardEShowStatusSprite(void* sprite, u8 enable)
 }
 
 /* Show or hide one of the five status sprites from its state-mask bit. */
+/* RULE-EXCEPTION(user-approved): duplicate helper chosen for register allocation (fn_80084038's status sprites take a u32 bit; see CardEShowStatusSprite) - see docs/RULE_EXCEPTIONS.md */
 static inline void CardEShowStatusBit(void* sprite, u32 bit)
 {
     if (sprite != NULL) {
