@@ -236,6 +236,7 @@ static inline void sysvarsRestoreItems(void)
     fn_801D0AFC(0);
     save = savedataGetStatus(0, 2);
     for (i = 0; i < 6; i++) {
+        /* RULE-EXCEPTION(user-approved): codegen-only cast; (u8) before the u16 index parameter gives retail's clrlwi 24 and argument order (i < 6, so the value is unchanged) - see docs/RULE_EXCEPTIONS.md */
         pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(save, (u8)i), lbl_803A3328[i]);
     }
 }
