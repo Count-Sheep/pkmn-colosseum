@@ -547,6 +547,40 @@ asm void fn_800155B0(void) {
 #include "src/game/gs_pokemon_summary_fn_800155B0.inc"
 }
 #else
+/*
+ * fn_800155B0's item-id lookup: SummaryListGetItemId with the id held in a
+ * u16 local, as SummaryListGetNum holds its quantity.
+ */
+/* RULE-EXCEPTION(user-approved): single-use inline helper (u16 item-id local) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline u16 fn_800155B0_ListGetItemId(s32 kind, s32 index) {
+    void* list;
+    u16 count;
+    s32 i;
+    s32 visibleIndex;
+
+    if (kind >= 0) {
+        list = heroItemGetItemKindToItemAryPtr(lbl_8047A2F8, kind, &count, 0, 0, 0);
+    } else {
+        list = heroHizukiItemGetItemAryPtr(lbl_8047A2F8, &count, 0, 0, 0);
+    }
+
+    visibleIndex = -1;
+    for (i = 0; i < count; i++, list = (u8*)list + 4) {
+        if (fn_801429E8(list) != 0) {
+            visibleIndex++;
+            if (visibleIndex >= index) {
+                u16 id = itemBiosGetItemDataId(list);
+                return id;
+            }
+        }
+    }
+    return 0;
+}
+
+static inline u16 fn_800155B0_PageItemId(s32 pageIndex, s32 index) {
+    return fn_800155B0_ListGetItemId(SUMMARY_PAGES[pageIndex].dataSource, index);
+}
+
 #pragma push
 #pragma peephole off
 s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
@@ -584,7 +618,7 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
             fn_800FB680(x, y, -1, 0x2AFF);
             textX = x + (u16)(GSmsgGetRect(0x2AFF) >> 16);
 
-            itemId = SummaryPageItemId(pageIndex, itemIndex);
+            itemId = fn_800155B0_PageItemId(pageIndex, itemIndex);
             berryNo = itemDataBiosGetKinomiNo(itemId) + 1;
             if (berryNo < 10) {
                 msgctrlSetValue(0x34, 0);
