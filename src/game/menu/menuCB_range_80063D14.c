@@ -202,6 +202,7 @@ s32 fn_80063D14(void* work)
     s32 count;
     s32 menuResult;
     s32 keepRunning;
+    void** e;
 
     keepRunning = 1;
     fn_80165A20(0x1E, 0, 0xFF);
@@ -213,10 +214,10 @@ s32 fn_80063D14(void* work)
         toolentryTaisenInitPokemonOrder(player);
     }
 
-    for (player = 0; player < 4; player++) {
-        entries[player] = fn_8006ACCC(player);
-        if (entries[player] != NULL) {
-            MENUCB_WORK->order[player] = *(s32*)((u8*)entries[player] + 0x28);
+    for (player = 0, e = &entries[player]; player < 4; e++, player++) {
+        *e = fn_8006ACCC(player);
+        if (*e != NULL) {
+            MENUCB_WORK->order[player] = *(s32*)((u8*)*e + 0x28);
         } else {
             MENUCB_WORK->order[player] = -1;
         }
