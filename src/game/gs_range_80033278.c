@@ -1554,13 +1554,14 @@ void fn_80034FB4(void)
     extern u32 fightFloorDataBiosGetName(void*);
     extern void* GSmsgGetGSchar(u32);
     extern void msgctrlSetValue(s32, u32);
-    u8* work;
     u8* menuData;
-    u8* name;
+    u8* work;
     u8* floorName;
+    u8* name;
     u8* clear;
     u8* history;
     u16* heldItems;
+    u16* itemCursor;
     void* save;
     void* pokemon;
     void* entry;
@@ -1568,7 +1569,7 @@ void fn_80034FB4(void)
     s32 index;
     u32 amount;
     u32 historyIndex;
-    u32 historyCount;
+    s32 historyCount;
     u8 value;
     s8 selection;
     u8 valid;
@@ -1591,13 +1592,13 @@ void fn_80034FB4(void)
             lbl_8047A454 = 1;
             fadeCheck(1);
             switch (result) {
-            case -1:
+            case 0:
                 lbl_8047A458 = 2;
                 break;
             case 1:
                 lbl_8047A458 = 3;
                 break;
-            case 0:
+            case -1:
                 lbl_8047A458 = 0;
                 break;
             case 2:
@@ -1624,18 +1625,20 @@ void fn_80034FB4(void)
             fadeCheck(1);
             save = savedataGetStatus(0, 2);
             heldItems = (u16*)(work + 0xB0);
-            for (index = 0; index < 6; index++) {
+            itemCursor = heldItems;
+            for (index = 0; index < 6; index++, itemCursor++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                heldItems[index] = pokemonBiosGetItemDataId(pokemon);
+                *itemCursor = pokemonBiosGetItemDataId(pokemon);
             }
             while (lbl_8047A458 == 2) {
                 lbl_8047A458 = _sysvarsProcessData__FP16sysvarsFuncEntryPc();
             }
             fn_801D0AFC(0);
             save = savedataGetStatus(0, 2);
-            for (index = 0; index < 6; index++) {
+            itemCursor = heldItems;
+            for (index = 0; index < 6; index++, itemCursor++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
+                pokemonBiosSetItemDataId(pokemon, *itemCursor);
             }
             if (lbl_8047A439 != 0) {
                 lbl_8047A458 = 0;
@@ -1651,14 +1654,15 @@ void fn_80034FB4(void)
         case 3:
             save = savedataGetStatus(0, 2);
             heldItems = (u16*)(work + 0xB0);
-            for (index = 0; index < 6; index++) {
+            itemCursor = heldItems;
+            for (index = 0; index < 6; index++, itemCursor++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                heldItems[index] = pokemonBiosGetItemDataId(pokemon);
+                *itemCursor = pokemonBiosGetItemDataId(pokemon);
             }
             lbl_8047A450 = 0;
             lbl_8047A44A = 0;
             lbl_8047A43C = 0;
-            clear = work;
+            clear = lbl_803A3278;
             work[0] = 0;
             clear[1] = 0;
             clear[2] = 0;
@@ -1722,9 +1726,10 @@ void fn_80034FB4(void)
             clear[14] = 0;
             save = savedataGetStatus(0, 2);
             heldItems = (u16*)(work + 0xB0);
-            for (index = 0; index < 6; index++) {
+            itemCursor = heldItems;
+            for (index = 0; index < 6; index++, itemCursor++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
+                pokemonBiosSetItemDataId(pokemon, *itemCursor);
             }
             lbl_8047A458 = 0;
             break;
@@ -1761,8 +1766,8 @@ void fn_80034FB4(void)
                     duplicate = 0;
                     historyCount = lbl_8047A43C;
                     history = work;
-                    if ((s32)historyCount > 0) {
-                        do {
+                    if (historyCount > 0) {
+                        for (; historyCount != 0; historyCount--) {
                             if (history[0] == menuData[8] &&
                                 (s8)history[1] == (s8)menuData[0x24] &&
                                 (s8)history[2] == (s8)menuData[0x26]) {
@@ -1770,7 +1775,7 @@ void fn_80034FB4(void)
                                 break;
                             }
                             history += 3;
-                        } while (--historyCount != 0);
+                        }
                     }
                     if (duplicate == 0) {
                         historyIndex = lbl_8047A43C;
@@ -1845,9 +1850,10 @@ void fn_80034FB4(void)
             }
             save = savedataGetStatus(0, 2);
             heldItems = (u16*)(work + 0xB0);
-            for (index = 0; index < 6; index++) {
+            itemCursor = heldItems;
+            for (index = 0; index < 6; index++, itemCursor++) {
                 pokemon = heroBiosGetPokemonPtr(save, (u8)index);
-                pokemonBiosSetItemDataId(pokemon, heldItems[index]);
+                pokemonBiosSetItemDataId(pokemon, *itemCursor);
             }
             result = 1;
             lbl_8047A458 = result;
@@ -1861,13 +1867,13 @@ void fn_80034FB4(void)
         case 7:
             lbl_8047A444 = *(u32*)(menuData + 0xAFC);
             if (*(u16*)floorName != 0) {
-                GScharCpy(name, floorName);
+                GScharCpy(work + 0x10, floorName);
             } else {
                 entry = fightFloorDataBiosGetPtr((u16)lbl_8047A444);
                 if (entry != 0) {
-                    GScharCpy(name, GSmsgGetGSchar(fightFloorDataBiosGetName(entry)));
+                    GScharCpy(work + 0x10, GSmsgGetGSchar(fightFloorDataBiosGetName(entry)));
                 } else {
-                    GScharCpy(name, &lbl_8047BA1C);
+                    GScharCpy(work + 0x10, &lbl_8047BA1C);
                 }
             }
             msgctrlSetValue(0x4D, (u32)name);
