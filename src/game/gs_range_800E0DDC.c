@@ -642,6 +642,7 @@ static inline u16 gsMemChecksum(GSMemHandle* handle) {
     return sum;
 }
 
+#if !defined(GS_RANGE_800E0E14_ONLY)
 /* RULE-EXCEPTION(user-approved): single-use inline accessor; its result temp numbers block->next where retail's allocator expects it - see docs/RULE_EXCEPTIONS.md */
 static inline GSFreeBlock* gsMemNextOf(GSFreeBlock* block) {
     return block->next;
@@ -652,7 +653,6 @@ static inline GSFreeBlock* gsMemBlockAfter(GSFreeBlock* block, u32 size) {
     return (GSFreeBlock*)((u8*)block + size);
 }
 
-#if !defined(GS_RANGE_800E0E14_ONLY)
 /* Compact the movable allocations in the GS scratch heap. */
 u32 fn_800E1544(void)
 {
