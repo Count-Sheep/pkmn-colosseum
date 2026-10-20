@@ -914,6 +914,7 @@ void fn_8009567C(u8* context, u8* sprite)
     u16 fill;
     f32 ratio;
     f32 dp;
+    u8 nature;
 
     pokemon = *(u8**)(lbl_803FB380 + 0x0C);
     if (pokemon == NULL) {
@@ -949,8 +950,8 @@ void fn_8009567C(u8* context, u8* sprite)
         if (pokemonGetDarkPokemonLevel(pokemon) < 3) {
             name = 0x934;
         } else {
-            name = pokemonSeikakuDataBiosGetName(
-                pokemonSeikakuDataBiosGetPtr((u8)pokemonGetStatus(pokemon, 0, 0xBF, 0)));
+            nature = pokemonGetStatus(pokemon, 0, 0xBF, 0);
+            name = pokemonSeikakuDataBiosGetName(pokemonSeikakuDataBiosGetPtr(nature));
         }
         msgctrlSetValue(0x55, name);
         switch (name) {
