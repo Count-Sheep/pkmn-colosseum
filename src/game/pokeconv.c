@@ -29,12 +29,11 @@ s32 fn_80089048(u8* __restrict destination, const u8* source, void* pokemon)
     u32 word1;
     u32 word2;
     u32 packed;
+    const u8* input;
     u32 value;
     s32 valid;
     s32 i;
-    s32 count;
     u32 items;
-    const u8* input;
     u8* output;
 
     if (pokemon != NULL && pokemonCheckValid(pokemon) == 0) {
