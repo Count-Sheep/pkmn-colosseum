@@ -18,10 +18,10 @@ typedef struct MenuCBEntryPort {
 extern void fn_80165A20(s32, s32, s32);
 extern void* memcpy(void*, const void*, u32);
 extern MenuCBEntryPort* fn_8006B09C(s32);
-extern void* fn_8006A814(MenuCBEntryPort*);
+extern u32 fn_8006A814(MenuCBEntryPort*);
 extern s32 fn_8006B0F8(s32);
-extern void gbaCommandSendWazaText(void*, s32);
-extern void fn_8008AB20(void*, u16, s32);
+extern void gbaCommandSendWazaText(s32, s32);
+extern void fn_8008AB20(s32, u32, u32);
 extern void toolentryTaisenInitPokemonOrder(s32);
 extern void* fn_8006ACCC(s32);
 extern s32 menuOpen(s32, s32);
@@ -70,7 +70,7 @@ typedef struct MenuCBEntryWork {
 extern MenuCBEntryWork lbl_803A9F08;
 #define MENUCB_WORK (&lbl_803A9F08)
 
-static inline s32 menuCBMin(u16 a, u16 b)
+static inline u16 menuCBMin(u16 a, u16 b)
 {
     if (a < b) {
         return a;
@@ -130,7 +130,7 @@ static inline void menuCBClearEntrySlots(MenuCBEntryWork* state)
 static inline void menuCBEntryPorts(s32 battleType, s32 playerCount)
 {
     s32 player;
-    void* command;
+    u32 command;
     u16 maxCount;
     MenuCBEntryPort* port;
     u16 pokemonCount;
@@ -193,6 +193,28 @@ static inline void menuCBWaitDecided(void)
     } while (waiting != 0);
 }
 
+/* RULE-EXCEPTION(user-approved): single-use inline helper (entry-order loop, nested under menuCBEntryOrderAll) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBEntryOrder(void** entries)
+{
+    void** e;
+    s32 player;
+
+    for (player = 0, e = &entries[player]; player < 4; e++, player++) {
+        *e = fn_8006ACCC(player);
+        if (*e != NULL) {
+            MENUCB_WORK->order[player] = *(s32*)((u8*)*e + 0x28);
+        } else {
+            MENUCB_WORK->order[player] = -1;
+        }
+    }
+}
+
+/* RULE-EXCEPTION(user-approved): single-use inline helper (depth wrapper for the entry-order loop) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+static inline void menuCBEntryOrderAll(void** entries)
+{
+    menuCBEntryOrder(entries);
+}
+
 s32 fn_80063D14(void* work)
 {
     void* entries[4];
@@ -201,7 +223,6 @@ s32 fn_80063D14(void* work)
     s32 count;
     s32 menuResult;
     s32 keepRunning;
-    void** e;
 
     keepRunning = 1;
     fn_80165A20(0x1E, 0, 0xFF);
@@ -213,14 +234,7 @@ s32 fn_80063D14(void* work)
         toolentryTaisenInitPokemonOrder(player);
     }
 
-    for (player = 0, e = &entries[player]; player < 4; e++, player++) {
-        *e = fn_8006ACCC(player);
-        if (*e != NULL) {
-            MENUCB_WORK->order[player] = *(s32*)((u8*)*e + 0x28);
-        } else {
-            MENUCB_WORK->order[player] = -1;
-        }
-    }
+    menuCBEntryOrderAll(entries);
 
     switch (toolentryTaisenGetBattleType()) {
     case 0:

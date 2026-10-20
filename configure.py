@@ -6558,8 +6558,9 @@ config.libs = [
                 ],
                 progress_category="game",
             ),
+            # TEMPORARY constant_import
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_range_80063D14.c",
                 constant_import=[
                     {"symbol": "lbl_8047BFE8", "offset": 0, "expected": "00000000"},
