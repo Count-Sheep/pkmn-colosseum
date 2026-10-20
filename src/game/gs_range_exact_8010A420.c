@@ -8,7 +8,7 @@
 #include "dolphin/types.h"
 
 /* 0x8010A420 | 0x19C */
-/* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
+/* Built with the unit flag -opt nopeephole (configure.py); no local pragma. */
 s32 fn_8010A420(void* obj)
 {
     typedef struct Obj {

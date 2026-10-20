@@ -17,7 +17,7 @@ typedef struct MenuModel {
 } MenuModel;
 
 /* 0x8010A5BC | 0x2D0 */
-/* RULE-EXCEPTION(user-approved): local peephole control -- see docs/RULE_EXCEPTIONS.md. */
+/* Built with the unit flag -opt nopeephole (configure.py); no local pragma. */
 s32 menuModelInit(MenuModel* obj, s32 w, s32 h)
 {
     typedef struct Vec3 {
