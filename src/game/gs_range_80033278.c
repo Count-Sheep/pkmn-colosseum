@@ -111,7 +111,13 @@ typedef struct SysvarsFloorHistory {
 } SysvarsFloorHistory;
 
 /* Card-e work buffers, .bss 0x803A3278 - 0x803A3E58. */
-u8 lbl_803A3278[0x10];
+/* The five recent floors, padded to the 0x10-byte retail object. */
+typedef struct SysvarsFloorHistoryList {
+    SysvarsFloorHistory entries[5];
+    u8 pad_0F;
+} SysvarsFloorHistoryList;
+
+SysvarsFloorHistoryList lbl_803A3278;
 u8 lbl_803A3288[0xA0];
 u16 lbl_803A3328[6];
 CardEData lbl_803A3334;
@@ -222,7 +228,7 @@ static inline void sysvarsWaitTwoSeconds(void)
 /* RULE-EXCEPTION(user-approved): stripped stand-in that only reproduces the TU's .bss pool order - see docs/RULE_EXCEPTIONS.md */
 void sysvarsCardEPoolOrder(void)
 {
-    lbl_803A3278[0] = 0;
+    lbl_803A3278.entries[0].floor = 0;
     lbl_803A3288[0] = 0;
     lbl_803A3328[0] = 0;
     lbl_803A3334.card_type = 0;
@@ -1107,7 +1113,7 @@ static inline u8 sysvarsFloorSeen(CardEData* menu)
         floor = menu->cardId;
         region = menu->row;
         variant = menu->column;
-        for (index = 0, entry = (SysvarsFloorHistory*)lbl_803A3278; index < lbl_8047A43C; index++, entry++) {
+        for (index = 0, entry = lbl_803A3278.entries; index < lbl_8047A43C; index++, entry++) {
             if (floor == entry->floor &&
                 region == entry->region &&
                 variant == entry->variant) {
@@ -1163,7 +1169,6 @@ void fn_80034FB4(void)
     u8 floor;
     s8 region;
     s8 variant;
-    SysvarsFloorHistory* history;
     void* entry;
     u32 amount;
     s32 state;
@@ -1250,9 +1255,9 @@ void fn_80034FB4(void)
             lbl_8047A44A = 0;
             lbl_8047A43C = 0;
             for (index = 0; index < 5; index++) {
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].floor = 0;
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
+                lbl_803A3278.entries[index].floor = 0;
+                lbl_803A3278.entries[index].region = 0;
+                lbl_803A3278.entries[index].variant = 0;
             }
             if (menuIsCheck(0xA5) != 0) {
                 menuClose(0xA5);
@@ -1285,9 +1290,9 @@ void fn_80034FB4(void)
             winMsgClose(1);
             lbl_8047A43C = 0;
             for (index = 0; index < 5; index++) {
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].floor = 0;
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
+                lbl_803A3278.entries[index].floor = 0;
+                lbl_803A3278.entries[index].region = 0;
+                lbl_803A3278.entries[index].variant = 0;
             }
             sysvarsLoadItems();
             lbl_8047A458 = 0;
@@ -1324,10 +1329,9 @@ void fn_80034FB4(void)
                 if (((u8*)entry)[0xC] != 0) {
                     duplicate = sysvarsFloorSeen(menu);
                     if (duplicate == 0) {
-                        history = &((SysvarsFloorHistory*)lbl_803A3278)[lbl_8047A43C];
-                        history->floor = menu->cardId;
-                        history->region = menu->row;
-                        history->variant = menu->column;
+                        lbl_803A3278.entries[lbl_8047A43C].floor = menu->cardId;
+                        lbl_803A3278.entries[lbl_8047A43C].region = menu->row;
+                        lbl_803A3278.entries[lbl_8047A43C].variant = menu->column;
                         lbl_8047A43C++;
                         if (lbl_8047A43C >= 5) {
                             lbl_8047A43C = 4;
@@ -1467,9 +1471,9 @@ void fn_80034FB4(void)
             }
             lbl_8047A43C = 0;
             for (index = 0; index < 5; index++) {
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].floor = 0;
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].region = 0;
-                ((SysvarsFloorHistory*)lbl_803A3278)[index].variant = 0;
+                lbl_803A3278.entries[index].floor = 0;
+                lbl_803A3278.entries[index].region = 0;
+                lbl_803A3278.entries[index].variant = 0;
             }
             fn_801D0AFC(0);
             winMsgOpen(8, 0x3BD7, 1, 0);
