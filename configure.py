@@ -8759,10 +8759,12 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menuShop_candidate_8002C408.c",
+                # fn_8002C408 only (MENUSHOP_CANDIDATE_8002C408_ONLY carve); the
+                # unit-level -opt nopeephole replaces the file's local pragma.
                 mw_version="GC/1.3",
-                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8"],
+                extra_cflags=["-use_lmw_stmw on", "-sdata 8", "-sdata2 8", "-opt nopeephole"],
                 progress_category="game",
             ),
             Object(

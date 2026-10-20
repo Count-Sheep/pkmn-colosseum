@@ -30,6 +30,7 @@ extern u32 GSmsgGetRect(u32 id);
  *   menuShop_r40_8002B880_gc125n.c -> fn_8002B880
  *   menuShop_candidate_8002B1A0.c -> menuShopDrawListText
  *   menuShop_candidate_8002C284.c -> fn_8002C284
+ *   menuShop_candidate_8002C408.c -> fn_8002C408
  *   menuShop_exact_80029AC8.c -> fn_80029AC8
  *   menuShop_exact_80029CC0.c -> fn_80029CC0 */
 #if defined(MENUSHOP_CANDIDATE_8002A5B0_ONLY) || \
@@ -40,6 +41,7 @@ extern u32 GSmsgGetRect(u32 id);
     defined(MENUSHOP_R40_8002B880_ONLY) || \
     defined(MENUSHOP_ISLAND_8002BCE8_ONLY) || \
     defined(MENUSHOP_CANDIDATE_8002C284_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002C408_ONLY) || \
     defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
     defined(MENUSHOP_ISLAND_80029850_ONLY) || \
     defined(MENUSHOP_ISLAND_80029EF4_ONLY) || \
@@ -2154,7 +2156,8 @@ s32 fn_8002C0E4(u8* self)
 
 #endif /* guard split */
 #if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_ISLAND_8002CE6C_ONLY) || \
-    defined(MENUSHOP_CANDIDATE_8002C284_ONLY)
+    defined(MENUSHOP_CANDIDATE_8002C284_ONLY) || \
+    defined(MENUSHOP_CANDIDATE_8002C408_ONLY)
 /* Opens the shop item list (menu 0x60) for location `loc`; returns the
  * chosen item id, or 0 if the menu was cancelled. */
 typedef struct ShopWork {
@@ -2337,7 +2340,7 @@ void fn_8002C284(u32 loc_idx, u8 mode)
 #endif
 
 #endif /* guard split */
-#if !defined(MENUSHOP_ISLAND_ONLY)
+#if !defined(MENUSHOP_ISLAND_ONLY) || defined(MENUSHOP_CANDIDATE_8002C408_ONLY)
 /* fn_8002C408 - 0x8002C408 | size: 0xa64 */
 extern void savedataGetStatus(void);
 extern void pcboxGetItemCapacity(void);
@@ -2365,6 +2368,14 @@ asm void fn_8002C408(void) {
 #include "src/game/gs_worldmap_fn_8002C408.inc"
 }
 #else
+/* The hero's money (status 0xd). */
+/* RULE-EXCEPTION(user-approved): inline helper; shopGetMoney's case 2 reads the money through it, which adds the return copy retail's allocator sees (default keeps the direct call) - see docs/RULE_EXCEPTIONS.md */
+static inline u32 shopHeroMoney(void)
+{
+    extern u32 heroGetStatus(u8* ptr, u32 selector, u32 idx);
+    return heroGetStatus(NULL, 0xd, 0);
+}
+
 /*
  * Money available to a shop of type `mode`: the PC-box shop (3) uses the
  * credits held in its work block, folding in pending deposits
@@ -2379,7 +2390,7 @@ static inline u32 shopGetMoney(u8 mode, ShopWork* work)
 
     switch (mode) {
     case 2:
-        return heroGetStatus(NULL, 0xd, 0);
+        return shopHeroMoney();
     case 3:
         if (work != NULL) {
             if ((s32)lbl_8047A660 > 0) {
@@ -2589,9 +2600,11 @@ static inline s32 shopLoadStock(ShopWork* work)
     return fn_80029CC0((u8*)work);
 }
 
-/* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
+#if !defined(MENUSHOP_CANDIDATE_8002C408_ONLY)
+/* RULE-EXCEPTION(user-approved): the file's local peephole-control pragma for the whole-file compiles; the linked carve uses unit-level -opt nopeephole instead - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
+#endif
 void fn_8002C408(s32 mapIdx, u8 mode)
 {
     extern void  fn_80142A88(void* buf, s32 v);
@@ -2650,7 +2663,7 @@ void fn_8002C408(s32 mapIdx, u8 mode)
     s32 i;
     s32 n;
     u16 price;
-    u16 id;
+    s32 id;
     s32 qty;
     s32 total;
     s32 answer;
@@ -2684,7 +2697,7 @@ void fn_8002C408(s32 mapIdx, u8 mode)
         params.work.credit1 = 0;
         params.work.exitFlag = 0;
         memcpy((void*)lbl_8047A3DC, shopSaveData(), 0x7198);
-        lbl_8047A3D8 = heroGetStatus(NULL, 0xd, 0);
+        lbl_8047A3D8 = shopHeroMoney();
         ok = 1;
         break;
     case 3:
@@ -2748,7 +2761,7 @@ void fn_8002C408(s32 mapIdx, u8 mode)
         }
         itemDataBiosGetPtr(item);
         price = itemDataBiosGetCoupon();
-        id = item;
+        id = item & 0xFFFF;
         lbl_8047A3E4 = fn_80029FAC(&se, mapIdx, 0xc, 0x2d, id, -1);
         if (n < 1) {
             qty = 0;
@@ -2809,7 +2822,9 @@ void fn_8002C408(s32 mapIdx, u8 mode)
     }
     menuCloseCustom(0x60, 0, 1);
 }
+#if !defined(MENUSHOP_CANDIDATE_8002C408_ONLY)
 #pragma pop
+#endif
 #endif
 
 #endif /* guard split */
