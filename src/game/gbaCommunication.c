@@ -175,8 +175,9 @@ void fn_80093B4C(s32 context, void* widget)
         }
 
         fn_800FAEF8(0x78, 0xC8, 0x80FFFF, lbl_8026F5E4, ribbon);
-        ribbonKind = &lbl_802EED44[ribbon].ribbon;
-        switch (*ribbonKind) {
+        /* RULE-EXCEPTION(user-approved): scalar reuse - ribbonKind holds the record address, then is advanced to its ribbon field in the switch expression - see docs/RULE_EXCEPTIONS.md */
+        ribbonKind = (s32*)&lbl_802EED44[ribbon];
+        switch (*(ribbonKind += 2)) {
         case 0:
         case 1:
         case 2:
