@@ -224,7 +224,8 @@ void fn_80093B4C(void* context, void* widget)
         }
         column = *(s8*)(lbl_803FB380 + 0x1A) % 9;
         row = *(s8*)(lbl_803FB380 + 0x1A) / 9;
-        ribbon = *(s8*)(lbl_803FB380 + column * 4 + 0x20 + row);
+        ribbon = (lbl_803FB380 + column * 4)[0x20 + row];
+        ribbon = (s8)ribbon;
         if (ribbon < 0) {
             break;
         }
