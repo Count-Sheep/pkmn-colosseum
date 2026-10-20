@@ -1137,7 +1137,6 @@ s32 fn_8000BAB8(void) {
     heroAddPokecoupon(0, val);
     return 0;
 }
-#pragma peephole on
 
 /* fn_8000BB00 - 0x8000BB00 | size: 0x48 */
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */

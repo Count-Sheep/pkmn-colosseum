@@ -72,4 +72,3 @@ s32 fn_8002B134(void* r3, u8* r4)
 end:
     return 0;
 }
-#pragma peephole on

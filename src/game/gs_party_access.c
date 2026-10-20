@@ -254,15 +254,6 @@ s32 fn_8000CED0(void) {
     fn_800FF730(0x391);
     return 0;
 }
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
-#pragma peephole on
 
 /* 0x8000CEF8 */
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */

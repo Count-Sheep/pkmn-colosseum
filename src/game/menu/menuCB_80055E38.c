@@ -601,7 +601,6 @@ void fn_80056A80(void) {
         }
     }
 }
-#pragma peephole on
 
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma peephole off
@@ -652,4 +651,3 @@ u32 fn_80056B74(u32 idx, s32 mode) {
     return 1;
 }
 #pragma pop
-#pragma peephole on

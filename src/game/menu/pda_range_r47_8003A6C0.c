@@ -403,7 +403,6 @@ s32 fn_8003A6C0(PdaDrawWork* work, PdaSprite* sprite)
 }
 #pragma peephole reset
 
-#pragma peephole off
 typedef struct PdaNumberRange {
     s32 max;
     s32 min;

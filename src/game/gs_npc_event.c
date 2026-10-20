@@ -2406,5 +2406,4 @@ void fn_800302D0(u8* r3, u8* r4) {
         break;
     }
 }
-#pragma peephole on
 #endif

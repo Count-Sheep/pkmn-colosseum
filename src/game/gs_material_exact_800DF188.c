@@ -11,4 +11,3 @@ void GSmaterialStoreAlpha(u8* obj)
     obj[0x1] =
         (u8)(s32)(scale * *(f32*)(*(u32*)(*(u32*)(obj + 0x8) + 0xc) + 0xc));
 }
-#pragma scheduling on

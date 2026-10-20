@@ -266,4 +266,3 @@ void fn_800094A4(GsMenuNumberInput* input)
     input->done = 1;
 }
 
-#pragma peephole on

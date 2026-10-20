@@ -1195,7 +1195,6 @@ valid_destination:
     (*(s32*)&lbl_8047A428) = stateValue;
     (*(s32*)&lbl_8047A42C) = 8;
 }
-#pragma peephole on
 #else
 /* fn_8002F284 - GSmap_LoadDestination (0x8002F284, 0x518 bytes)
  *
