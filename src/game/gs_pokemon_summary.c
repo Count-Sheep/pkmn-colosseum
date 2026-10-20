@@ -428,7 +428,6 @@ asm void fn_800150E4(void) {
 #pragma push
 #pragma peephole off
 s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
-    s32 scroll;
     s32 validCount;
     s32 displayLine;
     s32 visibleIndex;
@@ -436,6 +435,7 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
     int y;
     s32 textX;
     s32 itemIndex;
+    s32 scroll;
 
     displayLine = 0;
     lineLimit = 8;
