@@ -20,6 +20,11 @@ extern void msgctrlSetValue(s32 id, u32 value);
 extern u32 GSmsgGetRect(s32 id);
 extern void fn_800FB680(s32 arg0, s32 arg1, s32 arg2, void* data);
 
+static inline s32 pda_80039644_Slots(void)
+{
+    return pcboxGetNbItemSlot(0);
+}
+
 /* The data id of the target-th listed item in PC box 0. */
 static inline s32 pda_80039644_ItemId(s32 target)
 {
@@ -28,7 +33,7 @@ static inline s32 pda_80039644_ItemId(s32 target)
     s32 i;
     s32 found;
 
-    slots = pcboxGetNbItemSlot(0);
+    slots = pda_80039644_Slots();
     found = -1;
     for (i = 0; i < slots; i++) {
         item = pcboxGetItem(0, (s16)i);
@@ -50,7 +55,7 @@ static inline s32 pda_80039644_ItemNum(s32 target)
     s32 found;
     s32 slots;
 
-    slots = pcboxGetNbItemSlot(0);
+    slots = pda_80039644_Slots();
     found = -1;
     for (i = 0; i < slots; i++) {
         item = pcboxGetItem(0, (s16)i);
@@ -71,7 +76,7 @@ static inline s32 pda_80039644_Count(void)
     s32 total;
 
     total = 0;
-    slots = pcboxGetNbItemSlot(0);
+    slots = pda_80039644_Slots();
     for (i = 0; i < slots; i++) {
         if ((u8)fn_801429E8(pcboxGetItem(0, (s16)i)) != 0) {
             total++;
