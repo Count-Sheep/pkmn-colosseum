@@ -360,7 +360,6 @@ static inline u8 sysvarsAllFilled(CardEData* card, s8 layer)
 
 s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
 {
-    CardEData* card;
     u8* name;
     s32 result;
     s32 action;
@@ -385,7 +384,6 @@ s32 _sysvarsProcessData__FP16sysvarsFuncEntryPc(void* entry, char* text)
     }
 
 
-    card = &lbl_803A3334;
     name = lbl_803A3288;
 
 restart:
@@ -433,11 +431,11 @@ restart:
     }
 
     action = 4;
-    if (fn_80082EA4(lbl_8047A434, card->layerCount - 1, card->row, card->column)[0xC] != 0) {
+    if (fn_80082EA4(lbl_8047A434, lbl_803A3334.layerCount - 1, lbl_803A3334.row, lbl_803A3334.column)[0xC] != 0) {
         action = 2;
     } else {
         secondary = 4;
-        empty = sysvarsFindEmptyLayer(card);
+        empty = sysvarsFindEmptyLayer(&lbl_803A3334);
         switch (empty) {
         case -1:
             secondary = 2;
@@ -445,7 +443,7 @@ restart:
         case 1:
         case 2:
             for (open = 0; open < empty; open++) {
-                if (sysvarsLayerOpen(card, open)) {
+                if (sysvarsLayerOpen(&lbl_803A3334, open)) {
                     secondary = 3;
                     break;
                 }
@@ -465,12 +463,12 @@ restart:
         return 2;
 
     case 3:
-        for (open = 0; open < card->layerCount; open++) {
-            if (sysvarsLayerOpen(card, open)) {
+        for (open = 0; open < lbl_803A3334.layerCount; open++) {
+            if (sysvarsLayerOpen(&lbl_803A3334, open)) {
                 break;
             }
         }
-        switch (lbl_8047A434->rowType[(s8)card->row]) {
+        switch (lbl_8047A434->rowType[(s8)lbl_803A3334.row]) {
         case 0:
             message = 0x3C7C;
             break;
@@ -502,7 +500,7 @@ restart:
         msgctrlSetValue(0x31, message);
         msgctrlSetValue(0x4D, (u32)lbl_803A3334.names[open]);
         msgctrlSetValue(0x57, (u32)lbl_803A3334.names[open + 1]);
-        fn_8007C450(card->cardId, open, card->row, card->column, 6);
+        fn_8007C450(lbl_803A3334.cardId, open, lbl_803A3334.row, lbl_803A3334.column, 6);
         winMsgOpen(8, 0x3B5B, 1, 0);
         winMsgClose(1);
         fn_8007C414();
@@ -512,10 +510,10 @@ restart:
         break;
     }
 
-    lbl_8047A448 = sysvarsFindEmptyLayer(card);
+    lbl_8047A448 = sysvarsFindEmptyLayer(&lbl_803A3334);
     winMsgClose(1);
     fn_80082CF0(lbl_8047A434, &lbl_803A3334, lbl_8047A448);
-    fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 1);
+    fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, lbl_803A3334.column, 1);
     fn_80166A28(0x4C5);
     sysvarsWaitForTransfer();
     winMsgOpen(8, 0x3B6D, 1, 0);
@@ -523,9 +521,9 @@ restart:
     sysvarsRestoreItems();
 
 first_menu:
-    menuResult = fn_80032ED8(card->menus[card->menu1[lbl_8047A448]], 8, 0);
+    menuResult = fn_80032ED8(lbl_803A3334.menus[lbl_803A3334.menu1[lbl_8047A448]], 8, 0);
     menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
-    fn_8007C300(card->cardId, lbl_8047A448);
+    fn_8007C300(lbl_803A3334.cardId, lbl_8047A448);
 
     if (menuResult != 2) {
         sysvarsRestoreItems();
@@ -536,7 +534,7 @@ first_menu:
         if (result == 0) {
             goto first_menu;
         }
-        fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 7);
+        fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, lbl_803A3334.column, 7);
         fn_80166A28(0x4C6);
         sysvarsWaitForTransfer();
         fn_8007CAB0();
@@ -551,33 +549,33 @@ first_menu:
         return 2;
     }
 
-    fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 2);
+    fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, lbl_803A3334.column, 2);
     sysvarsWaitForTransfer();
-    fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 4);
+    fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, lbl_803A3334.column, 4);
     fn_80166A28(0x3C6);
     sysvarsWaitForTransfer();
     fn_80166AB8(0x3CC, 0, 0);
     heroAddPokecoupon(0, 0x32);
     winMsgOpen(8, 0x3B72, 1, 0);
 
-    if (sysvarsStageTwoReady(card, lbl_8047A448)) {
+    if (sysvarsStageTwoReady(&lbl_803A3334, lbl_8047A448)) {
         fn_80082BA4(lbl_8047A434, &lbl_803A3334, lbl_8047A448);
-        fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 1);
+        fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, -1, 1);
         fn_80166A28(0x4C5);
         sysvarsWaitForTransfer();
         winMsgOpen(8, 0x3B74, 1, 0);
         winMsgClose(1);
 
-        menuResult = fn_80032ED8(lbl_803A3334.menus[card->menu2[lbl_8047A448]], 9, 0);
+        menuResult = fn_80032ED8(lbl_803A3334.menus[lbl_803A3334.menu2[lbl_8047A448]], 9, 0);
         menuOpenCustom(0xA6, windowGetActiveID(), 0, 0, 0, 1, name);
-        fn_8007C300(card->cardId, lbl_8047A448);
+        fn_8007C300(lbl_803A3334.cardId, lbl_8047A448);
 
         if (menuResult != 2) {
-            fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 7);
+            fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, -1, 7);
             fn_80166A28(0x4C6);
             sysvarsWaitForTransfer();
             fn_80082960(lbl_8047A434, &lbl_803A3334, lbl_8047A448);
-            fn_8007C450(card->cardId, lbl_8047A448, card->row, card->column, 8);
+            fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, lbl_803A3334.column, 8);
             fn_80166A28(0x4C6);
             sysvarsWaitForTransfer();
             fn_8007CAB0();
@@ -602,9 +600,9 @@ first_menu:
             return 2;
         }
 
-        fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 2);
+        fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, -1, 2);
         sysvarsWaitForTransfer();
-        fn_8007C450(card->cardId, lbl_8047A448, card->row, -1, 4);
+        fn_8007C450(lbl_803A3334.cardId, lbl_8047A448, lbl_803A3334.row, -1, 4);
         fn_80166A28(0x3C6);
         sysvarsWaitForTransfer();
         fn_80166AB8(0x3CC, 0, 0);
@@ -627,7 +625,7 @@ first_menu:
         fn_8007C414();
     }
 
-    if (!sysvarsAllFilled(card, lbl_8047A448)) {
+    if (!sysvarsAllFilled(&lbl_803A3334, lbl_8047A448)) {
         fn_8007C414();
         sysvarsRestoreItems();
         winMsgOpen(8, 0x3B7C, 0, 0);
