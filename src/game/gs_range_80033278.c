@@ -1551,8 +1551,6 @@ extern void fn_80034830(u8 enabled, s32 selection,
                         SysvarsOpponentSource* source);
 
 /* fn_80034FB4 - 0x80034FB4 | size: 0xC94 */
-#pragma push
-#pragma peephole off
 void fn_80034FB4(void)
 {
     extern u32 lbl_8047A430;
@@ -1996,5 +1994,4 @@ void fn_80034FB4(void)
     }
     lbl_8047A438 = 0;
 }
-#pragma pop
 #endif
