@@ -546,10 +546,10 @@ asm void fn_800155B0(void) {
 #pragma push
 #pragma peephole off
 s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
-    s32 visibleIndex;
     s32 textX;
     s32 validCount;
     s32 itemIndex;
+    s32 visibleIndex;
     s32 displayLine;
     s32 lineLimit;
     s32 scroll;
@@ -558,8 +558,8 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
     u8 berryNo;
     s16 width;
 
-    lineLimit = 8;
     displayLine = 0;
+    lineLimit = 8;
     scroll = 0;
     validCount = SummaryCountItems(pageIndex);
     itemIndex = ((s8*)packedRange)[0];
