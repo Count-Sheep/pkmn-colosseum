@@ -115,6 +115,7 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
 #if defined(GS_POKEMON_SUMMARY_80017CB8_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800150E4_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80015374_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_800155B0_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800159BC_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80015E3C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
@@ -422,7 +423,7 @@ s32 fn_80015050(u8* src, u8* param) {
 #endif /* !GS_POKEMON_SUMMARY_ISLAND */
 
 #if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800150E4_ONLY) || \
-    defined(GS_POKEMON_SUMMARY_80015374_ONLY)
+    defined(GS_POKEMON_SUMMARY_80015374_ONLY) || defined(GS_POKEMON_SUMMARY_800155B0_ONLY)
 /*
  * Item id of the index-th valid entry, held in a u16 local before it is
  * returned (as SummaryListGetNum holds its quantity). The page draws
@@ -457,7 +458,7 @@ static inline u16 SummaryListGetItemIdU16(s32 kind, s32 index) {
 static inline u16 SummaryPageItemIdU16(s32 pageIndex, s32 index) {
     return SummaryListGetItemIdU16(SUMMARY_PAGES[pageIndex].dataSource, index);
 }
-#endif /* !GS_POKEMON_SUMMARY_ISLAND || 800150E4_ONLY || 80015374_ONLY */
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || 800150E4_ONLY || 80015374_ONLY || 800155B0_ONLY */
 
 #if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800150E4_ONLY)
 
@@ -602,7 +603,7 @@ s32 fn_80015374(int x, s32 pageIndex, u16* packedRange) {
 
 #endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_80015374_ONLY */
 
-#if !defined(GS_POKEMON_SUMMARY_ISLAND)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800155B0_ONLY)
 
 /* fn_800155B0 - 0x800155B0 | size: 0x40c */
 extern void* lbl_8047A2F8;
@@ -614,8 +615,11 @@ asm void fn_800155B0(void) {
 #include "src/game/gs_pokemon_summary_fn_800155B0.inc"
 }
 #else
+/* The island unit turns the peephole pass off with -opt nopeephole. */
+#if !defined(GS_POKEMON_SUMMARY_800155B0_ONLY)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
     s32 textX;
     s32 validCount;
@@ -628,6 +632,7 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
     u16 itemId;
     u8 berryNo;
     s16 width;
+    u32 name;
 
     displayLine = 0;
     lineLimit = 8;
@@ -661,7 +666,9 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
             msgctrlSetValue(0x34, berryNo);
             fn_800FB680(textX, y, -1, 0xCA);
             textX += (u16)(GSmsgGetRect(0xCA) >> 16);
-            fn_800FB680(textX + 9, y, -1, itemDataBiosGetName(itemDataBiosGetPtr((u16)itemId)));
+            /* RULE-EXCEPTION(user-approved): no-op mask of the u16 item id for the call, chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+            name = itemDataBiosGetName(itemDataBiosGetPtr(itemId & 0xFFFF));
+            fn_800FB680(textX + 9, y, -1, name);
 
             msgctrlSetValue(0x34, SummaryPagePocketTotal(pageIndex));
             width = (s16)(GSmsgGetRect(0xCA) >> 16);
@@ -678,10 +685,12 @@ s32 fn_800155B0(int x, s32 pageIndex, u16* packedRange) {
     }
     return 0;
 }
+#if !defined(GS_POKEMON_SUMMARY_800155B0_ONLY)
 #pragma pop
 #endif
+#endif
 
-#endif /* !GS_POKEMON_SUMMARY_ISLAND */
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_800155B0_ONLY */
 
 #if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800159BC_ONLY)
 /* fn_800159BC - 0x800159BC | size: 0x480 */
