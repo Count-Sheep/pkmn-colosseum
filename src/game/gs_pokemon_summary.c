@@ -114,6 +114,7 @@ extern f32   gStickDeflection;    /* lbl_8047A2D0 */
  */
 #if defined(GS_POKEMON_SUMMARY_80017CB8_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800150E4_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_80015374_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800159BC_ONLY) || \
     defined(GS_POKEMON_SUMMARY_80015E3C_ONLY) || \
     defined(GS_POKEMON_SUMMARY_800161B0_ONLY) || \
@@ -420,12 +421,12 @@ s32 fn_80015050(u8* src, u8* param) {
 
 #endif /* !GS_POKEMON_SUMMARY_ISLAND */
 
-#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800150E4_ONLY)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800150E4_ONLY) || \
+    defined(GS_POKEMON_SUMMARY_80015374_ONLY)
 /*
  * Item id of the index-th valid entry, held in a u16 local before it is
  * returned (as SummaryListGetNum holds its quantity). The page draws
- * fn_800150E4 and fn_800155B0 use this copy; the shared SummaryListGetItemId
- * keeps fn_80015374's allocation.
+ * fn_800150E4, fn_80015374 and fn_800155B0 use this copy.
  */
 /* RULE-EXCEPTION(user-approved): inline helper copy (u16 item-id local) chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
 static inline u16 SummaryListGetItemIdU16(s32 kind, s32 index) {
@@ -456,6 +457,9 @@ static inline u16 SummaryListGetItemIdU16(s32 kind, s32 index) {
 static inline u16 SummaryPageItemIdU16(s32 pageIndex, s32 index) {
     return SummaryListGetItemIdU16(SUMMARY_PAGES[pageIndex].dataSource, index);
 }
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || 800150E4_ONLY || 80015374_ONLY */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_800150E4_ONLY)
 
 /* fn_800150E4 - 0x800150E4 | size: 0x290 */
 extern void* lbl_8047A2F8;
@@ -530,7 +534,7 @@ s32 fn_800150E4(s32 x, s32 pageIndex, u16* packedRange) {
 
 #endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_800150E4_ONLY */
 
-#if !defined(GS_POKEMON_SUMMARY_ISLAND)
+#if !defined(GS_POKEMON_SUMMARY_ISLAND) || defined(GS_POKEMON_SUMMARY_80015374_ONLY)
 
 /* fn_80015374 - 0x80015374 | size: 0x23c */
 extern void* lbl_8047A2F8;
@@ -542,18 +546,21 @@ asm void fn_80015374(void) {
 #include "src/game/gs_pokemon_summary_fn_80015374.inc"
 }
 #else
+/* The island unit turns the peephole pass off with -opt nopeephole. */
+#if !defined(GS_POKEMON_SUMMARY_80015374_ONLY)
 #pragma push
 #pragma peephole off
+#endif
 s32 fn_80015374(int x, s32 pageIndex, u16* packedRange) {
+    u32 name;
+    s32 itemId;
+    s32 visibleIndex;
+    s32 lineLimit;
+    s32 displayLine;
+    s32 scroll;
     s32 validCount;
     s32 itemIndex;
-    s32 lineLimit;
-    s32 scroll;
     s32 y;
-    u32 name;
-    s32 lineX;
-    s32 displayLine;
-    s32 visibleIndex;
 
     displayLine = 0;
     lineLimit = 8;
@@ -570,15 +577,15 @@ s32 fn_80015374(int x, s32 pageIndex, u16* packedRange) {
         scroll = (s32)SUMMARY_F32(lbl_8047A2D0);
     }
 
-    /* RULE-EXCEPTION(user-approved): s32 carrier copy of x for the row draw - see docs/RULE_EXCEPTIONS.md */
-    lineX = x;
     for (visibleIndex = displayLine; visibleIndex < lineLimit && itemIndex < validCount;
          displayLine++, visibleIndex++, itemIndex++) {
         if (itemIndex >= 0) {
             y = displayLine * 0x1F - scroll;
-            name = itemDataBiosGetName(itemDataBiosGetPtr((u16)SummaryPageItemId(pageIndex, itemIndex)));
+            /* RULE-EXCEPTION(user-approved): s32 carrier of the u16 item id, cast back for the call, chosen for register allocation - see docs/RULE_EXCEPTIONS.md */
+            itemId = SummaryPageItemIdU16(pageIndex, itemIndex);
+            name = itemDataBiosGetName(itemDataBiosGetPtr((u16)itemId));
             if (name != 0) {
-                fn_800FB680(lineX, y, -1, name);
+                fn_800FB680(x, y, -1, name);
             }
         }
     }
@@ -588,8 +595,14 @@ s32 fn_80015374(int x, s32 pageIndex, u16* packedRange) {
     }
     return 0;
 }
+#if !defined(GS_POKEMON_SUMMARY_80015374_ONLY)
 #pragma pop
 #endif
+#endif
+
+#endif /* !GS_POKEMON_SUMMARY_ISLAND || GS_POKEMON_SUMMARY_80015374_ONLY */
+
+#if !defined(GS_POKEMON_SUMMARY_ISLAND)
 
 /* fn_800155B0 - 0x800155B0 | size: 0x40c */
 extern void* lbl_8047A2F8;

@@ -222,7 +222,10 @@ game/gs_pokemon_summary_r57b_800150E4_o4s.c:
 	.text       start:0x800150E4 end:0x80015374
 
 game/gs_pokemon_summary_r57b_80015374_o4s.c:
-	.text       start:0x80015374 end:0x800159BC
+	.text       start:0x80015374 end:0x800155B0
+
+game/gs_pokemon_summary_r57b_800155B0_o4s.c:
+	.text       start:0x800155B0 end:0x800159BC
 
 game/gs_pokemon_summary_r57b_800159BC_middle.c:
 	.text       start:0x800159BC end:0x80015E3C

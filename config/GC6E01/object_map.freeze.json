@@ -6,24 +6,24 @@
     "total_code": 2504940,
     "total_data": 3566037,
     "total_functions": 8677,
-    "total_units": 2232
+    "total_units": 2233
   },
   "topology_status": {
     "auto_units": 98,
-    "named_units": 2134,
-    "source_backed_units": 2133,
+    "named_units": 2135,
+    "source_backed_units": 2134,
     "auto_code": 0,
     "auto_data": 1399455,
     "auto_functions": 0
   },
   "baseline_progress": {
-    "matched_code": "2483280",
-    "matched_code_percent": 99.13531,
+    "matched_code": "2484524",
+    "matched_code_percent": 99.184975,
     "matched_data": "2098602",
     "matched_data_percent": 58.849697,
-    "matched_functions": 8662,
-    "matched_functions_percent": 99.827126,
-    "fuzzy_match_percent": 99.97065
+    "matched_functions": 8665,
+    "matched_functions_percent": 99.8617,
+    "fuzzy_match_percent": 99.97234
   },
   "unit_topology": [
     {
@@ -999,13 +999,26 @@
       "sections": [
         {
           "name": ".text",
-          "size": 1608,
+          "size": 572,
           "virtual_address": 2147570548
         }
       ],
-      "total_code": 1608,
+      "total_code": 572,
       "total_data": 0,
-      "total_functions": 2
+      "total_functions": 1
+    },
+    {
+      "name": "main/game/gs_pokemon_summary_r57b_800155B0_o4s",
+      "sections": [
+        {
+          "name": ".text",
+          "size": 1036,
+          "virtual_address": 2147571120
+        }
+      ],
+      "total_code": 1036,
+      "total_data": 0,
+      "total_functions": 1
     },
     {
       "name": "main/game/gs_pokemon_summary_r57b_800159BC_middle",
