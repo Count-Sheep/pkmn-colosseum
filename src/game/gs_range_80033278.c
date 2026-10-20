@@ -245,8 +245,8 @@ static inline s32 sysvarsFindEmptyLayer(CardEData* card)
 {
     s32 i;
     s8 row;
-    s32 found;
     s8 column;
+    s32 found;
 
     row = card->row;
     found = -1;
@@ -276,9 +276,9 @@ static inline u8 sysvarsLayerOpen(CardEData* card, s8 layer)
 
 static inline u8 sysvarsStageTwoReady(CardEData* card, s8 layer)
 {
+    s32 column;
     s8 row;
     u8 valid;
-    s32 column;
 
     valid = 1;
     row = card->row;
@@ -297,8 +297,8 @@ static inline u8 sysvarsStageTwoReady(CardEData* card, s8 layer)
 
 static inline u8 sysvarsAllFilled(CardEData* card, s8 layer)
 {
-    s32 column;
     s8 row;
+    s32 column;
 
     if (card->bonus[layer] < 0) {
         return 0;
@@ -313,33 +313,41 @@ static inline u8 sysvarsAllFilled(CardEData* card, s8 layer)
     return 1;
 }
 
+static inline s32 sysvarsCheckLayers(CardEData* card)
+{
+    s32 secondary;
+    s32 empty;
+    s8 open;
+
+    secondary = 4;
+    empty = sysvarsFindEmptyLayer(card);
+    switch (empty) {
+    case -1:
+        secondary = 2;
+        break;
+    case 1:
+    case 2:
+        for (open = 0; open < empty; open++) {
+            if (sysvarsLayerOpen(card, open)) {
+                secondary = 3;
+                break;
+            }
+        }
+        break;
+    }
+    return secondary;
+}
+
 static inline s32 sysvarsCheckCard(CardEData* card)
 {
     s32 secondary;
     s32 action;
-    s32 empty;
-    s8 open;
 
     action = 4;
     if (fn_80082EA4(lbl_8047A434, card->layerCount - 1, card->row, card->column)[0xC] != 0) {
         action = 2;
     } else {
-        secondary = 4;
-        empty = sysvarsFindEmptyLayer(card);
-        switch (empty) {
-        case -1:
-            secondary = 2;
-            break;
-        case 1:
-        case 2:
-            for (open = 0; open < empty; open++) {
-                if (sysvarsLayerOpen(card, open)) {
-                    secondary = 3;
-                    break;
-                }
-            }
-            break;
-        }
+        secondary = sysvarsCheckLayers(card);
         if (secondary != 4) {
             action = secondary;
         }
