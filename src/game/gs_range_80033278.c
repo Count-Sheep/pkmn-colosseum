@@ -171,7 +171,7 @@ extern s32 fn_800D37CC(void);
 extern u32 fn_800D3088(void);
 extern void fn_801D0AFC(s32);
 extern void* savedataGetStatus(s32, s32);
-extern void* heroBiosGetPokemonPtr(void*, u8);
+extern void* heroBiosGetPokemonPtr(void*, u16);
 extern void pokemonBiosSetItemDataId(void*, u16);
 extern u32 fn_80032ED8(void*, s32, s32);
 extern void fn_8007C300(u8, s8);
@@ -230,13 +230,13 @@ void sysvarsCardEPoolOrder(void)
 
 static inline void sysvarsRestoreItems(void)
 {
-    void* save;
     s32 i;
+    void* save;
 
     fn_801D0AFC(0);
     save = savedataGetStatus(0, 2);
     for (i = 0; i < 6; i++) {
-        pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(save, i), lbl_803A3328[i]);
+        pokemonBiosSetItemDataId(heroBiosGetPokemonPtr(save, (u8)i), lbl_803A3328[i]);
     }
 }
 
