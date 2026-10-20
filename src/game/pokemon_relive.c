@@ -36,14 +36,19 @@ extern f32 lbl_8047E678;
 extern f32 lbl_8047E67C;
 
 /* SDA1 globals used by asm wrappers */
+#if !defined(POKEMON_RELIVE_MAIN_ONLY)
+/* reliveMain's unit declares this and lbl_804782BC as their real struct types. */
 extern u32 lbl_8047B668;
+#endif
 extern u32 lbl_8047B66C;
 extern u32 lbl_8047B670;
 
 /* Data labels used by asm wrappers */
 extern u8  lbl_8039A6B8[];
 extern u8  lbl_8039A6A8[];
+#if !defined(POKEMON_RELIVE_MAIN_ONLY)
 extern int lbl_804782BC[];
+#endif
 extern u8  lbl_804782E0[];
 extern u8  lbl_804783E0[];
 
@@ -933,13 +938,23 @@ void reliveCeremonyAll(u32 r3)
 #endif
 
 #if defined(POKEMON_RELIVE_MAIN_ONLY)
-/* Address: 0x8025ED4C | Ghidra import */
+/* Address: 0x8025ED4C | Size: 0x20C */
 
 typedef struct ReliveResetPair {
     s32 mode;
     u32 index;
 } ReliveResetPair;
-
+typedef struct ReliveTargetState {
+    s32 mode;
+    u16 species;
+    u16 pad;
+    u32 index;
+    u8 rest[0x18];
+} ReliveTargetState;
+/* lbl_8047B668: the 8-byte relive selection in .sbss (sda-addressed under -sdata 8). */
+extern ReliveResetPair lbl_8047B668;
+/* lbl_804782BC: the 0x24-byte pending relive request in .bss. */
+extern ReliveTargetState lbl_804782BC;
 extern void* heroGetStatus(s32, s32, u16);
 extern u8 pokemonCheckValid(void*);
 extern void fn_800FF660(void);
@@ -952,17 +967,15 @@ void reliveMain(void)
 {
     extern u32 lbl_80478DA8;
     extern f32 lbl_8047E680;
-    ReliveResetPair* resetPair;
-    s32 none;
     BOOL ok;
     void* pokemon;
     s32 loaded;
     u8 seq[16];
 
-    if ((lbl_804782BC[0] == 0) || (lbl_804782BC[0] == 1)) {
+    if ((lbl_804782BC.mode == 0) || (lbl_804782BC.mode == 1)) {
         fn_801DADC0(1);
-        if (lbl_804782BC[0] == 0) {
-            pokemon = heroGetStatus(0, 3, lbl_804782BC[2] & 0xffff);
+        if (lbl_804782BC.mode == 0) {
+            pokemon = heroGetStatus(0, 3, lbl_804782BC.index & 0xffff);
             if (pokemonCheckValid(pokemon) != 1) {
                 ok = 0;
             } else {
@@ -976,10 +989,10 @@ void reliveMain(void)
                 }
             }
             if (ok == 1) {
-                reliveCeremonyAll(lbl_804782BC[2]);
+                reliveCeremonyAll(lbl_804782BC.index);
             }
-        } else if (lbl_804782BC[0] == 1) {
-            pokemon = heroGetStatus(0, 3, lbl_804782BC[2] & 0xffff);
+        } else if (lbl_804782BC.mode == 1) {
+            pokemon = heroGetStatus(0, 3, lbl_804782BC.index & 0xffff);
             if (pokemonCheckValid(pokemon) != 1) {
                 ok = 0;
             } else {
@@ -994,26 +1007,23 @@ void reliveMain(void)
                 }
             }
             if (ok == 1) {
-                reliveCeremonyAll(lbl_804782BC[2]);
+                reliveCeremonyAll(lbl_804782BC.index);
             }
         }
         fadeSet((double)lbl_8047E680, 3);
         fadeCheck(1);
         wazaSequenceSysRelease();
-        /* RULE-EXCEPTION(user-approved): scalar carrier; one minus-one local stored to all three fields numbers it below the pair address under the unit's -opt nopropagation - see docs/RULE_EXCEPTIONS.md */
-        none = -1;
-        lbl_804782BC[0] = none;
-        resetPair = (ReliveResetPair*)&lbl_8047B668;
-        resetPair->mode = none;
-        resetPair->index = none;
-        *(u16*)((u8*)lbl_804782BC + 4) = 0;
-        lbl_804782BC[2] = 0;
+
+        lbl_8047B668.mode = -1;
+        lbl_8047B668.index = -1;
+        lbl_804782BC.mode = -1;
+        lbl_804782BC.species = 0;
+        lbl_804782BC.index = 0;
         fn_800FF660();
         floorSetFadeScript(0, 0);
         _threadSwitch();
     }
 }
-
 #endif
 
 /* Address: 0x8025DC2C | Size: 0x90 | Ghidra import (PSQ removed) */
