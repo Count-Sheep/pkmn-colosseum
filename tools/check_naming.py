@@ -15,6 +15,11 @@ Implements the mechanical checks of docs/NAMING_SCHEME.md:
     inside an ASSERT macro (both put the name into data bytes);
   * --base REV: no string or character literal changed in src/ or include/.
 
+Rows with tier `historical` (renames made before the campaign, backfilled from
+git history by tools/naming/backfill_history.py, evidence_ref `git:<commit>`)
+are checked for schema, chain and symbols.txt only: they need no NAME tag, no
+tier syntax, and their old names may still appear in history-bearing text.
+
 Extra modes: --remap-report, --sample, --fill-commits (see --help).
 Exit status: 0 clean, 1 violations, 2 usage/IO error.
 """
@@ -39,6 +44,10 @@ COLUMNS = [
     "evidence_ref", "unit", "source_file", "batch_id", "commit", "date",
 ]
 TIERS = {"T1", "T2", "T3"}
+# Backfilled renames made before the campaign (tools/naming/backfill_history.py).
+# They need only the schema, the chain and symbols.txt; no tag, no syntax rules.
+HISTORICAL = "historical"
+ALL_TIERS = TIERS | {HISTORICAL}
 LIBRARY_UNIT_ROOTS = ("dolphin/", "hsd/", "musyx/", "trk/", "crt/")
 T3_MAX_LEN = 40
 T2_MAX_LEN = 64
@@ -76,6 +85,7 @@ REF_FORMS = {
     ],
     "T2": [re.compile(r"^pattern:(?P<names>[A-Za-z_][A-Za-z0-9_]*(,[A-Za-z_][A-Za-z0-9_]*)+)$")],
     "T3": [re.compile(r"^ctx:\S.*$")],
+    HISTORICAL: [re.compile(r"^git:[0-9a-f]{7,40}$")],
 }
 
 C_EXTS = {".c", ".h", ".cpp", ".hpp", ".cp"}
@@ -208,8 +218,8 @@ def check_rows(rows, rep: Report):
         if not re.fullmatch(r"0x[0-9A-F]{1,8}", r["address"].strip()):
             rep.err(f"{loc}: address must be upper-case hex like 0x8001ABCD")
             continue
-        if r["tier"] not in TIERS:
-            rep.err(f"{loc}: tier must be one of T1/T2/T3")
+        if r["tier"] not in ALL_TIERS:
+            rep.err(f"{loc}: tier must be one of T1/T2/T3/{HISTORICAL}")
         if r["date"] and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", r["date"]):
             rep.err(f"{loc}: date must be YYYY-MM-DD")
         if r["commit"] and not re.fullmatch(r"[0-9a-f]{7,40}", r["commit"]):
@@ -258,7 +268,7 @@ def check_symbols(chains, symbols, rows, rep: Report):
     for name, n in names.items():
         if n > 1:
             tiers = {f["tier"] for f in finals.values() if f["new_name"] == name}
-            if tiers != {"T1"}:
+            if not tiers <= {"T1", HISTORICAL}:
                 rep.err(f"{name}: final name used by {n} addresses (only T1 statics may repeat)")
     for f in finals.values():
         defs = symbols.get(f["new_name"], [])
@@ -279,6 +289,10 @@ def check_syntax(rows, symbols, xd_vocab: set[str], rep: Report):
     for r in rows:
         loc = f"CSV line {r['_line']} ({r['new_name']})"
         name, tier, ref = r["new_name"], r["tier"], r["evidence_ref"].strip()
+        if tier == HISTORICAL:
+            if not REF_FORMS[HISTORICAL][0].match(ref):
+                rep.err(f"{loc}: historical evidence_ref must be git:<commit>")
+            continue
         if tier not in TIERS:
             continue
         if not C_IDENT_FULL.match(name):
@@ -339,7 +353,8 @@ def check_live_refs(root: Path, chains, rep: Report):
     superseded = {}
     for chain in chains.values():
         for r in chain:
-            superseded[r["old_name"]] = r["new_name"]
+            if r["tier"] != HISTORICAL:  # pre-campaign references are history, not live
+                superseded[r["old_name"]] = r["new_name"]
     if not superseded:
         return
     for path in live_files(root):
@@ -371,7 +386,8 @@ def find_definitions(code: str, name: str):
 
 
 def check_sources(root: Path, finals, rep: Report):
-    want = {f["new_name"]: (f"fn_{addr:08X}", f["tier"]) for (mod, addr), f in finals.items() if mod == "main"}
+    want = {f["new_name"]: (f"fn_{addr:08X}", f["tier"]) for (mod, addr), f in finals.items()
+            if mod == "main" and f["tier"] != HISTORICAL}
     found_def: set[str] = set()
     tag_seen: dict[str, set[str]] = defaultdict(set)
     for path in c_sources(root):
@@ -554,7 +570,8 @@ def main() -> int:
         print(f"error: {e}")
     tiers = Counter(f["tier"] for f in finals.values())
     print(f"check_naming: {len(rows)} row(s), {len(finals)} function(s) "
-          f"(T1 {tiers['T1']} / T2 {tiers['T2']} / T3 {tiers['T3']}), {len(rep.errors)} error(s)")
+          f"(T1 {tiers['T1']} / T2 {tiers['T2']} / T3 {tiers['T3']} / {HISTORICAL} {tiers[HISTORICAL]}), "
+          f"{len(rep.errors)} error(s)")
     return 1 if rep.errors else 0
 
 
