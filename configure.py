@@ -6476,7 +6476,7 @@ config.libs = [
                 progress_category="game",
             ),
             Object(
-                CodeCandidate,
+                Matching,
                 "game/menu/menuCB_BattleStart_candidate_80061F6C.c",
                 # TEMPORARY constant_import: retail shares this conversion bias.
                 constant_import=[

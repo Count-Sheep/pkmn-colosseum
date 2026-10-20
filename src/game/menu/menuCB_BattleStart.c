@@ -788,7 +788,7 @@ void _menuCBBattleStartSetIndex__Fv(void)
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061F6C_ONLY)
 /* RULE-EXCEPTION(user-approved): single-function inline helper (menuCBBattleStartInit) — see docs/RULE_EXCEPTIONS.md */
-static inline u8 battleStartTypeCompatible(void)
+static inline u8 battleStartTypeCompatibleBody(void)
 {
     extern s32 toolentryTaisenGetBattleType(void);
     s32 firstBattleType;
@@ -807,6 +807,12 @@ static inline u8 battleStartTypeCompatible(void)
     }
     return compatible;
 }
+
+/* RULE-EXCEPTION(user-approved): single-use inline wrapper (menuCBBattleStartInit); one more inline level numbers the battle-type locals after the HP loop's - see docs/RULE_EXCEPTIONS.md */
+static inline u8 battleStartTypeCompatible(void)
+{
+    return battleStartTypeCompatibleBody();
+}
 #endif
 
 #if !defined(MENUCB_BATTLESTART_SPLIT_UNIT) || defined(MENUCB_BATTLESTART_80061F6C_ONLY)
@@ -819,8 +825,8 @@ static inline void battleStartInitHp(void)
     extern const f32 lbl_8047BF60;
     extern const f32 lbl_8047BFAC;
     s32 player;
-    void* pokemon;
     s32 slot;
+    void* pokemon;
     MenuCBBattleStartPlayerLayout* layout;
 
     for (player = 0; player < 4; player++) {
