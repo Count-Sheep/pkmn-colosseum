@@ -322,7 +322,8 @@ static inline u16 SummaryListGetNum(s32 kind, s32 index) {
         if (fn_801429E8(list) != 0) {
             visibleIndex++;
             if (visibleIndex >= index) {
-                return itemBiosGetNum(list);
+                u16 n = itemBiosGetNum(list);
+                return n;
             }
         }
     }
@@ -389,7 +390,7 @@ static inline u16 SummaryPageItemNum(s32 pageIndex, s32 index) {
     return SummaryListGetNum(SUMMARY_PAGES[pageIndex].dataSource, index);
 }
 
-static inline s32 SummaryPagePocketTotal(s32 pageIndex) {
+static inline u16 SummaryPagePocketTotal(s32 pageIndex) {
     return SummaryPocketTotal(SUMMARY_PAGES[pageIndex].dataSource);
 }
 
@@ -623,18 +624,18 @@ asm void fn_800159BC(void) {
 s32 fn_800159BC(int x, s32 pageIndex, u16* packedRange) {
     s32 validCount;
     s32 itemIndex;
-    s32 displayLine;
     s32 visibleIndex;
     s32 lineLimit;
     s32 scroll;
     int y;
     s32 textX;
-    void* itemData;
     u8 machineNo;
     s32 tmNo;
+    s32 displayLine;
     u32 hidenNo;
     u8 hmNo;
     u32 labelId;
+    void* itemData;
     s16 width;
 
     displayLine = 0;
