@@ -45241,7 +45241,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801A6928",
+"name": "HSD_Alloc",
 "addr": "0x801A6928",
 "size": 56,
 "label": "hsd",

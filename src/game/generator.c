@@ -160,7 +160,7 @@ typedef struct psGenerator {
 } psGenerator; /* 0xB4 */
 
 extern void* memset(void* dst, int val, u32 size);
-extern void* fn_801A6928(u32 size);             /* HSD_MemAlloc */
+extern void* HSD_Alloc(u32 size);             /* HSD_MemAlloc */
 extern void HSD_Free(void* p);               /* HSD_Free */
 extern HSD_SList* fn_801A3E64(HSD_SList* list); /* HSD_SListRemove */
 extern f32 fn_801ADC7C(void);                   /* HSD_Randf */
@@ -238,7 +238,7 @@ void psInitGenerator(s32 count)
     lbl_8047B188 = NULL;
     lbl_8047B18C = NULL;
     for (i = count - 1; i >= 0; i--) {
-        gen = fn_801A6928(sizeof(psGenerator));
+        gen = HSD_Alloc(sizeof(psGenerator));
         memset(gen, 0, sizeof(psGenerator));
         if (gen == NULL) {
             return;
@@ -990,7 +990,7 @@ psGenerator* psGeneratorAlloc(void)
     psGenerator* gen;
 
     if (lbl_8047B18C == NULL) {
-        lbl_8047B18C = fn_801A6928(sizeof(psGenerator));
+        lbl_8047B18C = HSD_Alloc(sizeof(psGenerator));
         memset(lbl_8047B18C, 0, sizeof(psGenerator));
     }
     gen = lbl_8047B18C;

@@ -5,7 +5,7 @@ extern u16 lbl_8047B110;
 extern u16 lbl_8047B116;
 extern u16 lbl_8047B120;
 extern void HSD_Free(void* allocation);
-extern void* fn_801A6928(s32 size);
+extern void* HSD_Alloc(s32 size);
 extern void* memset(void* destination, s32 value, u32 size);
 
 void psRemoveAppSRT(void)
@@ -31,7 +31,7 @@ s32 psInitAppSRT(s32 count, s32 size)
     lbl_8047B124 = NULL;
 
     while (i < count) {
-        PSAppSRT* appSRT = fn_801A6928(size);
+        PSAppSRT* appSRT = HSD_Alloc(size);
 
         if (appSRT == NULL) {
             return i;

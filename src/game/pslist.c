@@ -49,7 +49,7 @@ typedef struct PSSortBucket {
     ((((flags) >> 25) & 7) + (((flags) & 8) ? 0 : 1) * 8)
 
 extern void* memset(void* dst, int val, u32 size);
-extern void* fn_801A6928(u32 size); /* HSD_MemAlloc */
+extern void* HSD_Alloc(u32 size); /* HSD_MemAlloc */
 extern void HSD_Free(void* p);   /* HSD_Free */
 
 extern PSParticle* lbl_8047B108; /* particle free list */
@@ -75,7 +75,7 @@ s32 _psLinkInit(s32 count)
 
     lbl_8047B108 = NULL;
     for (i = count - 1; i >= 0; i--) {
-        PSParticle* pp = fn_801A6928(sizeof(PSParticle));
+        PSParticle* pp = HSD_Alloc(sizeof(PSParticle));
 
         memset(pp, 0, sizeof(PSParticle));
         if (pp == NULL) {
@@ -119,7 +119,7 @@ PSParticle* _psListNew(PSParticle* parent, u32 linkNo)
     PSParticle* pp;
 
     if (lbl_8047B108 == NULL) {
-        lbl_8047B108 = fn_801A6928(sizeof(PSParticle));
+        lbl_8047B108 = HSD_Alloc(sizeof(PSParticle));
         memset(lbl_8047B108, 0, sizeof(PSParticle));
     }
 

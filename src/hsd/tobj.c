@@ -81,13 +81,13 @@ extern HSD_ClassInfo* fn_80193748(const char* name); /* hsdSearchClassInfo */
 extern void* fn_80193828(HSD_ClassInfo* info);       /* hsdNew */
 extern void* fn_80193B10(s32 size);                  /* hsdAllocMemPiece */
 extern void fn_80193AF0(void* mem, s32 size);        /* hsdFreeMemPiece */
-extern void* fn_801A6928(s32 size);                  /* HSD_MemAlloc */
+extern void* HSD_Alloc(s32 size);                  /* HSD_MemAlloc */
 extern void HSD_Free(void* mem);                  /* HSD_Free */
 #define hsdSearchClassInfo fn_80193748
 #define hsdNew fn_80193828
 #define hsdAllocMemPiece fn_80193B10
 #define hsdFreeMemPiece fn_80193AF0
-#define HSD_MemAlloc fn_801A6928
+#define HSD_MemAlloc HSD_Alloc
 
 /* state.c / tev.c */
 extern void fn_8019C6EC(u32 mask); /* HSD_StateInvalidate */

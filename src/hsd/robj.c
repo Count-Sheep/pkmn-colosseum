@@ -44,7 +44,7 @@ void HSD_ObjAllocInit(HSD_ObjAllocData* data, u32 size, u32 align);
 void HSD_ObjFree(HSD_ObjAllocData* data, void* obj);
 void* HSD_IDGetDataFromTable(void* table, u32 id, s32* success);
 /* HSD_MemAlloc */
-void* fn_801A6928(u32 size);
+void* HSD_Alloc(u32 size);
 /* HSD_IsMemoryReleased: nonzero when the pointer lies in freed memory. */
 int _HSD_MemCheckOwn(void* ptr);
 u32 HSD_GetNbBits(u32 value);
@@ -694,7 +694,7 @@ static void expEvaluate(HSD_Exp* exp, u32 type, void* obj,
         if (lbl_8047B30C == 0) {
             lbl_8047B30C = 100;
         }
-        lbl_8047B308 = fn_801A6928(lbl_8047B30C * sizeof(f32));
+        lbl_8047B308 = HSD_Alloc(lbl_8047B30C * sizeof(f32));
     }
     if (lbl_8047B30C < exp->nb_args) {
         OSReport(

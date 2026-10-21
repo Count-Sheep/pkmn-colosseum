@@ -145,7 +145,7 @@ void* fn_80193B10(u32 size);
 /* hsdFreeMemPiece */
 void fn_80193AF0(void* mem, u32 size);
 /* HSD_MemAlloc */
-void* fn_801A6928(u32 size);
+void* HSD_Alloc(u32 size);
 /* HSD_Free */
 void HSD_Free(void* ptr);
 /* HSD_IsMemoryReleased: nonzero when the pointer lies in freed memory. */
@@ -405,7 +405,7 @@ static inline HSD_ShapeSet* loadShapeSetDesc(HSD_ShapeSetDesc* sdesc)
     shape_set->normal_desc = sdesc->normal_desc;
     shape_set->normal_idx_list = sdesc->normal_idx_list;
     if (shape_set->flags & SHAPESET_ADDITIVE) {
-        shape_set->blend.bp = fn_801A6928(shape_set->nb_shape * sizeof(f32));
+        shape_set->blend.bp = HSD_Alloc(shape_set->nb_shape * sizeof(f32));
         for (i = 0; i < shape_set->nb_shape; i++) {
             shape_set->blend.bp[i] = 0.0F;
         }
@@ -1121,12 +1121,12 @@ static void drawShapeAnim(HSD_PObj* pobj)
 
     if (vertex_buffer_size == 0) {
         vertex_buffer_size = HSD_DEFAULT_MAX_SHAPE_VERTICES;
-        vertex_buffer = fn_801A6928(vertex_buffer_size * sizeof(f32[3]));
+        vertex_buffer = HSD_Alloc(vertex_buffer_size * sizeof(f32[3]));
     }
     HSD_ASSERT(1387, vertex_buffer_size >= shape_set->nb_vertex_index);
     if (shape_set->normal_desc && normal_buffer_size == 0) {
         normal_buffer_size = HSD_DEFAULT_MAX_SHAPE_NORMALS;
-        normal_buffer = fn_801A6928(normal_buffer_size * sizeof(f32[3]));
+        normal_buffer = HSD_Alloc(normal_buffer_size * sizeof(f32[3]));
     }
 
     if (shape_set->normal_desc) {

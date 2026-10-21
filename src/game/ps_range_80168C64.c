@@ -235,7 +235,7 @@ extern void HSD_JObjAddTz(PSJObjTransform* jobj, f32 dz);
 extern void fn_8019D9DC(PSForceJObj* jobj);
 extern void HSD_MtxSRT(void* dst, void* scale, void* rot, void* trans, void* order);
 extern void HSD_Free(void* ptr);
-extern void* fn_801A6928(s32 size);
+extern void* HSD_Alloc(s32 size);
 extern void* fn_801A3E64(void);
 extern void __assert(const char* file, u32 line, const char* msg);
 extern void* memset(void* dst, s32 value, u32 size);
@@ -626,7 +626,7 @@ PSAppSRT* psAddGeneratorAppSRT(PSGeneratorState* gen, u8 type) {
     u16 familyId = gen->familyId;
 
     if (lbl_8047B124 == NULL) {
-        lbl_8047B124 = fn_801A6928(lbl_8047B120);
+        lbl_8047B124 = HSD_Alloc(lbl_8047B120);
         if (lbl_8047B124 != NULL) {
             memset(lbl_8047B124, 0, lbl_8047B120);
         }
@@ -1036,7 +1036,7 @@ s32 psInitAppSRT(s32 count, s32 size) {
     lbl_8047B124 = NULL;
 
     while (i < count) {
-        PSAppSRT* appSRT = fn_801A6928(size);
+        PSAppSRT* appSRT = HSD_Alloc(size);
 
         if (appSRT == NULL) {
             return i;
@@ -4707,7 +4707,7 @@ PSGeneratorState* psCreateGeneratorID(s32 linkNo, s32 bankIdx, s32 scriptId) {
     }
 
     if (lbl_8047B18C == NULL) {
-        lbl_8047B18C = fn_801A6928(sizeof(PSGeneratorState));
+        lbl_8047B18C = HSD_Alloc(sizeof(PSGeneratorState));
         memset(lbl_8047B18C, 0, sizeof(PSGeneratorState));
     }
 

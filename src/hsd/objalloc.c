@@ -19,7 +19,7 @@
  *
  * Colosseum's sysdolphin (>= 1.3.0.0) no longer carves objects out of free
  * lists: HSD_ObjAlloc only enforces the object count limit, tracks
- * used/peak and forwards to the memory callbacks (fn_801A6928 /
+ * used/peak and forwards to the memory callbacks (HSD_Alloc /
  * HSD_Free, HSD_MemAlloc / HSD_Free); HSD_ObjFree drops the count.
  * HSD_ObjAllocAddFree and the heap-limit logic of Melee's version are gone.
  */
@@ -37,7 +37,7 @@ typedef struct objheap {
 
 extern void* memset(void* dst, int val, u32 n);
 extern s32 HSD_GetNbBits(u32 x);
-extern void* fn_801A6928(u32 size); /* HSD_MemAlloc */
+extern void* HSD_Alloc(u32 size); /* HSD_MemAlloc */
 extern void HSD_Free(void* ptr); /* HSD_Free */
 
 static objheap obj_heap = { 0, 0, -1, -1 };
@@ -61,7 +61,7 @@ void* HSD_ObjAlloc(HSD_ObjAllocData* data)
     if (data->used > data->peak) {
         data->peak = data->used;
     }
-    return fn_801A6928(data->size);
+    return HSD_Alloc(data->size);
 }
 
 void HSD_ObjFree(HSD_ObjAllocData* data, void* obj)
