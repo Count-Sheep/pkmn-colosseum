@@ -1,27 +1,34 @@
 #include "dolphin/types.h"
 
-void fn_800CE79C(void* callback, void* pendingPtr) {
+/* NAME-T1 fn_800CE79C */
+void EXI2_Init(void* callback, void* pendingPtr) {
 }
 
-void fn_800CE7A0(void) {
+/* NAME-T1 fn_800CE7A0 */
+void EXI2_EnableInterrupts(void) {
 }
 
-s32 fn_800CE7A4(void) {
+/* NAME-T1 fn_800CE7A4 */
+s32 EXI2_Poll(void) {
     return 0;
 }
 
-s32 fn_800CE7AC(void* buf, s32 size) {
+/* NAME-T1 fn_800CE7AC */
+s32 EXI2_ReadN(void* buf, s32 size) {
     return 0;
 }
 
-s32 fn_800CE7B4(void* buf, s32 size) {
+/* NAME-T1 fn_800CE7B4 */
+s32 EXI2_WriteN(void* buf, s32 size) {
     return 0;
 }
 
-void fn_800CE7BC(void) {
+/* NAME-T1 fn_800CE7BC */
+void EXI2_Reserve(void) {
 }
 
-void fn_800CE7C0(void) {
+/* NAME-T1 fn_800CE7C0 */
+void EXI2_Unreserve(void) {
 }
 
 s32 AMC_IsStub(void) {
@@ -32,8 +39,10 @@ s32 Hu_IsStub(void) {
     return 0;
 }
 
-void fn_800CE7D4(void) {
+/* NAME-T1 fn_800CE7D4 */
+void DBClose(void) {
 }
 
-void fn_800CE7D8(void) {
+/* NAME-T1 fn_800CE7D8 */
+void DBOpen(void) {
 }

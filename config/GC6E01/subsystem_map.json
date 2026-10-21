@@ -18737,7 +18737,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE79C",
+"name": "EXI2_Init",
 "addr": "0x800CE79C",
 "size": 4,
 "label": "trk",
@@ -18745,7 +18745,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7A0",
+"name": "EXI2_EnableInterrupts",
 "addr": "0x800CE7A0",
 "size": 4,
 "label": "trk",
@@ -18753,7 +18753,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7A4",
+"name": "EXI2_Poll",
 "addr": "0x800CE7A4",
 "size": 8,
 "label": "trk",
@@ -18761,7 +18761,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7AC",
+"name": "EXI2_ReadN",
 "addr": "0x800CE7AC",
 "size": 8,
 "label": "trk",
@@ -18769,7 +18769,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7B4",
+"name": "EXI2_WriteN",
 "addr": "0x800CE7B4",
 "size": 8,
 "label": "trk",
@@ -18777,7 +18777,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7BC",
+"name": "EXI2_Reserve",
 "addr": "0x800CE7BC",
 "size": 4,
 "label": "trk",
@@ -18785,7 +18785,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7C0",
+"name": "EXI2_Unreserve",
 "addr": "0x800CE7C0",
 "size": 4,
 "label": "trk",
@@ -18809,7 +18809,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7D4",
+"name": "DBClose",
 "addr": "0x800CE7D4",
 "size": 4,
 "label": "trk",
@@ -18817,7 +18817,7 @@
 "seed": null
 },
 {
-"name": "fn_800CE7D8",
+"name": "DBOpen",
 "addr": "0x800CE7D8",
 "size": 4,
 "label": "trk",
