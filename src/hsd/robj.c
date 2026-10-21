@@ -549,14 +549,14 @@ void fn_801AEBE4(HSD_RObj* robj, HSD_RObjDesc* desc)
 static void bcexpLoadDesc(HSD_Exp* exp, HSD_ByteCodeExpDesc* desc);
 static void expLoadDesc(HSD_Exp* exp, HSD_ExpDesc* desc);
 /* HSD_RObjAlloc */
-HSD_RObj* fn_801AE4B0(void);
+HSD_RObj* HSD_RObjAlloc(void);
 
 HSD_RObj* HSD_RObjLoadDesc(HSD_RObjDesc* robjdesc)
 {
     HSD_RObj* robj;
 
     if (robjdesc != NULL) {
-        robj = fn_801AE4B0();
+        robj = HSD_RObjAlloc();
         robj->next = HSD_RObjLoadDesc(robjdesc->next);
         robj->flags = robjdesc->flags;
         switch (robj->flags & ROBJ_TYPE_MASK) {
@@ -639,7 +639,8 @@ static inline void fn_801AEBE0(HSD_ObjAllocData* data, char* name)
 }
 
 /* HSD_RObjAlloc */
-HSD_RObj* fn_801AE4B0(void)
+/* NAME-T1 fn_801AE4B0 */
+HSD_RObj* HSD_RObjAlloc(void)
 {
     HSD_RObj* new = HSD_ObjAlloc(&lbl_804656B4);
     fn_801AEBE0(&lbl_804656B4, "robj: alloc");
@@ -658,7 +659,7 @@ void HSD_RObjFree(HSD_RObj* robj)
  * (expEvaluate allocates lbl_8047B30C floats itself when none is set).
  * Nothing in the game calls it, so the linker strips it; its assert string
  * "(ptr && nitems) || !ptr" still sits in robj.c's .rodata pool between
- * expEvaluate's and fn_801AE4B0's strings (0x80275264).
+ * expEvaluate's and HSD_RObjAlloc's strings (0x80275264).
  */
 void HSD_RObjSetArgBuffer(f32* ptr, u32 nitems)
 {

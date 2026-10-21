@@ -45969,7 +45969,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801AE4B0",
+"name": "HSD_RObjAlloc",
 "addr": "0x801AE4B0",
 "size": 92,
 "label": "hsd",
