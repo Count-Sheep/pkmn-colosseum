@@ -5,9 +5,11 @@ Steps (each must pass; on any failure the batch is rolled back from the
 apply_renames journal and the exit status is 1):
   0. base: HEAD sha; base report = --base-report, or the cached
      build/naming/base-report-<sha>.json, or a fresh build of HEAD made now
-     (before the batch is applied). The same for the optional
-     tools/verify_decomp_rules.py base result.
-  1. tools/naming/apply_renames.py BATCH (all-or-nothing, journaled).
+     (before the batch is applied). With --objects-identical, HEAD is always
+     linked first and the hash of every compiled object is recorded.
+  1. tools/naming/apply_renames.py BATCH (all-or-nothing, journaled), or, with
+     --apply-cmd instead of a batch, an arbitrary edit command (for example
+     tools/naming/delete_dead_stubs.py); its changes are journaled from git.
   2. python3 tools/check_naming.py --base HEAD
   3. fresh full link: wait until `pgrep -x ninja` is empty, delete
      build/GC6E01/{main.elf,main.dol,ok}, `python3 configure.py --no-progress`,
@@ -20,9 +22,11 @@ apply_renames journal and the exit status is 1):
   6. python3 tools/check_object_map_freeze.py
   7. .github/scripts/quality_scan.py HEAD <temporary commit of the batch> (run
      right after step 2, so it fails fast), and .github/scripts/check_asm_wrappers.py src.
-  8. tools/verify_decomp_rules.py --no-sha1 if the file exists: no fail-class
-     count may grow relative to the base run (the tree is not 100% matched yet,
-     so the absolute result is not required to be PASS).
+  8. tools/verify_decomp_rules.py --no-sha1: result PASS with 0 failures
+     (required since the tree is 100% matched; --no-verify-rules skips it for
+     debugging only).
+  9. with --objects-identical: every compiled object under build/GC6E01/src is
+     byte-identical to the base build (same set of files, same SHA-1s).
 With --commit, a passing batch is committed with the scheme's message.
 
 Exit status: 0 pass, 1 gate failure (rolled back), 2 usage/setup error.
@@ -32,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
 import shutil
@@ -128,14 +133,24 @@ def fmap(path: Path) -> dict[str, float]:
     return m
 
 
-def verify_counts(path: Path) -> Counter:
-    data = json.loads(path.read_text())
-    return Counter({k: v["count"] for k, v in data.get("classes", {}).items() if v.get("severity") == "fail"})
+def object_hashes(root: Path) -> dict[str, str]:
+    base = root / "build" / "GC6E01" / "src"
+    return {str(p.relative_to(base)): hashlib.sha1(p.read_bytes()).hexdigest()
+            for p in sorted(base.rglob("*.o"))}
+
+
+def changed_files(root: Path) -> list[str]:
+    out = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no", "--", *GUARDED],
+                         cwd=root, check=True, capture_output=True, text=True).stdout
+    return [line[3:] for line in out.splitlines() if line.strip()]
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("batch", type=Path, help="batch CSV (ledger columns)")
+    ap.add_argument("batch", type=Path, nargs="?", help="batch CSV (ledger columns)")
+    ap.add_argument("--apply-cmd", help="instead of a batch: shell command that edits the tree")
+    ap.add_argument("--objects-identical", action="store_true",
+                    help="require every compiled object to be byte-identical to the base build")
     ap.add_argument("--root", type=Path, default=REPO)
     ap.add_argument("--base-report", type=Path, help="report.json of HEAD before the batch")
     ap.add_argument("--expect-files", type=int, default=26)
@@ -153,7 +168,13 @@ def main() -> int:
     naming = root / "build" / "naming"
     naming.mkdir(parents=True, exist_ok=True)
     gate = Gate(root, args.log)
-    batch = args.batch.resolve()
+    if bool(args.batch) == bool(args.apply_cmd):
+        print("gate: give exactly one of BATCH or --apply-cmd", file=sys.stderr)
+        return 2
+    if args.apply_cmd and args.commit and not args.message:
+        print("gate: --apply-cmd with --commit needs --message", file=sys.stderr)
+        return 2
+    batch = args.batch.resolve() if args.batch else root / "build" / "naming" / "apply-cmd.csv"
 
     dirty = git(root, "status", "--porcelain", "--untracked-files=no", "--", *GUARDED)
     if dirty and not args.allow_dirty:
@@ -162,28 +183,47 @@ def main() -> int:
     head = git(root, "rev-parse", "HEAD")
     journal = naming / f"journal-{batch.stem}.json"
     verify_tool = root / "tools" / "verify_decomp_rules.py"
-    use_verify = verify_tool.exists() and not args.no_verify_rules
+    use_verify = not args.no_verify_rules
+    if use_verify and not verify_tool.exists():
+        print("gate: tools/verify_decomp_rules.py is missing (use --no-verify-rules to skip)", file=sys.stderr)
+        return 2
     applied = False
+    base_objects: dict[str, str] = {}
     result = "FAIL"
 
     try:
         # 0. base report (and base rules run) for HEAD.
         base_report = args.base_report or naming / f"base-report-{head[:12]}.json"
-        base_verify = naming / f"base-verify-{head[:12]}.json"
 
         def base():
-            if not base_report.exists():
-                gate.say("    no cached base report; building HEAD first")
+            nonlocal base_objects
+            if not base_report.exists() or args.objects_identical:
+                gate.say("    building HEAD first")
                 fresh_link(gate, args.expect_files)
                 gate.run(["ninja", "build/GC6E01/report.json"])
-                shutil.copy(root / "build/GC6E01/report.json", base_report)
-            if use_verify and not base_verify.exists():
-                gate.run([PY, str(verify_tool), "--no-sha1", "--json", str(base_verify)], check=False)
+                if not base_report.exists():
+                    shutil.copy(root / "build/GC6E01/report.json", base_report)
+            if args.objects_identical:
+                base_objects = object_hashes(root)
+                if not base_objects:
+                    raise GateFail("no compiled objects under build/GC6E01/src")
+                gate.say(f"    {len(base_objects)} base objects hashed")
         gate.step("base report", base)
 
         # 1. apply.
         def apply():
             nonlocal applied
+            if args.apply_cmd:
+                gate.say(f"$ {args.apply_cmd}")
+                p = subprocess.run(args.apply_cmd, shell=True, cwd=root, capture_output=True, text=True)
+                for line in (p.stdout + p.stderr).rstrip().splitlines()[-8:]:
+                    gate.say(f"    {line}")
+                files = changed_files(root)
+                journal.write_text(json.dumps({"files": {f: None for f in files}, "git": head}, indent=1))
+                applied = bool(files)
+                if p.returncode != 0:
+                    raise GateFail(f"apply command exited {p.returncode}")
+                return
             cmd = [PY, "tools/naming/apply_renames.py", str(batch), "--journal", str(journal)]
             if args.drop_refused:
                 cmd += ["--drop-refused", str(args.drop_refused)]
@@ -236,21 +276,33 @@ def main() -> int:
         # 7. scans.
         gate.step("asm-wrapper scan", lambda: gate.run([PY, ".github/scripts/check_asm_wrappers.py", "src"]))
 
-        # 8. rules verifier (optional).
+        # 8. rules verifier.
         if use_verify:
             def verify():
                 out = naming / f"head-verify-{batch.stem}.json"
-                gate.run([PY, str(verify_tool), "--no-sha1", "--json", str(out)], check=False)
+                gate.run([PY, str(verify_tool), "--no-sha1", "--json", str(out)], check=False, tail=4)
                 if not out.exists():
                     raise GateFail("verify_decomp_rules.py wrote no JSON")
-                bc = verify_counts(base_verify) if base_verify.exists() else Counter()
-                hc = verify_counts(out)
-                grew = {k: (bc.get(k, 0), n) for k, n in hc.items() if n > bc.get(k, 0)}
-                if grew:
-                    raise GateFail(f"verify_decomp_rules fail classes grew: {grew}")
-            gate.step("verify_decomp_rules (no new failures)", verify)
+                data = json.loads(out.read_text())
+                gate.say(f"    verify_decomp_rules: {data.get('result')}, {data.get('failures')} failure(s), "
+                         f"{data.get('warnings')} warning(s)")
+                if data.get("result") != "PASS" or data.get("failures"):
+                    bad = {k: v["count"] for k, v in data.get("classes", {}).items()
+                           if v.get("severity") == "fail" and v.get("count")}
+                    raise GateFail(f"verify_decomp_rules failed: {bad}")
+            gate.step("verify_decomp_rules (PASS, 0 failures)", verify)
         else:
-            gate.say("== verify_decomp_rules: skipped (tools/verify_decomp_rules.py absent or disabled)")
+            gate.say("== verify_decomp_rules: SKIPPED (--no-verify-rules); this run does not count as a pass")
+
+        # 9. objects byte-identical.
+        if args.objects_identical:
+            def objects():
+                now = object_hashes(root)
+                diff = sorted(k for k in set(base_objects) | set(now) if base_objects.get(k) != now.get(k))
+                if diff:
+                    raise GateFail(f"{len(diff)} object(s) differ from the base build: {diff[:5]}")
+                gate.say(f"    {len(now)} objects byte-identical")
+            gate.step("objects byte-identical", objects)
 
         if args.commit:
             def commit():
@@ -267,7 +319,11 @@ def main() -> int:
             gate.say(f"    resetting the batch commit (back to {head[:12]})")
             subprocess.run(["git", "reset", "-q", "--mixed", head], cwd=root)
         if applied and not args.keep_on_fail:
-            gate.run([PY, "tools/naming/apply_renames.py", "--rollback", str(journal)], check=False)
+            if args.apply_cmd:
+                files = list(json.loads(journal.read_text())["files"])
+                gate.run(["git", "checkout", head, "--", *files], check=False)
+            else:
+                gate.run([PY, "tools/naming/apply_renames.py", "--rollback", str(journal)], check=False)
         return 1
     finally:
         gate.say(f"gate {result}: " + "; ".join(f"{n}: {s} ({t:.0f}s)" for n, s, t in gate.steps))
