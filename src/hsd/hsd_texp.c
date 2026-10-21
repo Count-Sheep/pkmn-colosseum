@@ -4703,7 +4703,8 @@ s32 fn_801B387C(void) {
 }
 
 /* 0x801B3884 | 0xC */
-void fn_801B3884(void) {
+/* NAME-T1 fn_801B3884 */
+void HSD_StateInitTev(void) {
     lbl_8047B370 = 0;
 }
 

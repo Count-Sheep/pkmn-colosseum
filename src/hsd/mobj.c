@@ -126,7 +126,7 @@ extern void fn_801B45A4(HSD_TExpTevDesc* tevdesc, HSD_TExp* texp);
 /* ========================================================================= */
 
 /* HSD_StateInitTev */
-extern void fn_801B3884(void);
+extern void HSD_StateInitTev(void);
 /* HSD_SetMaterialShininess */
 extern void fn_801B28B8(f32 shininess);
 /* HSD_SetMaterialColor */
@@ -137,7 +137,6 @@ extern void fn_801B294C(u32 rendermode, HSD_PEDesc* pe);
 /* HSD_TObjAddNext */
 extern void fn_801BBE3C(HSD_TObj* tobj, HSD_TObj* next);
 
-#define HSD_StateInitTev() fn_801B3884()
 #define HSD_SetMaterialShininess(s) fn_801B28B8(s)
 #define HSD_SetMaterialColor(a, d, s, al) fn_801B28C8(a, d, s, al)
 #define HSD_SetupRenderModeWithCustomPE(r, pe) fn_801B294C(r, pe)

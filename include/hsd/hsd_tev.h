@@ -61,7 +61,7 @@ struct HSD_Chan {
  *   fn_801B3258 HSD_SetTevRegAll
  *   fn_801B3408 HSD_SetupTevStageAll    fn_801B3638 HSD_SetupTevStage
  *   fn_801B3770 HSD_StateSetNumTevStages
- *   fn_801B387C HSD_StateGetNumTevStages fn_801B3884 HSD_StateInitTev
+ *   fn_801B387C HSD_StateGetNumTevStages HSD_StateInitTev HSD_StateInitTev
  *   fn_801B3890 HSD_StateSetNumTexGens
  *   fn_801B3998 HSD_SetupChannelAll     fn_801B3D1C HSD_SetupChannel
  *   fn_801B3AE8 (disables a channel's lighting; no Melee counterpart)
@@ -76,7 +76,7 @@ void HSD_StateSetNumChans(int num);
 void fn_801B3998(HSD_Chan* ch);
 void HSD_StateRegisterTexGen(int coord);
 void fn_801B3890(void);
-void fn_801B3884(void);
+void HSD_StateInitTev(void);
 int fn_801B387C(void);
 int HSD_StateAssignTev(void);
 void fn_801B3770(void);

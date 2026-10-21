@@ -292,7 +292,8 @@ void fn_801B3890(void)
 }
 
 /* HSD_StateInitTev */
-void fn_801B3884(void)
+/* NAME-T1 fn_801B3884 */
+void HSD_StateInitTev(void)
 {
     current_tev = 0;
 }

@@ -110,7 +110,7 @@ void fn_801B29E4(u32 flags, HSD_PEDesc* pe);
 /* HSD_SetupTevStageAll */
 void fn_801B3408(void* tevdesc);
 /* HSD_StateInitTev */
-void fn_801B3884(void);
+void HSD_StateInitTev(void);
 /* HSD_StateSetNumTexGens */
 void fn_801B3890(void);
 /* HSD_SetupChannelAll */
@@ -391,7 +391,7 @@ void fn_801B0EB8(HSD_Shadow* shadow)
                 9, 0, 0, 0, 0, 4, 5, 0xF, 7, 7, 0, 7,
             };
 
-            fn_801B3884();
+            HSD_StateInitTev();
             fn_801B3408(&tev);
 
             fn_801B3890();

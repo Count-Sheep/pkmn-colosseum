@@ -46497,7 +46497,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801B3884",
+"name": "HSD_StateInitTev",
 "addr": "0x801B3884",
 "size": 12,
 "label": "hsd",
