@@ -94,7 +94,7 @@ extern u8 lbl_8047B050;                      /* lbl_8047B050 */
 extern SND_HOOKS lbl_8047B054;               /* lbl_8047B054 */
 extern u8 lbl_8036944C[];                    /* lbl_8036944C */
 
-extern void fn_8014E7CC(void);               /* fn_8014E7CC */
+extern void streamCorrectLoops(void);               /* streamCorrectLoops */
 extern u32 fn_80164398(void);                /* fn_80164398 */
 extern u32 fn_801643B8(void);                /* fn_801643B8 */
 extern void salCtrlDsp(void* dest);
@@ -164,7 +164,7 @@ void snd_handle_irq(void) {
     return;
   }
 
-  fn_8014E7CC();
+  streamCorrectLoops();
   fn_80164398();
   // sndProfStartPCM(&prof.dspCtrl);
   salCtrlDsp(salAiGetDest());

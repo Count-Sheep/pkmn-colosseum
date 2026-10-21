@@ -369,7 +369,8 @@ void fn_8014DF20(void) {
   }
 }
 
-void fn_8014E7CC(void) {}
+/* NAME-T1 fn_8014E7CC */
+void streamCorrectLoops(void) {}
 
 void fn_8014E7D0(u32 voice) {
   STREAM_INFO* si;

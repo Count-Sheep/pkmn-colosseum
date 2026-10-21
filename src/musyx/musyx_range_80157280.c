@@ -2384,7 +2384,7 @@ extern u8 lbl_8047B05D;
 extern u8 lbl_8047B05E;
 extern u8 lbl_8047B05F;
 extern u32 lbl_8047B024;
-extern void fn_8014E7CC(void);
+extern void streamCorrectLoops(void);
 extern u32 fn_80164398(void);
 extern u32 fn_801643B8(void);
 extern u8* salAiGetDest(void);
@@ -2416,7 +2416,7 @@ void snd_handle_irq(void) {
         return;
     }
 
-    fn_8014E7CC();
+    streamCorrectLoops();
     fn_80164398();
     salCtrlDsp((u32)salAiGetDest());
     fn_801643B8();
