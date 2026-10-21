@@ -41,7 +41,7 @@
  *    and checks lod / tev for NULL;
  *  - coord types 5 (gradation) and 6 (backlight) are handled by
  *    TObjSetupMtx, setupTextureCoordGen and HSD_TObjAssignResources;
- *  - HSD_ImageDescRemove and HSD_TObjInsert (fn_801BBE3C) are new;
+ *  - HSD_ImageDescRemove and HSD_TObjInsert (HSD_TObjAddNext) are new;
  *  - the HSD_TevDesc statics carry the swap-table fields (RGBA);
  *  - assert line numbers are those of Colosseum's longer file.
  *
@@ -54,9 +54,9 @@
  * The symbols keep their address names: lbl_8036D3F0 is hsdTObj,
  * lbl_8047B378 default_class, lbl_8047B37C tobj_head, fn_801BEEDC
  * HSD_TObjAddAnimAll, fn_801BEE68 HSD_TObjReqAnimAllByFlags, fn_801BE85C
- * TObjUpdateFunc, fn_801BE800 HSD_TObjAnimAll, fn_801BDA58
+ * TObjUpdateFunc, HSD_TObjAnimAll HSD_TObjAnimAll, fn_801BDA58
  * HSD_TObjSetupTextureCoordGen, fn_801BD8D0 HSD_TObjSetupVolatileTev,
- * fn_801BBE3C HSD_TObjInsert, fn_801BBCE0 TObjInit.
+ * HSD_TObjAddNext HSD_TObjInsert, fn_801BBCE0 TObjInit.
  */
 
 #include "dolphin/mtx.h"
@@ -444,7 +444,8 @@ void HSD_TObjAnim(HSD_TObj* tobj)
 }
 
 /* HSD_TObjAnimAll */
-void fn_801BE800(HSD_TObj* tobj)
+/* NAME-T1 fn_801BE800 */
+void HSD_TObjAnimAll(HSD_TObj* tobj)
 {
     HSD_TObj* i;
 
@@ -1643,7 +1644,8 @@ void HSD_TObjRemoveAll(HSD_TObj* tobj)
 }
 
 /* HSD_TObjInsert: splice `next` in behind `tobj`. */
-void fn_801BBE3C(HSD_TObj* tobj, HSD_TObj* next)
+/* NAME-T1 fn_801BBE3C */
+void HSD_TObjAddNext(HSD_TObj* tobj, HSD_TObj* next)
 {
     if (tobj == NULL || next == NULL) {
         return;

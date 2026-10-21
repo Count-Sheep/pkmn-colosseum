@@ -46921,7 +46921,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801BBE3C",
+"name": "HSD_TObjAddNext",
 "addr": "0x801BBE3C",
 "size": 36,
 "label": "hsd",
@@ -47041,7 +47041,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801BE800",
+"name": "HSD_TObjAnimAll",
 "addr": "0x801BE800",
 "size": 92,
 "label": "hsd",

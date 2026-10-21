@@ -135,12 +135,11 @@ extern void fn_801B28C8(GXColor ambient, GXColor diffuse, GXColor specular,
 /* HSD_SetupRenderModeWithCustomPE */
 extern void fn_801B294C(u32 rendermode, HSD_PEDesc* pe);
 /* HSD_TObjAddNext */
-extern void fn_801BBE3C(HSD_TObj* tobj, HSD_TObj* next);
+extern void HSD_TObjAddNext(HSD_TObj* tobj, HSD_TObj* next);
 
 #define HSD_SetMaterialShininess(s) fn_801B28B8(s)
 #define HSD_SetMaterialColor(a, d, s, al) fn_801B28C8(a, d, s, al)
 #define HSD_SetupRenderModeWithCustomPE(r, pe) fn_801B294C(r, pe)
-#define HSD_TObjAddNext(t, n) fn_801BBE3C(t, n)
 
 /* ========================================================================= */
 /*  Class system (hsd_class.c)                                               */
