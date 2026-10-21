@@ -119,8 +119,8 @@ u16* __peReg = NULL;
 u16* __memReg = NULL;
 extern OSTime OSGetTime(void);
 extern void GXSetBreakPtCallback(void* callback);
-extern void fn_800B8FD8(void* callback);
-extern void fn_800B90A4(void* callback);
+extern void GXSetDrawSyncCallback(void* callback);
+extern void GXSetDrawDoneCallback(void* callback);
 extern void __GXAbort(void);
 extern void __GXInitGX(void);
 
@@ -206,8 +206,8 @@ s32 __GXShutdown_800C6260(BOOL final)
         }
     } else {
         GXSetBreakPtCallback(NULL);
-        fn_800B8FD8(NULL);
-        fn_800B90A4(NULL);
+        GXSetDrawSyncCallback(NULL);
+        GXSetDrawDoneCallback(NULL);
 
         GX_WRITE_U32(0);
         GX_WRITE_U32(0);
@@ -458,11 +458,11 @@ void __GXInitGX(void) {
     extern void fn_800BC8F8(u32, f32, f32, f32, f32, GXColor);
     extern void fn_800BCCDC();
     extern void GXSetBlendMode();
-    extern void fn_800BCE30();
-    extern void fn_800BCE5C();
+    extern void GXSetColorUpdate();
+    extern void GXSetAlphaUpdate();
     extern void GXSetZMode();
     extern void fn_800BCEBC();
-    extern void fn_800BCFDC();
+    extern void GXSetDither();
     extern void GXSetDstAlpha();
     extern void fn_800BCEF4();
     extern void fn_800BD044();
@@ -479,7 +479,7 @@ void __GXInitGX(void) {
     extern void fn_800B8EC0();
     extern void fn_800B8F94();
     extern void fn_800B8EDC();
-    extern void fn_800B8E98();
+    extern void GXPokeAlphaMode();
     extern void fn_800B8EAC();
     extern void fn_800B8F80();
     extern void fn_800B8FB0();
@@ -624,11 +624,11 @@ void __GXInitGX(void) {
     fn_800BC8F8(0, 0.0f, 1.0f, 0.1f, 1.0f, black);
     fn_800BCCDC(0, 0, 0);
     GXSetBlendMode(0, 4, 5, 0);
-    fn_800BCE30(1);
-    fn_800BCE5C(1);
+    GXSetColorUpdate(1);
+    GXSetAlphaUpdate(1);
     GXSetZMode(1, 3, 1);
     fn_800BCEBC(1);
-    fn_800BCFDC(1);
+    GXSetDither(1);
     GXSetDstAlpha(0, 0);
     fn_800BCEF4(0, 0);
     fn_800BD044(1, 1);
@@ -648,7 +648,7 @@ void __GXInitGX(void) {
     fn_800B8EC0(1);
     fn_800B8F94(0);
     fn_800B8EDC(0, 0, 1, 15);
-    fn_800B8E98(7, 0);
+    GXPokeAlphaMode(7, 0);
     fn_800B8EAC(1);
     fn_800B8F80(0, 0);
     fn_800B8FB0(1, 7, 1);

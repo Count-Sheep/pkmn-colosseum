@@ -91,9 +91,9 @@ void fn_800BCEBC(u8 before_tex);
 void GXSetZMode(u8 compare_enable, int func, u8 update_enable);
 void GXSetBlendMode(int type, int src_factor, int dst_factor, int op);
 /* GXSetColorUpdate */
-void fn_800BCE30(u8 update_enable);
+void GXSetColorUpdate(u8 update_enable);
 /* GXSetAlphaUpdate */
-void fn_800BCE5C(u8 update_enable);
+void GXSetAlphaUpdate(u8 update_enable);
 /* GXSetNumChans */
 void fn_800BA6B0(u8 nChans);
 /* GXSetChanCtrl */
@@ -692,8 +692,8 @@ void HSD_EraseRect(f32 top, f32 bottom, f32 left, f32 right, f32 z,
     fn_800BCEBC(1);
     GXSetZMode(1, 7, enable_depth ? 1 : 0);
     GXSetBlendMode(2, 1, 0, 3);
-    fn_800BCE30(enable_color ? 1 : 0);
-    fn_800BCE5C(enable_alpha ? 1 : 0);
+    GXSetColorUpdate(enable_color ? 1 : 0);
+    GXSetAlphaUpdate(enable_alpha ? 1 : 0);
 
     fn_800BA6B0(1);
     fn_800BA6F4(4, 0, 0, 1, 0, 0, 2);

@@ -15529,7 +15529,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800B8E98",
+"name": "GXPokeAlphaMode",
 "addr": "0x800B8E98",
 "size": 20,
 "label": "dolphin-sdk",
@@ -15593,7 +15593,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800B8FD8",
+"name": "GXSetDrawSyncCallback",
 "addr": "0x800B8FD8",
 "size": 68,
 "label": "dolphin-sdk",
@@ -15609,7 +15609,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800B90A4",
+"name": "GXSetDrawDoneCallback",
 "addr": "0x800B90A4",
 "size": 68,
 "label": "dolphin-sdk",
@@ -16321,7 +16321,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BCE30",
+"name": "GXSetColorUpdate",
 "addr": "0x800BCE30",
 "size": 44,
 "label": "dolphin-sdk",
@@ -16329,7 +16329,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BCE5C",
+"name": "GXSetAlphaUpdate",
 "addr": "0x800BCE5C",
 "size": 44,
 "label": "dolphin-sdk",
@@ -16361,7 +16361,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BCFDC",
+"name": "GXSetDither",
 "addr": "0x800BCFDC",
 "size": 44,
 "label": "dolphin-sdk",

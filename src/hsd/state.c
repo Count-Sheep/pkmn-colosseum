@@ -32,7 +32,7 @@ extern void GXSetZMode(u32 compareEnable, u32 func, u32 updateEnable);
 extern void fn_800BCEBC(u8 before_tex);   /* GXSetZCompLoc */
 extern void fn_800BC618(int comp0, u8 ref0, int op, int comp1,
                         u8 ref1);         /* GXSetAlphaCompare */
-extern void fn_800BCFDC(u8 enable);       /* GXSetDither */
+extern void GXSetDither(u8 enable);       /* GXSetDither */
 
 #define GX_BM_NONE 0
 #define GX_BM_BLEND 1
@@ -353,7 +353,7 @@ static inline void HSD_StateSetDither(int enable)
     GXBool dither = enable != 0;
 
     if (lbl_8047B318 != dither) {
-        fn_800BCFDC(dither);
+        GXSetDither(dither);
         lbl_8047B318 = dither;
     }
 }
@@ -361,8 +361,8 @@ static inline void HSD_StateSetDither(int enable)
 /* 0x801B25C4 - 0x801B27DC */
 extern void HSD_ClearVtxDesc(void);
 
-extern void fn_800BCE30(u8 enable); /* GXSetColorUpdate */
-extern void fn_800BCE5C(u8 enable); /* GXSetAlphaUpdate */
+extern void GXSetColorUpdate(u8 enable); /* GXSetColorUpdate */
+extern void GXSetAlphaUpdate(u8 enable); /* GXSetAlphaUpdate */
 
 /* HSD_StateSetColorUpdate */
 void fn_801B278C(int enable)
@@ -370,7 +370,7 @@ void fn_801B278C(int enable)
     GXBool update = enable != 0;
 
     if (lbl_8047B31D != update) {
-        fn_800BCE30(update);
+        GXSetColorUpdate(update);
         lbl_8047B31D = update;
     }
 }
@@ -381,7 +381,7 @@ void fn_801B273C(int enable)
     GXBool update = enable != 0;
 
     if (lbl_8047B31C != update) {
-        fn_800BCE5C(update);
+        GXSetAlphaUpdate(update);
         lbl_8047B31C = update;
     }
 }

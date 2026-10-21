@@ -2,8 +2,8 @@
  * @file sdk_candidate_800BC8F8.c
  * @brief Dolphin SDK GXPixel.c, 0x800BC8F8 - 0x800BCEBC: GXSetFog
  *        (fn_800BC8F8), GXInitFogAdjTable (fn_800BCB14), GXSetFogRangeAdj
- *        (fn_800BCCDC), GXSetBlendMode, GXSetColorUpdate (fn_800BCE30),
- *        GXSetAlphaUpdate (fn_800BCE5C) and GXSetZMode. The rest of the file
+ *        (fn_800BCCDC), GXSetBlendMode, GXSetColorUpdate (GXSetColorUpdate),
+ *        GXSetAlphaUpdate (GXSetAlphaUpdate) and GXSetZMode. The rest of the file
  *        (GXSetZCompLoc onwards) is the linked GX_exact_800BCEBC.c.
  *
  * Bodies follow the SDK GXPixel.c (dolsdk2004 / Melee): the fog color is
@@ -250,7 +250,8 @@ void GXSetBlendMode(u32 type, u32 src_factor, u32 dst_factor, u32 op)
     gx->bpSentNot = 0;
 }
 
-void fn_800BCE30(GXBool update_enable)
+/* NAME-T1 fn_800BCE30 */
+void GXSetColorUpdate(GXBool update_enable)
 {
     u32 reg;
 
@@ -261,7 +262,8 @@ void fn_800BCE30(GXBool update_enable)
     gx->bpSentNot = 0;
 }
 
-void fn_800BCE5C(GXBool update_enable)
+/* NAME-T1 fn_800BCE5C */
+void GXSetAlphaUpdate(GXBool update_enable)
 {
     u32 reg;
 

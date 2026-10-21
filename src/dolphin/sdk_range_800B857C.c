@@ -510,7 +510,8 @@ void GXPixModeSync(void) {
     p->field_002 = 0;
 }
 
-void fn_800B8E98(u32 token, u32 value) {
+/* NAME-T1 fn_800B8E98 */
+void GXPokeAlphaMode(u32 token, u32 value) {
     __peReg[3] = (u16)((token << 8) | (value & 0xFF));
 }
 
@@ -565,7 +566,8 @@ void fn_800B8FB0(u32 arg0, u32 arg1, u32 arg2) {
     __peReg[0] = (u16)reg;
 }
 
-GXBreakPtCallback fn_800B8FD8(GXBreakPtCallback callback) {
+/* NAME-T1 fn_800B8FD8 */
+GXBreakPtCallback GXSetDrawSyncCallback(GXBreakPtCallback callback) {
     GXBreakPtCallback old = lbl_8047A9C0;
     BOOL enabled = OSDisableInterrupts();
 
@@ -589,7 +591,8 @@ void fn_800B901C(__OSInterrupt interrupt, OSContext* context) {
     __peReg[5] = (__peReg[5] & ~4U) | 4;
 }
 
-GXDrawDoneCallback fn_800B90A4(GXDrawDoneCallback callback) {
+/* NAME-T1 fn_800B90A4 */
+GXDrawDoneCallback GXSetDrawDoneCallback(GXDrawDoneCallback callback) {
     GXDrawDoneCallback old = lbl_8047A9C4;
     BOOL enabled = OSDisableInterrupts();
 

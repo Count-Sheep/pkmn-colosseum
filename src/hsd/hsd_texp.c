@@ -374,20 +374,20 @@ extern s32 lbl_8047B340;
 extern s32 lbl_8047B344;
 extern s32 lbl_8047B348;
 
-extern void fn_800BCE30(u8 enable);
-extern void fn_800BCE5C(u8 enable);
+extern void GXSetColorUpdate(u8 enable);
+extern void GXSetAlphaUpdate(u8 enable);
 extern void GXSetDstAlpha(u8 enable, u8 alpha);
 extern void GXSetBlendMode(s32 type, s32 src, s32 dst, s32 op);
 extern void GXSetZMode(u8 enable, s32 func, u8 update);
 extern void fn_800BCEBC(u8 beforeTex);
 extern void fn_800BC618(s32 comp0, u8 ref0, s32 op, s32 comp1, u8 ref1);
-extern void fn_800BCFDC(u8 enable);
+extern void GXSetDither(u8 enable);
 
 static inline void TExpStateSetColorUpdate(s32 enable)
 {
     enable = enable != 0;
     if (lbl_8047B31D != enable) {
-        fn_800BCE30(enable);
+        GXSetColorUpdate(enable);
         lbl_8047B31D = enable;
     }
 }
@@ -396,7 +396,7 @@ static inline void TExpStateSetAlphaUpdate(s32 enable)
 {
     enable = enable != 0;
     if (lbl_8047B31C != enable) {
-        fn_800BCE5C(enable);
+        GXSetAlphaUpdate(enable);
         lbl_8047B31C = enable;
     }
 }
@@ -464,7 +464,7 @@ static inline void TExpStateSetDither(s32 enable)
 {
     enable = enable != 0;
     if (lbl_8047B318 != enable) {
-        fn_800BCFDC(enable);
+        GXSetDither(enable);
         lbl_8047B318 = enable;
     }
 }
@@ -4568,7 +4568,7 @@ void fn_801B273C(s32 enable) {
     u8 normalized = enable ? 1 : 0;
 
     if (lbl_8047B31C != normalized) {
-        fn_800BCE5C(normalized);
+        GXSetAlphaUpdate(normalized);
         lbl_8047B31C = normalized;
     }
 }
@@ -4581,7 +4581,7 @@ void fn_801B278C(s32 enable) {
     u8 normalized = enable ? 1 : 0;
 
     if (lbl_8047B31D != normalized) {
-        fn_800BCE30(normalized);
+        GXSetColorUpdate(normalized);
         lbl_8047B31D = normalized;
     }
 }

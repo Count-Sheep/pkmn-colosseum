@@ -71,8 +71,8 @@ extern void fn_800BC52C(u32 stage, u32 rasSel, u32 texSel);        /* GXSetTevSw
 extern void fn_800BC580(u32 table, u32 red, u32 green, u32 blue, u32 alpha); /* GXSetTevSwapModeTable */
 extern void fn_800BC6F0(u32 stage, u32 coord, u32 map, u32 color); /* GXSetTevOrder */
 extern void fn_800BC8C8(u8 nStages);                               /* GXSetNumTevStages */
-extern void fn_800BCE30(u8 enable);                                /* GXSetColorUpdate */
-extern void fn_800BCE5C(u8 enable);                                /* GXSetAlphaUpdate */
+extern void GXSetColorUpdate(u8 enable);                                /* GXSetColorUpdate */
+extern void GXSetAlphaUpdate(u8 enable);                                /* GXSetAlphaUpdate */
 extern void fn_800BCEF4(u32 pixFmt, u32 zFmt);                     /* GXSetPixelFmt */
 extern void fn_800BD2E0(f32 mtx[4][4], u32 type);                  /* GXSetProjection */
 extern void fn_800BD554(u32 id);                                   /* GXSetCurrentMtx */
@@ -121,8 +121,8 @@ void fn_801E1FF8(GXRenderModeObj* rmode)
 
     GXSetZMode(1, 7, 0);
     GXSetBlendMode(0, 1, 0, 0);
-    fn_800BCE30(1);
-    fn_800BCE5C(0);
+    GXSetColorUpdate(1);
+    GXSetAlphaUpdate(0);
     fn_800B9E6C(0);
     fn_800BA6B0(0);
 

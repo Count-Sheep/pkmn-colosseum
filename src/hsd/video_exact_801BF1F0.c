@@ -29,7 +29,7 @@ void VISetBlack(BOOL black);
 u32 VIGetTvFormat(void);
 HSD_VIRetraceCallback fn_800A880C(HSD_VIRetraceCallback cb); /* VISetPreRetraceCallback */
 HSD_VIRetraceCallback fn_800A8850(HSD_VIRetraceCallback cb); /* VISetPostRetraceCallback */
-void fn_800B90A4(void (*cb)(void));             /* GXSetDrawDoneCallback */
+void GXSetDrawDoneCallback(void (*cb)(void));             /* GXSetDrawDoneCallback */
 
 void fn_801BFF18(u32 retraceCount);             /* HSD_VIPreRetraceCB */
 void fn_801BFD10(u32 retraceCount);             /* HSD_VIPostRetraceCB */
@@ -121,7 +121,7 @@ void fn_801BF1F0(HSD_VIStatus* vi, void* xfb0, void* xfb1, void* xfb2)
     _p->drawdone.waiting = 0;
     _p->drawdone.arg = 0;
 
-    fn_800B90A4(fn_801BFCB0);
+    GXSetDrawDoneCallback(fn_801BFCB0);
     _p->drawdone.cb = NULL;
 
     _p->perf.frame_period = VIGetTvFormat() == 0 ? 60 : 50;

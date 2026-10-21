@@ -16,15 +16,15 @@ extern void fn_800B953C(u32);
 extern void GXSetClipMode(u32);
 extern void fn_800B94F0(u32);
 extern u8 lbl_8031453C[];
-extern void fn_800BCFDC(u32);
+extern void GXSetDither(u32);
 extern void fn_800BC618(u32, u8, u32, u32, u8);
 extern u8 lbl_8031457C[];
 extern u8 lbl_8031456C[];
 extern void GXSetZMode(u32, u32, u32);
 extern void fn_800BCEBC(u32);
 extern u8 lbl_8031454C[];
-extern void fn_800BCE30(u32);
-extern void fn_800BCE5C(u32);
+extern void GXSetColorUpdate(u32);
+extern void GXSetAlphaUpdate(u32);
 extern void GXSetDstAlpha(u32);
 extern void GXSetBlendMode(u32, u32, u32, u32);
 extern u8 lbl_803145D0[];
@@ -111,7 +111,7 @@ void fn_800DA08C(s32 val) {
     else {
         if (val == 1) { *(u8*)(state + 0x426) = 1; }
         else if (val == 0) { *(u8*)(state + 0x426) = 0; }
-        fn_800BCFDC(*(u8*)(lbl_8047AA80 + 0x426));
+        GXSetDither(*(u8*)(lbl_8047AA80 + 0x426));
     }
 }
 
@@ -176,8 +176,8 @@ void fn_800DA2BC(s32 zCompare, s32 zBeforeTexture, s32 zFunc) {
         } else if (zFunc == 0) {
             *(u8*)(lbl_8047AA80 + 0x41b) = 0;
         }
-        fn_800BCE30(*(u8*)(lbl_8047AA80 + 0x419));
-        fn_800BCE5C(*(u8*)(lbl_8047AA80 + 0x41a));
+        GXSetColorUpdate(*(u8*)(lbl_8047AA80 + 0x419));
+        GXSetAlphaUpdate(*(u8*)(lbl_8047AA80 + 0x41a));
         GXSetZMode(*(u8*)(lbl_8047AA80 + 0x41c),
                    *(u32*)(lbl_8047AA80 + 0x420),
                    *(u8*)(lbl_8047AA80 + 0x41b));

@@ -47,7 +47,7 @@ HSD_VIRetraceCallback fn_800A8850(HSD_VIRetraceCallback cb); /* VISetPostRetrace
 void fn_800B8DA8(void);                         /* GXWaitDrawDone */
 void GXDrawDone(void);                          /* GXSetDrawDone */
 void GXPixModeSync(void);                         /* GXPixModeSync */
-void fn_800B90A4(void (*cb)(void));             /* GXSetDrawDoneCallback */
+void GXSetDrawDoneCallback(void (*cb)(void));             /* GXSetDrawDoneCallback */
 void fn_800B959C(u16 left, u16 top, u16 wd, u16 ht); /* GXSetDispCopySrc */
 void fn_800B96BC(u16 wd, u16 ht);               /* GXSetDispCopyDst */
 void fn_800B9874(u32 clamp);                    /* GXSetCopyClamp */
@@ -525,7 +525,7 @@ void fn_801BF1F0(HSD_VIStatus* vi, void* xfb0, void* xfb1, void* xfb2)
     _p->drawdone.waiting = 0;
     _p->drawdone.arg = 0;
 
-    fn_800B90A4(fn_801BFCB0);
+    GXSetDrawDoneCallback(fn_801BFCB0);
     _p->drawdone.cb = NULL;
 
     _p->perf.frame_period = VIGetTvFormat() == 0 ? 60 : 50;

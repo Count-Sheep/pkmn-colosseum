@@ -214,7 +214,7 @@ extern u32 lbl_8047AA8C;
 extern void GXSetClipMode(u32);
 extern void fn_800B94F0(u32);
 extern u8 lbl_8031453C[];
-extern void fn_800BCFDC(u32);
+extern void GXSetDither(u32);
 extern void fn_800BC618(u32, u8, u32, u32, u8);
 extern u8 lbl_8031457C[];
 extern u8 lbl_8031456C[];

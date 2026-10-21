@@ -1369,7 +1369,8 @@ void GXSetBlendMode(u32 type, u32 srcFactor, u32 dstFactor, u32 op) {
     p->field_002 = 0;
 }
 
-void fn_800BCE30(u32 zCompLoc) {
+/* NAME-T1 fn_800BCE30 */
+void GXSetColorUpdate(u32 zCompLoc) {
     GXData_800BB30C* p = gx;
     u32 value = p->field_1D0;
 
@@ -1379,7 +1380,8 @@ void fn_800BCE30(u32 zCompLoc) {
     p->field_002 = 0;
 }
 
-void fn_800BCE5C(u32 zCompLoc) {
+/* NAME-T1 fn_800BCE5C */
+void GXSetAlphaUpdate(u32 zCompLoc) {
     GXData_800BB30C* p = gx;
     u32 value = p->field_1D0;
 
@@ -1439,7 +1441,8 @@ void fn_800BCEF4(s32 pixelFmt, u32 zFmt) {
 #endif /* !SDK_800BE348_ONLY && !SDK_800BCFDC_ONLY */
 
 #if !defined(SDK_800BE348_ONLY) && !defined(SDK_800BD58C_ONLY)
-void fn_800BCFDC(u8 dither) {
+/* NAME-T1 fn_800BCFDC */
+void GXSetDither(u8 dither) {
     GXData_800BB30C* p = gx;
     u32 value = p->field_1D0;
 
