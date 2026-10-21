@@ -164,7 +164,7 @@ u32 fn_801653CC(u32 id, void* buffer, u32 size);
 u32 fn_80165744(void);
 u32 fn_80165788(u32 id, f32 x, f32 y, f32 z);
 u32 fn_801658FC(u32 id, u32 fade, u32 volume, u32 priority);
-u32 fn_8016597C(u32 id, u32 fade, u32 volume, u32 priority);
+u32 soundOpenPlayFadeOutIn(u32 id, u32 fade, u32 volume, u32 priority);
 void fn_80165EE0(void* wave, void* buffer, u32 size);
 u32 fn_80165A44(u32 id, u32 volume, u32 priority, s32 kind);
 void fn_80165C70(u32 volume, u32 isSe, s32 wait);

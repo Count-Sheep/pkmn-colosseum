@@ -643,7 +643,7 @@ extern f32 lbl_8047D120;
 
 extern s32 fn_801666BC(u16);
 
-extern void fn_80165A20(u16, u32, u32);
+extern void soundOpenPlay(u16, u32, u32);
 
 extern void GSmsgAdjustAlign(void);
 

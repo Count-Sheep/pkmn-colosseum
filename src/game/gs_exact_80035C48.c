@@ -25,7 +25,7 @@ void fn_80035C48(void) {
     extern u32 fn_80113F48(void);
     extern u8* savedataGetStatus(s32, s32);
     extern u32 fn_801653C4(void);
-    extern void fn_80165A20(u32, s32, s32);
+    extern void soundOpenPlay(u32, s32, s32);
     extern void cameraPlayAnime(u32, u32, s32, s32);
     extern void GScharLenCpy(void*, u32, s32);
     u8* work;
@@ -45,7 +45,7 @@ void fn_80035C48(void) {
             soundId = 0x4CD;
         }
         if (soundId != fn_801653C4()) {
-            fn_80165A20(soundId, 0, 0x7F);
+            soundOpenPlay(soundId, 0, 0x7F);
         }
         lbl_8047A454 = 0;
         lbl_8047A449 = 0;

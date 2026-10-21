@@ -21,7 +21,7 @@
  * Per-frame updates via:
  *   fn_801E0FB4 - Save/card per-frame update
  *   GSvtrLoadTexture - Card system tick
- *   fn_801E11E8 - Card system check pending
+ *   GSvtrIsActive - Card system check pending
  *
  * Related source files:
  *   cardesavedata.c  - Card e-Reader save data (0x80082650 - 0x80083AF4)
@@ -235,7 +235,7 @@ void save_CardUpdate(s32 mode, u32 param1, u32 param2);
 void save_CardTick(void);
 
 /**
- * fn_801E11E8: Check if card operations are pending.
+ * GSvtrIsActive: Check if card operations are pending.
  * @return Non-zero if operations are in progress
  */
 u32 save_CardCheckPending(void);

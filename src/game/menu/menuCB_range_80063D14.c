@@ -15,7 +15,7 @@ typedef struct MenuCBEntryPort {
     s32 enabled;
 } MenuCBEntryPort;
 
-extern void fn_80165A20(s32, s32, s32);
+extern void soundOpenPlay(s32, s32, s32);
 extern void* memcpy(void*, const void*, u32);
 extern MenuCBEntryPort* fn_8006B09C(s32);
 extern u32 fn_8006A814(MenuCBEntryPort*);
@@ -225,7 +225,7 @@ s32 fn_80063D14(void* work)
     s32 keepRunning;
 
     keepRunning = 1;
-    fn_80165A20(0x1E, 0, 0xFF);
+    soundOpenPlay(0x1E, 0, 0xFF);
     memcpy(lbl_803A9F08.copy, work, 0xCC2C);
 
     menuCBEntryInit();

@@ -23,7 +23,7 @@ extern void fn_801EF8F4();
 
 /* Sound functions */
 extern void soundStop();     /* Stop sound */
-extern void fn_80165A20();     /* Fade out music */
+extern void soundOpenPlay();     /* Fade out music */
 extern void fn_801659FC();     /* Start BGM */
 
 /* SDA2 float constants used by asm wrappers */

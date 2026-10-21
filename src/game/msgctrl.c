@@ -40,7 +40,7 @@ u32 msgctrlSndPlay(EffectUtilCommandObj* obj) {
     if (obj->activeFlag == 0) {
         u16 handle = lbl_8047AEA4;
         if (handle != 0) {
-            fn_80165A20(handle, 0, 0xFF);
+            soundOpenPlay(handle, 0, 0xFF);
         }
     }
     return 0;

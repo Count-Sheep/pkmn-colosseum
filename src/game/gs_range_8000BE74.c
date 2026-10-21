@@ -49,14 +49,14 @@ extern u8 fn_80175FFC(void);
 extern void GSgfxCaptureMovieStop(void);
 extern void GSgfxCaptureMovieStart(u32 mode);
 
-extern u8 fn_801E11CC(void);
-extern void fn_801E11D4(u8 index, u8 active);
+extern u8 GSvtrGetInfoDisp(void);
+extern void GSvtrSetInfoDisp(u8 index, u8 active);
 extern void fn_801E1170(void);
 extern void fn_801E118C(void);
 extern void fn_801E11B0(void);
 extern void fn_801E119C(void);
-extern u8 fn_801E11E8(void);
-extern void fn_801E1258(void);
+extern u8 GSvtrIsActive(void);
+extern void GSvtrEnable(void);
 extern void fn_801E11F0(void);
 
 extern void fn_801D0748(u32 a, u32 b, u32 c);
@@ -84,7 +84,7 @@ extern void fn_80166D18(u32 a, u32 b, u32 c, u32 d);
 extern s32 fn_801666BC(u16 entry);
 extern void GSsndClose(u16 entry);
 extern void fn_801659FC(u16 entry, u32 a, u32 b);
-extern void fn_80165A20(u16 entry, u32 a, u32 b);
+extern void soundOpenPlay(u16 entry, u32 a, u32 b);
 
 /* Retail retains this otherwise-unreferenced debug-menu entry-point group. */
 #pragma force_active on
@@ -196,7 +196,7 @@ s32 fn_8000C144(void) {
         }
     }
 
-    fn_801E11D4(fn_801E11CC(), lbl_8047A298);
+    GSvtrSetInfoDisp(GSvtrGetInfoDisp(), lbl_8047A298);
     return 0;
 }
 
@@ -211,7 +211,7 @@ s32 fn_8000C1A8(void) {
         }
     }
 
-    fn_801E11D4(fn_801E11CC(), lbl_8047A298);
+    GSvtrSetInfoDisp(GSvtrGetInfoDisp(), lbl_8047A298);
     return 0;
 }
 
@@ -236,13 +236,13 @@ s32 fn_8000C27C(void) {
 }
 
 s32 dbgMenuGSvtrChangeDisp(void) {
-    fn_801E11D4((u8)((u8)fn_801E11CC() == 0), lbl_8047A298);
+    GSvtrSetInfoDisp((u8)((u8)GSvtrGetInfoDisp() == 0), lbl_8047A298);
     return 0;
 }
 
 s32 dbgMenuGSvtrChangeActive(void) {
-    if (fn_801E11E8() == 0) {
-        fn_801E1258();
+    if (GSvtrIsActive() == 0) {
+        GSvtrEnable();
     } else {
         fn_801E11F0();
     }
@@ -573,7 +573,7 @@ inner_check:
     GSsndClose(entry);
     goto loop_check;
 use_default:
-    fn_80165A20(entry, 0, 0x7F);
+    soundOpenPlay(entry, 0, 0x7F);
 loop_check:
     selected = menuOpen(2, 1);
     if (selected != -1) {

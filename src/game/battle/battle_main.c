@@ -68,7 +68,7 @@ extern void* fn_80113FB4(void);                            /* check floor loaded
 /* Sound */
 extern void soundStop(s32 sndID, s32 volume);    /* soundStop */
 extern void fn_801659FC(s32 sndID, s32 fadeTime, s32 volume); /* sndPlay with fade */
-extern void fn_80165A20(s32 mode, s32 sndID, s32 volume);     /* sndFade */
+extern void soundOpenPlay(s32 mode, s32 sndID, s32 volume);     /* sndFade */
 
 /* People / NPC system */
 extern u8   GSscene_GetMode(void);                      /* save people state */
@@ -379,7 +379,7 @@ void _fightFinalize__FUi14FloorEnterMode(u32 floor, u32 enterMode) {
     if (soundID != 0) {
         soundStop(soundID, 0);
     }
-    fn_80165A20(1, 0, 0xFF);
+    soundOpenPlay(1, 0, 0xFF);
     dbgMenuSetEnable(lbl_8047B5D5);
     lbl_8047B5DA = 0;
     GSlogWrite(lbl_80279BD8);
@@ -498,7 +498,7 @@ void fn_801EF758(u8 a) {
     extern u8 lbl_8047B5E0;
     extern u16 fn_801EF624(void);
     extern u32 fightEncountGetBgmSndDataId(u16 encountDataIndex);
-    extern void fn_80165A20(u32 r3, u32 r4, u32 r5);
+    extern void soundOpenPlay(u32 r3, u32 r4, u32 r5);
     u16 encountDataIndex;
     u32 r3;
 
@@ -508,7 +508,7 @@ void fn_801EF758(u8 a) {
     if (encountDataIndex == 0) return;
     r3 = fightEncountGetBgmSndDataId(encountDataIndex);
     if (r3 != 0) {
-        fn_80165A20(r3, 0x0, 0xff);
+        soundOpenPlay(r3, 0x0, 0xff);
     }
     lbl_8047B5E0 = 1;
     return;
@@ -638,7 +638,7 @@ void fn_801EFA08(void) {
     extern u32 dbgMenuFightGetMsgSpeedToFrame(u32 frames);
     extern void fn_800FF660(void);
     extern void floorSetFadeScript(s32 a, s32 b);
-    extern void fn_8016597C(s32 a, s32 b, s32 c, s32 d);
+    extern void soundOpenPlayFadeOutIn(s32 a, s32 b, s32 c, s32 d);
     extern void fn_801EF2D4(void);
     extern u16 fn_801EF634(void);
     extern void fightFloorSetTimeOutAllFightResult(s32 arg);
@@ -745,7 +745,7 @@ void fn_801EFA08(void) {
     }
     status = fightFloorGetStatus(0, 0, 0x12, 0);
     if (status == 0) {
-        fn_8016597C(1, 1000, 1000, 0xFF);
+        soundOpenPlayFadeOutIn(1, 1000, 1000, 0xFF);
     }
     fadeSet(3, lbl_8047E508);
     fadeCheck(1);

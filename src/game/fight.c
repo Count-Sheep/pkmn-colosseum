@@ -234,7 +234,7 @@ u32 fn_8020DAD0(u32 p1) {
     extern u32 heroGetStatus();
     extern void msgctrlSetValue();
     extern void scriptSoundStop();
-    extern void fn_80165A20();
+    extern void soundOpenPlay();
     extern void fn_80166AB8();
     extern void fn_8018DA88();
     extern u8 fn_801902E0();
@@ -311,7 +311,7 @@ u32 fn_8020DAD0(u32 p1) {
                 msgctrlSetValue(0x59, msgValue);
             }
         }
-        fn_80165A20(1, 1000, 0xff);
+        soundOpenPlay(1, 1000, 0xff);
         scriptSoundStop(1000);
         wipeData = fightEncountWipeDataBiosGetPtr(fightEncountDataBiosGetWipeId(uVar1));
         fadeSetEX(lbl_8047E528, fightEncountDataBiosGetWipeEffectTime(wipeData), 9,

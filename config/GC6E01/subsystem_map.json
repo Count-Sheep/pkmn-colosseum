@@ -39209,7 +39209,7 @@
 "seed": null
 },
 {
-"name": "fn_8016597C",
+"name": "soundOpenPlayFadeOutIn",
 "addr": "0x8016597C",
 "size": 128,
 "label": "gs-engine",
@@ -39225,7 +39225,7 @@
 "seed": null
 },
 {
-"name": "fn_80165A20",
+"name": "soundOpenPlay",
 "addr": "0x80165A20",
 "size": 36,
 "label": "gs-engine",
@@ -50273,7 +50273,7 @@
 "seed": null
 },
 {
-"name": "fn_801E11CC",
+"name": "GSvtrGetInfoDisp",
 "addr": "0x801E11CC",
 "size": 8,
 "label": "particle",
@@ -50281,7 +50281,7 @@
 "seed": null
 },
 {
-"name": "fn_801E11D4",
+"name": "GSvtrSetInfoDisp",
 "addr": "0x801E11D4",
 "size": 12,
 "label": "particle",
@@ -50297,7 +50297,7 @@
 "seed": null
 },
 {
-"name": "fn_801E11E8",
+"name": "GSvtrIsActive",
 "addr": "0x801E11E8",
 "size": 8,
 "label": "gs-engine",
@@ -50313,7 +50313,7 @@
 "seed": null
 },
 {
-"name": "fn_801E1258",
+"name": "GSvtrEnable",
 "addr": "0x801E1258",
 "size": 28,
 "label": "gs-engine",

@@ -32,7 +32,7 @@ extern void fn_801DA8C4(u32 sequence, u16 moveID, s32 variant);
 
 /* Sound functions */
 extern void soundStop();     /* Stop sound */
-extern void fn_80165A20();     /* Fade out music */
+extern void soundOpenPlay();     /* Fade out music */
 extern void fn_801659FC();     /* Start BGM */
 
 /* SDA2 float constants used by asm wrappers */
@@ -561,7 +561,7 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   bgm = fn_801653C4();
   if (bgm != 0) {
     bgmVolume = fn_801656D8(bgm);
-    fn_80165A20(1,0x32,0xff);
+    soundOpenPlay(1,0x32,0xff);
   }
   else {
     bgmVolume = 0;
@@ -580,7 +580,7 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   work->seVolume = seVolume;
   result = evolutionDemo(work,r5,before,after);
   if (work->bgm != 0) {
-    fn_80165A20(work->bgm,0x32,(u8)work->bgmVolume);
+    soundOpenPlay(work->bgm,0x32,(u8)work->bgmVolume);
   }
   if (work->se != 0) {
     fn_801659FC(work->se,0x32,(u8)work->seVolume);
@@ -795,7 +795,7 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
     switch (state) {
     case 0:
       if (fn_801666BC(voice) != 2) {
-        fn_80165A20(0x3d3,0,0xff);
+        soundOpenPlay(0x3d3,0,0xff);
         wait = 0;
         state = 1;
       }
@@ -804,7 +804,7 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
       if (fn_801666BC(0x3d3) != 2) {
         wait += fn_800D3088();
         if (wait >= 0x1e) {
-          fn_80165A20(0x3d4,0,0xff);
+          soundOpenPlay(0x3d4,0,0xff);
           state = 2;
         }
       }

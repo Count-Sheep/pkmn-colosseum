@@ -46,8 +46,8 @@ extern void fn_801E1810(void);
 
 /* ===== GS Engine external functions ===== */
 extern void _threadSwitch(void);                        /* GSthread yield / step */
-extern void fn_80165A20(u32 sndId, u32 fade, u32 vol); /* sndPlay (BGM start) */
-extern void fn_8016597C(u32, u32, u32, u32);
+extern void soundOpenPlay(u32 sndId, u32 fade, u32 vol); /* sndPlay (BGM start) */
+extern void soundOpenPlayFadeOutIn(u32, u32, u32, u32);
 extern void fn_80166A28(u32 soundId);
 extern void fn_80165F40(void);
 extern void fn_80165F84(void);
@@ -480,7 +480,7 @@ void fn_800364C8(void)
     fadeSet(2, 0.0f);
     fadeCheck(1);
     fn_801E189C("movie/gs_logo.thp", 0);
-    fn_80165A20(0x04D1, 0, 0x7F);
+    soundOpenPlay(0x04D1, 0, 0x7F);
     memset((void*)0x80001805, 0, 0x17FB);
 }
 
@@ -529,7 +529,7 @@ void fn_80036360(void)
     fadeSet(2, 0.0f);
     fadeCheck(1);
     fn_801E189C("movie/autodemo01.thp", 0);
-    fn_80165A20(0x0494, 0, 0x7F);
+    soundOpenPlay(0x0494, 0, 0x7F);
 }
 
 /* autodemo01: play, stopped early by A/B/Start (0x1300) */
@@ -566,7 +566,7 @@ void fn_80036240(void)
         cueIndex = moviePlayCues(cues, 0x21, cueIndex);
         _threadSwitch();
     }
-    fn_8016597C(1, 1000, 0, 0x7F);
+    soundOpenPlayFadeOutIn(1, 1000, 0, 0x7F);
     fn_800FF58C(0x384);
     floorSetFadeScript(0, 0x5960008);
 }
@@ -584,7 +584,7 @@ void fn_800361C0(void)
     fadeSet(2, 0.0f);
     fadeCheck(1);
     fn_801E189C("movie/staffroll.thp", 0);
-    fn_80165A20(0x04C9, 0, 0x7F);
+    soundOpenPlay(0x04C9, 0, 0x7F);
 }
 
 /*
@@ -604,7 +604,7 @@ void fn_80035F64(void)
     while ((u8)fn_801E1874() == 1) {
         _threadSwitch();
     }
-    fn_80165A20(1, 0, 0x7F);
+    soundOpenPlay(1, 0, 0x7F);
 
     if (floorGetPrevFloorID() == 0x76 && (u8)fn_801902E0(0x476) == 1) {
         fn_80190528(0x478);
@@ -651,7 +651,7 @@ void fn_80035EE4(void)
     fadeSet(2, 0.0f);
     fadeCheck(1);
     fn_801E189C("movie/openingdemo.thp", 0);
-    fn_80165A20(0x0495, 0, 0x7F);
+    soundOpenPlay(0x0495, 0, 0x7F);
 }
 
 /* openingdemo: play */
@@ -668,7 +668,7 @@ void fn_80035E04(void)
         _threadSwitch();
     }
 
-    fn_80165A20(1, 0, 0x7F);
+    soundOpenPlay(1, 0, 0x7F);
     fn_80190528(0x08D0);
     floorLink(1, 0);
     floorSetFadeScript(0, 0x05960008);

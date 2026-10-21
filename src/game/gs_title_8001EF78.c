@@ -87,7 +87,7 @@ extern void cameraStartAnimation(void);
 extern void cameraStopAnimation(void);
 extern void cameraPlayAnime(u32 groupId, u32 animationId, s32 frame, u8 loop);
 extern void fn_801662E8(s32 a, s32 b);
-extern void fn_80165A20(s32 id, s32 a, s32 volume);
+extern void soundOpenPlay(s32 id, s32 a, s32 volume);
 extern void fn_80165548(void);
 extern void fn_8016557C(void);
 extern s32 fn_8017B1AC(void);
@@ -369,7 +369,7 @@ void fn_8001FD48(void)
     lbl_8047A33C = 0;
     lbl_8047A328 = 0;
     fn_801662E8(0, 0x406);
-    fn_80165A20(0x46A, 0, 0xFF);
+    soundOpenPlay(0x46A, 0, 0xFF);
 
     if (lbl_8047A310 == 1) {
         lbl_8047A31C = 7;

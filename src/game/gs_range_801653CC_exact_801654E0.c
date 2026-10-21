@@ -150,7 +150,8 @@ u32 fn_801658FC(u32 id, u32 fade, u32 volume, u32 priority)
     return fn_80165A44(id, volume, priority, 0);
 }
 
-u32 fn_8016597C(u32 id, u32 fade, u32 volume, u32 priority)
+/* NAME-T1 fn_8016597C */
+u32 soundOpenPlayFadeOutIn(u32 id, u32 fade, u32 volume, u32 priority)
 {
     if (id == 0 || id >= *lbl_80478FA8) {
         return 0;
@@ -165,7 +166,8 @@ u32 fn_801659FC(u32 id, u32 volume, u32 priority)
     return fn_80165A44(id, volume, priority, 0);
 }
 
-u32 fn_80165A20(u32 id, u32 volume, u32 priority)
+/* NAME-T1 fn_80165A20 */
+u32 soundOpenPlay(u32 id, u32 volume, u32 priority)
 {
     return fn_80165A44(id, volume, priority, 1);
 }

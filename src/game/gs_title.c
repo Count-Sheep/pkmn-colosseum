@@ -171,7 +171,7 @@
  *     GSmsgGetGSchar / msgctrlSetValue -- message/window callbacks
  *     winMsgOpen / winMsgClose -- text print + wait
  *     fn_801902E0 -- config flag check (returns u8)
- *     fn_80165A20 / soundStop -- audio sequence control
+ *     soundOpenPlay / soundStop -- audio sequence control
  *     fadeCheck / fadeSet -- BGM volume/fade
  *
  * --------------------------------------------------------------------------
@@ -468,7 +468,7 @@ s32 fn_80023E60(u8* arg0) {
     extern u8* menuItemBiosGetPtr(s32);
     extern void fn_800E0060(f32*, f32*);
     extern f32 fn_800E0000(f32*, f32*);
-    extern void fn_80165A20(s32, s32, s32);
+    extern void soundOpenPlay(s32, s32, s32);
     u8* da18;
     u8* r104318;
     u16* temp_r5;
@@ -533,7 +533,7 @@ s32 fn_80023E60(u8* arg0) {
             }
         }
 
-        fn_80165A20(0x464, 0, 0xFF);
+        soundOpenPlay(0x464, 0, 0xFF);
     }
 
     return 0;
@@ -2054,7 +2054,7 @@ extern void GSmodelLinkToGSparticleBank(void);
 extern void GSmodelSetGSparticleLinkAttachMode(void);
 extern void fn_801CB61C(void);
 extern void fn_801CB834(void);
-extern void fn_80165A20(void);
+extern void soundOpenPlay(void);
 extern void cameraPlayAnime(void);
 extern void __cvt_fp2unsigned(void);
 extern u8 lbl_8047A380;
@@ -2095,7 +2095,7 @@ void fn_80025F84(void) {
     extern void _threadSwitch(void);
     extern u32 GSresGetResource(u32, u32);
     extern u32 fn_80113F48(void);
-    extern void fn_80165A20(s32, s32, s32);
+    extern void soundOpenPlay(s32, s32, s32);
     extern void cameraPlayAnime(u32, u32, s32, s32);
     extern u8 fn_801902E0(s32);
     extern void fn_801CB61C(u32, u32, s32);
@@ -2148,7 +2148,7 @@ void fn_80025F84(void) {
     fn_801CB954(tex, 1);
     fn_801CB61C(tex, 0xC6A1000, 0);
     fn_801CB834(tex, start, 0, 1);
-    fn_80165A20(0x449, 0, 0xff);
+    soundOpenPlay(0x449, 0, 0xff);
     lbl_8047A384 = tex;
 
     {
@@ -2714,7 +2714,7 @@ s32 fn_800210F0(void)
     extern s32 menuNameEntryOpen(s32, s32);
     extern void menuNameEntryGetLastName(void*);
     extern void savedataCreate(u32, const void*);
-    extern void fn_80165A20(s32, s32, s32);
+    extern void soundOpenPlay(s32, s32, s32);
     extern void fn_800056E4(u8);
     extern void fn_800056EC(f32);
     extern void floorLink(s32, s32);
@@ -2797,7 +2797,7 @@ s32 fn_800210F0(void)
                 menuCloseCustom(0x7F, 0, 1);
                 fn_801CB9D8(lbl_8047A35C);
                 fn_8010A420(lbl_803A1FF8);
-                fn_80165A20(1, 0x3E8, 0xFF);
+                soundOpenPlay(1, 0x3E8, 0xFF);
                 menuNameEntryOpen(0, 0);
                 menuNameEntryGetLastName(nameBuf);
                 savedataCreate(0, nameBuf);
@@ -2915,7 +2915,7 @@ extern u32 lbl_8047A35C;
 extern u32 lbl_8047A358;
 #if !defined(GS_TITLE_SPLIT) || defined(GS_TITLE_RANGE_80021644)
 void fn_80021644(void) {
-    extern void fn_80165A20(s32, s32, s32);
+    extern void soundOpenPlay(s32, s32, s32);
     extern void* fn_80113F48(void);
     extern u32 fn_801CBA0C(s32);
     extern void GSresGetResource(void*, u32);
@@ -2924,7 +2924,7 @@ void fn_80021644(void) {
     void* handle;
 
     if (fn_800FF548() == 0) {
-        fn_80165A20(0x446, 0, 0xff);
+        soundOpenPlay(0x446, 0, 0xff);
         handle = fn_80113F48();
         lbl_8047A35C = fn_801CBA0C(0x0FFE1000);
         GSresGetResource(handle, lbl_8047A35C);

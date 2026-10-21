@@ -2,7 +2,8 @@
 #include "dolphin/types.h"
 #include "game/gs_scene_types.h"
 
-void fn_801E1258(void)
+/* NAME-T1 fn_801E1258 */
+void GSvtrEnable(void)
 {
     extern u8 lbl_8047B420;
     extern s32 lbl_8047B424;

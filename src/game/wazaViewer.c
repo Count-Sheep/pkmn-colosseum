@@ -394,8 +394,8 @@ void fn_801D58E4(void) {
     extern void GSscene_SetMode(s32 mode);
     extern s32 fn_800057A8(void);
     extern void* GSfilterCreate(u8* color);
-    extern u8 fn_801E11E8(void);
-    extern void fn_801E1258(void);
+    extern u8 GSvtrIsActive(void);
+    extern void GSvtrEnable(void);
     extern void fn_801C31EC(void);
     extern u32 GSgappCreate(s32 group, s32 priority, s32 flags, void* callback);
 
@@ -440,8 +440,8 @@ void fn_801D58E4(void) {
     *(s32*)(lbl_804673F8 + 0x880) = 0;
     *(s32*)(lbl_804673F8 + 0x878) = 0;
     *(s32*)(lbl_804673F8 + 0x874) = 1;
-    lbl_804673F8[0x87D] = fn_801E11E8();
-    fn_801E1258();
+    lbl_804673F8[0x87D] = GSvtrIsActive();
+    GSvtrEnable();
     fn_801C31EC();
     lbl_8047B3F8 = GSgappCreate(1, 0x7F, 0, fn_801D603C);
     *(s32*)(lbl_804673F8 + 0x63C) = 0;

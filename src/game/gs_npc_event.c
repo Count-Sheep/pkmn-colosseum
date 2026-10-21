@@ -1340,7 +1340,7 @@ extern u8*  fightTrainerPokemonDataBiosGetPtr(void);
 extern void fightTrainerPokemonDataBiosSetPokemonDataId(s32, u16);
 extern u8*  fn_801CA5C4(s32, s32, s32);
 extern u32  fn_801653C4(void);
-extern void fn_80165A20(s32, s32, s32);
+extern void soundOpenPlay(s32, s32, s32);
 extern u32 lbl_8047A444;
 extern u8 lbl_8047A439;
 extern void fn_800330B8(s32, u8*);
@@ -1397,7 +1397,7 @@ u8* fn_80032ED8(s32 arg0, s32 arg1, u8* arg2) {
 
     sfx_id = (lbl_8047A439 != 0) ? 0x446 : 0x4CD;
     if (sfx_id != fn_801653C4()) {
-        fn_80165A20(sfx_id, 0, 0x7F);
+        soundOpenPlay(sfx_id, 0, 0x7F);
     }
     return result;
 }
@@ -1532,7 +1532,7 @@ void fn_80032ED8_legacy_disabled(void) {
         r3 = r28;
         r4 = 0x0;
         r5 = 0x7f;
-        fn_80165A20();
+        soundOpenPlay();
     }
     r3 = r26;
     return;

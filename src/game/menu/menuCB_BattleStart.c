@@ -871,7 +871,7 @@ void menuCBBattleStartInit(void* menu, s32 mode)
     extern void fn_80068F84(void);
     extern void menuCBPokemonEntryLoadTex(void);
     extern s32 fn_8025D9A8(void);
-    extern void fn_80165A20(u32, s32, s32);
+    extern void soundOpenPlay(u32, s32, s32);
     extern const u32 lbl_802ED958[];
     extern const u32 lbl_802ED978[];
     extern const f32 lbl_8047BF60;
@@ -932,14 +932,14 @@ void menuCBBattleStartInit(void* menu, s32 mode)
             lbl_803A9A60.model.soundId = 0x3CD;
             break;
         }
-        fn_80165A20(lbl_803A9A60.model.soundId, 0, 0xFF);
+        soundOpenPlay(lbl_803A9A60.model.soundId, 0, 0xFF);
         break;
     case 1:
         fn_80068F84();
         menuCBPokemonEntryLoadTex();
         battleStartInitHp();
         lbl_803A9A60.model.soundId = 0x1E;
-        fn_80165A20(0x1E, 0, 0xFF);
+        soundOpenPlay(0x1E, 0, 0xFF);
         break;
     }
 }

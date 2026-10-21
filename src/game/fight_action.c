@@ -386,14 +386,14 @@ u32 fightActionFlowSyuuryou(void* ctx)
 #endif
 u32 fightActionFlowSyuuryouPre(void* action)
 {
-    extern void fn_8016597C();
+    extern void soundOpenPlayFadeOutIn();
     extern void fightMainWaitFrame();
     extern u32 fightFloorGetStatus();
     u32 uVar1;
 
     uVar1 = fightFloorGetStatus(0, 0, 0x12, 0);
     if (uVar1 != 0) {
-        fn_8016597C(1, 1000, 1000, 0xff);
+        soundOpenPlayFadeOutIn(1, 1000, 1000, 0xff);
         fightMainWaitFrame(0x3c);
     }
     return 1;
@@ -861,7 +861,7 @@ u32 fightActionFlowKaisiPre(void* action)
     extern void _threadSwitch();
     extern void menuGetKeyInfo();
     extern void msgctrlSetValue();
-    extern void fn_80165A20();
+    extern void soundOpenPlay();
     extern s8 fadeCheck();
     extern void fadeSet();
     extern void fn_801DA4E8();
@@ -978,7 +978,7 @@ u32 fightActionFlowKaisiPre(void* action)
         }
         bgm = fightFloorGetStatus(0, 0, 0x11, 0);
         if (bgm != 0) {
-            fn_80165A20(bgm, 0, 0xff);
+            soundOpenPlay(bgm, 0, 0xff);
         }
         if ((u8)fightFloorGetStatus(0, 0, 0x33, 0) == 1) {
             msgctrlSetValue(0x22, fn_801F8000(enemy));
@@ -1055,7 +1055,7 @@ u32 fightActionFlowKaisiPre(void* action)
         fn_801DA8C4(heroGrid, 0x56, 4);
         bgm = fightFloorGetStatus(0, 0, 0x11, 0);
         if (bgm != 0) {
-            fn_80165A20(bgm, 0, 0xff);
+            soundOpenPlay(bgm, 0, 0xff);
         }
     }
     return 1;

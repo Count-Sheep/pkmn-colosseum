@@ -28,7 +28,7 @@ extern void fn_801EF8F4();
 
 /* Sound functions */
 extern void soundStop();     /* Stop sound */
-extern void fn_80165A20();     /* Fade out music */
+extern void soundOpenPlay();     /* Fade out music */
 extern void fn_801659FC();     /* Start BGM */
 
 /* SDA2 float constants used by asm wrappers */
@@ -92,7 +92,7 @@ void fn_8025DCBC(int *param)
 {
     u32 *r3 = (u32 *)param;
     if (*r3 != 0) {
-        fn_80165A20(*r3, 0x32, 0xff);
+        soundOpenPlay(*r3, 0x32, 0xff);
     }
     if (r3[1] != 0) {
         fn_801659FC(r3[1], 0x32, 0xff);
@@ -108,7 +108,7 @@ void fn_8025DD14(int *r3)
     extern int fn_801653BC();
     extern int fn_801653C4();
     extern int fn_801656D8();
-    extern void fn_80165A20();
+    extern void soundOpenPlay();
     int iVar1;
     int iVar2;
     int iVar3;
@@ -117,7 +117,7 @@ void fn_8025DD14(int *r3)
     iVar1 = fn_801653C4();
     if (iVar1 != 0) {
         iVar2 = fn_801656D8();
-        fn_80165A20(1, 0x32, 0xff);
+        soundOpenPlay(1, 0x32, 0xff);
     } else {
         iVar2 = 0;
     }

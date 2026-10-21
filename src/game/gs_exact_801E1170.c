@@ -42,14 +42,16 @@ void fn_801E11B0(void)
     lbl_8047B428 = 1;
 }
 
-u8 fn_801E11CC(void)
+/* NAME-T1 fn_801E11CC */
+u8 GSvtrGetInfoDisp(void)
 {
     extern u8 lbl_8047B434;
 
     return lbl_8047B434;
 }
 
-void fn_801E11D4(u8 index, u8 active)
+/* NAME-T1 fn_801E11D4 */
+void GSvtrSetInfoDisp(u8 index, u8 active)
 {
     extern u8 lbl_8047B434;
     extern u8 lbl_8047B435;
@@ -65,7 +67,8 @@ s32 fn_801E11E0(void)
     return lbl_8047B424;
 }
 
-u8 fn_801E11E8(void)
+/* NAME-T1 fn_801E11E8 */
+u8 GSvtrIsActive(void)
 {
     extern u8 lbl_8047B420;
 

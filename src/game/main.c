@@ -235,7 +235,7 @@ extern void GSgfxCaptureUpdate(void);       /* World/scene render tick */
 
 extern void fn_801E0FB4(s32 unk, u32 a, u32 b); /* Save/card per-frame update */
 
-extern u8   fn_801E11E8(void);   /* Card system check pending */
+extern u8   GSvtrIsActive(void);   /* Card system check pending */
 extern s32  fn_801E11E0(void);   /* Card system get state */
 extern void fn_801E11B0(void);   /* Card system process state 2 */
 extern void fn_801E119C(void);   /* Card system process other */
@@ -950,7 +950,7 @@ void fn_80005E00(void) {
         fn_8000C0DC();
     }
 
-    if (fn_801E11E8()) {
+    if (GSvtrIsActive()) {
         pressed = fn_800F7AF0(1);
         held = fn_800F7BC4(1);
         if (held & pressed & 0x40) {

@@ -115,9 +115,9 @@ extern u8 fn_80165718[];
 extern u8 fn_80165744[];
 extern u8 fn_80165788[];
 extern u8 fn_801658FC[];
-extern u8 fn_8016597C[];
+extern u8 soundOpenPlayFadeOutIn[];
 extern u8 fn_801659FC[];
-extern u8 fn_80165A20[];
+extern u8 soundOpenPlay[];
 extern u8 cameraSetRotY[];
 extern u8 cameraSetDistance[];
 extern u8 cameraSetHeight[];
@@ -94106,7 +94106,7 @@ void* lbl_802E1CF0[742] = {
     (void*)((u8*)fn_801EF634),
     (void*)0x00000000,
     (void*)0x00000000,
-    (void*)((u8*)fn_80165A20),
+    (void*)((u8*)soundOpenPlay),
     (void*)0x01010100,
     (void*)0x00000000,
     (void*)((u8*)fn_801659FC),
@@ -94208,7 +94208,7 @@ void* lbl_802E1CF0[742] = {
     (void*)((u8*)fn_801656F8),
     (void*)0x01010100,
     (void*)0x00000000,
-    (void*)((u8*)fn_8016597C),
+    (void*)((u8*)soundOpenPlayFadeOutIn),
     (void*)0x01010101,
     (void*)0x00000000,
     (void*)((u8*)fn_801658FC),

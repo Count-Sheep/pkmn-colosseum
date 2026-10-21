@@ -1771,7 +1771,7 @@ void menuColosseumBattleExit(void) {
 #pragma peephole off
 void menuColosseumBattleInit(void)
 {
-    extern void fn_80165A20(s32, s32, s32);
+    extern void soundOpenPlay(s32, s32, s32);
     extern u32 fn_800E2C04(u32 size, u32 alignment);
     extern void* fn_80113F48(void);
     extern void* fn_801CBA0C(u32 size);
@@ -1786,7 +1786,7 @@ void menuColosseumBattleInit(void)
     void* archive;
 
     strings = lbl_80267840;
-    fn_80165A20(0x1E, 0, 0xFF);
+    soundOpenPlay(0x1E, 0, 0xFF);
     _flagSet(0x8AE, 0);
 
     if (lbl_8047A5A0 != NULL) {

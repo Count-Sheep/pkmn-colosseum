@@ -175,7 +175,7 @@ void fn_80266250(void)
     extern int fn_801653BC();
     extern int fn_801653C4();
     extern u32 fn_801656D8(u32 id);
-    extern u32 fn_80165A20(u32 id, u32 volume, u32 priority);
+    extern u32 soundOpenPlay(u32 id, u32 volume, u32 priority);
     extern void scriptSoundStop();
     extern u32 fn_801659FC(u32 id, u32 volume, u32 priority);
     extern void fn_801DADC0();
@@ -191,7 +191,7 @@ void fn_80266250(void)
     iVar1 = fn_801653C4();
     if (iVar1 != 0) {
         uVar3 = fn_801656D8(iVar1) & 0xFFFFFFFFFFFFFFFFu;
-        fn_80165A20(1, 0x32, 0xff);
+        soundOpenPlay(1, 0x32, 0xff);
     } else {
         uVar3 = 0;
     }
@@ -206,7 +206,7 @@ void fn_80266250(void)
     fn_80265F94(uVar5);
     wazaSequenceSysRelease();
     if (iVar1 != 0) {
-        fn_80165A20(iVar1, 0x32, uVar3);
+        soundOpenPlay(iVar1, 0x32, uVar3);
     }
     if (iVar2 != 0) {
         fn_801659FC(iVar2, 0x32, uVar4);
