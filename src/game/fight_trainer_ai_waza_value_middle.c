@@ -97,6 +97,8 @@ void fn_80239EE8(u32, void*, u32, u32, u32, u32, u32, u32);
 /* Address: 0x80243CD8 | Size: 0x640 (1600 bytes) */
 u32 fightTrainerAiWazaValueKoraeru(void* ctx, u32 param1, u32 param2, u32 param3)
 {
+    /* RULE-EXCEPTION(user-approved): caller-side prototype returning u32 (fight_floor.c returns u16); retail keeps the raw count (mr r15,r3, no clrlwi) - see docs/RULE_EXCEPTIONS.md */
+    extern u32 fightFloorGetFightTrainerFightOutPokemonPtrAry(u32 obj, u32 slot, u32* arr, u8 r6, u8 r7);
     extern u32* lbl_80478DF8;
     extern f32 lbl_8047E630;
     extern u32 wazaGetStatus(u32, u32, u32, u32);
@@ -132,7 +134,7 @@ u32 fightTrainerAiWazaValueKoraeru(void* ctx, u32 param1, u32 param2, u32 param3
 
     handle = 0;
     type = fn_80235B04(ctx, 0, 1);
-    count = fightFloorGetFightTrainerFightOutPokemonPtrAry(0, ctx, entries, 1, 1);
+    count = fightFloorGetFightTrainerFightOutPokemonPtrAry(0, (u32)ctx, entries, 1, 1);
     moveCount = fn_80237CB8(ctx, param3, moves);
     ability = fn_80236520(ctx, param1);
     item = fn_8023831C(ctx, param1);

@@ -575,6 +575,8 @@ void fn_8021C75C(void) {
 
 /* 0x8021C900 size 0x100: fn_8021C900 (owner line 9464) */
 void fn_8021C900(void) {
+    extern u32 fightTargetGetPtrAsNowFightType(u32 slotType, u32 idx);
+    extern void wazaSetStatus(void* ptr, u16 dataId, u16 status, u32 index, u32 value);
     u32 ctx1 = fightTargetGetPtrAsNowFightType(0x11, 0);
     u32 fieldD9 = pokemonGetStatus(ctx1, 0, 0xD9, 0);
     s32 val = wazaGetStatus(fieldD9, 0, 0x2d, 0);
@@ -600,7 +602,7 @@ void fn_8021C900(void) {
         val = val << 1;
         break;
     }
-    wazaSetStatus(fieldD9, 0, 0x2d, 0, val);
+    wazaSetStatus((void*)fieldD9, 0, 0x2d, 0, val);
     lbl_8047B610 = lbl_8047B610 + 2;
 }
 

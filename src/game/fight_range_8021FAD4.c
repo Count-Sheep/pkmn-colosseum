@@ -15,6 +15,8 @@ extern void* lbl_8047B62C;
 extern void fn_80211B94(void*, void*, u8);
 extern u8 lbl_80478D78[8];
 
+extern void fn_801DA36C(void* effect, s32 trajType);
+
 void fn_8021FAD4(void)
 {
     extern u32 fightFloorGetStatus();

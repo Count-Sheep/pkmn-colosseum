@@ -378,15 +378,18 @@ s32 fightTrainerAiAddValue(s32 value, s32 delta) {
 
 u32 fn_80239A40(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7, u32 r8, u32 r9, u32 r10,
                 u8 param_9) {
-  extern u8 fn_80008164();
-  extern u32 GSmsgGetGSchar();
-  extern void menuGetKeyInfo();
-  extern void wazaGetStatus();
-  extern void msgctrlSetValue();
-  extern u32 fightTrainerGetNamePtr();
-  extern int fightTrainerGetStatus();
-  extern void fightMenuCloseMsg();
-  extern u8 fightMenuOpenMsg();
+  extern u8 fn_80008164(void);
+  extern void* GSmsgGetGSchar(u32 key);
+  extern void menuGetKeyInfo(struct MenuKeyInfo* out, s32 port);
+  /* RULE-EXCEPTION(user-approved): caller-side prototypes with u32 id/slot parameters where the definitions take u16 (wazaGetStatus dataId, itemGetStatus id, fightTrainerGetStatus slot); retail passes the raw u32 arguments (mr r4,r25/r26/r27, no clrlwi) - see docs/RULE_EXCEPTIONS.md */
+  extern u32 wazaGetStatus(void* ptr, u32 dataId, u16 status, u32 index);
+  extern s32 itemGetStatus(u8* record, u32 id, u16 field, u16 arg);
+  extern void* fightTrainerGetStatus(void* ctx, u32 slot, u32 field, u32 idx);
+  extern void msgctrlSetValue(u32 id, u32 value);
+  extern void* fightTrainerGetNamePtr(void* context);
+  extern void fightMenuCloseMsg(void);
+  extern u32 fightMenuOpenMsg(u32 msgId);
+  extern u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d);
   int iVar6;
   u32 iVar1;
   u32 iVar2;
@@ -396,9 +399,9 @@ u32 fn_80239A40(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7, u32 r8, u32 r9, u32 r10,
   u8 cVar5;
   u16 local_58[14];
   iVar6 = param_9;
-  iVar1 = fightTrainerGetStatus(0, r10, 0x40, 0);
-  iVar2 = fightTrainerGetStatus(0, r10, 0x41, 0);
-  iVar3 = fightTrainerGetStatus(0, r10, 0x3e, 0);
+  iVar1 = (u32)fightTrainerGetStatus(0, r10, 0x40, 0);
+  iVar2 = (u32)fightTrainerGetStatus(0, r10, 0x41, 0);
+  iVar3 = (int)fightTrainerGetStatus(0, r10, 0x3e, 0);
   factor = (short)((iVar6 * 100) / 0xff) + -0x32;
   iVar3 = (int)(short)((factor * iVar3) / 0x32);
   iVar6 = 0;
@@ -418,39 +421,36 @@ u32 fn_80239A40(u32 r3, u32 r4, u32 r5, u32 r6, u32 r7, u32 r8, u32 r9, u32 r10,
     }
   }
   if (iVar1 != 0) {
-    msgctrlSetValue(0xd, GSmsgGetGSchar(iVar1));
+    msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(iVar1));
   }
   if (iVar2 != 0) {
-    msgctrlSetValue(0xe, GSmsgGetGSchar(iVar2));
+    msgctrlSetValue(0xe, (u32)GSmsgGetGSchar(iVar2));
   }
   if (r4 != 0) {
-    msgctrlSetValue(0x13, fightTrainerGetNamePtr(r4));
+    msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)r4));
   }
   if (r5 != 0) {
-    msgctrlSetValue(0x14, (int)pokemonGetStatus(r5, 0, 0x77, 0));
+    msgctrlSetValue(0x14, (int)pokemonGetStatus((u8*)r5, 0, 0x77, 0));
   }
   if (r6 != 0) {
-    msgctrlSetValue(0x23, fightTrainerGetNamePtr(r6));
+    msgctrlSetValue(0x23, (u32)fightTrainerGetNamePtr((void*)r6));
   }
   if (r7 != 0) {
-    msgctrlSetValue(0x15, (int)pokemonGetStatus(r7, 0, 0x77, 0));
+    msgctrlSetValue(0x15, (int)pokemonGetStatus((u8*)r7, 0, 0x77, 0));
   }
   if ((r8 & 0xffff) != 0) {
-    wazaGetStatus(0, r8, 1, 0);
-    msgctrlSetValue(0x28, GSmsgGetGSchar());
+    msgctrlSetValue(0x28, (u32)GSmsgGetGSchar(wazaGetStatus(0, r8, 1, 0)));
   }
   if ((r9 & 0xffff) != 0) {
-    itemGetStatus(0, r9, 1, 0);
-    msgctrlSetValue(0x29, GSmsgGetGSchar());
+    msgctrlSetValue(0x29, (u32)GSmsgGetGSchar(itemGetStatus(0, r9, 1, 0)));
   }
   if ((r10 & 0xffff) != 0) {
-    fightTrainerGetStatus(0, r10, 0x3f, 0);
-    msgctrlSetValue(0x41, GSmsgGetGSchar());
+    msgctrlSetValue(0x41, (u32)GSmsgGetGSchar((u32)fightTrainerGetStatus(0, r10, 0x3f, 0)));
   }
   msgctrlSetValue(0x2f, iVar6);
   cVar5 = fn_80008164();
   if (cVar5 == 1) {
-    menuGetKeyInfo(local_58, 1);
+    menuGetKeyInfo((struct MenuKeyInfo*)local_58, 1);
     if ((local_58[0] & 0x800) != 0) {
       return 0;
     }
