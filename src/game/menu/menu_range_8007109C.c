@@ -1747,8 +1747,9 @@ u8 fn_80077B3C(void) { return fn_8006B420()[0xf]; }
 
 u8 fn_80077B60(void) { return fn_8006B420()[0xe]; }
 
-/* fn_80077B84 (0x80077B84): fixed-index s16 accessor into the same record. */
-s16 fn_80077B84(void) { return ((s16*)fn_8006B420())[0xb]; }
+/* menuCBRule_GetCommandTimeLimit (0x80077B84): fixed-index s16 accessor into the same record. */
+/* NAME-T1 fn_80077B84 */
+s16 menuCBRule_GetCommandTimeLimit(void) { return ((s16*)fn_8006B420())[0xb]; }
 
 /* menuCBRule_GetBattleTimeLimit (0x80077BA8): same shape, scaled by 0x3c. */
 s32 menuCBRule_GetBattleTimeLimit(void) {

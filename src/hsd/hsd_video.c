@@ -109,7 +109,7 @@ extern void fn_800B9C44(BOOL aa, u8 sample_pattern[12][2], BOOL vf,
                         u8 vfilter[7]);
 extern void fn_800B9E6C(u32 gamma);
 extern void fn_800B9E88(void* buffer, BOOL clear);
-extern void fn_800B8E74(void);
+extern void GXPixModeSync(void);
 extern void fn_801B278C(BOOL enable);
 extern void fn_801B273C(BOOL enable);
 extern void fn_801B27DC(BOOL enable, u32 func, BOOL update);
@@ -277,7 +277,7 @@ void fn_801BFA1C(HSD_VIStatus* vi, void* buffer, HSD_RenderPass rpass)
         lines = rmode->efbHeight - HSD_ANTIALIAS_OVERLAP;
         fn_800B959C(0, 0, rmode->fbWidth, lines);
         fn_800B9E88(buffer, TRUE);
-        fn_800B8E74();
+        GXPixModeSync();
         return;
     case HSD_RP_BOTTOMHALF:
         fn_800B959C(0, 0, rmode->fbWidth,
@@ -296,7 +296,7 @@ void fn_801BFA1C(HSD_VIStatus* vi, void* buffer, HSD_RenderPass rpass)
     default:
         HSD_Panic(lbl_8047DF30, 0x219, lbl_8027575C);
     }
-    fn_800B8E74();
+    GXPixModeSync();
 }
 
 int fn_801BFCA0(void)

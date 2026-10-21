@@ -12,7 +12,7 @@
  *                   unit, GScolsys2Util_exact_8010C77C.c)
  *   GScolsys2GetObjEnable, GScolsys2SetObjEnable -- active-layer per-triangle visibility
  *                   flag get/set (via lbl_80404C68)
- *   fn_8010CBC0  -- returns the first word of lbl_80404C68
+ *   GScolsys2GetCCDFileHead  -- returns the first word of lbl_80404C68
  *
  * Still unmatched (honest TODO stubs, no evidence for real names):
  *   fn_8010C388, _menuFaceBiosGetPtr__FUs, fn_8010C54C, fn_8010C650,
@@ -443,7 +443,8 @@ s32 fn_8010CA30(Mtx out, u32 triIndex) {
 }
 
 /* 0x8010CBC0 | 0x10 */
-u32 fn_8010CBC0(void) {
+/* NAME-T1 fn_8010CBC0 */
+u32 GScolsys2GetCCDFileHead(void) {
     return *(u32*)&lbl_80404C68;
 }
 

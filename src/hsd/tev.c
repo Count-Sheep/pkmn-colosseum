@@ -35,15 +35,15 @@ extern void fn_800BC52C(u32 stage, GXTevSwapSel ras_sel,
 extern void fn_800BC580(GXTevSwapSel table, GXTevColorChan red,
                         GXTevColorChan green, GXTevColorChan blue,
                         GXTevColorChan alpha); /* GXSetTevSwapModeTable */
-extern void fn_800BC228(u32 stage, GXTevOp op, GXTevBias bias,
+extern void GXSetTevColorOp(u32 stage, GXTevOp op, GXTevBias bias,
                         GXTevScale scale, u8 clamp,
                         GXTevRegID out_reg); /* GXSetTevColorOp */
-extern void fn_800BC1A0(u32 stage, GXTevColorArg a, GXTevColorArg b,
+extern void GXSetTevColorIn(u32 stage, GXTevColorArg a, GXTevColorArg b,
                         GXTevColorArg c, GXTevColorArg d); /* GXSetTevColorIn */
-extern void fn_800BC290(u32 stage, GXTevOp op, GXTevBias bias,
+extern void GXSetTevAlphaOp(u32 stage, GXTevOp op, GXTevBias bias,
                         GXTevScale scale, u8 clamp,
                         GXTevRegID out_reg); /* GXSetTevAlphaOp */
-extern void fn_800BC1E4(u32 stage, GXTevAlphaArg a, GXTevAlphaArg b,
+extern void GXSetTevAlphaIn(u32 stage, GXTevAlphaArg a, GXTevAlphaArg b,
                         GXTevAlphaArg c, GXTevAlphaArg d); /* GXSetTevAlphaIn */
 extern void fn_800BC454(u32 stage, GXTevKColorSel sel); /* GXSetTevKColorSel */
 extern void fn_800BC4C0(u32 stage, GXTevKAlphaSel sel); /* GXSetTevKAlphaSel */
@@ -324,15 +324,15 @@ void fn_801B3638(HSD_TevDesc* desc)
         fn_800BC52C(desc->stage, GX_TEV_SWAP0, GX_TEV_SWAP0);
         return;
     }
-    fn_800BC228(desc->stage, desc->u.tevconf.clr_op,
+    GXSetTevColorOp(desc->stage, desc->u.tevconf.clr_op,
                 desc->u.tevconf.clr_bias, desc->u.tevconf.clr_scale,
                 desc->u.tevconf.clr_clamp, desc->u.tevconf.clr_out_reg);
-    fn_800BC1A0(desc->stage, desc->u.tevconf.clr_a, desc->u.tevconf.clr_b,
+    GXSetTevColorIn(desc->stage, desc->u.tevconf.clr_a, desc->u.tevconf.clr_b,
                 desc->u.tevconf.clr_c, desc->u.tevconf.clr_d);
-    fn_800BC290(desc->stage, desc->u.tevconf.alpha_op,
+    GXSetTevAlphaOp(desc->stage, desc->u.tevconf.alpha_op,
                 desc->u.tevconf.alpha_bias, desc->u.tevconf.alpha_scale,
                 desc->u.tevconf.alpha_clamp, desc->u.tevconf.alpha_out_reg);
-    fn_800BC1E4(desc->stage, desc->u.tevconf.alpha_a, desc->u.tevconf.alpha_b,
+    GXSetTevAlphaIn(desc->stage, desc->u.tevconf.alpha_a, desc->u.tevconf.alpha_b,
                 desc->u.tevconf.alpha_c, desc->u.tevconf.alpha_d);
     fn_800BC580(desc->u.tevconf.ras_swap, desc->u.tevconf.swap_red,
                 desc->u.tevconf.swap_green, desc->u.tevconf.swap_blue,

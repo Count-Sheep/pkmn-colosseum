@@ -20,7 +20,7 @@ extern void menuClose(s32 menuId);
 extern void menuCloseSync(s32 menuId, s32 flag);
 extern void fn_801669E4(u32 id, u32 arg1, u32 arg2);
 extern void fn_801666BC(u32 id);
-extern void fn_80166B18(u32 id);
+extern void GSsndClose(u32 id);
 
 /* RULE-EXCEPTION(user-approved): local peephole setting preserves this callback's codegen; see docs/RULE_EXCEPTIONS.md. */
 #pragma peephole off
@@ -64,7 +64,7 @@ u8 fn_8004DFCC(u8 initialSelection)
     }
     soundId = fn_801D1650(lbl_8047A524);
     if (soundId != 0) {
-        fn_80166B18(soundId);
+        GSsndClose(soundId);
     }
     fn_800F9210(0, 0x408);
     fn_80165548(state);

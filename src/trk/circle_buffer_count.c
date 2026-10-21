@@ -9,6 +9,7 @@ typedef struct CircleBuffer {
     u32 free;
 } CircleBuffer;
 
-u32 fn_800C41A4(CircleBuffer* circle) {
+/* NAME-T1 fn_800C41A4 */
+u32 CBGetBytesAvailableForRead(CircleBuffer* circle) {
     return circle->used;
 }

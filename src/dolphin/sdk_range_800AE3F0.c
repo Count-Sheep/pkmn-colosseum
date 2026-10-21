@@ -1571,7 +1571,8 @@ u32 ARQGetChunkSize(void) {
     return lbl_8047A948;
 }
 
-u32 fn_800AE794(void) {
+/* NAME-T1 fn_800AE794 */
+u32 DSPCheckMailToDSP(void) {
     return (DSP_REGS->mailToDspHi >> 15) & 1;
 }
 
@@ -1662,7 +1663,7 @@ void __DSP_debug_printf(char* fmt, ...) {
    whole object, 0x800AE9FC - 0x800AF280, with its strings). */
 #if defined(DSP_TASK_ONLY)
 /* dsp.c, defined above outside this build. */
-u32 fn_800AE794(void);
+u32 DSPCheckMailToDSP(void);
 u32 DSPCheckMailFromDSP(void);
 u32 DSPReadMailFromDSP(void);
 void DSPSendMailToDSP(u32 mail);
@@ -1704,7 +1705,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
         if (lbl_8047A958) {
             if (lbl_8047A96C == lbl_8047A95C) {
                 DSPSendMailToDSP(0xCDD10003);
-                while (fn_800AE794() != 0) {
+                while (DSPCheckMailToDSP() != 0) {
                 }
                 lbl_8047A95C = NULL;
                 lbl_8047A958 = 0;
@@ -1713,7 +1714,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
                 }
             } else {
                 DSPSendMailToDSP(0xCDD10001);
-                while (fn_800AE794() != 0) {
+                while (DSPCheckMailToDSP() != 0) {
                 }
                 __DSP_exec_task(lbl_8047A96C, lbl_8047A95C);
                 lbl_8047A96C->state = 2;
@@ -1724,14 +1725,14 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
         } else if (lbl_8047A96C->next == NULL) {
             if (lbl_8047A96C == lbl_8047A968) {
                 DSPSendMailToDSP(0xCDD10003);
-                while (fn_800AE794() != 0) {
+                while (DSPCheckMailToDSP() != 0) {
                 }
                 if (lbl_8047A96C->res_cb != NULL) {
                     lbl_8047A96C->res_cb(lbl_8047A96C);
                 }
             } else {
                 DSPSendMailToDSP(0xCDD10001);
-                while (fn_800AE794() != 0) {
+                while (DSPCheckMailToDSP() != 0) {
                 }
                 __DSP_exec_task(lbl_8047A96C, lbl_8047A968);
                 lbl_8047A96C->state = 2;
@@ -1739,7 +1740,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
             }
         } else {
             DSPSendMailToDSP(0xCDD10001);
-            while (fn_800AE794() != 0) {
+            while (DSPCheckMailToDSP() != 0) {
             }
             __DSP_exec_task(lbl_8047A96C, lbl_8047A96C->next);
             lbl_8047A96C->state = 2;
@@ -1752,7 +1753,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
                 lbl_8047A96C->done_cb(lbl_8047A96C);
             }
             DSPSendMailToDSP(0xCDD10001);
-            while (fn_800AE794() != 0) {
+            while (DSPCheckMailToDSP() != 0) {
             }
             __DSP_exec_task(NULL, lbl_8047A95C);
             __DSP_remove_task(lbl_8047A96C);
@@ -1765,7 +1766,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
                     lbl_8047A96C->done_cb(lbl_8047A96C);
                 }
                 DSPSendMailToDSP(0xCDD10002);
-                while (fn_800AE794() != 0) {
+                while (DSPCheckMailToDSP() != 0) {
                 }
                 lbl_8047A96C->state = 3;
                 __DSP_remove_task(lbl_8047A96C);
@@ -1774,7 +1775,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
                     lbl_8047A96C->done_cb(lbl_8047A96C);
                 }
                 DSPSendMailToDSP(0xCDD10001);
-                while (fn_800AE794() != 0) {
+                while (DSPCheckMailToDSP() != 0) {
                 }
                 lbl_8047A96C->state = 3;
                 __DSP_exec_task(NULL, lbl_8047A968);
@@ -1786,7 +1787,7 @@ void __DSPHandler(__OSInterrupt interrupt, OSContext* context)
                 lbl_8047A96C->done_cb(lbl_8047A96C);
             }
             DSPSendMailToDSP(0xCDD10001);
-            while (fn_800AE794() != 0) {
+            while (DSPCheckMailToDSP() != 0) {
             }
             lbl_8047A96C->state = 3;
             __DSP_exec_task(NULL, lbl_8047A96C->next);
@@ -1810,61 +1811,61 @@ void __DSP_exec_task(DSPTaskInfo* current, DSPTaskInfo* next)
 {
     if (current != NULL) {
         DSPSendMailToDSP((u32) current->dram_mmem_addr);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(current->dram_length);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(current->dram_addr);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
     } else {
         DSPSendMailToDSP(0);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(0);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(0);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
     }
 
     DSPSendMailToDSP((u32) next->iram_mmem_addr);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(next->iram_length);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(next->iram_addr);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
 
     if (next->state == 0) {
         DSPSendMailToDSP(next->dsp_init_vector);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(0);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(0);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(0);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
     } else {
         DSPSendMailToDSP(next->dsp_resume_vector);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP((u32) next->dram_mmem_addr);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(next->dram_length);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
         DSPSendMailToDSP(next->dram_addr);
-        while (fn_800AE794() != 0) {
+        while (DSPCheckMailToDSP() != 0) {
         }
     }
 }
@@ -1878,34 +1879,34 @@ void __DSP_boot_task(DSPTaskInfo* task)
     mail = DSPReadMailFromDSP();
 
     DSPSendMailToDSP(0x80F3A001);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP((u32) task->iram_mmem_addr);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(0x80F3C002);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(task->iram_addr & 0xFFFF);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(0x80F3A002);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(task->iram_length);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(0x80F3B002);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(0);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(0x80F3D001);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(task->dsp_init_vector);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
 
     __DSP_debug_printf("DSP is booting task: 0x%08X\n", (u32)task);
@@ -2548,10 +2549,10 @@ void InitCallback(void* task) {
     }
     workArea = (u32)card->workArea;
     DSPSendMailToDSP(0xff000000);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
     DSPSendMailToDSP(workArea);
-    while (fn_800AE794() != 0) {
+    while (DSPCheckMailToDSP() != 0) {
     }
 }
 

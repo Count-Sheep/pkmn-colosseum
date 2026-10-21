@@ -278,10 +278,10 @@ s32 GbaMisc_ResetEntryStatusA(s32 param, const u8* data);
 void fn_80089D74(s32 param);
 s32 fn_80089D98(s32 r31);
 s32 fn_80089E20(s32 idx, void* obj, u32 packedStatus, u32 highHalf);
-u32 fn_80089F58(u32 v);
+u32 gbaCommandGetGBAChangePokemon(u32 v);
 u32 fn_80089F60(u32 v);
 u32 fn_80089F68(u32 v);
-u32 fn_80089F70(u32 v);
+u32 gbaCommandGetAction(u32 v);
 u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae);
 s32 fn_8008A99C(void);
 int gbaCommandEntryPokemon(u32 r3, u8* r4);
@@ -853,7 +853,8 @@ s32 fn_80089E20(s32 r30, void* r31, u32 r5, u32 r29) {
     !defined(GBA_MISC_8008BBDC_ONLY)
 
 /* 0x80089F58 | size: 0x8 */
-u32 fn_80089F58(u32 v) {
+/* NAME-T1 fn_80089F58 */
+u32 gbaCommandGetGBAChangePokemon(u32 v) {
     return v & 0xFFFF;
 }
 
@@ -868,7 +869,8 @@ u32 fn_80089F68(u32 v) {
 }
 
 /* 0x80089F70 | size: 0x8 */
-u32 fn_80089F70(u32 v) {
+/* NAME-T1 fn_80089F70 */
+u32 gbaCommandGetAction(u32 v) {
     return v >> 16;
 }
 

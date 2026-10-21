@@ -965,10 +965,10 @@ void HSD_TExpCompile(u8* root, u32* tex_count, u32* ras_count) {
 }
 
 void fn_800BC6F0();
-void fn_800BC228();
-void fn_800BC290();
-void fn_800BC1A0();
-void fn_800BC1E4();
+void GXSetTevColorOp();
+void GXSetTevAlphaOp();
+void GXSetTevColorIn();
+void GXSetTevAlphaIn();
 void fn_800BC454();
 void fn_800BC4C0();
 void fn_800BC52C();
@@ -986,13 +986,13 @@ void fn_801B3638(HSD_TevDesc* desc) {
         fn_800BC52C(desc->stage, 0, 0);
         return;
     }
-    fn_800BC228(desc->stage, desc->color_op, desc->color_bias,
+    GXSetTevColorOp(desc->stage, desc->color_op, desc->color_bias,
                 desc->color_scale, desc->color_clamp, desc->color_tevreg);
-    fn_800BC1A0(desc->stage, desc->color_a, desc->color_b, desc->color_c,
+    GXSetTevColorIn(desc->stage, desc->color_a, desc->color_b, desc->color_c,
                 desc->color_d);
-    fn_800BC290(desc->stage, desc->alpha_op, desc->alpha_bias,
+    GXSetTevAlphaOp(desc->stage, desc->alpha_op, desc->alpha_bias,
                 desc->alpha_scale, desc->alpha_clamp, desc->alpha_tevreg);
-    fn_800BC1E4(desc->stage, desc->alpha_a, desc->alpha_b, desc->alpha_c,
+    GXSetTevAlphaIn(desc->stage, desc->alpha_a, desc->alpha_b, desc->alpha_c,
                 desc->alpha_d);
     fn_800BC580(desc->kcolor0, desc->kr, desc->kg, desc->kb, desc->ka);
     if (desc->kcolor1 != desc->kcolor0) {
@@ -1324,7 +1324,7 @@ extern s32 lbl_8036D258[4];
 extern s32 lbl_8036D268[4];
 extern s32 lbl_8036D2D8[4][4];
 
-extern void fn_800B8E74(void);
+extern void GXPixModeSync(void);
 extern void fn_800BC3E0(u32 id, GXColor color);
 extern void fn_800BC2F8(u32 id, GXColor color);
 extern void fn_801B25C4(u32 flags);
@@ -1463,7 +1463,7 @@ void HSD_TExpSetReg(HSD_TExp* texp)
         clist = (ColTECnst*) clist->next;
     }
     if (changed != 0) {
-        fn_800B8E74();
+        GXPixModeSync();
         for (i = 0; i < 4; i++) {
             if (changed & (1 << i)) {
                 fn_800BC3E0(id1[i], reg[i]);
@@ -1475,7 +1475,7 @@ void HSD_TExpSetReg(HSD_TExp* texp)
             }
         }
         fn_801B25C4(0x10);
-        fn_800B8E74();
+        GXPixModeSync();
     }
 }
 

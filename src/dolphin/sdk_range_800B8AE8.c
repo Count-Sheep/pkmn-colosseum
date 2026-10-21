@@ -27,7 +27,7 @@ extern GXData_800B8AE8* const gx;
 extern void* __memReg;
 extern volatile u8 lbl_8047A9C8; /* DrawDone */
 
-extern u32 fn_800B7714(void); /* GXGetGPFifo */
+extern u32 GXGetGPFifo(void); /* GXGetGPFifo */
 extern void __GXCleanGPFifo(void);
 extern void fn_800B91EC(void); /* __GXSetDirtyState */
 
@@ -108,7 +108,7 @@ static inline void __GXAbortWaitPECopyDone(void)
 
 static inline void __GXAbort(void)
 {
-    if (gx->abtWaitPECopy && fn_800B7714() != 0) {
+    if (gx->abtWaitPECopy && GXGetGPFifo() != 0) {
         __GXAbortWaitPECopyDone();
     }
 

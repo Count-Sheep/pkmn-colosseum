@@ -58,7 +58,7 @@ void fn_800B7874(int attr, int type);
 /* GXSetVtxAttrFmt */
 void fn_800B7D74(int vtxfmt, int attr, int cnt, int type, u8 frac);
 /* GXPixModeSync */
-void fn_800B8E74(void);
+void GXPixModeSync(void);
 /* GXBegin */
 void fn_800B928C(int type, int vtxfmt, u16 nverts);
 /* GXSetTexCopySrc */
@@ -457,7 +457,7 @@ void fn_801B0BD8(HSD_Shadow* shadow)
     }
 
     fn_800B9FE4(idesc->image_ptr, 1);
-    fn_800B8E74();
+    GXPixModeSync();
 
     GXInvalidateTexAll();
 

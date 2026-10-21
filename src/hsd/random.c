@@ -18,7 +18,7 @@
 #include "dolphin/types.h"
 
 /* HSD_IsMemoryReleased: nonzero when the pointer lies in freed memory. */
-int fn_801A6990(void* ptr);
+int _HSD_MemCheckOwn(void* ptr);
 
 /* seed */
 u32 lbl_80478C90 = 1;
@@ -47,7 +47,7 @@ s32 fn_801ADC3C(s32 max_val)
 
 void _HSD_RandForgetMemory(void)
 {
-    if (fn_801A6990(lbl_80478C94)) {
+    if (_HSD_MemCheckOwn(lbl_80478C94)) {
         lbl_80478C94 = &lbl_80478C90;
     }
 }

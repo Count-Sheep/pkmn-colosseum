@@ -82,7 +82,7 @@ extern void fn_800FECB8(u32 id);
 
 extern void fn_80166D18(u32 a, u32 b, u32 c, u32 d);
 extern s32 fn_801666BC(u16 entry);
-extern void fn_80166B18(u16 entry);
+extern void GSsndClose(u16 entry);
 extern void fn_801659FC(u16 entry, u32 a, u32 b);
 extern void fn_80165A20(u16 entry, u32 a, u32 b);
 
@@ -403,7 +403,7 @@ loop_body:
         goto use_default;
     }
 
-    fn_80166B18(entry);
+    GSsndClose(entry);
     goto loop_check;
 use_default:
     fn_801659FC(entry, 0, 0x7F);
@@ -440,7 +440,7 @@ loop_body:
         goto use_default;
     }
 
-    fn_80166B18(entry);
+    GSsndClose(entry);
     goto loop_check;
 use_default:
     fn_801659FC(entry, 0, 0x7F);
@@ -484,7 +484,7 @@ inner_body:
         goto inner_next;
     }
 call_inner:
-    fn_80166B18(*(u16*)((u8*)lbl_80478E24 + offset));
+    GSsndClose(*(u16*)((u8*)lbl_80478E24 + offset));
 inner_next:
     offset += sizeof(u16);
     i++;
@@ -505,7 +505,7 @@ inner_check:
         goto use_default;
     }
 
-    fn_80166B18(entry);
+    GSsndClose(entry);
     goto loop_check;
 use_default:
     fn_801659FC(entry, 0, 0x7F);
@@ -549,7 +549,7 @@ inner_body:
         goto inner_next;
     }
 call_inner:
-    fn_80166B18(*(u16*)((u8*)lbl_80478E2C + offset));
+    GSsndClose(*(u16*)((u8*)lbl_80478E2C + offset));
 inner_next:
     offset += sizeof(u16);
     i++;
@@ -570,7 +570,7 @@ inner_check:
         goto use_default;
     }
 
-    fn_80166B18(entry);
+    GSsndClose(entry);
     goto loop_check;
 use_default:
     fn_80165A20(entry, 0, 0x7F);

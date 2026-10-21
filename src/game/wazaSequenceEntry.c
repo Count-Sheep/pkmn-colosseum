@@ -30,7 +30,7 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
     extern void fn_800E0168(void* dst, void* lhs, void* rhs);
     extern void GSvecCopy(void* dst, void* src);
     extern void fn_80131010(u32 effectId);
-    extern void fn_80166B18(u32 id);
+    extern void GSsndClose(u32 id);
     extern void GSmodelStopTexAnimation(void* model);
     extern void GSmodelGetScale(void* model, void* out);
     extern void GSmodelSetPosition(void* model, void* position);
@@ -165,7 +165,7 @@ u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
         if ((*(s32*)(node + 0x7C) & 1) == 1) {
             lbl_8047B408 = 0;
         }
-        fn_80166B18(*(u32*)(node + 0x78));
+        GSsndClose(*(u32*)(node + 0x78));
         break;
 
     default:

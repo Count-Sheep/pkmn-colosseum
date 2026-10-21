@@ -156,7 +156,7 @@ u8 GStextureConvertFromHW(GStextureHandle* tex, u8 clear) {
     extern void fn_800B962C(u16, u16, u16, u16);
     extern void fn_800B96F8(u16, u16, s32, u8);
     extern void fn_800B9FE4(void*, u8);
-    extern void fn_800B8E74(void);
+    extern void GXPixModeSync(void);
     extern void GXSetZMode(u8, u32, u8);
     s32 width;
     s32 height;
@@ -214,7 +214,7 @@ u8 GStextureConvertFromHW(GStextureHandle* tex, u8 clear) {
     fn_800B96F8(width, height, gxFormat, tex->mipLevels > 1);
     GXSetZMode(1, 3, 1);
     fn_800B9FE4(image, clear);
-    fn_800B8E74();
+    GXPixModeSync();
     GXInvalidateTexAll();
     DCFlushRange(tex->mipData[0], tex->totalSize);
     GXInvalidateTexAll();

@@ -6,7 +6,7 @@
  * collision state lbl_80404C68 and runs from GScolsys2GetObjEnable
  * (0x8010C7BC) through the debug draw (fn_8010D8D4), the last function
  * that addresses the state directly; everything after it goes through
- * the fn_8010CBC0 / GScolsys2GetCurFloor accessors. Built with the core
+ * the GScolsys2GetCCDFileHead / GScolsys2GetCurFloor accessors. Built with the core
  * TU's flags (GC/1.3, project defaults), with which every core function
  * matched so far is exact; the state stays extern here.
  */

@@ -38,13 +38,15 @@ void _HSD_MemSetCallbacks(__mem_cb* cb, u32 size)
 }
 
 /* HAL: HSD_MemCheckOwn */
-BOOL fn_801A6990(void* ptr)
+/* NAME-T1 fn_801A6990 */
+BOOL _HSD_MemCheckOwn(void* ptr)
 {
     return lbl_80465608.check_own(ptr);
 }
 
 /* HAL: HSD_Free */
-void fn_801A6960(void* ptr)
+/* NAME-T1 fn_801A6960 */
+void HSD_Free(void* ptr)
 {
     lbl_80465608.free(ptr);
 }

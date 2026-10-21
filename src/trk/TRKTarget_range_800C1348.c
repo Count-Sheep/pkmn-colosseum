@@ -34,7 +34,7 @@ extern u8 lbl_8026FB70[];
 
 s32 TRKTargetSupportRequest(void)
 {
-    extern void fn_800BE464(void* event, s32 type);
+    extern void TRKConstructEvent(void* event, s32 type);
     extern s32 TRKPostEvent(void* event);
     extern s32 HandleOpenFileSupportRequest(u32 handle, u8 mode, u32 length,
                                             s32* ioResult);
@@ -56,7 +56,7 @@ s32 TRKTargetSupportRequest(void)
     if (command != 0xD1 && command != 0xD0 && command != 0xD2 &&
         command != 0xD3 && command != 0xD4)
     {
-        fn_800BE464(event, 4);
+        TRKConstructEvent(event, 4);
         TRKPostEvent(event);
         return 0;
     } else if (command == 0xD2) {
@@ -284,7 +284,7 @@ void TRKPostInterruptEvent(void) {
     u8 event[0xC];
     s32 eventType;
 
-    extern void fn_800BE464(void* event, s32 type);
+    extern void TRKConstructEvent(void* event, s32 type);
     extern s32 TRKPostEvent(void* event);
 
     if (*(s32*)&gTRKState[0x9C] != 0) {
@@ -306,7 +306,7 @@ void TRKPostInterruptEvent(void) {
             eventType = 4;
             break;
         }
-        fn_800BE464(event, eventType);
+        TRKConstructEvent(event, eventType);
         TRKPostEvent(event);
     }
 }
@@ -416,10 +416,10 @@ extern u8 lbl_803FED44[];
 extern void TRK_flush_cache(u32 address, u32 length);
 extern s32 TRKAppendBuffer1_ui64(s32 buffer, u64 value);
 extern s32 TRKReadBuffer1_ui64(s32 buffer, u64* value);
-extern u32 fn_800C0E60(void);
+extern u32 __TRK_get_MSR(void);
 extern void fn_800C0E68(u32 msr);
-extern void fn_800C11F4(void* value);
-extern void fn_800C1218(void* value);
+extern void ReadFPSCR(void* value);
+extern void WriteFPSCR(void* value);
 
 static inline s32 TRKPPCAccessSpecialReg(void* value, u32* instructions)
 {
@@ -476,9 +476,9 @@ static inline s32 TRKPPCAccessFPRegister(void* value, u32 reg, s32 read)
         result = TRKPPCAccessSpecialReg(value, instructions.words);
     } else if (reg == 0x20) {
         if (read) {
-            fn_800C11F4(value);
+            ReadFPSCR(value);
         } else {
-            fn_800C1218(value);
+            WriteFPSCR(value);
         }
         *(u64*)value &= 0xFFFFFFFF;
     } else if (reg == 0x21) {
@@ -612,7 +612,7 @@ s32 TRKTargetAccessFP(u32 firstRegister, u32 lastRegister, s32 buffer,
     savedState =
         *(TRKTargetExceptionStatus*)gTRKExceptionStatus_80313824;
     gTRKExceptionStatus_80313824[0xD] = 0;
-    fn_800C0E68(fn_800C0E60() | 0x2000);
+    fn_800C0E68(__TRK_get_MSR() | 0x2000);
     *transferSize = 0;
     result = 0;
 
@@ -648,7 +648,7 @@ s32 TRKTargetAccessMemory(void* data, u32 start, u32* length,
     extern void* TRKTargetTranslate(u32 address);
     extern s32 TRKValidMemory32(const void* address, u32 length,
                                 s32 write);
-    extern u32 fn_800C0E60(void);
+    extern u32 __TRK_get_MSR(void);
     extern void TRK_ppc_memcpy(void* destination, const void* source,
                                u32 length, u32 destinationMSR,
                                u32 sourceMSR);
@@ -667,7 +667,7 @@ s32 TRKTargetAccessMemory(void* data, u32 start, u32* length,
     if (result != 0) {
         *length = 0;
     } else {
-        currentMSR = fn_800C0E60();
+        currentMSR = __TRK_get_MSR();
         targetMSR =
             currentMSR | (*(u32*) (gTRKCPUState + 0x1F8) & 0x10);
         if (read) {

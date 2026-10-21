@@ -296,7 +296,7 @@ u32 fn_801667D8(u32 id, u32 volume, u32 arg2)
         return 1;
     }
 
-    fn_8014D648(work->handle);
+    sndSeqContinue(work->handle);
     sndSeqVolume(work->priority, volume, work->handle, 0);
 
     ((GSsndFlagBits*)&entry->flags)->paused = 0;
@@ -334,7 +334,7 @@ u32 fn_801668DC(u32 id, u32 volume, u32 arg2)
     }
 
     sndSeqVolume(0, volume, handle, 0);
-    fn_8014D5C8(work->handle);
+    sndSeqPause(work->handle);
 
     ((GSsndFlagBits*)&entry->flags)->paused = 1;
     return 1;
@@ -386,7 +386,8 @@ u32 fn_80166AB8(u32 id, u32 arg1, u32 arg2)
     return fn_8016761C(entry, arg1, arg2);
 }
 
-void fn_80166B18(u32 id)
+/* NAME-T1 fn_80166B18 */
+void GSsndClose(u32 id)
 {
     fn_80167070(id, 1);
 }

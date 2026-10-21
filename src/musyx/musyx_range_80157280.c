@@ -2386,7 +2386,7 @@ extern u32  OSGetTick(void);
 extern void PPCSync(void);
 extern void AIStartDMA(void);
 extern void AIStopDMA(void);
-extern u32  fn_800AE794(void);
+extern u32  DSPCheckMailToDSP(void);
 extern void DSPSendMailToDSP(u32 a);
 extern void DSPInit(void);
 extern void fn_800AE8A4(void);
@@ -4286,9 +4286,9 @@ void salCtrlDsp(u32 arg) {
     lbl_8047B098 = 0;
     PPCSync();
     DSPSendMailToDSP((u32)lbl_8047B00C | 0xBABE0000);
-    while (fn_800AE794() != 0) {}
+    while (DSPCheckMailToDSP() != 0) {}
     DSPSendMailToDSP(arg);
-    while (fn_800AE794() != 0) {}
+    while (DSPCheckMailToDSP() != 0) {}
 }
 #endif
 #pragma pop

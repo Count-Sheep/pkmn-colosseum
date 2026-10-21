@@ -82,7 +82,7 @@ typedef struct ColWalkHit {
     u8 subLayer;
 } ColWalkHit;
 
-extern ColScene* fn_8010CBC0(void);
+extern ColScene* GScolsys2GetCCDFileHead(void);
 extern s32 GScolsys2GetObjEnable(s32 index, s32* enabled);
 extern void fn_8010CA30(ColMtx out, u32 index);
 extern void fn_8010C8D0(ColMtx out, u32 index);
@@ -208,7 +208,7 @@ s32 fn_8010E138(GSvec* point, ColWalkHit* out)
     s32 count;
 
     total = 0;
-    scene = fn_8010CBC0();
+    scene = GScolsys2GetCCDFileHead();
     if (scene == NULL) {
         return 0;
     }

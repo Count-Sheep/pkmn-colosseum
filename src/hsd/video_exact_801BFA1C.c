@@ -40,7 +40,7 @@ void VIFlush(void);
 void VISetNextFrameBuffer(void* fb);
 void VISetBlack(BOOL black);
 
-void fn_800B8E74(void);                         /* GXPixModeSync */
+void GXPixModeSync(void);                         /* GXPixModeSync */
 void fn_800B959C(u16 left, u16 top, u16 wd, u16 ht); /* GXSetDispCopySrc */
 void fn_800B96BC(u16 wd, u16 ht);               /* GXSetDispCopyDst */
 void fn_800B9874(u32 clamp);                    /* GXSetCopyClamp */
@@ -246,7 +246,7 @@ void fn_801BFA1C(HSD_VIStatus* vi, void* buffer, HSD_RenderPass rpass)
         lines = rmode->efbHeight - HSD_ANTIALIAS_OVERLAP;
         fn_800B959C(0, 0, rmode->fbWidth, lines);
         fn_800B9E88(buffer, GX_TRUE);
-        fn_800B8E74();
+        GXPixModeSync();
         return;
 
     case HSD_RP_BOTTOMHALF:
@@ -266,5 +266,5 @@ void fn_801BFA1C(HSD_VIStatus* vi, void* buffer, HSD_RenderPass rpass)
         HSD_Panic(lbl_8047DF30, 537, lbl_8027575C);
     }
 
-    fn_800B8E74();
+    GXPixModeSync();
 }

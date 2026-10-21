@@ -1,6 +1,7 @@
 #include "dolphin/types.h"
 
-u32 fn_80089F58(u32 value)
+/* NAME-T1 fn_80089F58 */
+u32 gbaCommandGetGBAChangePokemon(u32 value)
 {
     return value & 0xFFFF;
 }
@@ -15,7 +16,8 @@ u32 fn_80089F68(u32 value)
     return value & 0xFF;
 }
 
-u32 fn_80089F70(u32 value)
+/* NAME-T1 fn_80089F70 */
+u32 gbaCommandGetAction(u32 value)
 {
     return value >> 16;
 }

@@ -9241,7 +9241,7 @@
 "seed": null
 },
 {
-"name": "fn_80077B84",
+"name": "menuCBRule_GetCommandTimeLimit",
 "addr": "0x80077B84",
 "size": 36,
 "label": "fight",
@@ -10185,7 +10185,7 @@
 "seed": null
 },
 {
-"name": "fn_80089F58",
+"name": "gbaCommandGetGBAChangePokemon",
 "addr": "0x80089F58",
 "size": 8,
 "label": "fight",
@@ -10209,7 +10209,7 @@
 "seed": null
 },
 {
-"name": "fn_80089F70",
+"name": "gbaCommandGetAction",
 "addr": "0x80089F70",
 "size": 8,
 "label": "fight",
@@ -14369,7 +14369,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800AE794",
+"name": "DSPCheckMailToDSP",
 "addr": "0x800AE794",
 "size": 16,
 "label": "dolphin-sdk",
@@ -15353,7 +15353,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800B7714",
+"name": "GXGetGPFifo",
 "addr": "0x800B7714",
 "size": 8,
 "label": "dolphin-sdk",
@@ -15521,7 +15521,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800B8E74",
+"name": "GXPixModeSync",
 "addr": "0x800B8E74",
 "size": 36,
 "label": "dolphin-sdk",
@@ -16169,7 +16169,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BC1A0",
+"name": "GXSetTevColorIn",
 "addr": "0x800BC1A0",
 "size": 68,
 "label": "dolphin-sdk",
@@ -16177,7 +16177,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BC1E4",
+"name": "GXSetTevAlphaIn",
 "addr": "0x800BC1E4",
 "size": 68,
 "label": "dolphin-sdk",
@@ -16185,7 +16185,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BC228",
+"name": "GXSetTevColorOp",
 "addr": "0x800BC228",
 "size": 104,
 "label": "dolphin-sdk",
@@ -16193,7 +16193,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BC290",
+"name": "GXSetTevAlphaOp",
 "addr": "0x800BC290",
 "size": 104,
 "label": "dolphin-sdk",
@@ -16577,7 +16577,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BE464",
+"name": "TRKConstructEvent",
 "addr": "0x800BE464",
 "size": 24,
 "label": "dolphin-sdk",
@@ -16905,7 +16905,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C035C",
+"name": "TRKDoOverride",
 "addr": "0x800C035C",
 "size": 88,
 "label": "dolphin-sdk",
@@ -16937,7 +16937,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C04E8",
+"name": "SetTRKConnected",
 "addr": "0x800C04E8",
 "size": 12,
 "label": "dolphin-sdk",
@@ -16945,7 +16945,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C04F4",
+"name": "GetTRKConnected",
 "addr": "0x800C04F4",
 "size": 16,
 "label": "dolphin-sdk",
@@ -17049,7 +17049,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C0E60",
+"name": "__TRK_get_MSR",
 "addr": "0x800C0E60",
 "size": 8,
 "label": "dolphin-sdk",
@@ -17105,7 +17105,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C11F4",
+"name": "ReadFPSCR",
 "addr": "0x800C11F4",
 "size": 36,
 "label": "dolphin-sdk",
@@ -17113,7 +17113,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C1218",
+"name": "WriteFPSCR",
 "addr": "0x800C1218",
 "size": 36,
 "label": "dolphin-sdk",
@@ -17449,7 +17449,7 @@
 "seed": null
 },
 {
-"name": "fn_800C3588",
+"name": "TRKWriteUARTN",
 "addr": "0x800C3588",
 "size": 60,
 "label": "dolphin-sdk",
@@ -17457,7 +17457,7 @@
 "seed": null
 },
 {
-"name": "fn_800C35C4",
+"name": "TRKReadUARTN",
 "addr": "0x800C35C4",
 "size": 60,
 "label": "dolphin-sdk",
@@ -17729,7 +17729,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C41A4",
+"name": "CBGetBytesAvailableForRead",
 "addr": "0x800C41A4",
 "size": 8,
 "label": "trk",
@@ -19033,7 +19033,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800D0338",
+"name": "SISetCommand",
 "addr": "0x800D0338",
 "size": 20,
 "label": "dolphin-si",
@@ -26201,7 +26201,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8010CBC0",
+"name": "GScolsys2GetCCDFileHead",
 "addr": "0x8010CBC0",
 "size": 16,
 "label": "gs-engine",
@@ -36625,7 +36625,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8014D5C8",
+"name": "sndSeqPause",
 "addr": "0x8014D5C8",
 "size": 56,
 "label": "musyx",
@@ -36641,7 +36641,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8014D648",
+"name": "sndSeqContinue",
 "addr": "0x8014D648",
 "size": 56,
 "label": "musyx",
@@ -39473,7 +39473,7 @@
 "seed": null
 },
 {
-"name": "fn_80166B18",
+"name": "GSsndClose",
 "addr": "0x80166B18",
 "size": 36,
 "label": "gs-engine",
@@ -45249,7 +45249,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801A6960",
+"name": "HSD_Free",
 "addr": "0x801A6960",
 "size": 48,
 "label": "hsd",
@@ -45257,7 +45257,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801A6990",
+"name": "_HSD_MemCheckOwn",
 "addr": "0x801A6990",
 "size": 48,
 "label": "hsd",

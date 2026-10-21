@@ -29,7 +29,8 @@ extern void hwEnableIrq(void);
 
 u32 fn_8014D598(u32 seqId) { return seqGetPrivateId(seqId) != -1; }
 
-void fn_8014D5C8(u32 seqId) {
+/* NAME-T1 fn_8014D5C8 */
+void sndSeqPause(u32 seqId) {
   hwDisableIrq();
   seqPause(seqId);
   hwEnableIrq();
@@ -41,7 +42,8 @@ void sndSeqSpeed(u32 seqId, u16 speed) {
   hwEnableIrq();
 }
 
-void fn_8014D648(u32 seqId) {
+/* NAME-T1 fn_8014D648 */
+void sndSeqContinue(u32 seqId) {
   hwDisableIrq();
   seqContinue(seqId);
   hwEnableIrq();

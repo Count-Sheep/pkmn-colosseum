@@ -82,7 +82,7 @@ s32 ddh_cc_read(u8* buffer, s32 size) {
     extern void MWTRACE(s32 level, const char* format, ...);
     extern s32 fn_800CE7A4(void);
     extern s32 fn_800CE7AC(void* buffer, s32 size);
-    extern u32 fn_800C41A4(CircleBuffer* circle);
+    extern u32 CBGetBytesAvailableForRead(CircleBuffer* circle);
     extern s32 CircleBufferWriteBytes(CircleBuffer* circle, u8* buffer, u32 size);
     extern s32 CircleBufferReadBytes(CircleBuffer* circle, u8* buffer, u32 size);
     u8 readBuffer[0x800];
@@ -93,7 +93,7 @@ s32 ddh_cc_read(u8* buffer, s32 size) {
     }
 
     MWTRACE(1, "Expected packet size : 0x%08x (%ld)\n", size, size);
-    while (fn_800C41A4(&lbl_803FF578) < (u32)size) {
+    while (CBGetBytesAvailableForRead(&lbl_803FF578) < (u32)size) {
         s32 readSize;
 
         error = 0;

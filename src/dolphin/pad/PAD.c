@@ -40,7 +40,7 @@ extern u16 __OSWirelessPadFixMode : 0x800030E0;
 extern u8 GameChoice : 0x800030E3;
 
 /* SI library helpers not yet recovered by name (unassigned SI unit). */
-extern void fn_800D0338(s32 chan, u32 command);       /* SISetCommand */
+extern void SISetCommand(s32 chan, u32 command);       /* SISetCommand */
 extern u32 SIEnablePolling(u32 poll);
 extern u32 SIDisablePolling(u32 poll);
 extern BOOL SIGetResponse(s32 chan, void *data);
@@ -66,7 +66,7 @@ static void PADEnable(s32 chan) {
     lbl_8047A8A4 |= chanBit;
     SIGetResponse(chan, data);
     cmd = (0x40 << 16) | lbl_80478A14;
-    fn_800D0338(chan, cmd);
+    SISetCommand(chan, cmd);
     SIEnablePolling(lbl_8047A8A4);
 }
 
@@ -481,7 +481,7 @@ extern u32 lbl_8047A8B0;
 extern u32 lbl_8047A8B4;
 extern u32 __PADSpec;
 
-extern void fn_800D0338(s32 chan, u32 command);
+extern void SISetCommand(s32 chan, u32 command);
 extern void fn_800D034C(void);
 
 void SPEC0_MakeStatus(s32 chan, PADStatus *status, u32 data[2]);
@@ -506,7 +506,7 @@ void fn_800AB4FC(const u32 *commandArray) {
             u32 command = *commandArray;
             if (lbl_80478A18 < 2 && command == 2)
                 command = 0;
-            fn_800D0338(chan, (lbl_80478A14 | 0x400000) | (command & 3));
+            SISetCommand(chan, (lbl_80478A14 | 0x400000) | (command & 3));
             commit = TRUE;
         }
     }

@@ -133,10 +133,10 @@ u32 soundStop(u32 id, u32 fade)
             GSlogWrite(lbl_8027358C, id);
             return fn_80165A44(1, 0, 0xFF, restartSe);
         }
-        fn_80166B18(id);
+        GSsndClose(id);
     } else {
         fn_801669E4(id, fade, 0);
-        fn_80166B18(id);
+        GSsndClose(id);
     }
 }
 
@@ -189,7 +189,7 @@ u32 fn_80165A44(u32 id, u32 volume, u32 priority, s32 kind)
             if (status != 0 && status >= 0 && status < 4) {
                 fn_80166670(id, 0x32, 0);
                 fn_80165D0C(0x32);
-                fn_80166B18(id);
+                GSsndClose(id);
             }
             lbl_8047B0A8 = id;
         }
@@ -222,7 +222,7 @@ u32 fn_80165A44(u32 id, u32 volume, u32 priority, s32 kind)
                 if (status != 0 && status >= 0 && status < 4) {
                     fn_80166670(currentId, 0x32, 0);
                     fn_80165D0C(0x32);
-                    fn_80166B18(currentId);
+                    GSsndClose(currentId);
                 }
             }
 

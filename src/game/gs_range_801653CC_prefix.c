@@ -34,7 +34,7 @@ u32 fn_801653CC(u32 id, void* buffer, u32 size)
                     }
                     _threadSwitch();
                 }
-                fn_80166B18(id);
+                GSsndClose(id);
             }
             fn_800F9210(0, 0x408);
         }

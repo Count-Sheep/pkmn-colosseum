@@ -29,7 +29,7 @@ extern void* fn_80193B10(s32 size);
 extern void HSD_Panic(const char* file, int line, const char* msg);
 
 /* GX */
-extern void fn_800B8E74(void);                        /* GXPixModeSync */
+extern void GXPixModeSync(void);                        /* GXPixModeSync */
 extern void fn_800BC2F8(GXTevRegID id, GXColor color); /* GXSetTevColor */
 extern void fn_800BC3E0(GXTevKColorID id, GXColor color); /* GXSetTevKColor */
 
@@ -1181,7 +1181,7 @@ void HSD_TExpSetReg(HSD_TExp* texp)
         clist = &clist->next->cnst;
     }
     if (changed != 0) {
-        fn_800B8E74();
+        GXPixModeSync();
         for (i = 0; i < 4; i++) {
             if (changed & (1 << i)) {
                 fn_800BC3E0(id1[i], reg[i]);
@@ -1193,7 +1193,7 @@ void HSD_TExpSetReg(HSD_TExp* texp)
             }
         }
         fn_801B25C4(0x10);
-        fn_800B8E74();
+        GXPixModeSync();
     }
 }
 

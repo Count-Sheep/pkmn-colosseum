@@ -196,7 +196,7 @@ void fn_801D2404(void) {
     extern s32 fn_800D3088(void);
     extern s32 fn_801666BC(u32);
     extern void fn_800F9210(s32, s32);
-    extern void fn_80166B18(u32);
+    extern void GSsndClose(u32);
     extern void fn_801667D8(u32, s32, s32);
     extern u8 lbl_80314F98[];
     void* texture;
@@ -247,7 +247,7 @@ void fn_801D2404(void) {
     sound = lbl_80467390[2];
     if (sound != 0 && fn_801666BC(sound) != 2) {
         fn_800F9210(0, 0x408);
-        fn_80166B18(sound);
+        GSsndClose(sound);
         work = lbl_80467390[3];
         if (work != 0 && work != 0xFFFFFFFF) {
             fn_801667D8(work, 0, 0);

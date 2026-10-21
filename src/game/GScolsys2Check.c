@@ -19,7 +19,7 @@ s32 GScolsys2CheckGetEventID(void* arg0, void* arg1, void* arg2) {
     extern f32 PSVECDistance(void* a, void* b);
     extern f32 lbl_8047CF60;
 
-    if (fn_8010CBC0() == 0) {
+    if (GScolsys2GetCCDFileHead() == 0) {
         return 0;
     }
     if (PSVECDistance(arg1, arg0) <= lbl_8047CF60) {

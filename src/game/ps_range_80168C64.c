@@ -234,7 +234,7 @@ extern void HSD_JObjAddTy(PSJObjTransform* jobj, f32 dy);
 extern void HSD_JObjAddTz(PSJObjTransform* jobj, f32 dz);
 extern void fn_8019D9DC(PSForceJObj* jobj);
 extern void HSD_MtxSRT(void* dst, void* scale, void* rot, void* trans, void* order);
-extern void fn_801A6960(void* ptr);
+extern void HSD_Free(void* ptr);
 extern void* fn_801A6928(s32 size);
 extern void* fn_801A3E64(void);
 extern void __assert(const char* file, u32 line, const char* msg);
@@ -264,10 +264,10 @@ extern void particleSort(s32 linkNo, PSParticle** first, PSParticle** second);
 extern void fn_800BC8C8(s32 count);
 extern void fn_800B884C(s32 count);
 extern void fn_800BC6F0(s32 stage, s32 map, s32 coord, s32 color);
-extern void fn_800BC1A0(s32 stage, s32 a, s32 b, s32 c, s32 d);
-extern void fn_800BC1E4(s32 stage, s32 a, s32 b, s32 c, s32 d);
-extern void fn_800BC228(s32 stage, s32 a, s32 b, s32 c, s32 d, s32 e);
-extern void fn_800BC290(s32 stage, s32 a, s32 b, s32 c, s32 d, s32 e);
+extern void GXSetTevColorIn(s32 stage, s32 a, s32 b, s32 c, s32 d);
+extern void GXSetTevAlphaIn(s32 stage, s32 a, s32 b, s32 c, s32 d);
+extern void GXSetTevColorOp(s32 stage, s32 a, s32 b, s32 c, s32 d, s32 e);
+extern void GXSetTevAlphaOp(s32 stage, s32 a, s32 b, s32 c, s32 d, s32 e);
 extern void fn_800BC52C(s32 stage, s32 a, s32 b);
 void psDispSub(PSParticle* pp, void* polygonData);
 void psDispSubAppSRT(PSParticle* pp, Mtx parentMatrix);
@@ -1020,7 +1020,7 @@ void psRemoveAppSRT(void) {
 
     while (appSRT != NULL) {
         PSAppSRT* next = appSRT->next;
-        fn_801A6960(appSRT);
+        HSD_Free(appSRT);
         appSRT = next;
     }
 
@@ -1768,8 +1768,8 @@ void psSetupTev(PSParticle* pp) {
         fn_800BC8C8(1);
         fn_800B884C(0);
         fn_800BC6F0(0, 0xFF, 0xFF, 4);
-        fn_800BC1A0(0, 2, 0xF, 0xF, 0xF);
-        fn_800BC1E4(0, 1, 7, 7, 7);
+        GXSetTevColorIn(0, 2, 0xF, 0xF, 0xF);
+        GXSetTevAlphaIn(0, 1, 7, 7, 7);
     } else if (state == (s32)0x80000000 ||
                state == (s32)0x80000080) {
         if (state == (s32)0x80000080) {
@@ -1780,16 +1780,16 @@ void psSetupTev(PSParticle* pp) {
         fn_800BC8C8(2);
         fn_800B884C(0);
         fn_800BC6F0(0, 0xFF, 0xFF, 4);
-        fn_800BC1A0(0, 0xF, 6, 0xA, 0xF);
-        fn_800BC1E4(0, 3, 7, 7, 7);
-        fn_800BC1A0(1, 0xF, 2, 0, 0xF);
-        fn_800BC1E4(1, 7, 1, 0, 7);
+        GXSetTevColorIn(0, 0xF, 6, 0xA, 0xF);
+        GXSetTevAlphaIn(0, 3, 7, 7, 7);
+        GXSetTevColorIn(1, 0xF, 2, 0, 0xF);
+        GXSetTevAlphaIn(1, 7, 1, 0, 7);
     } else if (state == 0x400 || state == 0x480) {
         fn_800BC8C8(1);
         fn_800B884C(1);
         fn_800BC6F0(0, 0, 0, 4);
-        fn_800BC1A0(0, 4, 2, 8, 0xF);
-        fn_800BC1E4(0, 2, 1, 4, 7);
+        GXSetTevColorIn(0, 4, 2, 8, 0xF);
+        GXSetTevAlphaIn(0, 2, 1, 4, 7);
     } else if (state == 0x100400) {
         fn_800BC8C8(1);
         fn_800B884C(1);
@@ -1803,52 +1803,52 @@ void psSetupTev(PSParticle* pp) {
         fn_800BC8C8(1);
         fn_800B884C(0);
         fn_800BC6F0(0, 0xFF, 0xFF, 4);
-        fn_800BC1A0(0, 0xA, 0xF, 0xF, 0xF);
-        fn_800BC1E4(0, 5, 7, 7, 7);
+        GXSetTevColorIn(0, 0xA, 0xF, 0xF, 0xF);
+        GXSetTevAlphaIn(0, 5, 7, 7, 7);
     } else if (state == 0x100480) {
         fn_800BC8C8(2);
         fn_800B884C(1);
         fn_800BC6F0(0, 0, 0, 4);
-        fn_800BC1A0(0, 4, 2, 8, 0xF);
-        fn_800BC1E4(0, 2, 1, 4, 7);
-        fn_800BC1A0(1, 0xF, 0, 0xF, 0xF);
-        fn_800BC1E4(1, 7, 5, 0, 7);
+        GXSetTevColorIn(0, 4, 2, 8, 0xF);
+        GXSetTevAlphaIn(0, 2, 1, 4, 7);
+        GXSetTevColorIn(1, 0xF, 0, 0xF, 0xF);
+        GXSetTevAlphaIn(1, 7, 5, 0, 7);
     } else if (state == (s32)0x80000400) {
         fn_800BC8C8(2);
         fn_800B884C(1);
         fn_800BC6F0(0, 0, 0, 4);
-        fn_800BC1A0(0, 0xF, 6, 0xA, 0xF);
-        fn_800BC1E4(0, 3, 7, 7, 7);
-        fn_800BC1A0(1, 0xF, 8, 0, 0xF);
-        fn_800BC1E4(1, 7, 4, 0, 7);
+        GXSetTevColorIn(0, 0xF, 6, 0xA, 0xF);
+        GXSetTevAlphaIn(0, 3, 7, 7, 7);
+        GXSetTevColorIn(1, 0xF, 8, 0, 0xF);
+        GXSetTevAlphaIn(1, 7, 4, 0, 7);
     } else if (state == (s32)0x80000480) {
         fn_800BC8C8(3);
         fn_800B884C(1);
         fn_800BC6F0(0, 0, 0, 4);
-        fn_800BC1A0(0, 4, 2, 8, 0xF);
-        fn_800BC1E4(0, 2, 1, 4, 7);
-        fn_800BC1A0(1, 0xF, 6, 0, 0xF);
-        fn_800BC1E4(1, 7, 3, 0, 7);
-        fn_800BC1A0(2, 0xF, 0xA, 0, 0xF);
-        fn_800BC1E4(2, 0, 7, 7, 7);
+        GXSetTevColorIn(0, 4, 2, 8, 0xF);
+        GXSetTevAlphaIn(0, 2, 1, 4, 7);
+        GXSetTevColorIn(1, 0xF, 6, 0, 0xF);
+        GXSetTevAlphaIn(1, 7, 3, 0, 7);
+        GXSetTevColorIn(2, 0xF, 0xA, 0, 0xF);
+        GXSetTevAlphaIn(2, 0, 7, 7, 7);
     } else if (state == (s32)0x80100400) {
         fn_800BC8C8(2);
         fn_800B884C(1);
         fn_800BC6F0(0, 0, 0, 4);
-        fn_800BC1A0(0, 0xF, 6, 0xA, 0xF);
-        fn_800BC1E4(0, 7, 3, 5, 7);
-        fn_800BC1A0(1, 0xF, 8, 0, 0xF);
-        fn_800BC1E4(1, 7, 4, 0, 7);
+        GXSetTevColorIn(0, 0xF, 6, 0xA, 0xF);
+        GXSetTevAlphaIn(0, 7, 3, 5, 7);
+        GXSetTevColorIn(1, 0xF, 8, 0, 0xF);
+        GXSetTevAlphaIn(1, 7, 4, 0, 7);
     } else if (state == (s32)0x80100480) {
         fn_800BC8C8(3);
         fn_800B884C(1);
         fn_800BC6F0(0, 0, 0, 4);
-        fn_800BC1A0(0, 4, 2, 8, 0xF);
-        fn_800BC1E4(0, 2, 1, 4, 7);
-        fn_800BC1A0(1, 0xF, 6, 0, 0xF);
-        fn_800BC1E4(1, 7, 3, 0, 7);
-        fn_800BC1A0(2, 0xF, 0xA, 0, 0xF);
-        fn_800BC1E4(2, 7, 5, 0, 7);
+        GXSetTevColorIn(0, 4, 2, 8, 0xF);
+        GXSetTevAlphaIn(0, 2, 1, 4, 7);
+        GXSetTevColorIn(1, 0xF, 6, 0, 0xF);
+        GXSetTevAlphaIn(1, 7, 3, 0, 7);
+        GXSetTevColorIn(2, 0xF, 0xA, 0, 0xF);
+        GXSetTevAlphaIn(2, 7, 5, 0, 7);
     } else if (state == (s32)0x80100000 ||
                state == (s32)0x80100080) {
         if (state == (s32)0x80100080) {
@@ -1858,25 +1858,25 @@ void psSetupTev(PSParticle* pp) {
         fn_800BC8C8(2);
         fn_800B884C(0);
         fn_800BC6F0(0, 0xFF, 0xFF, 4);
-        fn_800BC1A0(0, 0xF, 6, 0xA, 0xF);
-        fn_800BC1E4(0, 7, 3, 5, 7);
-        fn_800BC1A0(1, 0xF, 2, 0, 0xF);
-        fn_800BC1E4(1, 7, 1, 0, 7);
+        GXSetTevColorIn(0, 0xF, 6, 0xA, 0xF);
+        GXSetTevAlphaIn(0, 7, 3, 5, 7);
+        GXSetTevColorIn(1, 0xF, 2, 0, 0xF);
+        GXSetTevAlphaIn(1, 7, 1, 0, 7);
     }
 }
 
 void psSetupTevCommon(void) {
     fn_800BC6F0(0, 0, 0, 4);
-    fn_800BC228(0, 0, 0, 0, 1, 0);
-    fn_800BC290(0, 0, 0, 0, 1, 0);
+    GXSetTevColorOp(0, 0, 0, 0, 1, 0);
+    GXSetTevAlphaOp(0, 0, 0, 0, 1, 0);
 
     fn_800BC6F0(1, 0, 0, 4);
-    fn_800BC228(1, 0, 0, 0, 1, 0);
-    fn_800BC290(1, 0, 0, 0, 1, 0);
+    GXSetTevColorOp(1, 0, 0, 0, 1, 0);
+    GXSetTevAlphaOp(1, 0, 0, 0, 1, 0);
 
     fn_800BC6F0(2, 0, 0, 4);
-    fn_800BC228(2, 0, 0, 0, 1, 0);
-    fn_800BC290(2, 0, 0, 0, 1, 0);
+    GXSetTevColorOp(2, 0, 0, 0, 1, 0);
+    GXSetTevAlphaOp(2, 0, 0, 0, 1, 0);
 
     fn_800BC52C(0, 0, 0);
     fn_800BC52C(1, 0, 0);

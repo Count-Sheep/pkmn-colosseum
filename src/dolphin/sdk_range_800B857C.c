@@ -59,7 +59,7 @@ extern GXDrawDoneCallback lbl_8047A9C4;
 extern volatile u8 lbl_8047A9C8;
 extern OSThreadQueue lbl_8047A9CC;
 
-extern u32 fn_800B7714(void);
+extern u32 GXGetGPFifo(void);
 extern void __GXCleanGPFifo(void);
 extern void __GXSetSUTexRegs(void);
 extern void fn_800BC024(void);
@@ -419,7 +419,7 @@ GX_ABORT_STATIC void __GXAbortWaitPECopyDone(void) {
 }
 
 void __GXAbort(void) {
-    if (gx->field_4F2 && fn_800B7714() != 0) {
+    if (gx->field_4F2 && GXGetGPFifo() != 0) {
         __GXAbortWaitPECopyDone();
     }
 
@@ -435,7 +435,7 @@ void __GXAbort(void) {
 /* 0x800B8AE8 | size: 0x170 -- second GP abort entry point; identical to
    __GXAbort but also resets the GP FIFO afterwards. */
 void fn_800B8AE8(void) {
-    if (gx->field_4F2 && fn_800B7714() != 0) {
+    if (gx->field_4F2 && GXGetGPFifo() != 0) {
         __GXAbortWaitPECopyDone();
     }
 
@@ -501,7 +501,8 @@ void GXDrawDone(void) {
     OSRestoreInterrupts(enabled);
 }
 
-void fn_800B8E74(void) {
+/* NAME-T1 fn_800B8E74 */
+void GXPixModeSync(void) {
     GXData_800B857C* p = gx;
 
     GX_FIFO_U8 = 0x61;

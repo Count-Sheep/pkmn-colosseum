@@ -147,9 +147,9 @@ void fn_80193AF0(void* mem, u32 size);
 /* HSD_MemAlloc */
 void* fn_801A6928(u32 size);
 /* HSD_Free */
-void fn_801A6960(void* ptr);
+void HSD_Free(void* ptr);
 /* HSD_IsMemoryReleased: nonzero when the pointer lies in freed memory. */
-int fn_801A6990(void* ptr);
+int _HSD_MemCheckOwn(void* ptr);
 /* HSD_SListAlloc */
 HSD_SList* fn_801A3F48(void);
 /* HSD_SListRemove */
@@ -382,7 +382,7 @@ static inline void HSD_ShapeSetRemove(HSD_ShapeSet* shape_set)
     }
 
     if (shape_set->flags & SHAPESET_ADDITIVE) {
-        fn_801A6960(shape_set->blend.bp);
+        HSD_Free(shape_set->blend.bp);
     }
 
     HSD_ShapeSetFree(shape_set);
@@ -1574,11 +1574,11 @@ static void PObjAmnesia(HSD_ClassInfo* info)
         default_class = NULL;
     }
     if (info == HSD_CLASS_INFO(&hsdPObj)) {
-        if (fn_801A6990(vertex_buffer)) {
+        if (_HSD_MemCheckOwn(vertex_buffer)) {
             vertex_buffer = NULL;
             vertex_buffer_size = 0;
         }
-        if (fn_801A6990(normal_buffer)) {
+        if (_HSD_MemCheckOwn(normal_buffer)) {
             normal_buffer = NULL;
             normal_buffer_size = 0;
         }

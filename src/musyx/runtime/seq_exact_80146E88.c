@@ -625,7 +625,7 @@ typedef struct {
 extern void sndSeqVolume(u8 volume, u16 time, u32 seqId, u8 mode);
 extern void sndSeqMute(u32 seqId, u32 mask1, u32 mask2);
 extern void sndSeqSpeed(u32 seqId, u16 speed);
-extern void fn_8014D648(u32 seqId); /* sndSeqContinue */
+extern void sndSeqContinue(u32 seqId); /* sndSeqContinue */
 extern u32 fn_8015A21C(u16 sgid, u16 sid, void* arrfile, SND_PLAYPARA* para, u32 irqCall,
                         u8 studio); /* seqPlaySong */
 extern u32 fn_8015A368(u16 sgid, u16 sid, void* arrfile, SND_PLAYPARA* para,
@@ -682,7 +682,7 @@ void seqCrossFade(SND_CROSSFADE* ci, u32* new_seqId, u8 irq_call) {
                     seqSpeed(ci->seqId2, ci->speed2);
                 }
             } else {
-                fn_8014D648(ci->seqId2);
+                sndSeqContinue(ci->seqId2);
                 sndSeqVolume(ci->vol2, ci->time2, ci->seqId2, SND_SEQVOL_CONTINUE);
                 if ((ci->flags & SND_CROSSFADE_TRACKMUTE) != 0) {
                     sndSeqMute(ci->seqId2, ci->trackMute2[0], ci->trackMute2[1]);

@@ -962,7 +962,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
     extern u8 fightFloorIsUseFightTimerCommand(u32);
     extern u8 fightTimerCommandIsOver(void);
     extern u32 menuFightOpenGBAMain(u32, u32, u16, u32);
-    extern s32 fn_80089F70(u32);
+    extern s32 gbaCommandGetAction(u32);
     extern void fightOutPokemonCreateFightAction(u32, u32, u32, u32, char*, s32);
     extern u8 fightOutPokemonCheckFightActionWazaSelect(u32, u32);
     extern u32 fn_80089F68(u32);
@@ -975,7 +975,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
     extern u32 fightSideGetValidFightTrainerPtr(u32, u16);
     extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32, u32);
     extern void fightOutPokemonCreateFightActionAttackWaza(u32, u32, u32, u32, char*, u16, u32, s8, u32);
-    extern u32 fn_80089F58(u32);
+    extern u32 gbaCommandGetGBAChangePokemon(u32);
     extern void fightTrainerTimeOutSelectFightAction(u32, u32, u32);
     extern void fightTrainerAllInitFightActionBuff(u32);
     extern u8 menuIsCheck(u32);
@@ -1035,7 +1035,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
             goto timeout;
         }
         menu = menuFightOpenGBAMain(battle, trainer, pokemonNo, side);
-        kind = fn_80089F70(menu);
+        kind = gbaCommandGetAction(menu);
         if (fn_801EF634() == 1) {
             goto cancel;
         }
@@ -1096,7 +1096,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
             fightOutPokemonCreateFightActionAttackWaza(pokemon, 0, 0x13, 0, lbl_80375CA8, waza,
                 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(target, side), wazaSlot, 0);
         } else if (kind == 2) {
-            index = pokemonGetStatus(fightTrainerGetStatus(trainer, 0, 0x45, fn_80089F58(menu)), 0, 0xce, 0);
+            index = pokemonGetStatus(fightTrainerGetStatus(trainer, 0, 0x45, gbaCommandGetGBAChangePokemon(menu)), 0, 0xce, 0);
             if (index < 0) {
                 goto select_action;
             }
@@ -1151,8 +1151,8 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
     extern s32 fightTargetDataBiosGetBuff(void);
     extern void menuOpenCustom(u32, u32, u32, u32, u32, u32, ...);
     extern u32 menuFightOpenGBAIrekae(u32, u32, u16, u32);
-    extern s32 fn_80089F70(u32);
-    extern u16 fn_80089F58(u32);
+    extern s32 gbaCommandGetAction(u32);
+    extern u16 gbaCommandGetGBAChangePokemon(u32);
     extern s16 pokemonGetStatus(u32, u32, u32, u32);
     extern s32 fightTrainerTimeOutSelectIrekaeFightPokemon(u32, s32, u32);
     extern u8 menuIsCheck(u32);
@@ -1229,12 +1229,12 @@ s32 fightMenuFightTrainerAgbHeroSelectIrekaeFightPokemon(u32 ctx, u32 param1, u3
         }
         /* RULE-EXCEPTION(user-approved): msg reused for the GBA menu handle, which gives retail's register — see docs/RULE_EXCEPTIONS.md */
         msg = menuFightOpenGBAIrekae(battle, ctx, i, param1);
-        kind = fn_80089F70(msg);
+        kind = gbaCommandGetAction(msg);
         if ((u16)fn_801EF634() == 1) {
             goto set_cancel;
         }
         if (kind == 2) {
-            found = fightTrainerGetStatus(ctx, 0, 0x45, fn_80089F58(msg));
+            found = fightTrainerGetStatus(ctx, 0, 0x45, gbaCommandGetGBAChangePokemon(msg));
             target = pokemonGetStatus(found, 0, 0xce, 0);
             goto after_select;
         }

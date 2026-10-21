@@ -15,8 +15,8 @@
 /* usr_puts_serial (0x800BF33C) comes first in the binary, then
  * TRKDispatchMessage (0x800BF3C4). */
 s32 usr_puts_serial(const char* str) {
-    extern u32 fn_800C04F4(void);
-    extern void fn_800C04E8(u32 state);
+    extern u32 GetTRKConnected(void);
+    extern void SetTRKConnected(u32 state);
     extern void OSReport(char* fmt);
     char buf[2];
     s32 state;
@@ -25,12 +25,12 @@ s32 usr_puts_serial(const char* str) {
 
     result = 0;
     while ((result == 0) && ((ch = *str++) != 0)) {
-        state = fn_800C04F4();
+        state = GetTRKConnected();
         buf[0] = ch;
         buf[1] = 0;
-        fn_800C04E8(0);
+        SetTRKConnected(0);
         OSReport(buf);
-        fn_800C04E8(state);
+        SetTRKConnected(state);
         result = 0;
     }
     return result;
@@ -45,7 +45,7 @@ s32 TRKDispatchMessage(u8* message)
     extern s32 TRKDoConnect(void*);
     extern s32 TRKDoDisconnect(void*);
     extern s32 fn_800C03B4(void*);
-    extern s32 fn_800C035C(void*);
+    extern s32 TRKDoOverride(void*);
     extern s32 fn_800C0354(void*);
     extern s32 fn_800C034C(void*);
     extern s32 TRKDoReadMemory(void*);
@@ -71,7 +71,7 @@ s32 TRKDispatchMessage(u8* message)
         result = fn_800C03B4(message);
         break;
     case 7:
-        result = fn_800C035C(message);
+        result = TRKDoOverride(message);
         break;
     case 4:
         result = fn_800C0354(message);

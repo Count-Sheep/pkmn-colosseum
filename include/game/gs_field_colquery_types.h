@@ -135,7 +135,7 @@ f32   PSVECDotProduct(void* a, void* b);
 f32   PSVECSquareDistance(void* a, void* b);
 
 /* GScolsys2 functions */
-extern void* fn_8010CBC0(void);                         /* GScolsys2_GetWZXData */
+extern void* GScolsys2GetCCDFileHead(void);                         /* GScolsys2_GetWZXData */
 extern s32   GScolsys2GetObjEnable(u32 triIdx, void* outFlag);    /* GScolsys2_QueryTriVisible */
 extern void  fn_8010CA30(void* mtxOut, u32 layerIdx);   /* GScolsys2_BuildInverseTransform */
 extern void  fn_8010C8D0(void* mtxOut, u32 layerIdx);   /* GScolsys2_BuildTransform */

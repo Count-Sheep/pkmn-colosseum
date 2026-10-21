@@ -453,7 +453,7 @@ void _hsdClassAmnesia(HSD_ClassInfo* info) {
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-extern void fn_801A6960(void* cls);
+extern void HSD_Free(void* cls);
 #if 0
 asm void _hsdClassDestroy(void) {
 #include "src/hsd/hsd_class_fn_80193A58.inc"
@@ -463,7 +463,7 @@ asm void _hsdClassDestroy(void) {
 void _hsdClassDestroy(HSD_Class* cls) {
     HSD_ClassInfo* info = cls->class_info;
     info->head.nb_exist -= 1;
-    fn_801A6960(cls);
+    HSD_Free(cls);
 }
 #endif
 #pragma pop
@@ -531,7 +531,7 @@ asm void fn_80193AF0(void) {
 #else
 #pragma optimization_level 4
 void fn_80193AF0(void* cls) {
-    fn_801A6960(cls);
+    HSD_Free(cls);
 }
 #endif
 #pragma pop

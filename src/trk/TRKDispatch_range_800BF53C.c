@@ -25,7 +25,7 @@ typedef struct TRKReply {
 extern s32 lbl_803FE7D0[3];
 
 extern void* memset(void* destination, s32 value, u32 size);
-extern s32 fn_800C3588(void* message, u32 length);
+extern s32 TRKWriteUARTN(void* message, u32 length);
 extern void MWTRACE(s32 level, const char* format, ...);
 extern s32 fn_800C1310(void);
 extern s32 TRKTargetStopped(void);
@@ -52,7 +52,7 @@ extern s32 TRKTargetAccessMemory(void* data, u32 address, u32* length,
 extern s32 MessageSend(TRKBuffer* buffer);
 extern void fn_800053E0(void);
 extern void __TRK_copy_vectors(void);
-extern void fn_800BE464(TRKEvent* event, s32 type);
+extern void TRKConstructEvent(TRKEvent* event, s32 type);
 extern s32 TRKPostEvent(TRKEvent* event);
 extern s32 usr_puts_serial(char* text);
 extern void fn_800C39B0(u8 enabled);
@@ -65,7 +65,7 @@ static inline s32 TRKStandardACK(TRKBuffer* buffer, u8 error)
     reply.command = 0x80;
     reply.length = sizeof(reply);
     reply.error = error;
-    fn_800C3588(&reply, sizeof(reply));
+    TRKWriteUARTN(&reply, sizeof(reply));
     return 0;
 }
 
@@ -465,7 +465,8 @@ s32 fn_800C0354(TRKBuffer* buffer)
     return 0;
 }
 
-s32 fn_800C035C(TRKBuffer* buffer)
+/* NAME-T1 fn_800C035C */
+s32 TRKDoOverride(TRKBuffer* buffer)
 {
     TRKStandardACK(buffer, 0);
     __TRK_copy_vectors();
@@ -485,7 +486,7 @@ s32 TRKDoDisconnect(TRKBuffer* buffer)
 
     lbl_803FE7D0[0] = 0;
     TRKStandardACK(buffer, 0);
-    fn_800BE464(&event, 1);
+    TRKConstructEvent(&event, 1);
     TRKPostEvent(&event);
     return 0;
 }

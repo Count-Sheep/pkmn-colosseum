@@ -376,7 +376,7 @@ typedef struct ColDrawScene {
     u32 count;
 } ColDrawScene;
 
-extern ColDrawScene* fn_8010CBC0(void);
+extern ColDrawScene* GScolsys2GetCCDFileHead(void);
 extern s32 GScolsys2GetObjEnable(s32 index, s32* enabled);
 extern s32 fn_8010CA30(ColMtx out, u32 index);
 extern s32 fn_8010C8D0(ColMtx out, u32 index);
@@ -400,7 +400,7 @@ s32 fn_8010EFE4(Vec3f* segStart, Vec3f* segEnd, f32 radius,
     ColDrawGroup* group;
 
     current = *segEnd;
-    scene = fn_8010CBC0();
+    scene = GScolsys2GetCCDFileHead();
     hitPointPtr = result == NULL ? NULL : &hitPoint;
 
     for (pass = 0; pass < 10; pass++) {
@@ -467,7 +467,7 @@ s32 fn_8010F188(Vec3f* start, Vec3f* end, f32 radius, Vec3f* result)
     f32 next;
     f32 position;
 
-    if (fn_8010CBC0() == NULL) {
+    if (GScolsys2GetCCDFileHead() == NULL) {
         return 0;
     }
 
@@ -517,7 +517,7 @@ s32 fn_8010F320(Vec3f* start, Vec3f* end, f32 radius, Vec3f* result)
     f32 next;
     f32 position;
 
-    if (fn_8010CBC0() == NULL) {
+    if (GScolsys2GetCCDFileHead() == NULL) {
         return 0;
     }
 

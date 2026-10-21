@@ -426,7 +426,7 @@
     },
     {
       "path": "src/trk/TRKInterrupt.c",
-      "function": "fn_800C11F4",
+      "function": "ReadFPSCR",
       "mnemonics": [
         "addi",
         "blr",
@@ -441,7 +441,7 @@
     },
     {
       "path": "src/trk/TRKInterrupt.c",
-      "function": "fn_800C1218",
+      "function": "WriteFPSCR",
       "mnemonics": [
         "addi",
         "blr",
@@ -1554,7 +1554,7 @@
     },
     {
       "path": "src/trk/TRKDispatch_candidate_800C0E60.c",
-      "function": "fn_800C0E60",
+      "function": "__TRK_get_MSR",
       "mnemonics": [
         "blr",
         "mfmsr"

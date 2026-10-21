@@ -435,7 +435,8 @@ u32 SIGetStatus(s32 chan) {
     return sr;
 }
 
-void fn_800D0338(s32 chan, u32 command) {
+/* NAME-T1 fn_800D0338 */
+void SISetCommand(s32 chan, u32 command) {
     __SIChannelRegs[chan].reg = command;
 }
 

@@ -46,7 +46,7 @@ HSD_VIRetraceCallback fn_800A8850(HSD_VIRetraceCallback cb); /* VISetPostRetrace
 
 void fn_800B8DA8(void);                         /* GXWaitDrawDone */
 void GXDrawDone(void);                          /* GXSetDrawDone */
-void fn_800B8E74(void);                         /* GXPixModeSync */
+void GXPixModeSync(void);                         /* GXPixModeSync */
 void fn_800B90A4(void (*cb)(void));             /* GXSetDrawDoneCallback */
 void fn_800B959C(u16 left, u16 top, u16 wd, u16 ht); /* GXSetDispCopySrc */
 void fn_800B96BC(u16 wd, u16 ht);               /* GXSetDispCopyDst */
@@ -317,7 +317,7 @@ void fn_801BFA1C(HSD_VIStatus* vi, void* buffer, HSD_RenderPass rpass)
         lines = rmode->efbHeight - HSD_ANTIALIAS_OVERLAP;
         fn_800B959C(0, 0, rmode->fbWidth, lines);
         fn_800B9E88(buffer, GX_TRUE);
-        fn_800B8E74();
+        GXPixModeSync();
         return;
 
     case HSD_RP_BOTTOMHALF:
@@ -337,7 +337,7 @@ void fn_801BFA1C(HSD_VIStatus* vi, void* buffer, HSD_RenderPass rpass)
         HSD_Panic(__FILE__, 537, "unexpected type of render pass.\n");
     }
 
-    fn_800B8E74();
+    GXPixModeSync();
 }
 
 void HSD_VIGXSetDrawDone(int arg)

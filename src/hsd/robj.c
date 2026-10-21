@@ -46,7 +46,7 @@ void* HSD_IDGetDataFromTable(void* table, u32 id, s32* success);
 /* HSD_MemAlloc */
 void* fn_801A6928(u32 size);
 /* HSD_IsMemoryReleased: nonzero when the pointer lies in freed memory. */
-int fn_801A6990(void* ptr);
+int _HSD_MemCheckOwn(void* ptr);
 u32 HSD_GetNbBits(u32 value);
 f32 HSD_ByteCodeEval(u8* bytecode, f32* args, u32 nb_args);
 
@@ -912,7 +912,7 @@ void HSD_RObjSetConstraintObj(HSD_RObj* robj, void* obj)
 
 void _HSD_RObjForgetMemory(void)
 {
-    if (fn_801A6990(lbl_8047B308)) {
+    if (_HSD_MemCheckOwn(lbl_8047B308)) {
         lbl_8047B308 = NULL;
         lbl_8047B30C = 0;
     }

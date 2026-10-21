@@ -142,7 +142,7 @@ s32 fn_80111864(GScolsys2Vec3* start, GScolsys2Vec3* end,
     s32 outCount;
 
     outCount = 0;
-    wzxCarrier.value = identityWzx((GSFieldWzxData*)fn_8010CBC0());
+    wzxCarrier.value = identityWzx((GSFieldWzxData*)GScolsys2GetCCDFileHead());
     PSVECSubtract(end, start, &dirVec);
     region = wzxCarrier.value->regions;
     for (i = 0; i < wzxCarrier.value->regionCount && outCount < 4; i++, region++) {

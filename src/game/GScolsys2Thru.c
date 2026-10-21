@@ -284,7 +284,7 @@ s32 fn_801101B4(GScolsys2Vec3* start, GScolsys2Vec3* end,
     s32 outCount;
 
     outCount = 0;
-    wzx = (GSFieldWzxData*)fn_8010CBC0();
+    wzx = (GSFieldWzxData*)GScolsys2GetCCDFileHead();
     if (wzx == NULL) {
         return 0;
     }
@@ -620,7 +620,7 @@ s32 GScolsys2ThruGetEventList(
     s32 j;
 
     outCount = 0;
-    wzx = (GSFieldWzxData*)fn_8010CBC0();
+    wzx = (GSFieldWzxData*)GScolsys2GetCCDFileHead();
     region = wzx->regions;
     for (regionIndex = 0; regionIndex < wzx->regionCount && outCount < 4;
          regionIndex++, region++) {
@@ -671,7 +671,7 @@ s32 GScolsys2ThruGetEventID(
     s32 outCount;
 
     outCount = 0;
-    if (fn_8010CBC0() == NULL) {
+    if (GScolsys2GetCCDFileHead() == NULL) {
         return 0;
     }
 

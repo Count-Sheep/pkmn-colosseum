@@ -50,7 +50,7 @@ typedef struct PSSortBucket {
 
 extern void* memset(void* dst, int val, u32 size);
 extern void* fn_801A6928(u32 size); /* HSD_MemAlloc */
-extern void fn_801A6960(void* p);   /* HSD_Free */
+extern void HSD_Free(void* p);   /* HSD_Free */
 
 extern PSParticle* lbl_8047B108; /* particle free list */
 extern u16 lbl_8047B114;         /* peak live particles */
@@ -96,7 +96,7 @@ void _psListClear(void)
     pp = lbl_8047B108;
     while (pp != NULL) {
         next = pp->next;
-        fn_801A6960(pp);
+        HSD_Free(pp);
         pp = next;
     }
     lbl_8047B108 = NULL;
@@ -105,7 +105,7 @@ void _psListClear(void)
         pp = activeParticle[i];
         while (pp != NULL) {
             next = pp->next;
-            fn_801A6960(pp);
+            HSD_Free(pp);
             pp = next;
         }
         activeParticle[i] = NULL;

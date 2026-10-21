@@ -133,7 +133,8 @@ s32 fn_8010CA30(Mtx out, u32 index)
 }
 
 /* 0x8010CBC0 | 0x10 */
-void* fn_8010CBC0(void)
+/* NAME-T1 fn_8010CBC0 */
+void* GScolsys2GetCCDFileHead(void)
 {
     return lbl_80404C68.wzxDataPtr;
 }

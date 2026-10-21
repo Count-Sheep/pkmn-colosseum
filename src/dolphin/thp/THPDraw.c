@@ -57,11 +57,11 @@ extern void fn_800BACA0(GXTexObj* obj, u32 minFilt, u32 magFilt, f32 minLOD,
                         f32 maxLOD, f32 lodBias, u8 biasClamp, u8 doEdgeLOD,
                         u32 maxAniso);                             /* GXInitTexObjLOD */
 extern void GXSetTevOp(u32 stage, u32 mode);
-extern void fn_800BC1A0(u32 stage, u32 a, u32 b, u32 c, u32 d);    /* GXSetTevColorIn */
-extern void fn_800BC1E4(u32 stage, u32 a, u32 b, u32 c, u32 d);    /* GXSetTevAlphaIn */
-extern void fn_800BC228(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
+extern void GXSetTevColorIn(u32 stage, u32 a, u32 b, u32 c, u32 d);    /* GXSetTevColorIn */
+extern void GXSetTevAlphaIn(u32 stage, u32 a, u32 b, u32 c, u32 d);    /* GXSetTevAlphaIn */
+extern void GXSetTevColorOp(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
                         u32 outReg);                               /* GXSetTevColorOp */
-extern void fn_800BC290(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
+extern void GXSetTevAlphaOp(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
                         u32 outReg);                               /* GXSetTevAlphaOp */
 extern void fn_800BC36C(u32 id, GXColorS10 color);                 /* GXSetTevColorS10 */
 extern void fn_800BC3E0(u32 id, GXColor color);                    /* GXSetTevKColor */
@@ -139,35 +139,35 @@ void fn_801E1FF8(GXRenderModeObj* rmode)
 
     fn_800BC8C8(4);
     fn_800BC6F0(0, 1, 1, 0xFF);
-    fn_800BC1A0(0, 15, 8, 14, 2);
-    fn_800BC228(0, 0, 0, 0, 0, 0);
-    fn_800BC1E4(0, 7, 4, 6, 1);
-    fn_800BC290(0, 1, 0, 0, 0, 0);
+    GXSetTevColorIn(0, 15, 8, 14, 2);
+    GXSetTevColorOp(0, 0, 0, 0, 0, 0);
+    GXSetTevAlphaIn(0, 7, 4, 6, 1);
+    GXSetTevAlphaOp(0, 1, 0, 0, 0, 0);
     fn_800BC454(0, 12);
     fn_800BC4C0(0, 28);
     fn_800BC52C(0, 0, 0);
 
     fn_800BC6F0(1, 1, 2, 0xFF);
-    fn_800BC1A0(1, 15, 8, 14, 0);
-    fn_800BC228(1, 0, 0, 1, 0, 0);
-    fn_800BC1E4(1, 7, 4, 6, 0);
-    fn_800BC290(1, 1, 0, 0, 0, 0);
+    GXSetTevColorIn(1, 15, 8, 14, 0);
+    GXSetTevColorOp(1, 0, 0, 1, 0, 0);
+    GXSetTevAlphaIn(1, 7, 4, 6, 0);
+    GXSetTevAlphaOp(1, 1, 0, 0, 0, 0);
     fn_800BC454(1, 13);
     fn_800BC4C0(1, 29);
     fn_800BC52C(1, 0, 0);
 
     fn_800BC6F0(2, 0, 0, 0xFF);
-    fn_800BC1A0(2, 15, 8, 12, 0);
-    fn_800BC228(2, 0, 0, 0, 1, 0);
-    fn_800BC1E4(2, 4, 7, 7, 0);
-    fn_800BC290(2, 0, 0, 0, 1, 0);
+    GXSetTevColorIn(2, 15, 8, 12, 0);
+    GXSetTevColorOp(2, 0, 0, 0, 1, 0);
+    GXSetTevAlphaIn(2, 4, 7, 7, 0);
+    GXSetTevAlphaOp(2, 0, 0, 0, 1, 0);
     fn_800BC52C(2, 0, 0);
 
     fn_800BC6F0(3, 0xFF, 0xFF, 0xFF);
-    fn_800BC1A0(3, 1, 0, 14, 15);
-    fn_800BC228(3, 0, 0, 0, 1, 0);
-    fn_800BC1E4(3, 7, 7, 7, 7);
-    fn_800BC290(3, 0, 0, 0, 1, 0);
+    GXSetTevColorIn(3, 1, 0, 14, 15);
+    GXSetTevColorOp(3, 0, 0, 0, 1, 0);
+    GXSetTevAlphaIn(3, 7, 7, 7, 7);
+    GXSetTevAlphaOp(3, 0, 0, 0, 1, 0);
     fn_800BC52C(3, 0, 0);
     fn_800BC454(3, 14);
 

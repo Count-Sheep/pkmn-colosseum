@@ -448,7 +448,8 @@ void GXSetTevOp(s32 stage, u32 mode) {
     gx->field_002 = 0;
 }
 
-void fn_800BC1A0(u32 stage, u32 a, u32 b, u32 c, u32 d) {
+/* NAME-T1 fn_800BC1A0 */
+void GXSetTevColorIn(u32 stage, u32 a, u32 b, u32 c, u32 d) {
     GXData_800BB30C* p = gx;
     u32 reg = p->tevColorEnv[stage];
 
@@ -461,7 +462,8 @@ void fn_800BC1A0(u32 stage, u32 a, u32 b, u32 c, u32 d) {
     p->field_002 = 0;
 }
 
-void fn_800BC1E4(u32 stage, GXTevAlphaArg_800BB30C a,
+/* NAME-T1 fn_800BC1E4 */
+void GXSetTevAlphaIn(u32 stage, GXTevAlphaArg_800BB30C a,
                  GXTevAlphaArg_800BB30C b, GXTevAlphaArg_800BB30C c,
                  GXTevAlphaArg_800BB30C d) {
     GXData_800BB30C* p = gx;
@@ -476,7 +478,8 @@ void fn_800BC1E4(u32 stage, GXTevAlphaArg_800BB30C a,
     p->field_002 = 0;
 }
 
-void fn_800BC228(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
+/* NAME-T1 fn_800BC228 */
+void GXSetTevColorOp(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
                  u32 outReg) {
     u32 reg;
 
@@ -496,7 +499,8 @@ void fn_800BC228(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
     gx->field_002 = 0;
 }
 
-void fn_800BC290(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
+/* NAME-T1 fn_800BC290 */
+void GXSetTevAlphaOp(u32 stage, s32 op, u32 bias, u32 scale, u32 clamp,
                  u32 outReg) {
     u32 reg;
 

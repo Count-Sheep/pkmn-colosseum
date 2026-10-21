@@ -72,21 +72,17 @@ extern void fn_800BC8C8(u8 num);                                    /* GXSetNumT
 extern void fn_800BC6F0(u32 stage, u32 coord, u32 map, u32 color);  /* GXSetTevOrder */
 extern void GXSetTevOp(u32 stage, u32 mode);
 extern void fn_800BC52C(u32 stage, u32 ras_sel, u32 tex_sel);       /* GXSetTevSwapMode */
-extern void fn_800BC228(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
+extern void GXSetTevColorOp(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
                         u32 out_reg);                               /* GXSetTevColorOp */
-extern void fn_800BC290(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
+extern void GXSetTevAlphaOp(u32 stage, u32 op, u32 bias, u32 scale, u8 clamp,
                         u32 out_reg);                               /* GXSetTevAlphaOp */
-extern void fn_800BC1A0(u32 stage, u32 a, u32 b, u32 c, u32 d);     /* GXSetTevColorIn */
-extern void fn_800BC1E4(u32 stage, u32 a, u32 b, u32 c, u32 d);     /* GXSetTevAlphaIn */
+extern void GXSetTevColorIn(u32 stage, u32 a, u32 b, u32 c, u32 d);     /* GXSetTevColorIn */
+extern void GXSetTevAlphaIn(u32 stage, u32 a, u32 b, u32 c, u32 d);     /* GXSetTevAlphaIn */
 
 #define GXSetNumTexGens fn_800B884C
 #define GXSetNumTevStages fn_800BC8C8
 #define GXSetTevOrder fn_800BC6F0
 #define GXSetTevSwapMode fn_800BC52C
-#define GXSetTevColorOp fn_800BC228
-#define GXSetTevAlphaOp fn_800BC290
-#define GXSetTevColorIn fn_800BC1A0
-#define GXSetTevAlphaIn fn_800BC1E4
 
 u32 lbl_8047B170; /* prevTev: the last TEV configuration set up */
 

@@ -74,7 +74,7 @@ extern void fn_801BF8A0(s32 a);
 extern void fn_801E16F0(void);
 extern void fn_801BF6AC(void);
 extern void GStextureConvertFromHW(void* a, s32 b);
-extern void fn_800B8E74(void);
+extern void GXPixModeSync(void);
 extern void GXInvalidateTexAll(void);
 extern void fn_800D1070(void* a);
 extern void fn_800DC6D8(void* a);
@@ -107,7 +107,7 @@ void fn_800D30F0(u32 flag)
     lbl_8047AA80->progressiveFlag = 1;
 
     if ((u8)flag != 0) {
-        fn_800B8E74();
+        GXPixModeSync();
         if (lbl_8047AA80->renderTarget != NULL) {
             GXInvalidateTexAll();
         }
@@ -177,7 +177,7 @@ void fn_800D3190(void) {
             }
             ((u8*)lbl_8047AA80)[0x49D] = 1;
             if (r29b != 0) {
-                fn_800B8E74();
+                GXPixModeSync();
                 if (*(u32*)((u8*)lbl_8047AA80 + 0xC) != 0) {
                     GXInvalidateTexAll();
                 }
@@ -277,7 +277,7 @@ void fn_800D3410(void* arg0, u8 arg1) {
                 }
                 ((u8*)lbl_8047AA80)[0x49D] = 1;
                 if (r30 != 0) {
-                    fn_800B8E74();
+                    GXPixModeSync();
                     if (*(u32*)((u8*)lbl_8047AA80 + 0xC) != 0) {
                         GXInvalidateTexAll();
                     }

@@ -24,10 +24,10 @@ extern void fn_800BBAF8(u32 stage, u8 coord, u8 map);
 extern void fn_800BB97C(u32 stage, u8 scaleS, u8 scaleT);
 extern void fn_800BB81C(u32 id, f32 (*mtx)[3], u8 scale);
 extern void fn_800BC6F0(u32 stage, u8 coord, u8 map, u8 color);
-extern void fn_800BC228(u32 stage, u8 op, u8 bias, u8 scale, u8 clamp, u8 out);
-extern void fn_800BC290(u32 stage, u8 op, u8 bias, u8 scale, u8 clamp, u8 out);
-extern void fn_800BC1A0(u32 stage, u8 a, u8 b, u8 c, u8 d);
-extern void fn_800BC1E4(u32 stage, u8 a, u8 b, u8 c, u8 d);
+extern void GXSetTevColorOp(u32 stage, u8 op, u8 bias, u8 scale, u8 clamp, u8 out);
+extern void GXSetTevAlphaOp(u32 stage, u8 op, u8 bias, u8 scale, u8 clamp, u8 out);
+extern void GXSetTevColorIn(u32 stage, u8 a, u8 b, u8 c, u8 d);
+extern void GXSetTevAlphaIn(u32 stage, u8 a, u8 b, u8 c, u8 d);
 extern void fn_800BC454(u32 stage, u32 sel);
 extern void fn_800BC4C0(u32 stage, u32 sel);
 extern void fn_800BB780(u32 stage, u8 indStage, u8 format, u8 biasSel, u8 mtxSel, u8 wrapS, u8 wrapT, u8 addPrev, u8 utcLod, u8 alphaSel);
@@ -101,10 +101,10 @@ void fn_800D923C(void) {
 
         for (i = 0; i < lbl_8047AA80->tev.numTevStages; order++, colorOp++, alphaOp++, colorIn++, alphaIn++, indEnable++, ind++, i++) {
             fn_800BC6F0(i, order->coord, order->map, order->color);
-            fn_800BC228(i, colorOp->op, colorOp->bias, colorOp->scale, colorOp->clamp, colorOp->out);
-            fn_800BC290(i, alphaOp->op, alphaOp->bias, alphaOp->scale, alphaOp->clamp, alphaOp->out);
-            fn_800BC1A0(i, colorIn->a, colorIn->b, colorIn->c, colorIn->d);
-            fn_800BC1E4(i, alphaIn->a, alphaIn->b, alphaIn->c, alphaIn->d);
+            GXSetTevColorOp(i, colorOp->op, colorOp->bias, colorOp->scale, colorOp->clamp, colorOp->out);
+            GXSetTevAlphaOp(i, alphaOp->op, alphaOp->bias, alphaOp->scale, alphaOp->clamp, alphaOp->out);
+            GXSetTevColorIn(i, colorIn->a, colorIn->b, colorIn->c, colorIn->d);
+            GXSetTevAlphaIn(i, alphaIn->a, alphaIn->b, alphaIn->c, alphaIn->d);
             fn_800BC454(i, lbl_8047AA80->tev.kcolorSel[i]);
             fn_800BC4C0(i, lbl_8047AA80->tev.kalphaSel[i]);
             if (*indEnable != 0 && numInd != 0) {

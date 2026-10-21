@@ -57,7 +57,7 @@
 extern void* memset(void* dst, int val, u32 size);
 extern void* memcpy(void* dst, const void* src, u32 size);
 extern void* fn_801A6928(s32 size); /* HSD_MemAlloc */
-extern void fn_801A6960(void* mem); /* HSD_Free */
+extern void HSD_Free(void* mem); /* HSD_Free */
 
 void fn_801938FC(void);
 
@@ -109,7 +109,7 @@ void* fn_80193B10(s32 size)
 
 void fn_80193AF0(void* mem, s32 size)
 {
-    fn_801A6960(mem);
+    HSD_Free(mem);
 }
 
 HSD_Class* _hsdClassAlloc(HSD_ClassInfo* info)

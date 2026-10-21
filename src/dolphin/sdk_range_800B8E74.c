@@ -29,7 +29,8 @@ volatile PPCWGPipe_800B8E74 GXWGFifo_800B8E74 : 0xCC008000;
         GX_WRITE_U32(value);     \
     } while (0)
 
-void fn_800B8E74(void)
+/* NAME-T1 fn_800B8E74 */
+void GXPixModeSync(void)
 {
     GX_WRITE_RAS_REG(gx->peCtrl);
     gx->bpSent = 0;

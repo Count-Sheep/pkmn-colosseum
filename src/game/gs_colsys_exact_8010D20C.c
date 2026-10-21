@@ -80,7 +80,7 @@ typedef struct ColDrawScene {
 } ColDrawScene;
 
 
-extern ColDrawScene* fn_8010CBC0(void);
+extern ColDrawScene* GScolsys2GetCCDFileHead(void);
 extern void fn_800DA028(s32);
 extern void fn_800D7820(void*);
 extern void fn_800D88DC(s32);
@@ -265,7 +265,7 @@ void* GScolsys2Draw(void)
     ColDrawObject* object;
     ColMtx normalMatrix;
 
-    scene = fn_8010CBC0();
+    scene = GScolsys2GetCCDFileHead();
     if (scene == NULL) {
         return NULL;
     }
@@ -324,7 +324,7 @@ void fn_8010D8D4(void)
     ColMtx normalMatrix;
     GSColFloorObj* floorObj;
 
-    scene = fn_8010CBC0();
+    scene = GScolsys2GetCCDFileHead();
     if (scene == NULL) {
         return;
     }
