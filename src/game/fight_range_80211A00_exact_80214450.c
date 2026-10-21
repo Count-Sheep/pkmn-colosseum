@@ -922,6 +922,12 @@ u16 fightSeqGetKetaguriIryoku(u16 weight) {
     return 0x78;
 }
 
+/* fightTargetGetPtrAsNowFightType returns fightTargetGetPtr's result (retail
+ * leaves it in r3); fight_target.c's definition is typed void. */
+extern u32 fightTargetGetPtrAsNowFightType(u32 slotType, u32 idx);
+extern u16 fightOutPokemonGetUseWazaDataId(void* ctx);
+extern void fightOutPokemonWriteJoutaiDataId(void* ctx, void* typeObj);
+
 /* 0x80215300 size 0x74: WS_ONNEN (owner line 10091) */
 void WS_ONNEN(void) {
     u32 ctx = fightTargetGetPtrAsNowFightType(0x11, 0);
@@ -1857,23 +1863,23 @@ void WS_CHIISAKUNARU(void) {
 void WS_KIERUTAME_AFTAR(void) {
     extern u8 fn_802026E4();
     u32 ctx = fightTargetGetPtrAsNowFightType(0x11, 0);
-    u16 moveId = fightOutPokemonGetUseWazaDataId(ctx);
+    u16 moveId = fightOutPokemonGetUseWazaDataId((void*)ctx);
 
     switch (moveId) {
     case 0x13:
     case 0x154:
         if (fn_802026E4(ctx, 0x1f) == 1) {
-            fightOutPokemonWriteJoutaiDataId(ctx, 0x1f);
+            fightOutPokemonWriteJoutaiDataId((void*)ctx, (void*)0x1f);
         }
         break;
     case 0x5b:
         if (fn_802026E4(ctx, 0x20) == 1) {
-            fightOutPokemonWriteJoutaiDataId(ctx, 0x20);
+            fightOutPokemonWriteJoutaiDataId((void*)ctx, (void*)0x20);
         }
         break;
     case 0x123:
         if (fn_802026E4(ctx, 0x21) == 1) {
-            fightOutPokemonWriteJoutaiDataId(ctx, 0x21);
+            fightOutPokemonWriteJoutaiDataId((void*)ctx, (void*)0x21);
         }
         break;
     }
@@ -1883,7 +1889,7 @@ void WS_KIERUTAME_AFTAR(void) {
 /* 0x80216960 size 0xF8: WS_KIERUTAME (owner line 10190) */
 void WS_KIERUTAME(void) {
     u32 ctx = fightTargetGetPtrAsNowFightType(0x11, 0);
-    u16 moveId = fightOutPokemonGetUseWazaDataId(ctx);
+    u16 moveId = fightOutPokemonGetUseWazaDataId((void*)ctx);
 
     switch (moveId) {
     case 0x13:

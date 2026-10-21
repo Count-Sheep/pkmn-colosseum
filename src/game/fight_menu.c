@@ -15,6 +15,19 @@
 #include "game/trainer.h"
 #include "game/pokemon.h"
 
+extern u32 fightTargetGetPtr(u32 slotType, u32 ptr, u32 count);
+extern u32 fightSideGetStatus(u8* ptr1, u32 param2, u32 slotType, u32 param5);
+extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32 param1, u32 param2);
+extern u8* fightTargetDataBiosGetPtr(u32 index);
+extern u32 fightTargetDataBiosGetBuff(u8* ptr);
+extern s32 menuIsCheck(u32 id);
+extern s32 menuCloseCustom(u32 id, u32 mode, u8 wait);
+extern u32 fightOutPokemonCheckFightOut(void* r3);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 winMsgOpenFight(u32 message, u32 wait, u8 pause);
+extern s32 winMsgOpenFightNoWait(u32 message, u32 wait, u8 pause);
+extern void winMsgCloseFight(u32 wait);
+
 /* =========================================================================
  * Duplicated declarations (verbatim from the original colosseum_battle.c
  * preamble, present in every split segment so each TU keeps the same
@@ -632,7 +645,11 @@ typedef struct FightOutPokemon FightOutPokemon;
 
 static inline u32 fightMenuGetFightTrainerPtrToStatusMenuId(FIGHT_TRAINER* trainer, u32 slot)
 {
+    /* RULE-EXCEPTION(user-approved): caller-side prototypes with a pointer target parameter (the definitions take u32); the u32 conversion of the trainer/Pokemon pointer reorders the subs' saved registers - see docs/RULE_EXCEPTIONS.md */
+    extern u32 fightTargetGetPtr(u32 slotType, void* ptr, u32 count);
+    extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(void* param1, u32 param2);
     u32 target;
+    u32 id;
     u16 side;
     u32 buff;
 
@@ -640,12 +657,12 @@ static inline u32 fightMenuGetFightTrainerPtrToStatusMenuId(FIGHT_TRAINER* train
     if (target == 0) {
         return 0;
     }
-    side = fightSideGetStatus(target, 0, 5, 0);
-    if ((u16)fightTargetGetTragetPtrToRelativeHostSideFightTargetId(trainer, slot) == 0) {
+    side = fightSideGetStatus((u8*)target, 0, 5, 0);
+    id = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(trainer, slot);
+    if ((u16)id == 0) {
         return 0;
     }
-    fightTargetDataBiosGetPtr();
-    buff = fightTargetDataBiosGetBuff();
+    buff = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(id));
     if ((int)buff < 0) {
         return 0;
     }
@@ -654,7 +671,11 @@ static inline u32 fightMenuGetFightTrainerPtrToStatusMenuId(FIGHT_TRAINER* train
 
 static inline u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(FightOutPokemon* pokemon, u32 slot)
 {
+    /* RULE-EXCEPTION(user-approved): caller-side prototypes with a pointer target parameter (the definitions take u32); the u32 conversion of the trainer/Pokemon pointer reorders the subs' saved registers - see docs/RULE_EXCEPTIONS.md */
+    extern u32 fightTargetGetPtr(u32 slotType, void* ptr, u32 count);
+    extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(void* param1, u32 param2);
     u32 target;
+    u32 id;
     u16 side;
     u32 buff;
 
@@ -662,12 +683,12 @@ static inline u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(FightOutPokemon* 
     if (target == 0) {
         return 0;
     }
-    side = fightSideGetStatus(target, 0, 5, 0);
-    if ((u16)fightTargetGetTragetPtrToRelativeHostSideFightTargetId(pokemon, slot) == 0) {
+    side = fightSideGetStatus((u8*)target, 0, 5, 0);
+    id = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(pokemon, slot);
+    if ((u16)id == 0) {
         return 0;
     }
-    fightTargetDataBiosGetPtr();
-    buff = fightTargetDataBiosGetBuff();
+    buff = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(id));
     if ((int)buff < 0) {
         return 0;
     }
@@ -873,7 +894,7 @@ u32 fightMenuWazaKoukaMsg(u32 msgId, u32 unused, u32 itemId)
     extern u32 GSmsgGetGSchar(u32);
     u32 itemName;
 
-    msgctrlSetValue(0x10);
+    msgctrlSetValue(0x10, unused);
     itemName = GSmsgGetGSchar(itemGetStatus(0, itemId, 1, 0));
     msgctrlSetValue(0x29, itemName);
     if (msgId != 0) {
@@ -1443,6 +1464,11 @@ LAB_00261ccc:
 
 #if defined(FIGHT_MENU_EXACT_8026503C)
 
+extern u8 fn_801F18DC(u32 param_1);
+extern s32 menuFightOpenTarget(u8* ctx, s32 arg1, s32 arg2);
+extern u32 menuFightCloseTarget(void* obj);
+extern void fightTrainerToMenuBallStatus(u8* ptr, u8* arr);
+
 /* Address: 0x8026503C | Size: 0x2F0 | Ghidra import */
 u32 _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOutPokemonUsUs(u32 r3,u32 r4,u32 r5)
 
@@ -1452,7 +1478,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOu
   u32 uVar1;
   u8 cVar6;
   int iVar2;
-  u16 sVar5;
+  u32 sVar5;
   u32 uVar3;
   u32 found;
 
@@ -1467,21 +1493,20 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubWazaSelectDefensePokemon__FP15FightOu
 LAB_00262054:
   do {
     uVar1 = fightTargetGetPtr(0xf,r3,r5);
-    cVar6 = fightOutPokemonCheckFightOut();
+    cVar6 = fightOutPokemonCheckFightOut((void*)uVar1);
     if (cVar6 == '\x01') {
       found = fightTargetGetPtr(2,uVar1,r5);
       if (found == 0) {
         uVar3 = 0;
       }
       else {
-        uVar4 = fightSideGetStatus(found,0,5,0);
+        uVar4 = fightSideGetStatus((u8*)found, 0, 5, 0);
         sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(uVar1,r5);
-        if (sVar5 == 0) {
+        if ((u16)sVar5 == 0) {
           uVar3 = 0;
         }
         else {
-          fightTargetDataBiosGetPtr();
-          uVar3 = fightTargetDataBiosGetBuff();
+          uVar3 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar5));
           if ((int)uVar3 < 0) {
             uVar3 = 0;
           }
@@ -1500,21 +1525,20 @@ LAB_00262054:
       u16 uVar4b;
 
       uVar1b = fightTargetGetPtr(0x10,r3,r5);
-      cVar6 = fightOutPokemonCheckFightOut();
+      cVar6 = fightOutPokemonCheckFightOut((void*)uVar1b);
       if (cVar6 == '\x01') {
         found = fightTargetGetPtr(2,uVar1b,r5);
         if (found == 0) {
           uVar3 = 0;
         }
         else {
-          uVar4b = fightSideGetStatus(found,0,5,0);
+          uVar4b = fightSideGetStatus((u8*)found, 0, 5, 0);
           sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(uVar1b,r5);
-          if (sVar5 == 0) {
+          if ((u16)sVar5 == 0) {
             uVar3 = 0;
           }
           else {
-            fightTargetDataBiosGetPtr();
-            uVar3 = fightTargetDataBiosGetBuff();
+            uVar3 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar5));
             if ((int)uVar3 < 0) {
               uVar3 = 0;
             }
@@ -1534,21 +1558,20 @@ LAB_00262054:
       u16 uVar4c;
 
       uVar1c = fightTargetGetPtr(0xe,r3,r5);
-      cVar6 = fightOutPokemonCheckFightOut();
+      cVar6 = fightOutPokemonCheckFightOut((void*)uVar1c);
       if (cVar6 == '\x01') {
         found = fightTargetGetPtr(2,uVar1c,r5);
         if (found == 0) {
           uVar3 = 0;
         }
         else {
-          uVar4c = fightSideGetStatus(found,0,5,0);
+          uVar4c = fightSideGetStatus((u8*)found, 0, 5, 0);
           sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(uVar1c,r5);
-          if (sVar5 == 0) {
+          if ((u16)sVar5 == 0) {
             uVar3 = 0;
           }
           else {
-            fightTargetDataBiosGetPtr();
-            uVar3 = fightTargetDataBiosGetBuff();
+            uVar3 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar5));
             if ((int)uVar3 < 0) {
               uVar3 = 0;
             }
@@ -1566,10 +1589,10 @@ LAB_00262054:
     *(u32 *)(auStack_38 + 0x1c) = 0;
     auStack_38[0x20] = 3;
     auStack_38[0x21] = fn_801F18DC(0);
-    iVar2 = menuFightOpenTarget((int*)auStack_38,0,1);
+    iVar2 = menuFightOpenTarget(auStack_38,0,1);
     lbl_8047B678 = 1;
     if (iVar2 < 0) {
-      menuFightCloseTarget(1);
+      menuFightCloseTarget((void*)1);
       return 0;
     }
     if (iVar2 == 0) {
@@ -1582,20 +1605,20 @@ LAB_00262054:
       if (iVar2 != 2) goto LAB_00262054;
       uVar1 = fightTargetGetPtr(0xe,r3,r5);
     }
-    cVar6 = fightOutPokemonCheckFightOut(uVar1);
+    cVar6 = fightOutPokemonCheckFightOut((void*)uVar1);
     if (cVar6 != '\0') {
-      menuFightCloseTarget(1);
+      menuFightCloseTarget((void*)1);
       return uVar1;
     }
   } while (1);
 }
 
 /* Address: 0x8026532C | Size: 0xD0 | Ghidra import */
-void fn_8026532C(u32 r3, u32 r4, u32 r5)
+void fn_8026532C(u32 r3, u32 r4, u8 r5)
 {
   u32 iVar1;
   u16 uVar3;
-  u16 sVar4;
+  u32 sVar4;
   u32 uVar2;
   u32 uVar6;
 
@@ -1604,14 +1627,13 @@ void fn_8026532C(u32 r3, u32 r4, u32 r5)
     uVar6 = 0;
   }
   else {
-    uVar3 = fightSideGetStatus(iVar1, 0, 5, 0);
+    uVar3 = fightSideGetStatus((u8*)iVar1, 0, 5, 0);
     sVar4 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r3, r4);
-    if (sVar4 == 0) {
+    if ((u16)sVar4 == 0) {
       uVar6 = 0;
     }
     else {
-      fightTargetDataBiosGetPtr();
-      uVar2 = fightTargetDataBiosGetBuff();
+      uVar2 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar4));
       if ((int)uVar2 < 0) {
         uVar6 = 0;
       }
@@ -1642,7 +1664,7 @@ void fightMenuFightOutPokemonRenewStatusMenu(u32 r3, u32 r4, u32 r5)
   u32 r30;
   u32 iVar3;
   u16 uVar5;
-  u16 sVar6;
+  u32 sVar6;
   u32 uVar4;
   u32 checkStatus;
   u32 uVar11;
@@ -1657,14 +1679,13 @@ void fightMenuFightOutPokemonRenewStatusMenu(u32 r3, u32 r4, u32 r5)
     checkStatus = 0;
   }
   else {
-    uVar5 = fightSideGetStatus(iVar3, 0, 5, 0);
+    uVar5 = fightSideGetStatus((u8*)iVar3, 0, 5, 0);
     sVar6 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r28, r29);
-    if (sVar6 == 0) {
+    if ((u16)sVar6 == 0) {
       checkStatus = 0;
     }
     else {
-      fightTargetDataBiosGetPtr();
-      uVar4 = fightTargetDataBiosGetBuff();
+      uVar4 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar6));
       if ((int)uVar4 < 0) {
         checkStatus = 0;
       }
@@ -1679,14 +1700,13 @@ void fightMenuFightOutPokemonRenewStatusMenu(u32 r3, u32 r4, u32 r5)
       uVar11 = 0;
     }
     else {
-      uVar5 = fightSideGetStatus(iVar3, 0, 5, 0);
+      uVar5 = fightSideGetStatus((u8*)iVar3, 0, 5, 0);
       sVar6 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r28, r29);
-      if (sVar6 == 0) {
+      if ((u16)sVar6 == 0) {
         uVar11 = 0;
       }
       else {
-        fightTargetDataBiosGetPtr();
-        uVar4 = fightTargetDataBiosGetBuff();
+        uVar4 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar6));
         if ((int)uVar4 < 0) {
           uVar11 = 0;
         }
@@ -1721,7 +1741,7 @@ void fn_80265598(u32 r3, u32 r4, u32 r5)
   u32 r30;
   u32 iVar3;
   u16 uVar5;
-  u16 sVar6;
+  u32 sVar6;
   u32 uVar4;
   u32 uVar11;
   StatusMenuOut local_48;
@@ -1735,14 +1755,13 @@ void fn_80265598(u32 r3, u32 r4, u32 r5)
     uVar11 = 0;
   }
   else {
-    uVar5 = fightSideGetStatus(iVar3, 0, 5, 0);
+    uVar5 = fightSideGetStatus((u8*)iVar3, 0, 5, 0);
     sVar6 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r28, r29);
-    if (sVar6 == 0) {
+    if ((u16)sVar6 == 0) {
       uVar11 = 0;
     }
     else {
-      fightTargetDataBiosGetPtr();
-      uVar4 = fightTargetDataBiosGetBuff();
+      uVar4 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar6));
       if ((int)uVar4 < 0) {
         uVar11 = 0;
       }
@@ -1764,7 +1783,7 @@ u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(u32 r3, u32 r4)
 {
   u32 iVar1;
   u16 uVar3;
-  u16 sVar4;
+  u32 sVar4;
   u32 uVar2;
   u32 uVar6;
 
@@ -1773,14 +1792,13 @@ u32 fightMenuGetFightOutPokemonPtrToStatusMenuId(u32 r3, u32 r4)
     uVar6 = 0;
   }
   else {
-    uVar3 = fightSideGetStatus(iVar1, 0, 5, 0);
+    uVar3 = fightSideGetStatus((u8*)iVar1, 0, 5, 0);
     sVar4 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r3, r4);
-    if (sVar4 == 0) {
+    if ((u16)sVar4 == 0) {
       uVar6 = 0;
     }
     else {
-      fightTargetDataBiosGetPtr();
-      uVar2 = fightTargetDataBiosGetBuff();
+      uVar2 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar4));
       if ((int)uVar2 < 0) {
         uVar6 = 0;
       }
@@ -1805,7 +1823,7 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
   u32 uVar2;
   u8 cVar6;
   u16 uVar4;
-  u16 sVar5;
+  u32 sVar5;
   u32 uVar3;
   BattleStatusPair local_20;
   BattleStatusPair local_28;
@@ -1815,14 +1833,13 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
     uVar2 = 0;
   }
   else {
-    uVar4 = fightSideGetStatus(iVar1,0,5,0);
+    uVar4 = fightSideGetStatus((u8*)iVar1, 0, 5, 0);
     sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r3,r4);
-    if (sVar5 == 0) {
+    if ((u16)sVar5 == 0) {
       uVar2 = 0;
     }
     else {
-      fightTargetDataBiosGetPtr();
-      uVar3 = fightTargetDataBiosGetBuff();
+      uVar3 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar5));
       if ((int)uVar3 < 0) {
         uVar2 = 0;
       }
@@ -1838,14 +1855,13 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
       uVar2 = 0;
     }
     else {
-      uVar4 = fightSideGetStatus(iVar1,0,5,0);
+      uVar4 = fightSideGetStatus((u8*)iVar1, 0, 5, 0);
       sVar5 = fightTargetGetTragetPtrToRelativeHostSideFightTargetId(r3,r4);
-      if (sVar5 == 0) {
+      if ((u16)sVar5 == 0) {
         uVar2 = 0;
       }
       else {
-        fightTargetDataBiosGetPtr();
-        uVar3 = fightTargetDataBiosGetBuff();
+        uVar3 = fightTargetDataBiosGetBuff(fightTargetDataBiosGetPtr(sVar5));
         if ((int)uVar3 < 0) {
           uVar2 = 0;
         }
@@ -1854,7 +1870,7 @@ void fightMenuFightTrainerRenewStatusMenu(u32 r3,u32 r4)
         }
       }
     }
-    fightTrainerToMenuBallStatus(r3,&local_28);
+    fightTrainerToMenuBallStatus((u8*)r3,(u8*)&local_28);
     local_20.unk0 = local_28.unk0;
     local_20.unk4 = local_28.unk4;
     menuOpenCustom(uVar2,0,0,0,0,1,&local_20);
@@ -2035,6 +2051,7 @@ u32 _fightMenuFightTrainerGcHeroOpenMenuSubItem__FP13FIGHT_TRAINERP15FightOutPok
     extern void pokemonSetStatus(u32, u32, u32, u32, u32);
     extern void fightOutPokemonCreateFightActionUseItem(u32, u32, u32, u32, char*, u16, u32, u8, u32);
     extern char lbl_80375D70[];
+    extern u32 _fightMenuFightTrainerGcHeroOpenMenuSubBallSelectTargetPokemon__FP15FightOutPokemonUsUs(u32 r3, u32 r4, u32 r5);
     u16 i;
     u32 index;
     u32 temoti;
