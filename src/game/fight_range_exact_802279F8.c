@@ -5,6 +5,9 @@
  */
 #include "dolphin/types.h"
 
+extern s32 fn_80232110(u32 attacker, u32 defender, u32 attackSide, u32 move,
+                        u32 basePower, s32 moveType);
+
 extern u8* lbl_8047B610;
 extern u8 lbl_80478D78[8];
 extern u32 lbl_8047B618;

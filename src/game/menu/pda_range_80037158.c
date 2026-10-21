@@ -201,6 +201,9 @@ void fn_80037180(u32 unused, u8* p)
     extern u32 fn_800D88DC();
     extern u32 menuModelRender();
     extern u32 fn_80132A38();
+    extern u32 fn_80005748(void);
+    extern u32 fn_801EF214(void);
+    extern u32 fn_801EF274(void);
     u32 result;
 
     switch (*(s16*)(p + 6)) {
