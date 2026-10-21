@@ -294,6 +294,20 @@ u32 fn_8025DF38(u32* r3, u32 r4, u16* r5, int r6)
 #endif
 
 #if defined(POKEMON_RELIVE_SEQUENCE_EXACT_ONLY)
+struct GSSceneVec3;
+struct GSRenderCamera;
+extern void* fn_801DE190(u16 index, void* model, u8 variant);
+extern BOOL fn_801DDD28(void* owner, u16 group, u16 index, u8 variant);
+extern void GSscene_GetCameraDirectionVector(struct GSSceneVec3* direction);
+extern void GSscene_GetCameraRotationVector(struct GSSceneVec3* rotation);
+extern void GSscene_GetCameraPositionVector(struct GSSceneVec3* position);
+extern void GSscene_GetCameraViewVector(struct GSSceneVec3* view);
+extern struct GSRenderCamera* GScameraGetActiveCamera(void);
+extern void GScameraGetPerspective(struct GSRenderCamera* camera, f32* fov, f32* aspect,
+                                   f32* near, f32* far);
+extern s32 fn_80097A38(u32 arg0, u16 arg1);
+void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,int r8);
+
 /* Address: 0x8025E0B0 | Size: 0x10C | Ghidra import */
 u32 loadSequence(int *r3,u32 r4,u16 *r5,int r6)
 
@@ -320,7 +334,7 @@ u32 loadSequence(int *r3,u32 r4,u16 *r5,int r6)
       uVar1 = pokemonBiosGetRnd(r4);
       uVar2 = (int)pokemonGetStatus(r4,0,0xc1,0);
       uVar2 = (-uVar2 | uVar2) >> 0x1f;
-      iResult = fn_801DE190(sVar6,uVar1,uVar2);
+      iResult = (u32)fn_801DE190(sVar6,(void*)uVar1,uVar2);
       *r3 = iResult;
       if (iResult == 0) {
         uVar1 = 0;
@@ -328,7 +342,7 @@ u32 loadSequence(int *r3,u32 r4,u16 *r5,int r6)
       else {
         u16 *p = r5;
         for (iVar3 = 0; iVar3 < r6; iVar3 = iVar3 + 1) {
-          cVar5 = fn_801DDD28(*r3,*p,p[1],0);
+          cVar5 = fn_801DDD28((void*)*r3,*p,p[1],0);
           if (cVar5 == '\0') {
             return 0;
           }
@@ -596,6 +610,7 @@ u32 _expRecover__FP7PokemonUl(u8* pokemon, u32 addExp)
 #endif
 
 #if defined(POKEMON_RELIVE_PRE_MAIN_ONLY)
+void fn_8025DD14(int *r3);
 /* Address: 0x8025EF58 | Size: 0x354 | Ghidra import */
 
 typedef struct ReliveSelection {
@@ -747,7 +762,7 @@ void preReliveMain(void)
 #pragma push
 /* Address: 0x8025E3B0 | Size: 0x184 | Ghidra import */
 
-int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)
+int _cbWazaForget__FP7PokemonUsl(u32 r3,u16 r4)
 
 {
     extern u8 lbl_80478288[];
@@ -771,12 +786,12 @@ int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)
   
   fadeSet((double)lbl_8047E680,3);
   fadeCheck(1);
-  GSscene_GetCameraDirectionVector(direction);
-  GSscene_GetCameraRotationVector(rotation);
-  GSscene_GetCameraPositionVector(position);
-  GSscene_GetCameraViewVector(view);
-  uVar1 = GScameraGetActiveCamera();
-  GScameraGetPerspective(uVar1,&local_54,auStack_50,auStack_4c,auStack_48);
+  GSscene_GetCameraDirectionVector((struct GSSceneVec3*)direction);
+  GSscene_GetCameraRotationVector((struct GSSceneVec3*)rotation);
+  GSscene_GetCameraPositionVector((struct GSSceneVec3*)position);
+  GSscene_GetCameraViewVector((struct GSSceneVec3*)view);
+  uVar1 = (u32)GScameraGetActiveCamera();
+  GScameraGetPerspective((struct GSRenderCamera*)uVar1,&local_54,(f32*)auStack_50,(f32*)auStack_4c,(f32*)auStack_48);
   snapshot = (u32 *)lbl_80478288;
   snapshot[0] = direction[0];
   snapshot[1] = direction[1];
@@ -809,6 +824,17 @@ int _cbWazaForget__FP7PokemonUsl(u32 r3,u32 r4)
 #endif
 
 #if defined(POKEMON_RELIVE_CEREMONY_ONLY)
+extern u32 heroGetStatus(u8* ptr, u32 selector, u32 index);
+/* RULE-EXCEPTION(user-approved): pokemonBiosGetDarkpokemonDataId is defined u16 in pokemon_data.c, but retail keeps its result in the u32 local unextended; the u16 prototype adds clrlwi - see docs/RULE_EXCEPTIONS.md */
+extern u32 pokemonBiosGetDarkpokemonDataId(u8* ptr);
+extern u32 fn_80165668(u32 id, void* buffer, u32 size);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 winMsgOpenField(u32 message, u32 wait, u8 pause);
+extern void winMsgCloseField(u32 wait);
+u32 _expRecover__FP7PokemonUl(u8* pokemon, u32 addExp);
+u32 loadSequence(int *r3,u32 r4,u16 *r5,int r6);
+void fn_8025DE54(u32 *r3,u16 *r4,int r5,int r6,int r7,int r8);
+extern u32 exribbonSetNarionalRibbon(u32 r3);
 #pragma push
 /* Address: 0x8025E9BC | Size: 0x390 | Ghidra import */
 void reliveCeremonyAll(u32 r3)
@@ -857,7 +883,7 @@ void reliveCeremonyAll(u32 r3)
   uVar8 = pokemonCheckValid();
   if (uVar8 == 1) {
     pokemonGetStatus(uVar1,0,0x6e,0);
-    uVar2 = pokemonBiosGetDarkpokemonDataId(uVar1);
+    uVar2 = pokemonBiosGetDarkpokemonDataId((u8*)uVar1);
     fn_801EECD8(uVar2,1);
     uVar8 = fn_80121ADC(uVar1,0x3e);
     if (uVar8 != 0) {
@@ -880,7 +906,7 @@ void reliveCeremonyAll(u32 r3)
     sVar7 = pokemonBiosGetFriend(uVar1);
     pokemonBiosSetFriend(uVar1,(u16)(sVar7 + pokemonBiosGetPoolFriend(uVar1) + 0x46));
     pokemonBiosSetPoolFriend(uVar1,0);
-    iVar3 = _expRecover__FP7PokemonUl(uVar1,uVar2);
+    iVar3 = _expRecover__FP7PokemonUl((u8*)uVar1,uVar2);
     if (iVar3 == 1) {
       evo = pokemonEvolutionCheck(uVar1,0,0,local_28,auStack_18);
       if (((evo & 0xffff) != 0) && ((evo & 0xffff) != 0xffff)) {
@@ -1030,6 +1056,8 @@ void reliveMain(void)
 
 
 #if defined(POKEMON_RELIVE_WAITTIME_ONLY)
+extern void _threadSwitch(void);
+extern u32 fn_800D3088(void);
 void waitTime__Ff(float r3)
 
 {

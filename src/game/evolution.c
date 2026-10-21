@@ -148,6 +148,32 @@ static inline u32 evolutionCreateModel(u32 pkm, int kind)
 }
 
 #if !defined(EVOLUTION_80260EBC_ONLY) && !defined(EVOLUTION_80260910_ONLY)
+struct GSSceneVec3;
+struct GSRenderCamera;
+extern s32 winMsgOpenField(u32 message, u32 wait, u8 pause);
+extern void winMsgCloseField(u32 wait);
+extern s32 fn_8001E184(void);
+extern u16 pokemonBiosGetPokemonWazaDataId(void* ctx, u32 p1);
+extern void* pokemonBiosGetNicknamePtr(void* ptr);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern u32 fn_80165668(u32 id, void* buffer, u32 size);
+extern u32 fn_801DAC3C(void* obj);
+extern void fn_801DA4E8(void* effect, u32 visible);
+extern void cameraSetFov(f32 fov);
+extern void fn_801DB088(void);
+extern void _threadSwitch(void);
+extern void GSscene_GetCameraDirectionVector(struct GSSceneVec3* direction);
+extern void GSscene_GetCameraRotationVector(struct GSSceneVec3* rotation);
+extern void GSscene_GetCameraPositionVector(struct GSSceneVec3* position);
+extern void GSscene_GetCameraViewVector(struct GSSceneVec3* view);
+extern void GSscene_SetCameraDirectionVector(struct GSSceneVec3* direction);
+extern void GSscene_SetCameraRotationVector(struct GSSceneVec3* rotation);
+extern void GSscene_SetCameraPositionVector(struct GSSceneVec3* position);
+extern void GSscene_SetCameraViewVector(struct GSSceneVec3* view);
+extern struct GSRenderCamera* GScameraGetActiveCamera(void);
+extern void GScameraGetPerspective(struct GSRenderCamera* camera, f32* fov, f32* aspect,
+                                   f32* near, f32* far);
+extern u32 GSscene_SetMode(u32 mode);
 /* Address: 0x802600E4 | Size: 0x378 | Ghidra import */
 extern s8 menuSubOpenYesNo();
 extern int winMsgClose();
@@ -194,7 +220,7 @@ evolutionWazaLearn(u8 *r3,u32 r4,u8 *r5,int r6,void *r7,
   u32 uVar2;
   u32 waza;
   u16 sVar3;
-  u16 uVar4;
+  u32 uVar4;
 
   slot = 0;
   do {
@@ -204,7 +230,7 @@ evolutionWazaLearn(u8 *r3,u32 r4,u8 *r5,int r6,void *r7,
   } while (slot < 4);
   if (slot < 4) goto LAB_0025d3c4;
 
-  uVar2 = pokemonBiosGetNicknamePtr(r3);
+  uVar2 = (u32)pokemonBiosGetNicknamePtr(r3);
   msgctrlSetValue(0x32,uVar2);
   waza = r4 & 0xffff;
   msgctrlSetValue(0x39,waza);
@@ -236,7 +262,7 @@ evolutionWazaLearn(u8 *r3,u32 r4,u8 *r5,int r6,void *r7,
   return 0;
 
 LAB_waza_set:
-  uVar2 = pokemonBiosGetNicknamePtr(r3);
+  uVar2 = (u32)pokemonBiosGetNicknamePtr(r3);
   msgctrlSetValue(0x32,uVar2);
   msgctrlSetValue(0x5d,0x468);
   uVar4 = pokemonBiosGetPokemonWazaDataId(r3,slot & 0xffff);
@@ -249,7 +275,7 @@ LAB_waza_set:
   }
 LAB_0025d3c4:
   fn_80165668(0x4ca,0,0xff);
-  uVar2 = pokemonBiosGetNicknamePtr(r3);
+  uVar2 = (u32)pokemonBiosGetNicknamePtr(r3);
   msgctrlSetValue(0x32,uVar2);
   msgctrlSetValue(0x39,r4 & 0xffff);
   if (r6 == 0) {
@@ -273,19 +299,8 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
 
 {
     extern int fn_80097A38();
-    extern int GScameraGetPerspective();
-    extern u32 GScameraGetActiveCamera();
     extern int GSmodelSetAnimType();
     extern int fn_801766A8();
-    extern int GSscene_GetCameraRotationVector();
-    extern int GSscene_SetCameraRotationVector();
-    extern int GSscene_GetCameraDirectionVector();
-    extern int GSscene_SetCameraDirectionVector();
-    extern int GSscene_GetCameraPositionVector();
-    extern int GSscene_SetCameraPositionVector();
-    extern int GSscene_GetCameraViewVector();
-    extern int GSscene_SetCameraViewVector();
-    extern int GSscene_SetMode();
     extern int wazaSequenceSysRelease();
     extern int fn_801DADC0();
     extern const f32 lbl_8047E6C0;
@@ -311,12 +326,12 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
   
   fadeSet(lbl_8047E6C0,3);
   fadeCheck(1);
-  GSscene_GetCameraDirectionVector(direction);
-  GSscene_GetCameraRotationVector(rotation);
-  GSscene_GetCameraPositionVector(position);
-  GSscene_GetCameraViewVector(view);
-  uVar1 = GScameraGetActiveCamera();
-  GScameraGetPerspective(uVar1,&local_98,auStack_94,auStack_90,auStack_8c);
+  GSscene_GetCameraDirectionVector((struct GSSceneVec3*)direction);
+  GSscene_GetCameraRotationVector((struct GSSceneVec3*)rotation);
+  GSscene_GetCameraPositionVector((struct GSSceneVec3*)position);
+  GSscene_GetCameraViewVector((struct GSSceneVec3*)view);
+  uVar1 = (u32)GScameraGetActiveCamera();
+  GScameraGetPerspective((struct GSRenderCamera*)uVar1,&local_98,(f32*)auStack_94,(f32*)auStack_90,(f32*)auStack_8c);
   savedDirection[0] = direction[0];
   savedDirection[1] = direction[1];
   savedDirection[2] = direction[2];
@@ -343,15 +358,15 @@ int cbWazaForget(u32 r3,u32 r4,int r5)
   if (iVar7 != 0) {
     *(int *)(r5 + 4) = iVar7;
   }
-  uVar1 = fn_801DAC3C(*(u32 *)(r5 + 4));
+  uVar1 = fn_801DAC3C((void*)*(u32 *)(r5 + 4));
   GSmodelSetAnimType(uVar1,1);
-  fn_801DA4E8(*(u32 *)(r5 + 4),1);
+  fn_801DA4E8((void*)*(u32 *)(r5 + 4),1);
   GSscene_SetMode(2);
-  GSscene_SetCameraDirectionVector(savedDirection);
-  GSscene_SetCameraRotationVector(savedRotationPtr);
-  GSscene_SetCameraPositionVector(savedPositionPtr);
-  GSscene_SetCameraViewVector(savedViewPtr);
-  cameraSetFov((double)((volatile float *)savedView)[3]);
+  GSscene_SetCameraDirectionVector((struct GSSceneVec3*)savedDirection);
+  GSscene_SetCameraRotationVector((struct GSSceneVec3*)savedRotationPtr);
+  GSscene_SetCameraPositionVector((struct GSSceneVec3*)savedPositionPtr);
+  GSscene_SetCameraViewVector((struct GSSceneVec3*)savedViewPtr);
+  cameraSetFov(((volatile float *)savedView)[3]);
   fadeSet(lbl_8047E6C0,2);
   fadeCheck(1);
   return (int)(signed char)iVar2;
@@ -420,12 +435,12 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
       cVar7 = fn_801DA94C(uVar9,uVar1,4);
       if (cVar7 == '\0') break;
       _threadSwitch();
-      GSscene_GetCameraDirectionVector(direction);
-      GSscene_GetCameraRotationVector(rotation);
-      GSscene_GetCameraPositionVector(position);
-      GSscene_GetCameraViewVector(view);
-      uVar6 = GScameraGetActiveCamera();
-      GScameraGetPerspective(uVar6,&local_a8,auStack_a4,auStack_a0,auStack_9c);
+      GSscene_GetCameraDirectionVector((struct GSSceneVec3*)direction);
+      GSscene_GetCameraRotationVector((struct GSSceneVec3*)rotation);
+      GSscene_GetCameraPositionVector((struct GSSceneVec3*)position);
+      GSscene_GetCameraViewVector((struct GSSceneVec3*)view);
+      uVar6 = (u32)GScameraGetActiveCamera();
+      GScameraGetPerspective((struct GSRenderCamera*)uVar6,&local_a8,(f32*)auStack_a4,(f32*)auStack_a0,(f32*)auStack_9c);
       savedDirection[0] = direction[0];
       savedDirection[1] = direction[1];
       savedDirection[2] = direction[2];
@@ -450,11 +465,11 @@ int doWazaSequence(u32 *r3,int r4,int r5,u32 r6)
       }
     }
     GSscene_SetMode(2);
-    GSscene_SetCameraDirectionVector(savedDirection);
-    GSscene_SetCameraRotationVector(savedRotationPtr);
-    GSscene_SetCameraPositionVector(savedPositionPtr);
-    GSscene_SetCameraViewVector(savedViewPtr);
-    cameraSetFov((double)((volatile float *)savedView)[3]);
+    GSscene_SetCameraDirectionVector((struct GSSceneVec3*)savedDirection);
+    GSscene_SetCameraRotationVector((struct GSSceneVec3*)savedRotationPtr);
+    GSscene_SetCameraPositionVector((struct GSSceneVec3*)savedPositionPtr);
+    GSscene_SetCameraViewVector((struct GSSceneVec3*)savedViewPtr);
+    cameraSetFov(((volatile float *)savedView)[3]);
     if ((r6 & 0x14) != 0) {
       uVar6 = 5;
       if ((r6 & 4) != 0) {
@@ -480,6 +495,19 @@ int doWazaSequence(u32 *r3, int r4, int r5, u32 r6);
 #endif /* !EVOLUTION_80260EBC_ONLY */
 
 #if !defined(EVOLUTION_802600E4_ONLY)
+extern u32 fn_801653C4(void);
+extern u32 fn_801653BC(void);
+extern u32 fn_801656D8(u32 id);
+extern void pokemonWazaCreate(u8* ptr, u32 slot, u32 waza);
+extern void fn_80166A28(u32 id);
+extern s32 fn_801666BC(u32 id);
+extern void fn_801DB088(void);
+extern void _threadSwitch(void);
+extern void fn_801DA4E8(void* effect, u32 visible);
+extern void* pokemonBiosGetNicknamePtr(void* ptr);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 winMsgOpenField(u32 message, u32 wait, u8 pause);
+extern void winMsgCloseField(u32 wait);
 /* EVOLUTION_802600E4_ONLY (evolution_exact_802600E4.c) stops here: that unit
  * links 0x802600E4-0x80260910 (evolutionWazaLearn, cbWazaForget,
  * doWazaSequence) in retail order. */
@@ -532,7 +560,7 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
 
   bgm = fn_801653C4();
   if (bgm != 0) {
-    bgmVolume = fn_801656D8();
+    bgmVolume = fn_801656D8(bgm);
     fn_80165A20(1,0x32,0xff);
   }
   else {
@@ -540,7 +568,7 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   }
   se = fn_801653BC();
   if (se != 0) {
-    seVolume = fn_801656D8();
+    seVolume = fn_801656D8(se);
     scriptSoundStop(0x32);
   }
   else {
@@ -564,7 +592,8 @@ static inline BOOL evolutionRun(EvoWork *work, u32 r5, u32 before, u32 after,
   for (i = 0; i < wazaNum; i++) {
     waza = *wazaList;
     if (evolutionWazaLearn(pokemon,waza,&slot,0,cbWazaForget,(u32)work) != 0) {
-      pokemonWazaCreate(pokemon,slot,waza);
+      /* Retail promotes slot and waza to int before the call. */
+      pokemonWazaCreate(pokemon,(s32)slot,(s32)waza);
     }
     else {
       slot = 0xff;
@@ -740,8 +769,8 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   int level;
   f32 t;
 
-  fn_801DA4E8(work->model[0],1);
-  nickname = pokemonBiosGetNicknamePtr(before);
+  fn_801DA4E8((void*)work->model[0],1);
+  nickname = (u32)pokemonBiosGetNicknamePtr((void*)before);
   msgctrlSetValue(0x32,nickname);
   winMsgOpenField(0x4401,1,0);
   voice = evolutionPlayVoice(before);
@@ -814,15 +843,15 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
     while (fn_801666BC(voice) == 2) {
       _threadSwitch();
     }
-    msgctrlSetValue(0x32,pokemonBiosGetNicknamePtr(before));
+    msgctrlSetValue(0x32,(u32)pokemonBiosGetNicknamePtr((void*)before));
     winMsgOpenField(0x43ff,1,0);
     winMsgCloseField(1);
     fadeSet(lbl_8047E6C0,3);
     fadeCheck(1);
     return 0;
   }
-  fn_801DA4E8(work->model[0],0);
-  fn_801DA4E8(work->model[1],1);
+  fn_801DA4E8((void*)work->model[0],0);
+  fn_801DA4E8((void*)work->model[1],1);
   doWazaSequence((u32 *)work,1,0,8);
   winMsgCloseField(1);
   soundStop(0x3d4,0x32);
@@ -830,7 +859,7 @@ u32 evolutionDemo(EvoWork *work,int canSkip,u32 before,u32 after)
   while (fn_801666BC(voice) == 2) {
     _threadSwitch();
   }
-  nickname = pokemonBiosGetNicknamePtr(before);
+  nickname = (u32)pokemonBiosGetNicknamePtr((void*)before);
   msgctrlSetValue(0x32,nickname);
   dataId = pokemonBiosGetPokemonDataId(after);
   msgctrlSetValue(0x4e,dataId);
