@@ -46161,7 +46161,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801B06D4",
+"name": "HSD_ShadowSetDebug",
 "addr": "0x801B06D4",
 "size": 8,
 "label": "hsd",

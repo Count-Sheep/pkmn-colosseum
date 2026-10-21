@@ -574,7 +574,8 @@ void fn_801B06DC(HSD_Shadow* shadow)
 }
 
 /* HSD_ShadowSetMultiPass */
-void fn_801B06D4(u8 multipass)
+/* NAME-T1 fn_801B06D4 */
+void HSD_ShadowSetDebug(u8 multipass)
 {
     lbl_8047B310 = multipass;
 }

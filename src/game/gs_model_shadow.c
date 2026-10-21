@@ -11,7 +11,7 @@ extern u32 lbl_8047AB84;
 extern u32 lbl_8047AB80;
 extern f32 lbl_8047AB88;
 
-extern void fn_801B06D4(void);
+extern void HSD_ShadowSetDebug(void);
 
 typedef struct {
     u8 _pad[0x8];
@@ -183,7 +183,7 @@ void GSmaterialSetDistanceThreshold(f32 dist)
 void GSmodelSetShadowDebug(u32 val)
 {
     (void)val;
-    fn_801B06D4();
+    HSD_ShadowSetDebug();
 }
 
 void GSmodelSetShadowTextureSize(s32 width, s32 height)
