@@ -408,22 +408,10 @@ extern u32 lbl_8047CB50;
 extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
-#if 0
-asm void GSmtx44Perspective(u8* p) {
-#include "src/game/gs_render_GSmtx44Perspective.inc"
-}
-#else
 void GSmtx44Perspective(u8* p)
 {
     C_MTXPerspective();
 }
-#endif
 
-#if 0
-asm void GSmtx44Ortho(void) {
-#include "src/game/gs_render_GSmtx44Ortho.inc"
-}
-#else
 void GSmtx44Ortho(void* p, f32 a, f32 b, f32 c, f32 d, f32 e, f32 f) { C_MTXOrtho(); }
-#endif
 

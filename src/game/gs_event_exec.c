@@ -366,11 +366,6 @@ s32 fn_80012E18(u8* ctx) {
 #pragma pop
 /* menuPanelCursorDecimalInput - 0x80012FB0 | size: 0x2ec */
 extern void windowSetParam(void*, s32, s32);
-#if 0
-asm void menuPanelCursorDecimalInput(void) {
-#include "src/game/gs_event_exec_fn_80012FB0.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local peephole-control pragma — see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -454,17 +449,11 @@ s32 menuPanelCursorDecimalInput(u8* ctx) {
     return 0;
 }
 #pragma pop
-#endif
 
 /* fn_8001329C - 0x8001329C | size: 0x3cc */
 extern void fn_8001EC08(s32, s32, s32, s32, s32, s32);
 extern void msgctrlSetValue(s32, s32);
 extern void jumptable_802E4D90();
-#if 0
-asm void fn_8001329C(void) {
-#include "src/game/gs_event_exec_fn_8001329C.inc"
-}
-#else
 /* Message colour: ctx byte 0x8B in the low byte, upper bits set. Built as
  * a 64-bit OR, which is why retail loads -0x100 into a register. */
 static inline s32 eventMsgColor(u8* ctx) {
@@ -520,7 +509,6 @@ s32 fn_8001329C(u8* ctx, u8* tgt) {
     return 0;
 }
 #pragma pop
-#endif
 
 /* menuPanelCtrlLvUp - 0x80013668 | size: 0xdc */
 extern u8 winSeqIsCheck(s32, s32);
@@ -690,11 +678,6 @@ extern u32 lbl_80266BD8[];
 extern u32 lbl_8047A2F8;
 extern u32 lbl_8047A2DC;
 extern u32 lbl_8047A2FC;
-#if 0
-asm void fn_80013A18(void) {
-#include "src/game/gs_event_exec_fn_80013A18.inc"
-}
-#else
 typedef struct EventMenuArg {
     u8 bytes[3];
     u8 pad;
@@ -909,7 +892,6 @@ s32 fn_80013A18(s32 entry_idx, s32 target_n, s32* out) {
 }
 #if !defined(GS_EVENT_EXEC_ONLY_8001374C)
 #pragma pop
-#endif
 #endif
 
 /* fn_80013DFC - 0x80013DFC | size: 0x184 */
@@ -1169,11 +1151,6 @@ s32 fn_80014234(u8* ctx, u8* tgt) {
 #endif
 /* fn_8001431C - 0x8001431C | size: 0x7c */
 extern u32 lbl_8047A2FC;
-#if 0
-asm void fn_8001431C(void) {
-#include "src/game/gs_event_exec_fn_8001431C.inc"
-}
-#else
 s32 fn_8001431C(void* arg0, u8* arg1) {
     void* p = *(void**)((u8*)arg0 + 0x60);
     s32 count = *(s32*)((u8*)p + 0x10);
@@ -1184,7 +1161,6 @@ s32 fn_8001431C(void* arg0, u8* arg1) {
     fn_800FB680(*(s16*)(arg1 + 0x54) - (s32)(s16)((u32)rand >> 16), 0, -1, 0x151);
     return 0;
 }
-#endif
 
 /* fn_80014398 - 0x80014398 | size: 0x1b8 */
 extern void fn_800FB8C8(s32, s32, s16, s16, s32, s32);
@@ -1404,11 +1380,6 @@ extern s32 lbl_80266BC4[];
 extern f32 lbl_8047B744;
 extern f32 lbl_8047A2C0;
 extern f32 lbl_8047B740;
-#if 0
-asm void fn_80014AE4(void) {
-#include "src/game/gs_event_exec_fn_80014AE4.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; scheduling on; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma scheduling on
@@ -1436,15 +1407,9 @@ s32 fn_80014AE4(u8* ctx, u8* tgt) {
     return 0;
 }
 #pragma pop
-#endif
 
 /* fn_80014BA0 - 0x80014BA0 | size: 0x98 */
 extern s32 lbl_80266BB0[];
-#if 0
-asm void fn_80014BA0(void) {
-#include "src/game/gs_event_exec_fn_80014BA0.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -1473,7 +1438,6 @@ s32 fn_80014BA0(u8* ctx, u8* tgt) {
     return 0;
 }
 #pragma pop
-#endif
 
 /* fn_80014C38 - 0x80014C38 | size: 0xe4 */
 extern s32 lbl_80266B9C[];

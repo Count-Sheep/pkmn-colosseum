@@ -2407,11 +2407,6 @@ u8 fightFloorSetStatus(u32 p1, u16 p2, u32 p3, u16 p4, u32 p5) {
 #if defined(FIGHT_FLOOR_801F54A4_801F61BC)
 
 #pragma push
-#if 0
-asm void fightFloorGetStatus(void) {
-#include "src/game/pokemon_fn_801F54A4.inc"
-}
-#else
 /* Exact (2026-09-30). The index-th valid Pokemon of the floor, counted over
  * (pokemon, trainer, side) in the same triple loop as
  * fightFloorLoopValidFightOutPokemon, through the same chain inline; case
@@ -2824,7 +2819,6 @@ s32 fightFloorGetStatus(u8* pkm, u32 slot, u32 field, u32 arg) {
         return 0;
     }
 }
-#endif
 #pragma pop
 
 #endif

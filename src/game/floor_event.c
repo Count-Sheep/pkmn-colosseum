@@ -1719,11 +1719,6 @@ extern u32 lbl_80478EB8;
 extern u8 lbl_8035BB70[];
 extern u32 lbl_80478EBC;
 #if !defined(FLOOR_EVENT_CTRL_ONLY)
-#if 0
-asm void floorEventChangeTresure(void) {
-#include "src/game/gs_field_world_floorEventChangeTresure.inc"
-}
-#else
 s32 floorEventChangeTresure(u32 index, u16 val, u8 byte) {
     extern u32 lbl_80478EB8;
     extern u32 lbl_80478EBC;
@@ -1741,7 +1736,6 @@ s32 floorEventChangeTresure(u32 index, u16 val, u8 byte) {
     *(u8*)(entry + 0x1) = byte;
     return 0;
 }
-#endif
 #endif
 
 typedef struct FloorDoorEntry {

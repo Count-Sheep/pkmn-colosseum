@@ -413,11 +413,6 @@ extern u32 lbl_8047AB3C;
 extern u32 lbl_8047CAE4;
 extern u32 lbl_8047CAE0;
 extern u32 lbl_8047CAE8;
-#if 0
-asm void GSbezierCalculateVector(void) {
-#include "src/game/gs_render_GSbezierCalculateVector.inc"
-}
-#else
 void GSbezierCalculateVector(void* dst, void* pts, f32 t) {
     f32 t2;
     f32 omt;
@@ -447,5 +442,4 @@ void GSbezierCalculateVector(void* dst, void* pts, f32 t) {
     fn_800E013C(scratch, (u8*)pts + 0xc, t2 * t);
     GSvecAdd(dst, dst, scratch);
 }
-#endif
 

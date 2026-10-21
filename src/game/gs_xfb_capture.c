@@ -60,25 +60,13 @@ void GSgfxCaptureUpdate(void) {
 u8 fn_80175FFC(void) {
     return lbl_8047B1A0;
 }
-#if 0
-asm void GSgfxCaptureMovieStop(void) {
-#include "src/game/gs_scene_fn_80176004.inc"
-}
-#else
 void GSgfxCaptureMovieStop(void) {
     lbl_8047B1A0 = 0;
     fn_800D305C(1);
 }
-#endif
-#if 0
-asm void GSgfxCaptureMovieStart(void) {
-#include "src/game/gs_scene_fn_80176030.inc"
-}
-#else
 void GSgfxCaptureMovieStart(u32 param) {
     lbl_8047B1A2 = param;
     lbl_8047B1A0 = 1;
     lbl_8047B1A4 = 0;
     fn_800D305C(0);
 }
-#endif

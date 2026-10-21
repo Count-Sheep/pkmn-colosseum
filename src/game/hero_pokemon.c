@@ -1472,11 +1472,6 @@ extern f32 lbl_8047D038;
 extern f32 lbl_8047D0D4;
 /* undecompiled: fn removed (ROM-derived asm), forward-declared for callers */
 /* 0x80130660 | 0x110 */
-#if 0
-asm void heroPokemonGetCelebi(void) {
-#include "src/game/gs_field_world_fn_80130660.inc"
-}
-#else
 void heroPokemonGetCelebi(u8* arg1) {
     extern u32 gamedataGetStatus(u32 a, u32 b);
     extern void gamedataAttestCreate(u32* a, u32 b, u32 c, u8 d, u8 e);
@@ -1505,13 +1500,7 @@ void heroPokemonGetCelebi(u8* arg1) {
     memoDataSet(0, buf);
     heroGetPokemon(arg1, buf, 1);
 }
-#endif
 /* 0x80130770 | 0x120 */
-#if 0
-asm void fn_80130770(void) {
-#include "src/game/gs_field_world_fn_80130770.inc"
-}
-#else
 void heroPokemonGetPikachu(u8* arg1) {
     extern u32 gamedataGetStatus(u32 a, u32 b);
     extern void gamedataAttestCreate(u32* a, u32 b, u32 c, u8 d, u8 e);
@@ -1542,13 +1531,7 @@ void heroPokemonGetPikachu(u8* arg1) {
     memoDataSet(0, buf);
     heroGetPokemon(arg1, buf, 1);
 }
-#endif
 /* 0x80130890 | 0x110 */
-#if 0
-asm void heroPokemonGetHouou(void) {
-#include "src/game/gs_field_world_fn_80130890.inc"
-}
-#else
 void heroPokemonGetHouou(u8* arg1) {
     extern u32 gamedataGetStatus(u32 a, u32 b);
     extern void gamedataAttestCreate(u32* a, u32 b, u32 c, u8 d, u8 e);
@@ -1577,13 +1560,7 @@ void heroPokemonGetHouou(u8* arg1) {
     memoDataSet(0, buf);
     heroGetPokemon(arg1, buf, 1);
 }
-#endif
 /* 0x801309A0 | 0xE8 */
-#if 0
-asm void fn_801309A0(void) {
-#include "src/game/gs_field_world_fn_801309A0.inc"
-}
-#else
 void heroPokemonGetPrasle(u32 arg1) {
     extern u32 gamedataGetStatus(u32 a, u32 b);
     extern void pokemonCreate(u8* a, u32 b, u32 c, u32 d);
@@ -1606,13 +1583,7 @@ void heroPokemonGetPrasle(u32 arg1) {
     memoDataSet(0, local);
     heroGetPokemon(arg1, local, 1);
 }
-#endif
 /* 0x80130A88 | 0x128 */
-#if 0
-asm void heroPokemonGetEifie(void) {
-#include "src/game/gs_field_world_fn_80130A88.inc"
-}
-#else
 void heroPokemonGetEifie(u32 arg1) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
     extern u32 gamedataGetStatus(u32 a, u32 b);
@@ -1637,13 +1608,7 @@ void heroPokemonGetEifie(u32 arg1) {
     pokemonResetBasisStatus(buf);
     heroCatchPokemon(arg1, buf, 0xfe, 4, 0);
 }
-#endif
 /* 0x80130BB0 | 0x128 */
-#if 0
-asm void heroPokemonGetBlacky(void) {
-#include "src/game/gs_field_world_fn_80130BB0.inc"
-}
-#else
 void heroPokemonGetBlacky(u32 arg1) {
     extern u32 heroGetStatus(u8* a, u32 b, u32 c);
     extern u32 gamedataGetStatus(u32 a, u32 b);
@@ -1668,7 +1633,6 @@ void heroPokemonGetBlacky(u32 arg1) {
     pokemonResetBasisStatus(buf);
     heroCatchPokemon(arg1, buf, 0xfe, 4, 0);
 }
-#endif
 
 /* Address: 0x80130CD8 | Size: 0x8 | Pattern: sda_getter */
 u32 fn_80130CD8(void) {

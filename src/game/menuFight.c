@@ -107,22 +107,10 @@ u8 fn_8000DAA8(void) {
 
 /* 0x800111C4 | 0x24 -- small accessor */
 extern u32 fn_80089F78(u32, u32, u32, u32);
-#if 0
-asm void menuFightOpenGBAMain(void) {
-#include "src/game/gs_npc_interact_fn_800111C4.inc"
-}
-#else
 void menuFightOpenGBAMain(u32 a, u32 b, u32 c) { fn_80089F78(a, b, c, 0); }
-#endif
 
 /* 0x800111E8 | 0x24 -- small accessor */
-#if 0
-asm void menuFightOpenGBAIrekae(void) {
-#include "src/game/gs_npc_interact_fn_800111E8.inc"
-}
-#else
 void menuFightOpenGBAIrekae(u32 a, u32 b, u32 c) { fn_80089F78(a, b, c, 1); }
-#endif
 
 /* 0x7C | menuFightCloseTarget | nullcheck_call_flag */
 u32 menuFightCloseTarget(void* obj) {
@@ -135,11 +123,6 @@ u32 menuFightCloseTarget(void* obj) {
 
 /* 0x80011288 | 0x21C */
 extern s32 menuOpenCustom(s32, ...);
-#if 0
-asm void menuFightOpenTarget(void) {
-#include "src/game/gs_npc_interact_fn_80011288.inc"
-}
-#else
 s32 menuFightOpenTarget(u8* ctx, s32 arg1, s32 arg2) {
     extern void menuItemBiosSetSelectFlag(s32, s32);
     extern s32 menuGetCursorFromItemID(s32, s32);
@@ -215,7 +198,6 @@ s32 menuFightOpenTarget(u8* ctx, s32 arg1, s32 arg2) {
     }
     return result;
 }
-#endif
 
 /* 0x800114A4 | 0x25C */
 extern void* fightTypeDataBiosGetPtr();
@@ -279,11 +261,6 @@ s32 menuFightOpenPokemon(u32 a0, u32 a1, u32 a2, u32 a3, u8 a4) {
 
 
 /* 0x80011700 | 0xBC - clear 4 event flags referenced by input arg */
-#if 0
-asm void menuFightCloseWaza(void) {
-#include "src/game/gs_npc_interact_menuFightCloseWaza.inc"
-}
-#else
 s32 menuFightCloseWaza(s32 arg) {
     if ((u8)menuIsCheck(0x4c) != 0) menuCloseCustom(0x4c, 0, arg);
     if ((u8)menuIsCheck(0xf9) != 0) menuCloseCustom(0xf9, 0, arg);
@@ -291,7 +268,6 @@ s32 menuFightCloseWaza(s32 arg) {
     if ((u8)menuIsCheck(0xf7) != 0) menuCloseCustom(0xf7, 0, arg);
     return 0;
 }
-#endif
 
 #endif /* !MENU_FIGHT_ONLY */
 
@@ -368,11 +344,6 @@ u32 menuFightCloseTop(void* obj) {
 }
 
 /* 0x80011A1C | 0x130 */
-#if 0
-asm void fn_80011A1C(void) {
-#include "src/game/gs_npc_interact_fn_80011A1C.inc"
-}
-#else
 s32 fn_80011A1C(u8* obj, s32 a1, s32 a2) {
     u32 sp8;
     s32 ret;    /* r30 */
@@ -401,7 +372,6 @@ s32 fn_80011A1C(u8* obj, s32 a1, s32 a2) {
 
     return ret;
 }
-#endif
 
 /* ===== Phase 2 recovery stubs ===== */
 
@@ -444,11 +414,6 @@ extern u32 lbl_8047A2A8;
 extern u32 lbl_8047A2AC;
 extern u32 lbl_8047A2B0;
 u32 fn_8000DAB0(void); /* forward decl: referenced by fn_8000D710 asm inc */
-#if 0
-asm void fn_8000D710(void) {
-#include "src/game/gs_npc_interact_fn_8000D710.inc"
-}
-#else
 u32 fn_8000D710(u32 mode) {
     extern s32 heroMoveCheckEvent(void* out);
     extern void fn_80116D30(s32 kind, u16 value);
@@ -576,7 +541,6 @@ u32 fn_8000D710(u32 mode) {
     lbl_8047A2A0 = 0;
     return 0;
 }
-#endif
 
 /* fn_8000DAB0 - 0x8000DAB0 | size: 0x38 */
 extern u32 menuOpen(u32, u32);
@@ -584,28 +548,17 @@ extern void GSthreadUnblockGroup(u32);
 extern u32 lbl_8047A2A4;
 extern u32 lbl_8047A2A8;
 extern u32 lbl_8047A2B0;
-#if 0
-asm void fn_8000DAB0(void) {
-#include "src/game/gs_npc_interact_fn_8000DAB0.inc"
-}
-#else
 u32 fn_8000DAB0(void) {
     lbl_8047A2B0 = menuOpen(lbl_8047A2A4, 1);
     GSthreadUnblockGroup(lbl_8047A2A8);
     return lbl_8047A2B0;
 }
-#endif
 
 /* menuFightDrawTimer - 0x8000DAE8 | size: 0x1a0 */
 extern void* fn_8001D834(void*, void*);
 extern s32 fn_800FBB34(s32 x, s32 y, s16 width, s16 height, s32 color, u32 key);
 extern u16 lbl_802E4B98[];
 extern u16 lbl_803A1B80[];
-#if 0
-asm void menuFightDrawTimer(void) {
-#include "src/game/gs_npc_interact_fn_8000DAE8.inc"
-}
-#else
 void menuFightDrawTimer(u8* ctx, u8* npc) {
     extern s32 windowGetParam(u8* a, s32 b);
     extern void msgctrlSetValue(s32 a, s32 b);
@@ -639,17 +592,11 @@ void menuFightDrawTimer(u8* ctx, u8* npc) {
         break;
     }
 }
-#endif
 
 /* menuFightCtrlTimer - 0x8000DC88 | size: 0x84 */
 extern void fightTimerAllGetNokoriTime(void);
 extern void windowSetParam(void);
 extern void fightTimerCommandGetNokoriTime(void);
-#if 0
-asm void menuFightCtrlTimer(void) {
-#include "src/game/gs_npc_interact_fn_8000DC88.inc"
-}
-#else
 u32 menuFightCtrlTimer(u8* ptr) {
     extern f64 fightTimerAllGetNokoriTime(void);
     extern f64 fightTimerCommandGetNokoriTime(void);
@@ -664,69 +611,27 @@ u32 menuFightCtrlTimer(u8* ptr) {
     }
     return 0;
 }
-#endif
 
 /* menuFightCloseCheckTotalTimer - 0x8000DD0C | size: 0x24 */
-#if 0
-asm void menuFightCloseCheckTotalTimer(void) {
-#include "src/game/gs_npc_interact_fn_8000DD0C.inc"
-}
-#else
 u32 menuFightCloseCheckTotalTimer(void) { return menuIsCheck(0x10a); }
-#endif
 
 /* menuFightCloseTotalTimer - 0x8000DD30 | size: 0x2c */
-#if 0
-asm void menuFightCloseTotalTimer(void) {
-#include "src/game/gs_npc_interact_fn_8000DD30.inc"
-}
-#else
 void menuFightCloseTotalTimer(void) { menuCloseCustom(0x10a, 0, 0); }
-#endif
 
 /* menuFightOpenTotalTimer - 0x8000DD5C | size: 0x3c */
-#if 0
-asm void menuFightOpenTotalTimer(void) {
-#include "src/game/gs_npc_interact_fn_8000DD5C.inc"
-}
-#else
 void menuFightOpenTotalTimer(void) { menuOpenCustom(0x10a, -1, 0, 0, 0, 0); }
-#endif
 
 /* menuFightCloseCheckCountDown - 0x8000DD98 | size: 0x24 */
-#if 0
-asm void menuFightCloseCheckCountDown(void) {
-#include "src/game/gs_npc_interact_fn_8000DD98.inc"
-}
-#else
 u32 menuFightCloseCheckCountDown(void) { return menuIsCheck(0x10b); }
-#endif
 
 /* menuFightCloseCountDown - 0x8000DDBC | size: 0x2c */
-#if 0
-asm void menuFightCloseCountDown(void) {
-#include "src/game/gs_npc_interact_fn_8000DDBC.inc"
-}
-#else
 void menuFightCloseCountDown(void) { menuCloseCustom(0x10b, 0, 0); }
-#endif
 
 /* menuFightOpenCountDown - 0x8000DDE8 | size: 0x3c */
-#if 0
-asm void menuFightOpenCountDown(void) {
-#include "src/game/gs_npc_interact_fn_8000DDE8.inc"
-}
-#else
 void menuFightOpenCountDown(void) { menuOpenCustom(0x10b, -1, 0, 0, 0, 0); }
-#endif
 
 /* menuFightButtonSecretKousan - 0x8000DE24 | size: 0xa0 */
 extern void menuButtonNormal(void);
-#if 0
-asm void menuFightButtonSecretKousan(void) {
-#include "src/game/gs_npc_interact_fn_8000DE24.inc"
-}
-#else
 void menuFightButtonSecretKousan(u8* ptr) {
     extern void menuButtonNormal(u8* a);
     extern u8 fn_801F18DC(s32 a);
@@ -746,17 +651,11 @@ void menuFightButtonSecretKousan(u8* ptr) {
         ptr[0x99] = 1;
     }
 }
-#endif
 
 #endif /* !MENU_FIGHT_ONLY */
 
 #if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000DEC4)
 /* menuFightDrawTargetSecret - 0x8000DEC4 | size: 0x12c */
-#if 0
-asm void menuFightDrawTargetSecret(void) {
-#include "src/game/gs_npc_interact_fn_8000DEC4.inc"
-}
-#else
 typedef struct MenuFightTargetSprite {
     u8 pad_00[6];
     s16 tag;
@@ -796,18 +695,12 @@ void menuFightDrawTargetSecret(u8* arg1, u8* arg2) {
     }
     winSpriteSetDisp(arg2, 0);
 }
-#endif
 
 #endif
 
 #ifndef MENU_FIGHT_ONLY
 /* menuFightButtonTargetSecret - 0x8000DFF0 | size: 0x214 */
 extern u8* windowGetKeyInfo();
-#if 0
-asm void menuFightButtonTargetSecret(void) {
-#include "src/game/gs_npc_interact_fn_8000DFF0.inc"
-}
-#else
 /* Target side (0 enemy, 1 self, 2 both) a secret-move target id selects; -1 for none. */
 static inline s32 menuFightTargetSecretSide(s32 target)
 {
@@ -866,16 +759,10 @@ void menuFightButtonTargetSecret(u8* ctx) {
         ctx[0x99] = 1;
     }
 }
-#endif
 
 /* menuFightDrawTargetCursor - 0x8000E204 | size: 0x88 */
 extern void menuItemBiosGetSelectFlag(void);
 extern void menuGetCursorItemID(void);
-#if 0
-asm void menuFightDrawTargetCursor(void) {
-#include "src/game/gs_npc_interact_fn_8000E204.inc"
-}
-#else
 void menuFightDrawTargetCursor(u8* arg1, u8* arg2) {
     extern u32 menuItemBiosGetSelectFlag(s16 val);
     extern s32 menuGetCursorItemID(u32 val);
@@ -890,16 +777,9 @@ void menuFightDrawTargetCursor(u8* arg1, u8* arg2) {
         winSpriteSetDisp(arg2, 0);
     }
 }
-#endif
 
 /* menuFightCtrlTarget - 0x8000E28C | size: 0x4 */
-#if 0
-asm void menuFightCtrlTarget(void) {
-#include "src/game/gs_npc_interact_fn_8000E28C.inc"
-}
-#else
 void menuFightCtrlTarget(void) {}
-#endif
 
 #endif /* !MENU_FIGHT_ONLY */
 
@@ -1190,11 +1070,6 @@ extern u32 pokemonGetStatus();
 extern u32 pokemonCheckValid();
 extern u32 fn_8001D624();
 extern void jumptable_802E4C20();
-#if 0
-asm void menuFightDrawSecretPokemon(void) {
-#include "src/game/gs_npc_interact_fn_8000EA10.inc"
-}
-#else
 
 void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     extern u32 windowGetParam(u8* a, s32 b);
@@ -1303,7 +1178,6 @@ void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
     }
     }
 }
-#endif
 
 #endif /* !MENU_FIGHT_ONLY */
 
@@ -1319,11 +1193,6 @@ extern f32 lbl_8047B704;
 extern f32 lbl_8047B708;
 extern f64 lbl_8047B710;
 extern u8 lbl_8047885C[4];
-#if 0
-asm void menuFightButtonSecretPokemonTop(void) {
-#include "src/game/gs_npc_interact_fn_8000ED34.inc"
-}
-#else
 /* |angle| */
 static inline f32 menuFightAbsAngle(f32 angle)
 {
@@ -1484,32 +1353,20 @@ void menuFightButtonSecretPokemonTop(u8* ctx) {
         }
     }
 }
-#endif
 
 #endif
 
 #ifndef MENU_FIGHT_ONLY
 /* menuFightCtrlSecretPokemonTop - 0x8000F310 | size: 0x4c */
-#if 0
-asm void menuFightCtrlSecretPokemonTop(void) {
-#include "src/game/gs_npc_interact_fn_8000F310.inc"
-}
-#else
 u32 menuFightCtrlSecretPokemonTop(u32 arg) {
     windowGetParam((void*)arg, 0);
     windowGetParam((void*)arg, 1);
     windowGetParam((void*)arg, 2);
     return 0;
 }
-#endif
 
 /* menuFightDrawSecretSelect - 0x8000F35C | size: 0xa4 */
 extern void jumptable_802E4C80();
-#if 0
-asm void menuFightDrawSecretSelect(void) {
-#include "src/game/gs_npc_interact_fn_8000F35C.inc"
-}
-#else
 void menuFightDrawSecretSelect(u8* ctx, u8* npc) {
     s32 visible;
     s32 id;
@@ -1544,7 +1401,6 @@ visibility_done:
         break;
     }
 }
-#endif
 
 #endif /* !MENU_FIGHT_ONLY */
 
@@ -1553,11 +1409,6 @@ visibility_done:
 extern u32 fightOutPokemonGetPokemonPtr();
 extern void fn_800FB8C8(void);
 extern void jumptable_802E4CA8();
-#if 0
-asm void menuFightDrawSecretWazaDoc(void) {
-#include "src/game/gs_npc_interact_fn_8000F400.inc"
-}
-#else
 void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
     extern u32 windowSearchID(void);
     extern u8* windowGetAllocPtr(void);
@@ -1676,18 +1527,12 @@ void menuFightDrawSecretWazaDoc(u8* ctx, u8* npc) {
         break;
     }
 }
-#endif
 
 #endif
 
 #if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000F768)
 /* menuFightDrawSecretWazaSelect - 0x8000F768 | size: 0x1fc */
 extern void jumptable_802E4CD8();
-#if 0
-asm void menuFightDrawSecretWazaSelect(void) {
-#include "src/game/gs_npc_interact_fn_8000F768.inc"
-}
-#else
 void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
     extern void* windowSearchID(s32 id);
     extern u8* windowGetAllocPtr(void* window);
@@ -1799,7 +1644,6 @@ void menuFightDrawSecretWazaSelect(u8* ctx, u8* npc) {
         break;
     }
 }
-#endif
 
 #endif
 
@@ -1810,11 +1654,6 @@ extern f32 lbl_8047B700;
 extern f32 lbl_8047B704;
 extern f32 lbl_8047B708;
 extern u8 lbl_80478858[4];
-#if 0
-asm void menuFightButtonSecretWazaTop(void) {
-#include "src/game/gs_npc_interact_fn_8000F964.inc"
-}
-#else
 /* One 0xC-byte secret-move row in the window's allocated copy. */
 typedef struct MenuFightSecretWazaEntry {
     u32 id;
@@ -1955,16 +1794,10 @@ check_pressed:
         }
     }
 }
-#endif
 
 /* menuFightCtrlSecretWazaTop - 0x8000FDD8 | size: 0x60 */
 extern void windowAllocMemory(void);
 extern void* memcpy(void* dst, const void* src, u32 n);
-#if 0
-asm void menuFightCtrlSecretWazaTop(void) {
-#include "src/game/gs_npc_interact_fn_8000FDD8.inc"
-}
-#else
 u32 menuFightCtrlSecretWazaTop(u8* ptr) {
     extern void* windowAllocMemory(u8* a, u32 size);
     extern void windowGetAllocPtr(u8* a);
@@ -1977,14 +1810,8 @@ u32 menuFightCtrlSecretWazaTop(u8* ptr) {
     windowGetAllocPtr(ptr);
     return 0;
 }
-#endif
 
 /* menuFightButtonSecretMain - 0x8000FE38 | size: 0x118 */
-#if 0
-asm void menuFightButtonSecretMain(void) {
-#include "src/game/gs_npc_interact_fn_8000FE38.inc"
-}
-#else
 void menuFightButtonSecretMain(u8* arg1) {
     extern void* windowGetKeyInfo(void);
     extern u8 fn_801F18DC(s32 a);
@@ -2032,14 +1859,8 @@ got_flag:
         arg1[0x99] = 1;
     }
 }
-#endif
 
 /* menuFightCtrlSecretMain - 0x8000FF50 | size: 0x58 */
-#if 0
-asm void menuFightCtrlSecretMain(void) {
-#include "src/game/gs_npc_interact_fn_8000FF50.inc"
-}
-#else
 u32 menuFightCtrlSecretMain(u8* ptr) {
     extern void* windowAllocMemory(u8* a, u32 size);
     if ((s8)ptr[1] == 0) {
@@ -2050,15 +1871,9 @@ u32 menuFightCtrlSecretMain(u8* ptr) {
     }
     return 0;
 }
-#endif
 
 /* menuFightDrawBall - 0x8000FFA8 | size: 0x118 */
 extern void jumptable_802E4D2C();
-#if 0
-asm void menuFightDrawBall(void) {
-#include "src/game/gs_npc_interact_fn_8000FFA8.inc"
-}
-#else
 void menuFightDrawBall(u8* ctx, u8* npc) {
     extern u8* windowGetFreeWork(u8* a);
     s32 msg;
@@ -2126,14 +1941,8 @@ void menuFightDrawBall(u8* ctx, u8* npc) {
         }
     }
 }
-#endif
 
 /* menuFightCtrlBall - 0x800100C0 | size: 0x68 */
-#if 0
-asm void menuFightCtrlBall(void) {
-#include "src/game/gs_npc_interact_fn_800100C0.inc"
-}
-#else
 u32 menuFightCtrlBall(u8* ptr) {
     extern void* windowGetFreeWork(u8* a);
     extern void* windowGetParam(u8* a, u32 b);
@@ -2143,16 +1952,10 @@ u32 menuFightCtrlBall(u8* ptr) {
     }
     return 0;
 }
-#endif
 
 /* _menuFightIsUse__FP16MENU_WAZA_STATUSUs - 0x80010128 | size: 0x16c */
 extern u32 fightOutPokemonCheckCanOutOkWazaBanme();
 extern u32 fightOutPokemonGetSoubiItemDataId();
-#if 0
-asm void _menuFightIsUse__FP16MENU_WAZA_STATUSUs(void) {
-#include "src/game/gs_npc_interact_fn_80010128.inc"
-}
-#else
 u32 _menuFightIsUse__FP16MENU_WAZA_STATUSUs(ctx, arg)
 u8* ctx;
 u16 arg;
@@ -2201,7 +2004,6 @@ u16 arg;
     }
     return 0;
 }
-#endif
 
 /* Fight-menu window work: the four move slots shown by DrawPP/DrawType. */
 typedef struct MenuFightMoveSlot {
@@ -2221,11 +2023,6 @@ typedef struct MenuFightMoveWork {
 
 /* menuFightDrawPP - 0x80010294 | size: 0x1e8 */
 extern u32 windowGetCursor();
-#if 0
-asm void menuFightDrawPP(void) {
-#include "src/game/gs_npc_interact_fn_80010294.inc"
-}
-#else
 void menuFightDrawPP(u8* ctx, u8* npc) {
     extern u8* windowGetAllocPtr(u8* a);
     extern u32 windowGetCursor(u32 val);
@@ -2280,14 +2077,8 @@ void menuFightDrawPP(u8* ctx, u8* npc) {
         }
     }
 }
-#endif
 
 /* menuFightDrawType - 0x8001047C | size: 0x10c */
-#if 0
-asm void menuFightDrawType(void) {
-#include "src/game/gs_npc_interact_fn_8001047C.inc"
-}
-#else
 void menuFightDrawType(u8* arg1) {
     extern void* windowGetAllocPtr(u8* a);
     extern u32 windowGetCursor(u32 val);
@@ -2334,14 +2125,8 @@ void menuFightDrawType(u8* arg1) {
         }
     }
 }
-#endif
 
 /* menuFightDrawWaza - 0x80010588 | size: 0x11c */
-#if 0
-asm void menuFightDrawWaza(void) {
-#include "src/game/gs_npc_interact_fn_80010588.inc"
-}
-#else
 void menuFightDrawWaza(u8* arg1, u8* arg2) {
     typedef struct {
         u32 unk_00;
@@ -2387,14 +2172,8 @@ void menuFightDrawWaza(u8* arg1, u8* arg2) {
         fn_800FB680(0, 0, (s32)menuSubCalcColor(arg1, arg2), 0xE7);
     }
 }
-#endif
 
 /* menuFightDrawCmdMsg - 0x800106A4 | size: 0x1a0 */
-#if 0
-asm void menuFightDrawCmdMsg(void) {
-#include "src/game/gs_npc_interact_fn_800106A4.inc"
-}
-#else
 void menuFightDrawCmdMsg(u8* arg1, u8* arg2) {
     extern u32 windowGetAllocPtr(u8* a);
     extern u32 windowGetFreeWork(u8* a);
@@ -2460,16 +2239,10 @@ void menuFightDrawCmdMsg(u8* arg1, u8* arg2) {
         fn_800FB680(0, -2, (s32)menuSubCalcColor(arg1, arg2), r30);
     }
 }
-#endif
 
 /* menuFightWazaButton - 0x80010844 | size: 0x15c */
 extern void pokemonWazaReplace(void);
 extern void pokemonToMenuWazaStatus(void);
-#if 0
-asm void menuFightWazaButton(void) {
-#include "src/game/gs_npc_interact_fn_80010844.inc"
-}
-#else
 u32 menuFightWazaButton(u8* ctx) {
     typedef struct MenuWindow {
         u8 pad_00[0x95];
@@ -2545,15 +2318,9 @@ u32 menuFightWazaButton(u8* ctx) {
     }
     return 0;
 }
-#endif
 
 /* menuFightWazaCtrl - 0x800109A0 | size: 0x190 */
 extern u16 lbl_80478850[4];
-#if 0
-asm void menuFightWazaCtrl(void) {
-#include "src/game/gs_npc_interact_fn_800109A0.inc"
-}
-#else
 u32 menuFightWazaCtrl(u8* ctx) {
     typedef struct MenuWindow {
         u8 pad_00;
@@ -2632,7 +2399,6 @@ u32 menuFightWazaCtrl(u8* ctx) {
     }
     return 0;
 }
-#endif
 
 /* menuFightMainCtrl - 0x80010B30 | size: 0x168 */
 u32 menuFightMainCtrl(u8* arg) {
@@ -2697,11 +2463,6 @@ extern s32 fightPokemonGetNicknamePtr(u32 arg);
 extern void GSlogWrite(const char* fmt, ...);
 extern u8 lbl_80266788[];
 extern u8 lbl_802E4B78[];
-#if 0
-asm void menuPokemonCheckPokemonChange(void) {
-#include "src/game/gs_npc_interact_fn_80010C98.inc"
-}
-#else
 u32 menuPokemonCheckPokemonChange(void* npc, u32 warpId, u32 variant) {
 #define WAIT_FOR_DIALOG(waitLabel, checkLabel, haveLabel, doneLabel) \
     goto checkLabel; \
@@ -2794,5 +2555,4 @@ doneLabel:
 #undef WAIT_FOR_DIALOG
     return 0;
 }
-#endif
 #endif /* !MENU_FIGHT_ONLY */

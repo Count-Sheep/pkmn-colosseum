@@ -591,11 +591,6 @@ done:
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017B2CC(void) {
-#include "src/game/gs_scene_fn_8017B2CC.inc"
-}
-#else
 s32 fn_8017B2CC(u32 fileHandle) {
     FSYSSlot* slot;
     FSYSSlot* hit;
@@ -626,7 +621,6 @@ done:
     }
     return -1;
 }
-#endif
 #pragma pop
 
 /* 0x8017B370 | 0x74 */
@@ -668,11 +662,6 @@ s32 fn_8017B3E4(u32 fileHandle) {
 
 /* 0x8017B448 | 0x74 */
 extern u32 lbl_8047B1B4;
-#if 0
-asm void fn_8017B448(void) {
-#include "src/game/fsys/fsys_file_fn_8017B448.inc"
-}
-#else
 typedef struct fn8017B448_Node {
     u8 _pad00[0x40];
     u32* field40;   /* 0x40 -> ptr, deref +0xc */
@@ -707,7 +696,6 @@ done:
     return result;
 }
 #pragma pop
-#endif
 
 extern void fn_8017F800(u32 fileHandle);
 extern u32 fn_8017FA5C(void);
@@ -1007,11 +995,6 @@ static void FSYSScheduleSceneRead(FSYSSlot* slot, FSYSFileEntry* entry,
 
 /* 0x8017B4BC | 0xE8 */
 extern u32 lbl_8047B1B4;
-#if 0
-asm void fn_8017B4BC(void) {
-#include "src/game/fsys/fsys_file_fn_8017B4BC.inc"
-}
-#else
 #pragma push
 #pragma optimization_level 0
 u32 fn_8017B4BC(u32 fileHandle, u32 index) {
@@ -1073,7 +1056,6 @@ done:
     return 0;
 }
 #pragma pop
-#endif
 
 /* 0x8017B5A4 | 0x1C */
 #pragma push
@@ -1137,11 +1119,6 @@ extern void* fn_80180584();
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017B5C0(void) {
-#include "src/game/fsys/fsys_file_fn_8017B5C0.inc"
-}
-#else
 void fn_8017B5C0(FSYSSlot* slot, FSYSFileEntry* entry, u32 index) {
     FSYSSubEntry* sub;
     u32 cached;
@@ -1177,18 +1154,12 @@ void fn_8017B5C0(FSYSSlot* slot, FSYSFileEntry* entry, u32 index) {
         fn_8017BD34(slot, entry, index);
     }
 }
-#endif
 #pragma pop
 
 /* 0x8017B6B8 | 0x4C8 */
 extern void fn_8017F25C();
 extern u32 lbl_80478C48;
 extern u8 lbl_8036C2A0[];
-#if 0
-asm void fn_8017B6B8(void) {
-#include "src/game/fsys/fsys_file_fn_8017B6B8.inc"
-}
-#else
 void fn_8017B6B8(FSYSSlot* slot, FSYSFileEntry* entry, u32 index) {
     FSYSSubEntry* sub;
     FSYSFileEntry* currentEntry;
@@ -1284,7 +1255,6 @@ void fn_8017B6B8(FSYSSlot* slot, FSYSFileEntry* entry, u32 index) {
         FSYSReadEntryAsync(slot, sub, currentEntry);
     }
 }
-#endif
 
 typedef struct FSYSCallbackEntry8017BB80 {
     u32 field_00;
@@ -1350,11 +1320,6 @@ void* fn_8017BC90(void* unused0, u32 unused1, const void* compressed,
 /* 0x8017BD34 | 0x2B4 */
 extern void fn_8017A95C(void);
 extern u32 lbl_80478C48;
-#if 0
-asm void fn_8017BD34(void) {
-#include "src/game/fsys/fsys_file_fn_8017BD34.inc"
-}
-#else
 void fn_8017BD34(FSYSSlot* slot, FSYSFileEntry* entry) {
     FSYSSubEntry* sub;
     DecompPoolEntry* pool;
@@ -1381,18 +1346,12 @@ void fn_8017BD34(FSYSSlot* slot, FSYSFileEntry* entry) {
     offset = fn_8017F728(slot->fileHandle, entry->groupID, entry->nameHash);
     fn_80180584(sub->buffer, cached, offset, fn_8017A95C, slot);
 }
-#endif
 
 /* 0x8017C008 | 0x6C */
 extern void fn_80180C78();
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017C008(void) {
-#include "src/game/fsys/fsys_file_fn_8017C008.inc"
-}
-#else
 u32 fn_8017C008(FSYSSlot* slot) {
     FSYSSubEntry* sub;
     u32* buf;
@@ -1407,18 +1366,12 @@ u32 fn_8017C008(FSYSSlot* slot) {
     slot->status = FSYS_STATUS_ERROR;
     return 0;
 }
-#endif
 #pragma pop
 
 /* 0x8017C074 | 0x164 */
 extern u32 lbl_80478C48;
 #pragma push
 #pragma optimization_level 0
-#if 0
-asm void fn_8017C074(void) {
-#include "src/game/fsys/fsys_file_fn_8017C074.inc"
-}
-#else
 void fn_8017C074(FSYSSlot* slot, FSYSSubEntry* sub, u32 index, void** work) {
     u32 aligned;
     u32 handle;
@@ -1446,18 +1399,12 @@ void fn_8017C074(FSYSSlot* slot, FSYSSubEntry* sub, u32 index, void** work) {
     sub->buffer = buffer;
     sub->buffer = buffer;
 }
-#endif
 #pragma pop
 
 /* 0x8017C1D8 | 0x1BC */
 extern u32 lbl_80478C48;
 #pragma push
 #pragma optimization_level 0
-#if 0
-asm void fn_8017C1D8(void) {
-#include "src/game/fsys/fsys_file_fn_8017C1D8.inc"
-}
-#else
 void fn_8017C1D8(FSYSSlot* slot, FSYSSubEntry* sub, u32 index, void** work) {
     FSYSFileEntry* entry;
     void* temp;
@@ -1476,18 +1423,12 @@ void fn_8017C1D8(FSYSSlot* slot, FSYSSubEntry* sub, u32 index, void** work) {
     sub->state = 6;
     FSYSRunDoneCallback(slot, entry);
 }
-#endif
 #pragma pop
 
 /* 0x8017C39C | 0x78 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017C39C(void) {
-#include "src/game/fsys/fsys_file_fn_8017C39C.inc"
-}
-#else
 u32 fn_8017C39C(FSYSSlot *slot)
 {
     u8 *archive;
@@ -1520,7 +1461,6 @@ u32 fn_8017C39C(FSYSSlot *slot)
     slot->status = 0x064;
     return 0;
 }
-#endif
 #pragma pop
 
 /* 0x8017C414 | 0x154
@@ -1540,11 +1480,6 @@ u32 fn_8017C39C(FSYSSlot *slot)
 extern s32 fn_8017A624(void*);
 extern u32 OSDisableInterrupts(void);
 extern void OSRestoreInterrupts(u32);
-#if 0
-asm void fn_8017C414(void) {
-#include "src/game/fsys/fsys_file_fn_8017C414.inc"
-}
-#else
 #pragma optimization_level 4
 u32 fn_8017C414(void* arg) {
     u32 enabled;
@@ -1595,33 +1530,20 @@ u32 fn_8017C414(void* arg) {
     }
     return 1;
 }
-#endif
 
 /* 0x8017C580 | 0x10 */
-#if 0
-asm void fn_8017C580(void) {
-#include "src/game/fsys/fsys_file_fn_8017C580.inc"
-}
-#else
 #pragma optimization_level 4
 u32 fn_8017C580(FSYSSlot* slot) {
     slot->status = 0x66;
     return 0;
 }
-#endif
 
 /* 0x8017C5A0 | 0x10 */
-#if 0
-asm void fn_8017C5A0(void) {
-#include "src/game/fsys/fsys_file_fn_8017C5A0.inc"
-}
-#else
 #pragma optimization_level 4
 u32 fn_8017C5A0(FSYSSlot* slot) {
     slot->status = 0x66;
     return 0;
 }
-#endif
 
 /* 0x8017C5B8 | 0x128 */
 extern FSYSFileHandle* fn_8017D68C(FSYSSlot*);
@@ -1629,11 +1551,6 @@ extern u32 fn_8017F928();
 extern void fn_80180694();
 extern u32 lbl_8047B1B8;
 extern u32 lbl_8047B1BC;
-#if 0
-asm void fn_8017C5B8(void) {
-#include "src/game/fsys/fsys_file_fn_8017C5B8.inc"
-}
-#else
 #pragma optimization_level 4
 u32 fn_8017C5B8(FSYSSlot* slot) {
     u8* archive;
@@ -1688,15 +1605,9 @@ u32 fn_8017C5B8(FSYSSlot* slot) {
     saveResult = result;
     return 1;
 }
-#endif
 
 /* 0x8017C6E0 | 0x1AC */
 extern u32 lbl_80478C48;
-#if 0
-asm void fn_8017C6E0(void) {
-#include "src/game/fsys/fsys_file_fn_8017C6E0.inc"
-}
-#else
 u32 fn_8017C6E0(FSYSSlot* slot) {
     FSYSFileEntry* entry;
     FSYSSubEntry* sub;
@@ -1720,7 +1631,6 @@ u32 fn_8017C6E0(FSYSSlot* slot) {
     slot->status = FSYS_STATUS_ERROR;
     return 0;
 }
-#endif
 
 /* 0x8017C894 | 0x2C */
 extern void fn_8017D8F8();
@@ -1745,11 +1655,6 @@ s32 fn_8017C8C8(u32 arg) {
 #pragma pop
 
 /* 0x8017C8FC | 0x580 */
-#if 0
-asm void fn_8017C8FC(void) {
-#include "src/game/fsys/fsys_file_fn_8017C8FC.inc"
-}
-#else
 u32 fn_8017C8FC(FSYSSlot* slot) {
     s32 i;
     FSYSFileEntry* entry;
@@ -1875,16 +1780,10 @@ u32 fn_8017C8FC(FSYSSlot* slot) {
 
     return 0;
 }
-#endif
 
 /* 0x8017CE7C | 0x4C */
 extern void fn_8017D960();
 extern void fn_8017DAB8();
-#if 0
-asm void fn_8017CE7C(void) {
-#include "src/game/fsys/fsys_file_fn_8017CE7C.inc"
-}
-#else
 #pragma optimization_level 0
 u32 fn_8017CE7C(FSYSSlot* slot) {
     if ((s32)slot->loadMode == 3) {
@@ -1894,18 +1793,12 @@ u32 fn_8017CE7C(FSYSSlot* slot) {
     }
     return 1;
 }
-#endif
 
 /* 0x8017CED8 | 0x4C8 */
 extern void fn_8017F800(u32);
 extern void* fn_80180450();
 extern u32 lbl_8047B1B8;
 extern u32 lbl_8047B1BC;
-#if 0
-asm void fn_8017CED8(void) {
-#include "src/game/fsys/fsys_file_fn_8017CED8.inc"
-}
-#else
 u32 fn_8017CED8(FSYSSlot* slot) {
     u32 archiveSize;
     u32 alignedArchiveSize;
@@ -1943,14 +1836,8 @@ u32 fn_8017CED8(FSYSSlot* slot) {
     slot->status = FSYS_STATUS_ERROR;
     return 0;
 }
-#endif
 
 /* 0x8017D3A0 | 0x34 */
-#if 0
-asm void fn_8017D3A0(void) {
-#include "src/game/fsys/fsys_file_fn_8017D3A0.inc"
-}
-#else
 #pragma optimization_level 4
 u32 fn_8017D3A0(FSYSSlot* slot) {
     switch (slot->padding054) {
@@ -1962,7 +1849,6 @@ u32 fn_8017D3A0(FSYSSlot* slot) {
             return 0;
     }
 }
-#endif
 
 /* 0x8017D3D4 | 0x2C */
 extern void fn_8017DB74();
@@ -2003,11 +1889,6 @@ s32 fn_8017D56C(u32 fileHandle) {
 extern u32 lbl_8047B1B8;
 extern u32 lbl_8047B1BC;
 extern void fn_8017F800();
-#if 0
-asm void fn_8017D624(void) {
-#include "src/game/fsys/fsys_file_fn_8017D624.inc"
-}
-#else
 #pragma optimization_level 0
 void fn_8017D624(void) {
     FSYSFileHandle* table = (FSYSFileHandle*)lbl_8047B1B8;
@@ -2019,7 +1900,6 @@ void fn_8017D624(void) {
     }
     lbl_8047B1BC = 0;
 }
-#endif
 
 /* 0x8017D68C | 0x174 */
 extern u32 lbl_8047B1B8;
@@ -2085,11 +1965,6 @@ extern void fn_8017DF4C();
 extern void fn_8017DFF4();
 extern void fn_8017E09C();
 extern u32 lbl_8047B1B4;
-#if 0
-asm void fn_8017D800(void) {
-#include "src/game/fsys/fsys_file_fn_8017D800.inc"
-}
-#else
 void fn_8017D800(void) {
     u32 i;
     FSYSSlot* slot;
@@ -2120,42 +1995,24 @@ void fn_8017D800(void) {
         }
     }
 }
-#endif
 
 /* 0x8017D8F8 | 0x34 */
-#if 0
-asm void fn_8017D8F8(void) {
-#include "src/game/fsys/fsys_file_fn_8017D8F8.inc"
-}
-#else
 #pragma optimization_level 4
 #pragma dont_inline on
 void fn_8017D8F8(FSYSSlot* slot) {
     fn_8017D960(slot);
     slot->status = FSYS_STATUS_FREE;
 }
-#endif
 
 /* 0x8017D92C | 0x34 */
-#if 0
-asm void fn_8017D92C(void) {
-#include "src/game/fsys/fsys_file_fn_8017D92C.inc"
-}
-#else
 #pragma optimization_level 4
 void fn_8017D92C(FSYSSlot* slot) {
     fn_8017D960(slot);
     slot->status = FSYS_STATUS_FREE;
 }
 #pragma dont_inline reset
-#endif
 
 /* 0x8017D960 | 0x158 */
-#if 0
-asm void fn_8017D960(void) {
-#include "src/game/fsys/fsys_file_fn_8017D960.inc"
-}
-#else
 void fn_8017D960(FSYSSlot* slot) {
     FSYSFileEntry* entry;
     u32 i;
@@ -2194,17 +2051,11 @@ void fn_8017D960(FSYSSlot* slot) {
         callback(slot->loadMode, slot->callbackB, slot->callbackC);
     }
 }
-#endif
 
 /* 0x8017DAB8 | 0xBC */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017DAB8(void) {
-#include "src/game/fsys/fsys_file_fn_8017DAB8.inc"
-}
-#else
 void fn_8017DAB8(FSYSSlot* slot) {
     FSYSSubEntry* sub;
     u32 i;
@@ -2243,17 +2094,11 @@ void fn_8017DAB8(FSYSSlot* slot) {
         fn_8017D960(slot);
     }
 }
-#endif
 #pragma pop
 
 /* 0x8017DB74 | 0x330 */
 extern u32 lbl_8047B1B8;
 extern u32 lbl_8047B1BC;
-#if 0
-asm void fn_8017DB74(void) {
-#include "src/game/fsys/fsys_file_fn_8017DB74.inc"
-}
-#else
 void fn_8017DB74(FSYSSlot* slot) {
     u32 headerSize;
     u32 archiveSize;
@@ -2338,7 +2183,6 @@ void fn_8017DB74(FSYSSlot* slot) {
                     (archiveSize - 0x21) & ~0x1Fu, headerSize, fn_8017F108);
     }
 }
-#endif
 
 /* 0x8017DEA4 | 0xA8 */
 extern void fn_80167DD8();
@@ -2367,11 +2211,6 @@ void fn_8017DEA4(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017DF4C(void) {
-#include "src/game/fsys/fsys_file_fn_8017DF4C.inc"
-}
-#else
 void fn_8017DF4C(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
                  u32 callbackB, u32 callbackC) {
     u32 len;
@@ -2386,18 +2225,12 @@ void fn_8017DF4C(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
         fn_80167E98(FSYS_SLOT_FILE0(slot), slot, (len + 0x1F) & ~0x1Fu, 0, fn_8017F108);
     }
 }
-#endif
 #pragma pop
 
 /* 0x8017DFF4 | 0xA8 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8017DFF4(void) {
-#include "src/game/fsys/fsys_file_fn_8017DFF4.inc"
-}
-#else
 void fn_8017DFF4(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
                  u32 callbackB, u32 callbackC) {
     u32 len;
@@ -2412,15 +2245,9 @@ void fn_8017DFF4(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
         fn_80167E98(FSYS_SLOT_FILE0(slot), slot, (len + 0x1F) & ~0x1Fu, 0, fn_8017F108);
     }
 }
-#endif
 #pragma pop
 
 /* 0x8017E09C | 0x13C */
-#if 0
-asm void fn_8017E09C(void) {
-#include "src/game/fsys/fsys_file_fn_8017E09C.inc"
-}
-#else
 void fn_8017E09C(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
                  u32 callbackB, u32 callbackC) {
     u32 readFromCache;
@@ -2454,7 +2281,6 @@ void fn_8017E09C(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
         }
     }
 }
-#endif
 
 void fn_8017E1D8(FSYSSlot* slot, u32 fileHandle, u32 callbackA,
                  u32 callbackB, u32 callbackC)

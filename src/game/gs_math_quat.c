@@ -408,46 +408,16 @@ extern u32 lbl_8047CB50;
 extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
-#if 0
-asm void fn_800E06B8(void) {
-#include "src/game/gs_render_fn_800E06B8.inc"
-}
-#else
 void fn_800E06B8(void* a, void* b, void* c)
 {
     C_QUATSlerp(b, c, a);
 }
-#endif
 
-#if 0
-asm void fn_800E06EC(void) {
-#include "src/game/gs_render_fn_800E06EC.inc"
-}
-#else
 void fn_800E06EC(void* a, void* b) { fn_801ADAAC(b, a); }
-#endif
 
-#if 0
-asm void fn_800E0718(void) {
-#include "src/game/gs_render_fn_800E0718.inc"
-}
-#else
 void fn_800E0718(void) { C_QUATRotAxisRad(); }
-#endif
 
-#if 0
-asm void fn_800E0738(void) {
-#include "src/game/gs_render_fn_800E0738.inc"
-}
-#else
 void fn_800E0738(void* a, void* b, void* c) { PSQUATMultiply(b, c, a); }
-#endif
 
-#if 0
-asm void fn_800E076C(void) {
-#include "src/game/gs_render_fn_800E076C.inc"
-}
-#else
 void fn_800E076C(f32* dst, f32* src) { dst[0] = src[0]; dst[1] = src[1]; dst[2] = src[2]; dst[3] = src[3]; }
-#endif
 

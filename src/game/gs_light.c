@@ -415,22 +415,11 @@ extern u32 lbl_8047AB3C;
 #if !defined(PR410_GS_LIGHT_SPLIT) || defined(PR410_GS_LIGHT_PREFIX)
 
 #if !defined(PR410_GS_LIGHT_BACKFB_EXACT) && !defined(PR410_GS_LIGHT_BACKFB_SUFFIX)
-#if 0
-asm void fn_800DC874(void) {
-#include "src/game/gs_render_fn_800DC874.inc"
-}
-#else
 void fn_800DC874(void) {}
-#endif
 #endif
 
 extern u8 lbl_8047AAE0;
 #if !defined(PR410_GS_LIGHT_BACKFB_SUFFIX)
-#if 0
-asm void GSgfxBackFBDoFrame(void) {
-#include "src/game/gs_render_fn_800DC560.inc"
-}
-#else
 typedef struct GSbackFBFrameCapture {
     u8 active;
     u8 _pad[3];
@@ -491,7 +480,6 @@ void GSgfxBackFBDoFrame(void) {
     }
 }
 #endif
-#endif
 
 extern u32 lbl_8047AAEC;
 extern u32 lbl_8047CA80;
@@ -500,11 +488,6 @@ extern u32 lbl_8047CA74;
 extern f32 lbl_8047CA78;
 extern u32 lbl_8047AAF0;
 #if !defined(PR410_GS_LIGHT_BACKFB_EXACT)
-#if 0
-asm void fn_800DC6D8(void) {
-#include "src/game/gs_render_fn_800DC6D8.inc"
-}
-#else
 void fn_800DC6D8(u32 delta) {
     u32 offset;
     u32 i;
@@ -560,7 +543,6 @@ void fn_800DC6D8(u32 delta) {
     }
 }
 #endif
-#endif
 
 extern f32 lbl_8047CA78;
 extern f32 lbl_8047AAF4;
@@ -591,11 +573,6 @@ static inline void GSlightSetAnimIndexInline(u8* obj, u32 frame)
     *(f32*)(obj + 0x6c) = lbl_8047AAF4;
 }
 
-#if 0
-asm void GSlightPopState(void) {
-#include "src/game/gs_render_GSlightPopState.inc"
-}
-#else
 void GSlightPopState(u8* obj, u8* snapshot) {
     f32 frame;
     f32 speed;
@@ -629,17 +606,11 @@ void GSlightPopState(u8* obj, u8* snapshot) {
     }
 }
 #endif
-#endif
 
 #endif
 
 #if !defined(PR410_GS_LIGHT_SPLIT) || defined(PR410_GS_LIGHT_EXACT)
 
-#if 0
-asm void GSlightPushState(void) {
-#include "src/game/gs_render_fn_800DCA10.inc"
-}
-#else
 void GSlightPushState(u8* src, u8* dst) {
     dst[0] = src[1];
     dst[1] = src[3];
@@ -652,54 +623,18 @@ void GSlightPushState(u8* src, u8* dst) {
     dst[2] = src[0x70];
     dst[3] = src[0x71];
 }
-#endif
 
-#if 0
-asm void GSlightHasAnimationEnded(void) {
-#include "src/game/gs_render_GSlightHasAnimationEnded.inc"
-}
-#else
 u8 GSlightHasAnimationEnded(u8* obj) { return obj[0x70]; }
-#endif
 
-#if 0
-asm void GSlightStopAnimation(void) {
-#include "src/game/gs_render_GSlightStopAnimation.inc"
-}
-#else
 void GSlightStopAnimation(u8* obj) { obj[0x3] = 0; }
-#endif
 
-#if 0
-asm void GSlightStartAnimation(void) {
-#include "src/game/gs_render_GSlightStartAnimation.inc"
-}
-#else
 void GSlightStartAnimation(u8* obj) { if (!obj[0x2]) return; obj[0x3] = 1; obj[0x70] = 0; obj[0x71] = 1; }
-#endif
 
-#if 0
-asm void GSlightSetAnimType(void) {
-#include "src/game/gs_render_GSlightSetAnimType.inc"
-}
-#else
 void GSlightSetAnimType(u8* obj, u32 val) { *(u32*)((u8*)obj + 0x5c) = val; }
-#endif
 
-#if 0
-asm void GSlightSetAnimFrame(void) {
-#include "src/game/gs_render_fn_800DCADC.inc"
-}
-#else
 void GSlightSetAnimFrame(u8* obj, f32 val) { if (obj[0x2]) *(f32*)((u8*)obj + 0x68) = val; }
-#endif
 
 extern f32 lbl_8047CA88;
-#if 0
-asm void GSlightSetAnimRate(void) {
-#include "src/game/gs_render_GSlightSetAnimRate.inc"
-}
-#else
 void GSlightSetAnimRate(u8* obj, f32 speed) {
     if (!obj[2]) return;
     if (fn_800D37CC() == 0x32) {
@@ -708,15 +643,9 @@ void GSlightSetAnimRate(u8* obj, f32 speed) {
     *(f32*)(obj + 0x64) = speed;
     HSD_ForeachAnim((void*)*(u32*)(obj + 0xc), 7, 0xFFFF, (void*)HSD_AObjSetRate, 1, *(f32*)(obj + 0x64));
 }
-#endif
 
 extern f32 lbl_8047CA78;
 extern f32 lbl_8047AAF4;
-#if 0
-asm void GSlightSetAnimIndex(void) {
-#include "src/game/gs_render_GSlightSetAnimIndex.inc"
-}
-#else
 void GSlightSetAnimIndex(u8* obj, u32 frame) {
     if (!obj[2]) return;
     HSD_LObjRemoveAnimAll((void*)*(u32*)(obj + 0xc));
@@ -733,49 +662,19 @@ void GSlightSetAnimIndex(u8* obj, u32 frame) {
     HSD_ForeachAnim((void*)*(u32*)(obj + 0xc), 7, 0xFFFF, (void*)lightGetFrameCount__FP9_HSD_AObj, 0);
     *(f32*)(obj + 0x6c) = lbl_8047AAF4;
 }
-#endif
 
-#if 0
-asm void GSlightCanAnimate(void) {
-#include "src/game/gs_render_GSlightCanAnimate.inc"
-}
-#else
 u8 GSlightCanAnimate(u8* obj) { return obj[0x2]; }
-#endif
 
-#if 0
-asm void GSlightSetActive(void) {
-#include "src/game/gs_render_GSlightSetActive.inc"
-}
-#else
 void GSlightSetActive(u8* obj, u8 val) { obj[0x1] = val; }
-#endif
 
 #endif
 
 #if !defined(PR410_GS_LIGHT_SPLIT) || defined(PR410_GS_LIGHT_SUFFIX)
 
-#if 0
-asm void GSlightSetTarget(void) {
-#include "src/game/gs_render_GSlightSetTarget.inc"
-}
-#else
 void GSlightSetTarget(u8* obj) { HSD_LObjSetInterest(*(u32*)((u8*)obj + 0xc)); }
-#endif
 
-#if 0
-asm void GSlightSetPosition(void) {
-#include "src/game/gs_render_GSlightSetPosition.inc"
-}
-#else
 void GSlightSetPosition(u8* obj) { HSD_LObjSetPosition(*(u32*)((u8*)obj + 0xc)); }
-#endif
 
-#if 0
-asm void GSlightSetColor(void) {
-#include "src/game/gs_render_GSlightSetColor.inc"
-}
-#else
 void GSlightSetColor(u8* obj, f32* rgb) {
     u8 t[4];
     u8 tmp[4];
@@ -785,13 +684,7 @@ void GSlightSetColor(u8* obj, f32* rgb) {
     *(u32*)tmp = *(u32*)t;
     HSD_LObjSetColor(*(u32*)(obj + 0xc), tmp);
 }
-#endif
 
-#if 0
-asm void GSlightSetType(void) {
-#include "src/game/gs_render_GSlightSetType.inc"
-}
-#else
 void GSlightSetType(u8* obj, s32 mode) {
     HSD_LObjClearFlags(*(u32*)(obj + 0xc), 3);
     switch (mode) {
@@ -810,14 +703,8 @@ void GSlightSetType(u8* obj, s32 mode) {
     }
     *(s32*)(obj + 4) = mode;
 }
-#endif
 
 /* WALL 95.6%: bne vs beq+b branch inversion at cmpw */
-#if 0
-asm void GSlightFree(void) {
-#include "src/game/gs_render_GSlightFree.inc"
-}
-#else
 void GSlightFree(u8* r3arg) {
     u8* r31;
     u8* r30;
@@ -848,18 +735,12 @@ void GSlightFree(u8* r3arg) {
     *(u8*)(r30 + 0x1) = 0;
     *(u8*)(r30 + 0x0) = 0;
 }
-#endif
 
 extern u32 lbl_8047AAF0;
 extern u32 lbl_8047AAEC;
 extern f32 lbl_8047CA70;
 extern f32 lbl_8047CA78;
 extern f32 lbl_8047AAF4;
-#if 0
-asm void GSlightLoad(void) {
-#include "src/game/gs_render_GSlightLoad.inc"
-}
-#else
 u8* GSlightLoad(void* data) {
     u32 remaining;
     u8* obj;
@@ -904,17 +785,11 @@ u8* GSlightLoad(void* data) {
 
     return obj;
 }
-#endif
 
 extern u32 lbl_8047AAF0;
 extern u32 lbl_8047AAEC;
 extern f32 lbl_8047CA78;
 extern u32 lbl_8047CA8C;
-#if 0
-asm void GSlightCreate(void) {
-#include "src/game/gs_render_GSlightCreate.inc"
-}
-#else
 u8* GSlightCreate(void) {
     f32 one;
     f32 zero;
@@ -966,16 +841,10 @@ u8* GSlightCreate(void) {
     obj[1] = 0;
     return obj;
 }
-#endif
 
 extern u32 lbl_8047AAF0;
 extern u16 lbl_8047AAE8;
 extern u32 lbl_8047AAEC;
-#if 0
-asm void GSlightInit(void) {
-#include "src/game/gs_render_GSlightInit.inc"
-}
-#else
 void GSlightInit(u32 count) {
     u16 handle;
     lbl_8047AAF0 = count;
@@ -991,22 +860,15 @@ void GSlightInit(u32 count) {
         }
     }
 }
-#endif
 
 extern u8 lbl_8047CA90;
 extern u8 lbl_8047CA98;
 extern f32 lbl_8047CA70;
 extern f32 lbl_8047AAF4;
-#if 0
-asm void lightGetFrameCount__FP9_HSD_AObj(u8* obj) {
-#include "src/game/gs_render_lightGetFrameCount__FP9_HSD_AObj.inc"
-}
-#else
 void lightGetFrameCount__FP9_HSD_AObj(u8* obj) {
     if (!obj) __assert(&lbl_8047CA90, 0xab, &lbl_8047CA98);
     lbl_8047AAF4 = lbl_8047CA70 + *(f32*)(obj + 0xc);
 }
-#endif
 
 typedef struct GSlightEntry {
     u8 allocated;
@@ -1034,11 +896,6 @@ static inline s32 GSlightFindFirstActive(GSlightEntry* light, u32 count)
     return -1;
 }
 
-#if 0
-asm void fn_800DD174(void) {
-#include "src/game/gs_render_fn_800DD174.inc"
-}
-#else
 void GSlightSetupLights(void* arg) {
     GSlightEntry* light;
     GSlightEntry* tail;
@@ -1068,5 +925,4 @@ void GSlightSetupLights(void* arg) {
     HSD_LObjSetup(arg);
 }
 
-#endif
 #endif

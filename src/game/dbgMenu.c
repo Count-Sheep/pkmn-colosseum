@@ -138,11 +138,6 @@ static inline void dbgMenuInitItems(u32* itemTable, u32 total)
  * function's own unrolled copies, so repeated expansion cannot admit the
  * helper either.
  */
-#if 0
-asm void fn_80132C6C(void) {
-#include "src/game/effect/effect_util_fn_80132C6C.inc"
-}
-#else
 void fn_80132C6C(u32 count, u32 maxPerSlot, u32 arg2, u32 arg3) {
     extern u32 lbl_8047AEB0;
     extern u32 lbl_8047AEB4;
@@ -185,13 +180,7 @@ void fn_80132C6C(u32 count, u32 maxPerSlot, u32 arg2, u32 arg3) {
 
     dbgMenuInitItems(&lbl_8047AEBC, total);
 }
-#endif
 
-#if 0
-asm void fn_80132F7C(void) {
-#include "src/game/effect/effect_util_fn_80132F7C.inc"
-}
-#else
 u32 fn_80132F7C(void) {
     if (menuIsCheck(0xab) & 0xFF) {
         menuClose(0xab);
@@ -200,13 +189,7 @@ u32 fn_80132F7C(void) {
     }
     return 0;
 }
-#endif
 
-#if 0
-asm void dbgMenuMovieTest(void) {
-#include "src/game/effect/effect_util_fn_80132FD8.inc"
-}
-#else
 u32 dbgMenuMovieTest(void) {
     u8 buf[0x18];
     s32 id;
@@ -221,7 +204,6 @@ u32 dbgMenuMovieTest(void) {
     }
     return 0;
 }
-#endif
 
 
 /* 0x80133050 | 0x3C -- fn_800D37D4(3, 2, 0, 2, 0, 0), return 0 */
@@ -239,11 +221,6 @@ u32 fn_8013308C(void) {
 
 
 /* 0x801330C8 | 0x150 */
-#if 0
-asm void fn_801330C8(void) {
-#include "src/game/effect/effect_util_fn_801330C8.inc"
-}
-#else
 u32 fn_801330C8(void) {
     fn_800D88DC(1);
     fn_800D888C(6);
@@ -266,7 +243,6 @@ u32 fn_801330C8(void) {
     fn_800D6728();
     return 0;
 }
-#endif
 
 
 /* 0x80133218 | 0x38 -- fn_800E1544() then print result, return 0 */
@@ -284,11 +260,6 @@ u32 dbgMenuGSmemDispMap(void) {
     return 0;
 }
 
-#if 0
-asm void dbgMenuGSmemCheck(void) {
-#include "src/game/effect/effect_util_fn_8013327C.inc"
-}
-#else
 u32 dbgMenuGSmemCheck(void) {
     if ((u32)(fn_800E0E14(1, 0) & 0xFF) == 1) {
         GSlogWrite(lbl_80272AE0);
@@ -297,7 +268,6 @@ u32 dbgMenuGSmemCheck(void) {
     }
     return 0;
 }
-#endif
 
 
 /* 0x5C | dbgMenuGSmemCheck -- fn_800E0E14(1,0) check then print */
@@ -322,11 +292,6 @@ u32 dbgMenuSendAllMail(void) {
     return 0;
 }
 
-#if 0
-asm void dbgMenuSendMail(void) {
-#include "src/game/effect/effect_util_dbgMenuSendMail.inc"
-}
-#else
 u32 dbgMenuSendMail(void) {
     extern s32 menuOpen(u32, u32);
     extern s32 mailChkReceiveMail(s32);
@@ -340,15 +305,9 @@ u32 dbgMenuSendMail(void) {
     }
     return 0;
 }
-#endif
 
 
 /* 0x801333AC | 0xA4 */
-#if 0
-asm void dbgMenuColisionDisp(void) {
-#include "src/game/effect/effect_util_dbgMenuColisionDisp.inc"
-}
-#else
 u32 dbgMenuColisionDisp(s32 arg) {
     extern void* GSresGetResource(u32, u32);
     u8* ptr;
@@ -372,15 +331,9 @@ u32 dbgMenuColisionDisp(s32 arg) {
     }
     return 0;
 }
-#endif
 
 
 /* 0x58 | debugMenuColorBarDisp | call_sequence */
-#if 0
-asm void debugMenuColorBarDisp(void) {
-#include "src/game/effect/effect_util_fn_80133450.inc"
-}
-#else
 u32 debugMenuColorBarDisp(void) {
     *(u8*)&lbl_80478820 = 0;
     menuOpenCustom(5, 0, 0, 0, 1, 0);
@@ -388,7 +341,6 @@ u32 debugMenuColorBarDisp(void) {
     *(u8*)&lbl_80478820 = 1;
     return 0;
 }
-#endif
 
 
 /* 0x801334A8 | 0x34 -- toggle lbl_8047AED9 (cntlzw/extrwi), call GSmodelSetShadowDebug */
@@ -411,11 +363,6 @@ u32 fn_801334DC(void) {
     return 0;
 }
 
-#if 0
-asm void debugMenuNodrawArea(void) {
-#include "src/game/effect/effect_util_fn_80133510.inc"
-}
-#else
 u32 debugMenuNodrawArea(void) {
     if (menuIsCheck(0x7) & 0xFF) {
         menuClose(0x7);
@@ -424,13 +371,7 @@ u32 debugMenuNodrawArea(void) {
     }
     return 0;
 }
-#endif
 
-#if 0
-asm void fn_8013356C(void) {
-#include "src/game/effect/effect_util_fn_8013356C.inc"
-}
-#else
 u32 fn_8013356C(u32 arg1, s32 arg2) {
     extern u32 heroMoveIsMember(s32);
     extern void heroMoveDismissMember(s32);
@@ -445,13 +386,7 @@ u32 fn_8013356C(u32 arg1, s32 arg2) {
     }
     return 0;
 }
-#endif
 
-#if 0
-asm void debugMenuChangeMemInfo(void) {
-#include "src/game/effect/effect_util_fn_801335D4.inc"
-}
-#else
 u32 debugMenuChangeMemInfo(void) {
     if (menuIsCheck(0x4) & 0xFF) {
         menuClose(0x4);
@@ -460,7 +395,6 @@ u32 debugMenuChangeMemInfo(void) {
     }
     return 0;
 }
-#endif
 
 
 /* 0x80133630 | 0x34 -- toggle lbl_8047AED4 (cntlzw>>5), call fn_80101B88 */
@@ -473,11 +407,6 @@ u32 fn_80133630(void) {
 
 
 /* 0x80133664 | 0x13C */
-#if 0
-asm void dbgMenuCursor(void) {
-#include "src/game/effect/effect_util_dbgMenuCursor.inc"
-}
-#else
 typedef struct DbgMenuKeyInfo {
     u8 pad_00[6];
     u16 flags;
@@ -524,7 +453,6 @@ void dbgMenuCursor(DbgMenuWindow* obj) {
 
     obj->cursorPosition = *(u16*)pair;
 }
-#endif
 
 
 /* 0x801337A0 | 0x8 | sda_getter */
@@ -545,11 +473,6 @@ u32 dbgMenuIsOpen(void) {
 /* 0x80133810 - 0x80133BE4: dbgMenuMain, _dbgMenuSub__Fl and
  * _dbgMenuGetMenuNum live in dbgMenu_candidate_801337E4.c. */
 
-#if 0
-asm u8 _dbgMenuCheckTerminate__FP14tagWINDOW_WORKl(void) {
-#include "src/game/effect/effect_util__dbgMenuCheckTerminate__FP14tagWINDOW_WORKl.inc"
-}
-#else
 u32 _dbgMenuCheckTerminate__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     EffectUtilEntry* result;
     u32 ret;
@@ -569,17 +492,11 @@ u32 _dbgMenuCheckTerminate__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     }
     return (u8)ret;
 }
-#endif
 
 
 /* 0x80133C3C - 0x80133E1C: _dbgMenuGetMenuNo__Fl lives in
  * dbgMenu_candidate_80133C3C.c. */
 
-#if 0
-asm void _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void) {
-#include "src/game/effect/effect_util_fn_80133E1C.inc"
-}
-#else
 u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     EffectUtilEntry* result;
     s32 index = _dbgMenuGetItemNo__FP14tagWINDOW_WORKl(obj, offset);
@@ -596,7 +513,6 @@ u32 _dbgMenuGetMsgID__FP14tagWINDOW_WORKl(void* obj, s32 offset) {
     }
     return result->value;
 }
-#endif
 
 
 #endif /* !DBGMENU_TAIL_80133E6C_ONLY */

@@ -70,17 +70,11 @@ u8 gamedataAttestBiosGetVerId(void* ptr) {
 
 
 /* 0x80135AD0 | 0x1C */
-#if 0
-asm void gamedataAttestBiosCopy(void) {
-#include "src/game/effect/effect_util_fn_80135AD0.inc"
-}
-#else
 void gamedataAttestBiosCopy(void* dst, void* src) {
     if (dst == 0) return;
     if (src == 0) return;
     *(u32*)dst = *(u32*)src;
 }
-#endif
 
 
 /* 0x80135AEC | 0x20 */

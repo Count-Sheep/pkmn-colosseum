@@ -412,30 +412,13 @@ extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
 extern u32 lbl_8047AA80;
-#if 0
-asm void fn_800D9AF0(void) {
-#include "src/game/gs_render_fn_800D9AF0.inc"
-}
-#else
 void fn_800D9AF0(u16* a, u16* b, u16* c, u16* d) { *a = *(u16*)(lbl_8047AA80 + 0x476); *b = *(u16*)(lbl_8047AA80 + 0x478); *c = *(u16*)(lbl_8047AA80 + 0x47a); *d = *(u16*)(lbl_8047AA80 + 0x47c); }
-#endif
 
 extern u32 lbl_8047AA80;
-#if 0
-asm void fn_800D9B24(void) {
-#include "src/game/gs_render_fn_800D9B24.inc"
-}
-#else
 void fn_800D9B24(u16* a, u16* b, u16* c, u16* d) { *a = *(u16*)(lbl_8047AA80 + 0x46e); *b = *(u16*)(lbl_8047AA80 + 0x470); *c = *(u16*)(lbl_8047AA80 + 0x472); *d = *(u16*)(lbl_8047AA80 + 0x474); }
-#endif
 
 extern f32 lbl_8047CA50;
 extern f32 lbl_8047CA54;
-#if 0
-asm void fn_800D9B58(void) {
-#include "src/game/gs_render_fn_800D9B58.inc"
-}
-#else
 void fn_800D9B58(f32 a, f32 b, f32 c, f32 d) {
     if (*(s32*)lbl_8047AA80 == 1) { fn_800D4F98(0x3a, 0xe, a); }
     else {
@@ -445,26 +428,14 @@ void fn_800D9B58(f32 a, f32 b, f32 c, f32 d) {
         fn_800D834C();
     }
 }
-#endif
 
-#if 0
-asm void fn_800D9BD0(void) {
-#include "src/game/gs_render_fn_800D9BD0.inc"
-}
-#else
 void fn_800D9BD0(f32 a, f32 b, f32 c, f32 d) {
     if (*(s32*)lbl_8047AA80 == 1) { fn_800D4F98(0x39, 0xe, a); }
     else { u8 tmp[0x48]; GSmtx44Perspective(tmp); fn_800BD2E0(tmp, 0); }
 }
-#endif
 
 extern u32 lbl_8047CA60;
 extern u32 lbl_8047CA68;
-#if 0
-asm void fn_800D9C24(void) {
-#include "src/game/gs_render_fn_800D9C24.inc"
-}
-#else
 void fn_800D9C24(u32 x0, u32 y0, u32 x1, u32 y1) {
     u32 camera;
 
@@ -486,4 +457,3 @@ void fn_800D9C24(u32 x0, u32 y0, u32 x1, u32 y1) {
         GScameraSetViewport((void*)camera, x0, y0, x1, y1);
     }
 }
-#endif

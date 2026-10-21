@@ -41,11 +41,6 @@ void koukaExec(u32 index, void* arg1, void* arg2, s32* out) {
 
 
 /* 0x8013613C | 0x22C */
-#if 0
-asm void _koukaOneExec__FUlPvPvPl(void) {
-#include "src/game/effect/effect_util_fn_8013613C.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): single-use inline helper - the s16 return gives the first value its own web, joined to the reassigned amount by a copy the allocator merges, so the call result goes straight into r24 as in retail (found by the permuter farm) - see docs/RULE_EXCEPTIONS.md */
 static inline s16 koukaGetBaseValue(u32 index)
 {
@@ -120,4 +115,3 @@ s32 _koukaOneExec__FUlPvPvPl(u32 index, void* arg1, void* arg2, s32* out) {
         *out = result;
     }
 }
-#endif

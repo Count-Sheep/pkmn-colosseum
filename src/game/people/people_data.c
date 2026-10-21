@@ -422,11 +422,6 @@ extern void itemDataBiosSetPrice(u8* p, u16 val);
 extern void itemDataBiosSetKind(u8* p, u8 val);
 extern void itemDataBiosSetName(u8* p, u32 val);
 
-#if 0
-asm void fn_80140A9C(void) {
-#include "src/game/people/people_data_fn_80140A9C.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_80140A9C(u32* a, u32* b) {
     volatile u32 new_var;
@@ -438,7 +433,6 @@ void fn_80140A9C(u32* a, u32* b) {
     *b = tmp;
 }
 #endif
-#endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
 
 #define PEOPLE_ENTRY_ID(entry) ((u16)itemGetStatus((u32)(entry), 0, 0x1b, 0))
@@ -448,11 +442,6 @@ extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
 #define PEOPLE_ENTRY_VALID(entry) \
     ((entry) != NULL && PEOPLE_ENTRY_ID(entry) != 0 && PEOPLE_ITEM_ID_VALID(PEOPLE_ENTRY_ID(entry)))
 
-#if 0
-asm void fn_80140ACC(void) {
-#include "src/game/people/people_data_fn_80140ACC.inc"
-}
-#else
 
 static inline u8 peopleItemIdValid(u16 id)
 {
@@ -671,13 +660,7 @@ s32 fn_80140ACC(u32* base, u16 count, u16 id, u16 amount, s16 index, u16 unusedL
     return remaining;
 }
 #endif
-#endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
-#if 0
-asm void fn_80141308(void) {
-#include "src/game/people/people_data_fn_80141308.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_80141308(u32* base, u16 count, u16 id, u16 amount, s16 index, u16 maxCount, u8 sortMode, u8 forceIndex) {
     u32 entryBase;
@@ -1223,13 +1206,7 @@ s32 fn_80141308(u32* base, u16 count, u16 id, u16 amount, s16 index, u16 maxCoun
     return nextValue;
 }
 #endif
-#endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
-#if 0
-asm void fn_80142368(void) {
-#include "src/game/people/people_data_fn_80142368.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32* fn_80142368(u32* base, u16 count, u16 id, u8 mode, u16 limit) {
     u32* entry;
@@ -1262,13 +1239,7 @@ u32* fn_80142368(u32* base, u16 count, u16 id, u8 mode, u16 limit) {
     return NULL;
 }
 #endif
-#endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
-#if 0
-asm void fn_801425E8(void) {
-#include "src/game/people/people_data_fn_801425E8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_801425E8(u32* base, u16 count, u8 mode) {
     u32* entry;
@@ -1316,13 +1287,7 @@ void fn_801425E8(u32* base, u16 count, u8 mode) {
     }
 }
 #endif
-#endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
-#if 0
-asm void fn_80142984(void) {
-#include "src/game/people/people_data_fn_80142984.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_80142984(u16 id) {
     s32 r;
@@ -1332,13 +1297,7 @@ s32 fn_80142984(u16 id) {
     return lbl_80478BD8 > (u16)id;
 }
 #endif
-#endif
 extern u32 lbl_80478BD8;   /* gPeopleFieldCount */
-#if 0
-asm void fn_801429E8(void) {
-#include "src/game/people/people_data_fn_801429E8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 fn_801429E8(u32 arg) {
     u16 r31;
@@ -1360,12 +1319,6 @@ s32 fn_801429E8(u32 arg) {
     return valid != 0;
 }
 #endif
-#endif
-#if 0
-asm void fn_80142A88(void) {
-#include "src/game/people/people_data_fn_80142A88.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_80142A88(u32* base, u16 count) {
     u32* ptr;
@@ -1381,7 +1334,6 @@ void fn_80142A88(u32* base, u16 count) {
     }
 }
 #endif
-#endif
 extern u8* itemDataBiosGetPtr(u16 idx);
 extern u8* itemBallDataBiosGetPtr(u16 idx);
 extern void fightItemBiosSetItemDataId(u8* p, u16 val);
@@ -1389,11 +1341,6 @@ extern void fightItemBiosSetTargetDataId(u8* p, u16 val);
 extern void fightItemBiosSetCount(u8* p, u32 val);
 extern void fightItemBiosSetBuff(u8* p, u32 val);
 extern void jumptable_80367D60();
-#if 0
-asm void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
-#include "src/game/people/people_data_fn_80142B24.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
     u8* target;
@@ -1479,7 +1426,6 @@ void fn_80142B24(void* p, u32 a, u16 b, u32 c, u32 d) {
 }
 #endif
 
-#endif
 extern u32 itemDataBiosGetName(u8* p);
 extern u8 itemDataBiosGetKind(u8* p);
 extern u32 itemDataBiosGetPrice(u8* p);
@@ -1509,11 +1455,6 @@ extern u32 fightItemBiosGetTargetDataId(u8* p);
 extern u32 fightItemBiosGetCount(u8* p);
 extern u32 fightItemBiosGetBuff(u8* p);
 extern void jumptable_80367DE8();
-#if 0
-asm s32 itemGetStatus(u32 a, u16 b, u16 c, u32 d) {
-#include "src/game/people/people_data_fn_80142CF4.inc"
-}
-#else
 /* Keep the standalone farm shape: later definitions must not auto-inline here. */
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemGetStatus(u32 a, u16 b, u16 c, u32 d) {
@@ -1609,7 +1550,6 @@ s32 itemGetStatus(u32 a, u16 b, u16 c, u32 d) {
     }
 }
 #endif
-#endif
 extern void jumptable_80367E70();
 extern u8 lbl_802730E0[];
 
@@ -1661,11 +1601,6 @@ typedef struct ItemParamBits {
     u8 spAttackEffortUp;
 } ItemParamBits;
 
-#if 0
-asm void fn_80142EF8(void) {
-#include "src/game/people/people_data_fn_80142EF8.inc"
-}
-#else
 void itemParamConvertOrigFormat(u8* dstData, u8* src) {
     ItemParamConvertTable table = *(ItemParamConvertTable*)lbl_802730E0;
     ItemParamBits* dst = (ItemParamBits*)dstData;
@@ -1807,12 +1742,6 @@ void itemParamConvertOrigFormat(u8* dstData, u8* src) {
         }
     }
 }
-#endif
-#if 0
-asm void fn_801431AC(void) {
-#include "src/game/people/people_data_fn_801431AC.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetRecoverType(u8* itemParam) {
     s32 selectedType;
@@ -2120,7 +2049,6 @@ returnSixteen:
     return 0x16;
 }
 #endif
-#endif
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 itemParamGetFriend3Up(u8* p) {
     ItemParamData* itemParam;
@@ -2131,35 +2059,18 @@ s8 itemParamGetFriend3Up(u8* p) {
 }
 #endif
 
-#if 0
-asm void itemParamGetFriend2Up(void) {
-#include "src/game/people/people_data_fn_801436B8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 itemParamGetFriend2Up(u8* p) {
     if (p == NULL) return 0;
     return (s8)p[0x6];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetFriend1Up(void) {
-#include "src/game/people/people_data_fn_801436D4.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 itemParamGetFriend1Up(u8* p) {
     if (p == NULL) return 0;
     return (s8)p[0x5];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetPPMaxFullFlag(void) {
-#include "src/game/people/people_data_fn_801436F0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPPMaxFullFlag(u8* p) {
     s32 v;
@@ -2168,60 +2079,30 @@ s32 itemParamGetPPMaxFullFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetSpAttackEffortUp(void) {
-#include "src/game/people/people_data_fn_80143718.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetSpAttackEffortUp(u8* p) {
     if (p == NULL) return 0;
     return p[0xf];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetSpDefenceEffortUp(void) {
-#include "src/game/people/people_data_fn_80143730.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetSpDefenceEffortUp(u8* p) {
     if (p == NULL) return 0;
     return p[0xe];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetQuickEffortUp(void) {
-#include "src/game/people/people_data_fn_80143748.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetQuickEffortUp(u8* p) {
     if (p == NULL) return 0;
     return p[0xd];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetDefenceEffortUp(void) {
-#include "src/game/people/people_data_fn_80143760.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetDefenceEffortUp(u8* p) {
     if (p == NULL) return 0;
     return p[0xc];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetEvolutionFlag(void) {
-#include "src/game/people/people_data_fn_80143778.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetEvolutionFlag(u8* p) {
     s32 v;
@@ -2230,24 +2111,12 @@ s32 itemParamGetEvolutionFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetPPUp(void) {
-#include "src/game/people/people_data_fn_801437A0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetPPUp(u8* p) {
     if (p == NULL) return 0;
     return p[0xb];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetPPSelectFlag(void) {
-#include "src/game/people/people_data_fn_801437B8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPPSelectFlag(u8* p) {
     s32 v;
@@ -2256,24 +2125,12 @@ s32 itemParamGetPPSelectFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetHPUp(void) {
-#include "src/game/people/people_data_fn_801437E0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetHPUp(u8* p) {
     if (p == NULL) return 0;
     return p[0xa];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetReviveFlag(void) {
-#include "src/game/people/people_data_fn_801437F8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetReviveFlag(u8* p) {
     s32 v;
@@ -2282,36 +2139,18 @@ s32 itemParamGetReviveFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetAttackEffortUp(void) {
-#include "src/game/people/people_data_fn_80143820.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetAttackEffortUp(u8* p) {
     if (p == NULL) return 0;
     return p[0x9];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetHPEffortUp(void) {
-#include "src/game/people/people_data_fn_80143838.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8 itemParamGetHPEffortUp(u8* p) {
     if (p == NULL) return 0;
     return p[0x8];
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetPPMaxUpFlag(void) {
-#include "src/game/people/people_data_fn_80143850.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPPMaxUpFlag(u8* p) {
     s32 v;
@@ -2320,12 +2159,6 @@ s32 itemParamGetPPMaxUpFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetConfuseFlag(void) {
-#include "src/game/people/people_data_fn_80143878.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetConfuseFlag(u8* p) {
     s32 v;
@@ -2334,12 +2167,6 @@ s32 itemParamGetConfuseFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetParalyzeFlag(void) {
-#include "src/game/people/people_data_fn_801438A0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetParalyzeFlag(u8* p) {
     s32 v;
@@ -2348,12 +2175,6 @@ s32 itemParamGetParalyzeFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetFreezeFlag(void) {
-#include "src/game/people/people_data_fn_801438C8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetFreezeFlag(u8* p) {
     s32 v;
@@ -2362,12 +2183,6 @@ s32 itemParamGetFreezeFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetBurnFlag(void) {
-#include "src/game/people/people_data_fn_801438F0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetBurnFlag(u8* p) {
     s32 v;
@@ -2376,12 +2191,6 @@ s32 itemParamGetBurnFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetPoisonFlag(void) {
-#include "src/game/people/people_data_fn_80143918.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetPoisonFlag(u8* p) {
     s32 v;
@@ -2390,12 +2199,6 @@ s32 itemParamGetPoisonFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetSleepFlag(void) {
-#include "src/game/people/people_data_fn_80143940.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetSleepFlag(u8* p) {
     s32 v;
@@ -2404,12 +2207,6 @@ s32 itemParamGetSleepFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetLevelUpFlag(void) {
-#include "src/game/people/people_data_fn_80143968.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetLevelUpFlag(u8* p) {
     s32 v;
@@ -2418,12 +2215,6 @@ s32 itemParamGetLevelUpFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetGuardFlag(void) {
-#include "src/game/people/people_data_fn_80143990.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetGuardFlag(u8* p) {
     s32 v;
@@ -2432,72 +2223,36 @@ s32 itemParamGetGuardFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetSpAttackUp(void) {
-#include "src/game/people/people_data_fn_801439B8.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetSpAttackUp(u8* p) {
     if (p == NULL) return 0;
     return (u32)(p[0x2] & 0xF);
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetHitUp(void) {
-#include "src/game/people/people_data_fn_801439D4.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetHitUp(u8* p) {
     if (p == NULL) return 0;
     return (u32)((p[0x2] >> 4) & 0xF);
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetQuickUp(void) {
-#include "src/game/people/people_data_fn_801439F0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetQuickUp(u8* p) {
     if (p == NULL) return 0;
     return (u32)(p[0x1] & 0xF);
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetDefenceUp(void) {
-#include "src/game/people/people_data_fn_80143A0C.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetDefenceUp(u8* p) {
     if (p == NULL) return 0;
     return (u32)((p[0x1] >> 4) & 0xF);
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetAttackUp(void) {
-#include "src/game/people/people_data_fn_80143A28.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 itemParamGetAttackUp(u8* p) {
     if (p == NULL) return 0;
     return (u32)((p[0x0] >> 1) & 0xF);
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetCriticalFlag(void) {
-#include "src/game/people/people_data_fn_80143A44.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetCriticalFlag(u8* p) {
     s32 v;
@@ -2506,12 +2261,6 @@ s32 itemParamGetCriticalFlag(u8* p) {
     return v;
 }
 #endif
-#endif
-#if 0
-asm void itemParamGetMeromeroFlag(void) {
-#include "src/game/people/people_data_fn_80143A6C.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s32 itemParamGetMeromeroFlag(u8* p) {
     s32 v;
@@ -2520,14 +2269,8 @@ s32 itemParamGetMeromeroFlag(u8* p) {
     return v;
 }
 #endif
-#endif
 extern u32 lbl_80478BE0;
 extern u8 lbl_80368630[];
-#if 0
-asm void itemParamGetPtr(void) {
-#include "src/game/people/people_data_fn_80143A94.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8* itemParamGetPtr(u8 idx) {
     u8* result = &lbl_80368630[(u8)idx * 16];
@@ -2535,12 +2278,6 @@ u8* itemParamGetPtr(u8 idx) {
     return NULL;
 }
 #endif
-#endif
-#if 0
-asm void tasteDataGetAisyou(void) {
-#include "src/game/people/people_data_fn_80143ABC.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 s8 tasteDataGetAisyou(u8* p, u16 idx) {
     if (p == NULL) return 0;
@@ -2548,26 +2285,14 @@ s8 tasteDataGetAisyou(u8* p, u16 idx) {
     return (s8)(p[idx + 4]);
 }
 #endif
-#endif
-#if 0
-asm void tasteDataGetNigateMsgDataId(void) {
-#include "src/game/people/people_data_fn_80143AF0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u32 tasteDataGetNigateMsgDataId(u8* p) {
     if (p == NULL) return 0;
     return *(u32*)p;
 }
 #endif
-#endif
 extern u32 lbl_80478BC8;
 extern u8 lbl_80367F78[];
-#if 0
-asm void tasteDataGetPtr(void) {
-#include "src/game/people/people_data_fn_80143B08.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8* tasteDataGetPtr(u16 idx) {
     u8* result = &lbl_80367F78[(u16)idx * 32];
@@ -2575,26 +2300,14 @@ u8* tasteDataGetPtr(u16 idx) {
     return NULL;
 }
 #endif
-#endif
-#if 0
-asm void itemSoubiDataBiosGetFightKoukaDataId(void) {
-#include "src/game/people/people_data_fn_80143B30.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u16 itemSoubiDataBiosGetFightKoukaDataId(u8* p) {
     if (p == NULL) return 0;
     return *(u16*)p;
 }
 #endif
-#endif
 extern u32 lbl_80478BC0;
 extern u8 lbl_80367EF0[];
-#if 0
-asm void itemSoubiDataBiosGetPtr(void) {
-#include "src/game/people/people_data_fn_80143B48.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 u8* itemSoubiDataBiosGetPtr(u16 idx) {
     u8* result = &lbl_80367EF0[(u16)idx * 2];
@@ -2602,60 +2315,30 @@ u8* itemSoubiDataBiosGetPtr(u16 idx) {
     return NULL;
 }
 #endif
-#endif
-#if 0
-asm void itemBiosSetNum(void) {
-#include "src/game/people/people_data_fn_80143B70.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemBiosSetNum(u8* p, u16 val) {
     if (p == NULL) return;
     *(u16*)(p + 0x2) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemBiosSetItemDataId(void) {
-#include "src/game/people/people_data_fn_80143B80.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemBiosSetItemDataId(u8* p, u16 val) {
     if (p == NULL) return;
     *(u16*)(p + 0x0) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemBallDataBiosSetFightKoukaDataId(void) {
-#include "src/game/people/people_data_fn_80143B90.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemBallDataBiosSetFightKoukaDataId(u8* p, u16 val) {
     if (p == NULL) return;
     *(u16*)(p + 0x0) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetBuff(void) {
-#include "src/game/people/people_data_fn_80143BA0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetBuff(u8* p, u32 val) {
     if (p == NULL) return;
     *(u32*)(p + 0x18) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetUseFriend(void) {
-#include "src/game/people/people_data_fn_80143BB0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetUseFriend(u8* p, u16 idx, u8 val) {
     u32 i;
@@ -2665,102 +2348,53 @@ void itemDataBiosSetUseFriend(u8* p, u16 idx, u8 val) {
     p[i + 0x24] = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetFightUseKoukaDataId(void) {
-#include "src/game/people/people_data_fn_80143BD0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetFightUseKoukaDataId(u8* p, u16 val) {
     if (p == NULL) return;
     *(u16*)(p + 0xc) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetItemSoubiDataId(void) {
-#include "src/game/people/people_data_fn_80143BE0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetItemSoubiDataId(u8* p, u16 val) {
     if (p == NULL) return;
     *(u16*)(p + 0xa) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetDoc(void) {
-#include "src/game/people/people_data_fn_80143BF0.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetDoc(u8* p, u32 val) {
     if (p == NULL) return;
     *(u32*)(p + 0x14) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetUseful(void) {
-#include "src/game/people/people_data_fn_80143C00.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetUseful(u8* p, u8 val) {
     if (p == NULL) return;
     p[0x2] = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetImportant(void) {
-#include "src/game/people/people_data_fn_80143C10.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetImportant(u8* p, u8 val) {
     if (p == NULL) return;
     p[0x1] = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetPrice(void) {
-#include "src/game/people/people_data_fn_80143C20.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetPrice(u8* p, u16 val) {
     if (p == NULL) return;
     *(u16*)(p + 0x6) = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetKind(void) {
-#include "src/game/people/people_data_fn_80143C30.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetKind(u8* p, u8 val) {
     if (p == NULL) return;
     p[0x0] = val;
 }
 #endif
-#endif
-#if 0
-asm void itemDataBiosSetName(void) {
-#include "src/game/people/people_data_fn_80143C40.inc"
-}
-#else
 #if !defined(PEOPLE_DATA_80142EF8_ONLY)
 void itemDataBiosSetName(u8* p, u32 val) {
     if (p == NULL) return;
     *(u32*)(p + 0x10) = val;
 }
-#endif
 #endif
 
 extern u32 lbl_80478BB8;

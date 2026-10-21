@@ -419,11 +419,6 @@ extern u32 lbl_8047CB08;
 extern u32 lbl_8047CAFC;
 #if !defined(GS_MATH_RANDOM_CANDIDATE_800E0C04) && \
     !defined(GS_MATH_RANDOM_CANDIDATE_800E0CA0)
-#if 0
-asm void fn_800E09E8(void) {
-#include "src/game/gs_render_fn_800E09E8.inc"
-}
-#else
 void fn_800E09E8(void* dst, void* src, u32 count) {
     u8* out;
     s32 i;
@@ -467,21 +462,14 @@ void fn_800E09E8(void* dst, void* src, u32 count) {
     GSvecCopy(out, control + 0xc);
 }
 #endif
-#endif
 
 #if defined(GS_MATH_RANDOM_CANDIDATE_800E0C04)
-#if 0
-asm void _fadeEffectGetRandom__FUl(void) {
-#include "src/game/gs_render_fn_800E0C04.inc"
-}
-#else
 u32 _fadeEffectGetRandom__FUl(u32 mod) {
     u32 a = fn_801ADCD8();
     u32 b = fn_801ADCD8();
     u32 combined = (b << 16) | a;
     return combined % mod;
 }
-#endif
 #endif
 
 #if defined(GS_MATH_RANDOM_CANDIDATE_800E0CA0)
@@ -493,11 +481,6 @@ extern f32 lbl_8047CB18;
 extern f32 lbl_8047CB34;
 extern f32 lbl_8047CB30;
 extern f32 lbl_804011B8[];
-#if 0
-asm void fn_800E0CA0(void) {
-#include "src/game/gs_render_fn_800E0CA0.inc"
-}
-#else
 f32 fn_800E0CA0(f32 x) {
     f32 scale;
     f32 tmp;
@@ -513,5 +496,4 @@ f32 fn_800E0CA0(f32 x) {
     x = lbl_8047CB34 * x + lbl_8047CB30;
     return scale * lbl_804011B8[__cvt_fp2unsigned(x)];
 }
-#endif
 #endif

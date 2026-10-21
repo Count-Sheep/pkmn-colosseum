@@ -51,11 +51,6 @@ void fn_800D30A0(u32 val) {
 }
 extern void fn_800D4F98(s32 arg0, ...);
 extern void GXFlush(void);
-#if 0
-asm void fn_800D30AC(void) {
-#include "src/game/gs_gfx_fn_800D30AC.inc"
-}
-#else
 void fn_800D30AC(void) {
     u8* state = (u8*)lbl_8047AA80;
 
@@ -65,7 +60,6 @@ void fn_800D30AC(void) {
         GXFlush();
     }
 }
-#endif
 extern void GXSetDrawDone(void);
 extern void OSYieldThread(void);
 extern void fn_8019C6FC(void);
@@ -114,11 +108,6 @@ void fn_800D30F0(u32 flag)
     }
 }
 
-#if 0
-asm void fn_800D3190(void) {
-#include "src/game/gs_gfx_fn_800D3190.inc"
-}
-#else
 void fn_800D3190(void) {
     u32* state;
     u32 sc;
@@ -228,7 +217,6 @@ void fn_800D3190(void) {
         ((u32*)&lbl_804001F0)[0x38 / 4] += tick - startTick;
     }
 }
-#endif
 extern void fn_800D13C4(void* a);
 extern void fn_800DC874(void* a);
 extern void fn_801183EC(void* a);
@@ -240,11 +228,6 @@ extern u8 lbl_8047AA90;
 extern f32 lbl_8047CA00;
 extern f32 lbl_8047CA08;
 extern f32 lbl_8047CA04;
-#if 0
-asm void fn_800D3410(void) {
-#include "src/game/gs_gfx_fn_800D3410.inc"
-}
-#else
 void fn_800D3410(void* arg0, u8 arg1) {
     u32* state;
     u32 sc;
@@ -340,7 +323,6 @@ void fn_800D3410(void* arg0, u8 arg1) {
     }
     }
 }
-#endif
 
 extern void VIWaitForRetrace(void);
 void fn_800D361C(u8 mode) {

@@ -16,11 +16,6 @@
 #ifndef PCBOX_SETPOKEMON_ONLY
 
 /* 0x8013433C | 0xE4 */
-#if 0
-asm void pcboxSwapItemSlot(void) {
-#include "src/game/effect/effect_util_pcboxSwapItemSlot.inc"
-}
-#else
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
@@ -59,7 +54,6 @@ s32 pcboxSwapItemSlot(void* base, s16 idx1, s16 idx2) {
 }
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
-#endif
 
 
 static inline void* pcboxGetSaveStatus(void* base) {
@@ -83,11 +77,6 @@ static inline s16 pcboxFindItem(void* status, u16 effect_id) {
 }
 
 /* 0x80134420 | 0x164 */
-#if 0
-asm void pcboxGetItemCapacity(void) {
-#include "src/game/effect/effect_util_pcboxGetItemCapacity.inc"
-}
-#else
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
 static inline void* pcboxGetItemSlot(void* status, s16 idx) {
@@ -139,15 +128,9 @@ u16 pcboxGetItemCapacity(void* base, u16 effect_id) {
 }
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
-#endif
 
 
 /* 0x80134584 | 0xF8 */
-#if 0
-asm void pcboxAddItem(void) {
-#include "src/game/effect/effect_util_pcboxAddItem.inc"
-}
-#else
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
 u16 pcboxAddItem(void* base, u16 effect_id, u16 r5) {
@@ -165,15 +148,9 @@ u16 pcboxAddItem(void* base, u16 effect_id, u16 r5) {
 }
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
-#endif
 
 
 /* 0x8013467C | 0xEC */
-#if 0
-asm void pcboxDelItem(void) {
-#include "src/game/effect/effect_util_pcboxDelItem.inc"
-}
-#else
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
 u16 pcboxDelItem(void* base, u16 effect_id, u16 r5) {
@@ -190,13 +167,7 @@ u16 pcboxDelItem(void* base, u16 effect_id, u16 r5) {
 }
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
-#endif
 
-#if 0
-asm void pcboxGetItem(void) {
-#include "src/game/effect/effect_util_pcboxGetItem.inc"
-}
-#else
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
 #endif
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma — see docs/RULE_EXCEPTIONS.md */
@@ -217,7 +188,6 @@ void* pcboxGetItem(void* base, s16 index) {
     return entry;
 }
 #if !defined(NO_LOCAL_PRAGMAS_PCBOX_CANDIDATE_8013433C)
-#endif
 #endif
 
 
@@ -265,11 +235,6 @@ static inline u8* pcboxGetPokemonRecord(PCBoxData* base, s8 box, s8 index)
 #ifndef PCBOX_SETPOKEMON_ONLY
 
 /* 0x801347E8 | 0x104 */
-#if 0
-asm void fn_801347E8(void) {
-#include "src/game/effect/effect_util_fn_801347E8.inc"
-}
-#else
 s8 pcboxGetPokemonBoxNbEmptySlot(PCBoxData* base, s8 box) {
     s8 index;
     s8 count = 0;
@@ -305,15 +270,9 @@ s8 pcboxGetPokemonBoxNbEmptySlot(PCBoxData* base, s8 box) {
     }
     return (s8)(30 - count);
 }
-#endif
 
 
 /* 0x801348EC | 0xF0 */
-#if 0
-asm void getPokemonBoxNbUsedSlot__5PCBOXFSc(void) {
-#include "src/game/effect/effect_util_getPokemonBoxNbUsedSlot__5PCBOXFSc.inc"
-}
-#else
 s32 getPokemonBoxNbUsedSlot__5PCBOXFSc(PCBoxData* base, s8 box) {
     u8* pokemon;
     s32 count = 0;
@@ -334,15 +293,9 @@ s32 getPokemonBoxNbUsedSlot__5PCBOXFSc(PCBoxData* base, s8 box) {
     }
     return count;
 }
-#endif
 
 
 /* 0x801349DC | 0xBC */
-#if 0
-asm void fn_801349DC(void) {
-#include "src/game/effect/effect_util_fn_801349DC.inc"
-}
-#else
 s32 pcboxSetPokemonBoxName(void* base, s8 slot, u16* name) {
     extern void GScharCpy(void*, u16*);
     s32 len;
@@ -364,13 +317,7 @@ s32 pcboxSetPokemonBoxName(void* base, s8 slot, u16* name) {
     GScharCpy((u8*)base + (s32)s * 0x24a4, name);
     return 1;
 }
-#endif
 
-#if 0
-asm void pcboxGetPokemonBoxName(void) {
-#include "src/game/effect/effect_util_fn_80134A98.inc"
-}
-#else
 void* pcboxGetPokemonBoxName(void* base, s8 index) {
     s8 i;
     if (base == 0) {
@@ -385,15 +332,9 @@ _ret0:
 _compute:
     return (u8*)base + (s32)i * 0x24a4;
 }
-#endif
 
 
 /* 0x80134AF8 | 0xC8 */
-#if 0
-asm void delPokemon__5PCBOXFScSc(void) {
-#include "src/game/effect/effect_util_delPokemon__5PCBOXFScSc.inc"
-}
-#else
 s32 delPokemon__5PCBOXFScSc(void* base, s8 slot, s8 idx) {
     extern u8 pokemonCheckValid(void*);
     extern void pokemonInit(void*);
@@ -419,15 +360,9 @@ s32 delPokemon__5PCBOXFScSc(void* base, s8 slot, s8 idx) {
     pokemonInit(entry);
     return 1;
 }
-#endif
 
 
 /* 0x80134BC0 | 0x250 */
-#if 0
-asm void pcboxAddPokemon(void) {
-#include "src/game/effect/effect_util_fn_80134BC0.inc"
-}
-#else
 s32 pcboxAddPokemon(void* base, void* src, s8 slot) {
     extern u8 pokemonCheckValid(void*);
     extern void pokemonAllKaihuku(void*);
@@ -495,17 +430,11 @@ s32 pcboxAddPokemon(void* base, void* src, s8 slot) {
     pokemonAllKaihuku(entry);
     return 1;
 }
-#endif
 
 
 #endif /* PCBOX_SETPOKEMON_ONLY */
 
 /* 0x80134E10 | 0xE0 */
-#if 0
-asm void setPokemon__5PCBOXFP7PokemonScSc(void) {
-#include "src/game/effect/effect_util_setPokemon__5PCBOXFP7PokemonScSc.inc"
-}
-#else
 s32 setPokemon__5PCBOXFP7PokemonScSc(PCBoxData* base, PCBoxPokemonRecord* src, s8 box, s8 index) {
     extern void pokemonAllKaihuku(void*);
     PCBoxPokemonRecord* entry;
@@ -526,17 +455,11 @@ s32 setPokemon__5PCBOXFP7PokemonScSc(PCBoxData* base, PCBoxPokemonRecord* src, s
     pokemonAllKaihuku(entry);
     return 1;
 }
-#endif
 
 
 #ifndef PCBOX_SETPOKEMON_ONLY
 
 /* 0x80134EF0 | 0x98 */
-#if 0
-asm void getPokemon__5PCBOXFScSc(void) {
-#include "src/game/effect/effect_util_fn_80134EF0.inc"
-}
-#else
 void* getPokemon__5PCBOXFScSc(void* base, s8 r4, s8 r5) {
     u8* new_var;
     s8 slot;
@@ -559,15 +482,9 @@ void* getPokemon__5PCBOXFScSc(void* base, s8 r4, s8 r5) {
 done:
     return new_var;
 }
-#endif
 
 
 /* 0x80134F88 | 0x9C */
-#if 0
-asm void pcboxInit(void) {
-#include "src/game/effect/effect_util_pcboxInit.inc"
-}
-#else
 void pcboxInit(void* base) {
     extern void msgctrlSetValue(u32, u32);
     extern void fn_800F96E4(void*, u32, u32);
@@ -592,18 +509,11 @@ void pcboxInit(void* base) {
     } while (i < 3);
     fn_80142A88(status + 0x6dec, 0xeb);
 }
-#endif
 
 
 /* 0x80135024 | 0x4 | void_stub */
-#if 0
-asm void pcboxSetStatus(void) {
-#include "src/game/effect/effect_util_fn_80135024.inc"
-}
-#else
 void pcboxSetStatus(void) {
 }
-#endif
 
 
 /* 0x80135028 | 0x8 | return_const */

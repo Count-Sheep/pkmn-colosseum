@@ -410,11 +410,6 @@ extern u32 lbl_8047AB3C;
 
 extern f32 lbl_8047CB38;
 extern f64 lbl_8047CB40;
-#if 0
-asm void fn_800E0D24(void) {
-#include "src/game/gs_render_fn_800E0D24.inc"
-}
-#else
 void GSmathInitCosTable(void) {
     register s32 i;
     f32 step;
@@ -426,5 +421,4 @@ void GSmathInitCosTable(void) {
         lbl_804011B8[i] = (f32)cos(scale * (step * (f32)i));
     }
 }
-#endif
 

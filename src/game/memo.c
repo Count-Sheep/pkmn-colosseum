@@ -214,11 +214,6 @@ void memoInitDebug(u16* block)
 #endif
 
 #if !defined(MEMO_8025FA20_ONLY) && !defined(MEMO_8025FBCC_ONLY)
-#if 0
-asm void memoDataGetPokemonTrainerRndFromID(void) {
-#include "src/game/colosseum_battle_fn_8025FD34.inc"
-}
-#endif
 u32 memoDataGetPokemonTrainerRndFromID(u16 *r3, u16 r4) {
 	  u16 *queue;
 	  u16 *countQueue;
@@ -247,11 +242,6 @@ u32 memoDataGetPokemonTrainerRndFromID(u16 *r3, u16 r4) {
   return 0;
 }
 
-#if 0
-asm void memoDataGetPokemonRndFromID(void) {
-#include "src/game/colosseum_battle_fn_8025FDDC.inc"
-}
-#endif
 u32 memoDataGetPokemonRndFromID(u16 *r3, u16 r4) {
   u16 *queue;
   u16 *countQueue;
@@ -337,11 +327,6 @@ u32 memoDataSetMemoFlag(u16 *r3)
   return uVar3;
 }
 
-#if 0
-asm void fn_8025FF9C(void) {
-#include "src/game/colosseum_battle_fn_8025FF9C.inc"
-}
-#endif
 void memoDataSet(u16 *r3, u32 r4) {
   extern u32 pokemonBiosGetPokemonDataId();
   u16 *queue;
@@ -377,11 +362,6 @@ void memoDataSet(u16 *r3, u32 r4) {
   *queue = (u16)(*queue + 1);
 }
 
-#if 0
-asm void memoInit(void) {
-#include "src/game/colosseum_battle_fn_80260070.inc"
-}
-#endif
 void memoInit(u16 *r3) {
   u32 r31;
   u32 r30;

@@ -362,11 +362,6 @@ typedef struct PdaMailSpinWork {
     f32 angle;
 } PdaMailSpinWork;
 
-#if 0
-asm s32 fn_8004E144(void* window, PdaMailSpinWork* sprite) {
-#include "src/game/menu/menu_pda_mail_fn_8004E144.inc"
-}
-#else
 /* Exact farm result; the redundant locals preserve MWCC's register shape. */
 s32 fn_8004E144(void* window, PdaMailSpinWork* sprite)
 {
@@ -383,7 +378,6 @@ s32 fn_8004E144(void* window, PdaMailSpinWork* sprite)
     return 0;
 }
 
-#endif
 
 /* pdaMailGetMailID: byte-size-matches XD's pdaMailGetMailID (0x50)
  * exactly (see file header); not yet ported to C in this TU, but its
@@ -409,17 +403,11 @@ typedef struct PdaMailOutA {
     u32 field_0x4c;
 } PdaMailOutA;
 
-#if 0
-asm s32 fn_8004D6AC(PdaMailWindowA* window, PdaMailOutA* out) {
-#include "src/game/menu/menu_pda_mail_fn_8004D6AC.inc"
-}
-#else
 s32 fn_8004D6AC(PdaMailWindowA* window, PdaMailOutA* out)
 {
     out->field_0x4c = mailGetContents(pdaMailGetMailID(**window->field_0x60));
     return 0;
 }
-#endif
 
 /* windowGetKeyInfo (gs_event_exec.c): returns the current input-device
  * state pointer; menuButtonNormal (gs_model.c): resets a widget's
@@ -607,11 +595,6 @@ s32 fn_8004DA64(PdaMailWindowC* window, PdaMailSpriteField* field)
 /* mailGetAttachFileGroup (battle_waza.c): "Waza entry get field 0x18 by index". */
 extern u32 mailGetAttachFileGroup(s32 idx);
 
-#if 0
-asm s32 fn_8004D5EC(PdaMailWindowA* window, void* fieldHandle) {
-#include "src/game/menu/menu_pda_mail_fn_8004D5EC.inc"
-}
-#else
 s32 fn_8004D5EC(PdaMailWindowA* window, void* fieldHandle)
 {
     u8 flag;
@@ -623,13 +606,7 @@ s32 fn_8004D5EC(PdaMailWindowA* window, void* fieldHandle)
     winSpriteSetDisp(fieldHandle, flag);
     return 0;
 }
-#endif
 
-#if 0
-asm s32 fn_8004D64C(PdaMailWindowA* window, void* fieldHandle) {
-#include "src/game/menu/menu_pda_mail_fn_8004D64C.inc"
-}
-#else
 s32 fn_8004D64C(PdaMailWindowA* window, void* fieldHandle)
 {
     u8 flag;
@@ -641,13 +618,7 @@ s32 fn_8004D64C(PdaMailWindowA* window, void* fieldHandle)
     winSpriteSetDisp(fieldHandle, flag);
     return 0;
 }
-#endif
 
-#if 0
-asm s32 fn_8004D590(PdaMailWindowA* window, PdaMailOutA* out) {
-#include "src/game/menu/menu_pda_mail_fn_8004D590.inc"
-}
-#else
 s32 fn_8004D590(PdaMailWindowA* window, PdaMailOutA* out)
 {
     if (mailGetAttachFileGroup(pdaMailGetMailID(**window->field_0x60)) != 0) {
@@ -657,7 +628,6 @@ s32 fn_8004D590(PdaMailWindowA* window, PdaMailOutA* out)
     }
     return 0;
 }
-#endif
 
 /* mailGetSenderName (battle_waza.c): "Waza entry get field 0x0C by index".
  * GSmsgGetGSchar/msgctrlSetValue (gs_title.c): message/window callbacks. */
@@ -665,11 +635,6 @@ extern u32 mailGetSenderName(s32 idx);
 extern void* GSmsgGetGSchar(u32);
 extern void msgctrlSetValue(s32, void*);
 
-#if 0
-asm s32 fn_8004D6F0(PdaMailWindowA* window, PdaMailOutA* out) {
-#include "src/game/menu/menu_pda_mail_fn_8004D6F0.inc"
-}
-#else
 s32 fn_8004D6F0(PdaMailWindowA* window, PdaMailOutA* out)
 {
     u32 val = mailGetSenderName(pdaMailGetMailID(**window->field_0x60));
@@ -682,16 +647,10 @@ s32 fn_8004D6F0(PdaMailWindowA* window, PdaMailOutA* out)
     }
     return 0;
 }
-#endif
 
 /* mailGetSubject (battle_waza.c): "Waza entry get field 0x10 by index". */
 extern u32 mailGetSubject(s32 idx);
 
-#if 0
-asm s32 fn_8004D760(PdaMailWindowA* window, PdaMailOutA* out) {
-#include "src/game/menu/menu_pda_mail_fn_8004D760.inc"
-}
-#else
 s32 fn_8004D760(PdaMailWindowA* window, PdaMailOutA* out)
 {
     u32 val = mailGetSubject(pdaMailGetMailID(**window->field_0x60));
@@ -704,13 +663,7 @@ s32 fn_8004D760(PdaMailWindowA* window, PdaMailOutA* out)
     }
     return 0;
 }
-#endif
 
-#if 0
-asm void fn_8004D8BC(PdaMailWindowA* window) {
-#include "src/game/menu/menu_pda_mail_fn_8004D8BC.inc"
-}
-#else
 void fn_8004D8BC(PdaMailWindowA* window)
 {
     u8* state = windowGetKeyInfo();
@@ -719,7 +672,6 @@ void fn_8004D8BC(PdaMailWindowA* window)
         menuButtonNormal(window);
     }
 }
-#endif
 
 /* Mail-list cursor input callback. The high byte of cursorPosition is the
  * mailbox page and the low byte is the row (10 and 11 are auxiliary rows). */
@@ -967,11 +919,6 @@ typedef struct PdaMailPhaseWidget {
     s32 msgObj;
 } PdaMailPhaseWidget;
 
-#if 0
-asm s32 fn_8004D928(PdaMailPhaseWidget* w) {
-#include "src/game/menu/menu_pda_mail_fn_8004D928.inc"
-}
-#else
 s32 fn_8004D928(PdaMailPhaseWidget* w)
 {
     switch (w->phase) {
@@ -990,7 +937,6 @@ s32 fn_8004D928(PdaMailPhaseWidget* w)
     }
     return 0;
 }
-#endif
 
 /* Angle-wrap constants for the two phase-2 float animations below
  * (distinct sdata2 float pair per callback; same idiom as fn_8004E144
@@ -1000,11 +946,6 @@ extern f32 lbl_8047BE1C;
 extern f32 lbl_8047BE4C;
 extern f32 lbl_8047BE50;
 
-#if 0
-asm s32 fn_8004D26C(PdaMailWindowA* window) {
-#include "src/game/menu/menu_pda_mail_fn_8004D26C.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local peephole control;
  * see docs/RULE_EXCEPTIONS.md. */
 s32 fn_8004D26C(PdaMailWindowA* window)
@@ -1040,7 +981,6 @@ s32 fn_8004D26C(PdaMailWindowA* window)
     }
     return 0;
 }
-#endif
 
 /* windowGetActiveID/menuOpenCustom/menuClose/menuCloseSync (gs_event_exec.c):
  * modal list-menu open/poll/close idiom -- same call skeleton as the
@@ -1134,11 +1074,6 @@ s32 fn_8004C4A4(u8* context, u8* field)
 #endif /* MENU_PDA_MAIL_PARTIAL || MENU_PDA_MAIL_SORTLABEL_ONLY */
 
 #if !defined(MENU_PDA_MAIL_PARTIAL) || defined(MENU_PDA_MAIL_SORT_ONLY)
-#if 0
-asm void fn_8004BFB0(void) {
-#include "src/game/menu/menu_pda_mail_fn_8004BFB0.inc"
-}
-#else
 /* Rebuilds the mailbox id buffer in the current sort mode (same arms as
  * fn_8004C120). Each arm keeps its own cursor and counters. */
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (peephole off) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
@@ -1193,7 +1128,6 @@ void fn_8004BFB0(void)
     }
 }
 #pragma peephole reset
-#endif
 #endif /* MENU_PDA_MAIL_SORT_ONLY */
 
 #ifndef MENU_PDA_MAIL_PARTIAL
@@ -1207,11 +1141,6 @@ void fn_8004BFB0(void)
 extern s32 lbl_8047A518;
 extern void fn_8004E9C0(s32 mailId);
 
-#if 0
-asm s32 fn_8004D9C0(s32 a) {
-#include "src/game/menu/menu_pda_mail_fn_8004D9C0.inc"
-}
-#else
 s32 fn_8004D9C0(s32 a)
 {
     lbl_8047A518 = a;
@@ -1232,7 +1161,6 @@ s32 fn_8004D9C0(s32 a)
     menuCloseSync(0x74, 1);
     return lbl_8047A518;
 }
-#endif
 
 /* PdaMailOutC: widget/out-record variant used by fn_8004DCC0 -- a
  * halfword "current message id" field at 0x6 (compared against the
@@ -1261,11 +1189,6 @@ extern s32 fn_801D1B78(s32 mailId);
 extern void fn_801D1C20(s32 mailId);
 extern void fn_801D228C(u16 mailId);
 
-#if 0
-asm s32 fn_8004D7D0(PdaMailWindowA* window) {
-#include "src/game/menu/menu_pda_mail_fn_8004D7D0.inc"
-}
-#else
 s32 fn_8004D7D0(PdaMailWindowA* window)
 {
     s32** field = window->field_0x60;
@@ -1301,7 +1224,6 @@ s32 fn_8004D7D0(PdaMailWindowA* window)
     }
     return 0;
 }
-#endif
 
 #endif /* MENU_PDA_MAIL_PARTIAL */
 

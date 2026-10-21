@@ -494,11 +494,6 @@ extern HSD_ClassInfo* lbl_8047B298;
 extern u8 lbl_8036C8E0[];
 extern u32 lbl_8047B29C;
 extern u32 lbl_8047B2AC;
-#if 0
-asm void JObjAmnesia(void) {
-#include "src/hsd/hsd_jobj_JObjAmnesia.inc"
-}
-#else
 #pragma optimization_level 1
 void JObjAmnesia(void* info) {
     if (info == (void*)lbl_8047B298) {
@@ -510,7 +505,6 @@ void JObjAmnesia(void* info) {
     }
     ((HSD_ClassInfo*)lbl_8036C8E0)->head.parent->amnesia(info);
 }
-#endif
 #pragma pop
 
 /* 0x8019CFBC | 0xA0 */
@@ -519,11 +513,6 @@ void JObjAmnesia(void* info) {
 #pragma optimizewithasm off
 extern void HSD_VecFree(void* data);
 extern void HSD_MtxFree(void* data);
-#if 0
-asm void JObjRelease(void) {
-#include "src/hsd/hsd_jobj_JObjRelease.inc"
-}
-#else
 #pragma optimization_level 4
 void JObjRelease(HSD_JObj* jobj) {
     HSD_JOBJ_METHOD(jobj)->release_child(jobj);
@@ -539,7 +528,6 @@ void JObjRelease(HSD_JObj* jobj) {
     }
     ((HSD_ClassInfo*) lbl_8036C8E0)->head.parent->release((HSD_Class*) jobj);
 }
-#endif
 #pragma pop
 
 /* 0x8019D05C | 0x544 */
@@ -734,11 +722,6 @@ static void JObj_DetachFromParent(HSD_JObj* jobj)
 
 void fn_8019F1C4(HSD_JObj* jobj, s32* total_a, s32* total_b);
 
-#if 0
-asm void JObjReleaseChild(void) {
-#include "src/hsd/hsd_jobj_fn_8019D05C.inc"
-}
-#else
 void JObjReleaseChild(HSD_JObj* jobj) {
     /* decompiled cdx7: functional */
     HSD_JObj* child;
@@ -773,7 +756,6 @@ void JObjReleaseChild(HSD_JObj* jobj) {
         jobj->aobj = NULL;
     }
 }
-#endif
 #pragma pop
 
 /* 0x8019D5A0 | 0x70: JObjInit is linked from jobj_exact_8019D5A0.c. */
@@ -838,11 +820,6 @@ static inline f32 JObjIKSqrtf(f32 value)
     return value;
 }
 
-#if 0
-asm void resolveIKJoint2(void) {
-#include "src/hsd/hsd_jobj_fn_8019DD00.inc"
-}
-#else
 void resolveIKJoint2(HSD_JObj* jobj) {
     Vec scale;
     Vec joint_pos;
@@ -961,7 +938,6 @@ void resolveIKJoint2(HSD_JObj* jobj) {
     jobj->mtx[1][3] = joint_pos.y;
     jobj->mtx[2][3] = joint_pos.z;
 }
-#endif
 #pragma pop
 
 /* 0x8019E460 | 0xBBC */
@@ -979,11 +955,6 @@ extern u32 lbl_8047DB58;
 extern u32 lbl_8047DB60;
 extern u32 lbl_8047DB84;
 extern u32 lbl_8047DB80;
-#if 0
-asm void resolveIKJoint1(void) {
-#include "src/hsd/hsd_jobj_fn_8019E460.inc"
-}
-#else
 void resolveIKJoint1(HSD_JObj* jobj) {
     /* decompiled cdx7: functional */
     HSD_JObj* joint2;
@@ -1135,7 +1106,6 @@ void resolveIKJoint1(HSD_JObj* jobj) {
     JObjMtx_StoreScaledColumn(jobj, 2, &normal_axis, scale.z);
     JObjMtx_StoreTranslation(jobj, &origin);
 }
-#endif
 #pragma pop
 
 /* 0x8019F01C | 0x8 */
@@ -1143,15 +1113,9 @@ void resolveIKJoint1(HSD_JObj* jobj) {
 #pragma optimization_level 0
 #pragma optimizewithasm off
 extern u32 lbl_8047B2AC;
-#if 0
-asm void HSD_JObjGetCurrent(void) {
-#include "src/hsd/hsd_jobj_HSD_JObjGetCurrent.inc"
-}
-#else
 HSD_JObj* HSD_JObjGetCurrent(void) {
     return (HSD_JObj*) lbl_8047B2AC;
 }
-#endif
 
 static inline void current_jobj_delete(HSD_JObj* jobj)
 {
@@ -1221,11 +1185,6 @@ void fn_8019F024(HSD_JObj* jobj)
 #pragma optimization_level 0
 #pragma optimizewithasm off
 extern void HSD_DObjCountVertices(HSD_DObj* dobj, s32* total_a, s32* total_b);
-#if 0
-asm void fn_8019F1C4(void) {
-#include "src/hsd/hsd_jobj_fn_8019F1C4.inc"
-}
-#else
 void fn_8019F1C4(HSD_JObj* jobj, s32* total_a, s32* total_b) {
     /* decompiled cdx7: functional */
     HSD_JObj* child;
@@ -1264,7 +1223,6 @@ void fn_8019F1C4(HSD_JObj* jobj, s32* total_a, s32* total_b) {
         *total_b = sum_b;
     }
 }
-#endif
 #pragma pop
 
 HSD_JObj* fn_80193828(HSD_ClassInfo*);
@@ -1683,11 +1641,6 @@ void fn_8019F778(HSD_JObj* jobj) {
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void HSD_JObjGetFlags(void) {
-#include "src/hsd/hsd_jobj_HSD_JObjGetFlags.inc"
-}
-#else
 #pragma optimization_level 4
 u32 HSD_JObjGetFlags(HSD_JObj* jobj) {
     if (jobj != NULL) {
@@ -1695,18 +1648,12 @@ u32 HSD_JObjGetFlags(HSD_JObj* jobj) {
     }
     return 0;
 }
-#endif
 #pragma pop
 
 /* 0x8019FF48 | 0x2C */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_8019FF48(void) {
-#include "src/hsd/hsd_jobj_fn_8019FF48.inc"
-}
-#else
 #pragma optimization_level 4
 HSD_DObj* fn_8019FF48(HSD_JObj* jobj) {
     if (jobj == NULL) {
@@ -1720,7 +1667,6 @@ end:
 ok:
     return jobj->u.dobj;
 }
-#endif
 #pragma pop
 
 #endif
@@ -1834,11 +1780,6 @@ void HSD_JObjAddNext(HSD_JObj* jobj, HSD_JObj* next)
 #pragma optimization_level 0
 #pragma optimizewithasm off
 extern void OSReport(void* fmt, ...);
-#if 0
-asm void HSD_JObjAddChild(void) {
-#include "src/hsd/hsd_jobj_HSD_JObjAddChild.inc"
-}
-#else
 #pragma optimization_level 4
 void HSD_JObjAddChild(HSD_JObj* jobj, HSD_JObj* child) {
     /* decompiled cdx5: functional (non-byte-exact) */
@@ -1893,7 +1834,6 @@ void HSD_JObjAddChild(HSD_JObj* jobj, HSD_JObj* child) {
         parent = parent->parent;
     }
 }
-#endif
 #pragma pop
 
 /* 0x801A02B0 | 0x28C */
@@ -1901,11 +1841,6 @@ static inline void jobj_Unref(HSD_JObj* jobj, u8* base);
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_801A02B0(void) {
-#include "src/hsd/hsd_jobj_fn_801A02B0.inc"
-}
-#else
 #pragma optimization_level 1
 HSD_JObj* fn_801A02B0(HSD_JObj* jobj)
 {
@@ -1948,18 +1883,12 @@ HSD_JObj* fn_801A02B0(HSD_JObj* jobj)
 
     return child;
 }
-#endif
 #pragma pop
 
 /* 0x801A053C | 0xB0 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void HSD_JObjUnrefThis(void) {
-#include "src/hsd/hsd_jobj_fn_801A053C.inc"
-}
-#else
 #pragma optimization_level 1
 static inline BOOL iref_DEC_indiv(void* o) {
     BOOL r;
@@ -1992,7 +1921,6 @@ void HSD_JObjUnrefThis(void* obj) {
         }
     }
 }
-#endif
 #pragma pop
 
 /* 0x801A0744 | 0x458 */
@@ -2012,11 +1940,6 @@ extern s32 fn_801A0D3C();
 extern void fn_801A0744(HSD_JObj* jobj, HSD_Joint* joint);
 extern void HSD_JObjResolveRefs(HSD_JObj* jobj, HSD_Joint* joint);
 extern void fn_801AEBE4(HSD_RObj* robj, HSD_RObjDesc* desc);
-#if 0
-asm void HSD_JObjResolveRefsAll(HSD_JObj* jobj, HSD_Joint* joint) {
-#include "src/hsd/hsd_jobj_fn_801A0744.inc"
-}
-#else
 #pragma optimization_level 4
 void HSD_JObjResolveRefsAll(HSD_JObj* jobj, HSD_Joint* joint)
 {
@@ -2030,7 +1953,6 @@ void HSD_JObjResolveRefsAll(HSD_JObj* jobj, HSD_Joint* joint)
         joint = joint->next;
     }
 }
-#endif
 #pragma pop
 
 /* 0x801A0B9C | 0x54 */
@@ -2039,11 +1961,6 @@ void HSD_JObjResolveRefsAll(HSD_JObj* jobj, HSD_Joint* joint)
 #pragma optimizewithasm off
 extern u8 lbl_80274AF4[];
 extern u8 lbl_80274B64[];
-#if 0
-asm void HSD_JObjRef(void) {
-#include "src/hsd/hsd_jobj_fn_801A0B9C.inc"
-}
-#else
 #pragma optimization_level 4
 void HSD_JObjRef(HSD_JObj* jobj) {
     if (jobj != NULL) {
@@ -2053,23 +1970,16 @@ void HSD_JObjRef(HSD_JObj* jobj) {
         }
     }
 }
-#endif
 #pragma pop
 
 /* 0x801A0BF0 | 0x2C */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void HSD_IDGetData(void) {
-#include "src/hsd/hsd_jobj_HSD_IDGetData.inc"
-}
-#else
 #pragma optimization_level 4
 void* HSD_IDGetData(u32 key, s32* found) {
     return HSD_IDGetDataFromTable(NULL, key, found);
 }
-#endif
 #pragma pop
 
 /* 0x801A0C1C | 0x4C -- out-of-line emitted copy of hsd_object.h's ref_INC. */
@@ -2113,16 +2023,10 @@ void hsdDelete_801A0CE8(void* object)
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm s32 fn_801A0D3C(void) {
-#include "src/hsd/hsd_jobj_fn_801A0D3C.inc"
-}
-#else
 #pragma optimization_level 4
 s32 fn_801A0D3C(HSD_Obj* obj) {
     return obj->ref_count_individual - 1;
 }
-#endif
 #pragma pop
 
 /* 0x801A0D48 | 0x4C -- out-of-line emitted copy of hsd_object.h's ref_DEC. */
@@ -2361,11 +2265,6 @@ extern void PSMTXIdentity(f32 mtx[3][4]);
 extern f32* HSD_MtxAlloc(void);
 extern void* memcpy(void* dst, const void* src, u32 n);
 extern HSD_ClassInfo* lbl_8047B298;
-#if 0
-asm void JObjLoad(void) {
-#include "src/hsd/hsd_jobj_fn_801A1098.inc"
-}
-#else
 #pragma optimization_level 4
 s32 JObjLoad(HSD_JObj* jobj, HSD_Joint* joint, HSD_JObj* parent)
 {
@@ -2495,7 +2394,6 @@ load_child:
 
     return 0;
 }
-#endif
 #pragma pop
 
 /* 0x801A13CC | 0x5B4 */
@@ -2727,15 +2625,9 @@ void fn_801A13CC(HSD_JObj* jobj, f32 vmtx[3][4], u32 flags, u32 rendermode)
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_801A1980(void) {
-#include "src/hsd/hsd_jobj_fn_801A1980.inc"
-}
-#else
 f32* fn_801A1980(HSD_JObj* jobj) {
     return jobj->mtx[1];
 }
-#endif
 #pragma pop
 
 /* 0x801A1988 | 0x78 */

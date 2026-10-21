@@ -12,11 +12,6 @@
 #include "dolphin/types.h"
 #include "game/effect/effect_util_types.h"
 
-#if 0
-asm void tenkouDataBiosGetFightInitMsgId(void) {
-#include "src/game/effect/effect_util_fn_80136368.inc"
-}
-#else
 u32 tenkouDataBiosGetFightInitMsgId(u16 index) {
     EffectTraceFxEntry* entry;
     if ((u32)index > lbl_80478B98) {
@@ -29,13 +24,7 @@ u32 tenkouDataBiosGetFightInitMsgId(u16 index) {
     }
     return entry->effectId;
 }
-#endif
 
-#if 0
-asm void tenkouDataBiosGetSolarFlag(void) {
-#include "src/game/effect/effect_util_fn_801363A8.inc"
-}
-#else
 u32 tenkouDataBiosGetSolarFlag(u16 index) {
     EffectTraceFxEntry* entry;
     if ((u32)index > lbl_80478B98) {
@@ -48,4 +37,3 @@ u32 tenkouDataBiosGetSolarFlag(u16 index) {
     }
     return entry->kind;
 }
-#endif

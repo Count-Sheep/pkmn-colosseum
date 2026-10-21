@@ -44,26 +44,15 @@ typedef struct NameEntryChoiceList {
 
 #if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
 /* fn_80026370 - 0x80026370 | size: 0x20 */
-#if 0
-asm void fn_80026370(void) {
-#include "src/game/gs_worldmap_fn_80026370.inc"
-}
-#else
 s32 fn_80026370(void* r3, u8* r4) {
     r4[0x64] = 0;
     r4[0x65] = 0x35;
     r4[0x66] = 0x3c;
     return 0;
 }
-#endif
 
 
 /* fn_80026390 - 0x80026390 | size: 0x20 */
-#if 0
-asm void fn_80026390(void) {
-#include "src/game/gs_worldmap_fn_80026390.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 s32 fn_80026390(void* r3, u8* r4) {
     r4[0x64] = 0;
@@ -71,14 +60,8 @@ s32 fn_80026390(void* r3, u8* r4) {
     r4[0x66] = 0x3c;
     return 0;
 }
-#endif
 
 /* fn_800263B0 - 0x800263B0 | size: 0x6c */
-#if 0
-asm void fn_800263B0(void) {
-#include "src/game/gs_worldmap_fn_800263B0.inc"
-}
-#else
 s32 fn_800263B0(void* r3, u8* r4) {
     void* ctx;
     s32 idx;
@@ -98,14 +81,8 @@ s32 fn_800263B0(void* r3, u8* r4) {
     r4[0x66] = c.b;
     return 0;
 }
-#endif
 
 /* fn_8002641C - 0x8002641C | size: 0x5c */
-#if 0
-asm void fn_8002641C(void) {
-#include "src/game/gs_worldmap_fn_8002641C.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 s32 fn_8002641C(void* r3, u8* r4) {
     void* ctx;
@@ -125,7 +102,6 @@ s32 fn_8002641C(void* r3, u8* r4) {
     r4[0x66] = c.b;
     return 0;
 }
-#endif
 #endif /* not a single-range build */
 
 #if !defined(MENU_NAME_ENTRY_80026370_ONLY)
@@ -137,11 +113,6 @@ extern u8 pokemonGetSex(void*);
 extern u8 lbl_80266DD8[];
 
 #if !(defined(MENU_NAME_ENTRY_80027740_ONLY) || defined(MENU_NAME_ENTRY_80027AA4_ONLY))
-#if 0
-asm void fn_80026478(void) {
-#include "src/game/gs_worldmap_fn_80026478.inc"
-}
-#else
 s32 fn_80026478(void* r3, u8* r4) {
     void* ctx;
     void* r31;
@@ -160,14 +131,8 @@ L_done:
     r4[0x67] = r30;
     return 0;
 }
-#endif
 
 /* fn_8002651C - 0x8002651C | size: 0xa4 */
-#if 0
-asm void fn_8002651C(void) {
-#include "src/game/gs_worldmap_fn_8002651C.inc"
-}
-#else
 s32 fn_8002651C(void* r3, u8* r4) {
     void* ctx;
     void* r31;
@@ -186,14 +151,8 @@ L_done2:
     r4[0x67] = r30;
     return 0;
 }
-#endif
 
 /* fn_800265C0 - 0x800265C0 | size: 0x40 */
-#if 0
-asm void fn_800265C0(void) {
-#include "src/game/gs_worldmap_fn_800265C0.inc"
-}
-#else
 s32 fn_800265C0(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -206,14 +165,8 @@ s32 fn_800265C0(void* r3, u8* r4) {
     else r4[0x67] = 0xff;
     return 0;
 }
-#endif
 
 /* fn_80026600 - 0x80026600 | size: 0x40 */
-#if 0
-asm void fn_80026600(void) {
-#include "src/game/gs_worldmap_fn_80026600.inc"
-}
-#else
 s32 fn_80026600(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -226,14 +179,8 @@ s32 fn_80026600(void* r3, u8* r4) {
     else r4[0x67] = 0xff;
     return 0;
 }
-#endif
 
 /* fn_80026640 - 0x80026640 | size: 0x40 */
-#if 0
-asm void fn_80026640(void) {
-#include "src/game/gs_worldmap_fn_80026640.inc"
-}
-#else
 s32 fn_80026640(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -250,14 +197,8 @@ L_40_then:
 L_40_end:
     return 0;
 }
-#endif
 
 /* fn_80026680 - 0x80026680 | size: 0x40 */
-#if 0
-asm void fn_80026680(void) {
-#include "src/game/gs_worldmap_fn_80026680.inc"
-}
-#else
 s32 fn_80026680(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -274,14 +215,8 @@ L_80_then:
 L_80_end:
     return 0;
 }
-#endif
 
 /* fn_800266C0 - 0x800266C0 | size: 0x40 */
-#if 0
-asm void fn_800266C0(void) {
-#include "src/game/gs_worldmap_fn_800266C0.inc"
-}
-#else
 s32 fn_800266C0(void* r3, u8* r4) {
     void* ctx;
     s32* entry;
@@ -298,14 +233,8 @@ L_C0_then:
 L_C0_end:
     return 0;
 }
-#endif
 
 /* fn_80026700 - 0x80026700 | size: 0x40 */
-#if 0
-asm void fn_80026700(void) {
-#include "src/game/gs_worldmap_fn_80026700.inc"
-}
-#else
 s32 fn_80026700(void* r3, u8* r4) {
     void* ctx;
     u8* new_var;
@@ -322,7 +251,6 @@ L_700_then:
 L_700_end:
     return 0;
 }
-#endif
 
 /* fn_80026740 - 0x80026740 | size: 0x90 | active C 65.8% (2026-06-29)
  *
@@ -353,11 +281,6 @@ L_700_end:
  */
 extern f32 lbl_8047B938;
 extern f32 lbl_8047B934;
-#if 0
-asm void fn_80026740(void) {
-#include "src/game/gs_worldmap_fn_80026740.inc"
-}
-#else
 s32 fn_80026740(void* r3, u8* r4)
 {
     extern u8  lbl_80266DD8[];   /* state-machine entry table: each entry 16 bytes */
@@ -393,7 +316,6 @@ s32 fn_80026740(void* r3, u8* r4)
     }
     return 0;
 }
-#endif
 
 /* fn_800267D0 - 0x800267D0 | size: 0x90 | WALL ~85.7% - sibling of fn_80026740.
  * selector=8, base ptr ctx+0x44. The inactive asm measured 96.67% (mostly
@@ -402,11 +324,6 @@ s32 fn_80026740(void* r3, u8* r4)
  * decomp progress. */
 extern f32 lbl_8047B938;
 extern f32 lbl_8047B934;
-#if 0
-asm void fn_800267D0(void) {
-#include "src/game/gs_worldmap_fn_800267D0.inc"
-}
-#else
 s32 fn_800267D0(void* r3, u8* r4)
 {
     extern u8  lbl_80266DD8[];
@@ -442,7 +359,6 @@ s32 fn_800267D0(void* r3, u8* r4)
     }
     return 0;
 }
-#endif
 
 /* fn_80026860 - 0x80026860 | size: 0x90 */
 /* fn_80026860 - 0x80026860 | size: 0x90 | WALL ~85.7% - sibling of fn_80026740.
@@ -452,11 +368,6 @@ s32 fn_800267D0(void* r3, u8* r4)
  * decomp progress. */
 extern f32 lbl_8047B938;
 extern f32 lbl_8047B934;
-#if 0
-asm void fn_80026860(void) {
-#include "src/game/gs_worldmap_fn_80026860.inc"
-}
-#else
 s32 fn_80026860(void* r3, u8* r4)
 {
     extern u8  lbl_80266DD8[];
@@ -492,7 +403,6 @@ s32 fn_80026860(void* r3, u8* r4)
     }
     return 0;
 }
-#endif
 #endif /* not a single-range build */
 
 /* fn_800268F0 - 0x800268F0 | size: 0x254 */
@@ -831,11 +741,6 @@ extern f32 lbl_8047B93C;
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B940;
 extern f32 lbl_8047B938;
-#if 0
-asm void menuNameEntryDraw50Cursor(void) {
-#include "src/game/gs_worldmap_fn_8002749C.inc"
-}
-#else
 s32 menuNameEntryDraw50Cursor(void* window, u8* draw)
 {
     u8* ctx;
@@ -878,14 +783,8 @@ s32 menuNameEntryDraw50Cursor(void* window, u8* draw)
     draw[0x67] = alpha;
     return 0;
 }
-#endif
 
 /* menuNameEntryDraw50Text - 0x800275F4 | size: 0x14c */
-#if 0
-asm void menuNameEntryDraw50Text(void) {
-#include "src/game/gs_worldmap_fn_800275F4.inc"
-}
-#else
 /* Draws the 50-sound grid: four columns of letters for the current row. */
 s32 menuNameEntryDraw50Text(void* window) {
     u8* self;
@@ -915,7 +814,6 @@ s32 menuNameEntryDraw50Text(void* window) {
     }
     return 0;
 }
-#endif
 #endif /* not a single-range build */
 
 #if !defined(MENU_NAME_ENTRY_80027AA4_ONLY)
@@ -993,11 +891,6 @@ s32 menuNameEntryDrawXButtonText(void* r3, u8* r4) {
 
 /* menuNameEntryDrawTitle - 0x800278A4 | size: 0xbc */
 extern s32 pokemonBiosGetPokemonDataId(void*);
-#if 0
-asm void menuNameEntryDrawTitle(void) {
-#include "src/game/gs_worldmap_fn_800278A4.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): local compiler-control pragma (push; peephole off; optimization_level 4) needed for the byte match of the code it covers - see docs/RULE_EXCEPTIONS.md */
 #pragma push
 #pragma peephole off
@@ -1022,7 +915,6 @@ s32 menuNameEntryDrawTitle(void* r3) {
     return 0;
 }
 #pragma pop
-#endif
 
 /* exchangeDakuon__FUs11DAKUON_MODE - 0x80027960 | size: 0x144 */
 extern const u32 lbl_8047B920[2];
@@ -1375,11 +1267,6 @@ extern void winSeqSetMenu(void*, s32);
 extern f32 lbl_8047B930;
 extern f32 lbl_8047B950;
 extern f32 lbl_8047B934;
-#if 0
-asm void menuNameEntryCtrl(void) {
-#include "src/game/gs_worldmap_fn_800280FC.inc"
-}
-#else
 s32 menuNameEntryCtrl(void* r3) {
     u8* r30;
     u8* r31;
@@ -1426,16 +1313,9 @@ s32 menuNameEntryCtrl(void* r3) {
     }
     return 0;
 }
-#endif
 
 /* menuNameEntryButton - 0x800281F0 | size: 0x4 */
-#if 0
-asm void menuNameEntryButton(void) {
-#include "src/game/gs_worldmap_fn_800281F0.inc"
-}
-#else
 void menuNameEntryButton(void) { }
-#endif
 
 /* inputName__FPUsPUsiii - 0x800281F4 | size: 0x250 */
 extern void GScharCpy(void*, u8*);
@@ -1611,11 +1491,6 @@ typedef struct WorldMapOverlay {
     f32 lifetime;
 } WorldMapOverlay;
 extern WorldMapOverlay lbl_803A20DC[];
-#if 0
-asm void menuNameEntryBackDrawBall(void) {
-#include "src/game/gs_worldmap_fn_80028830.inc"
-}
-#else
 s32 menuNameEntryBackDrawBall(void* r3) {
     void* r27;
     WorldMapOverlay* r31;
@@ -1650,7 +1525,6 @@ s32 menuNameEntryBackDrawBall(void* r3) {
     }
     return 0;
 }
-#endif
 
 /* menuNameEntryBackCtrl - 0x80028948 | size: 0x674 */
 extern f32 fn_800E0BE4(void);
@@ -1664,11 +1538,6 @@ extern f32 lbl_8047B970;
 extern f32 lbl_8047B96C;
 extern f32 lbl_8047B934;
 extern f32 lbl_8047B954;
-#if 0
-asm void menuNameEntryBackCtrl(void) {
-#include "src/game/gs_worldmap_fn_80028948.inc"
-}
-#else
 /*
  * menuNameEntryBackCtrl - GSmap_MainRenderFrame (0x80028948, size 0x674)
  *
@@ -1823,7 +1692,6 @@ s32 menuNameEntryBackCtrl(void* r3)
     }
     return 0;
 }
-#endif
 
 /* menuNameEntry - 0x80028FBC | size: 0x59c */
 extern void pokemonBiosGetNicknamePtr(void);
@@ -1847,11 +1715,6 @@ extern void floorSetFadeScript(s32, u32);
 extern s32 lbl_804788A0;
 extern u8 lbl_80266DC0[];
 extern f32 lbl_8047B940;
-#if 0
-asm void menuNameEntry(void) {
-#include "src/game/gs_worldmap_fn_80028FBC.inc"
-}
-#else
 /* menuNameEntry - GSmap_MainUpdate (0x80028FBC, size 0x59C)
  *
  * World-map main update loop. Operates entirely on module globals:
@@ -2155,7 +2018,6 @@ void menuNameEntry(void) {
         }
     }
 }
-#endif
 
 #endif
 #endif /* not a single-range build */

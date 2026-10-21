@@ -1553,18 +1553,8 @@ extern void heroBiosSetPokedoru();  /* K&R: typed impl or conflict */
 extern void heroBiosSetHizukiNamePtr();  /* K&R: typed impl or conflict */
 extern void heroBiosSetNamePtr();  /* K&R: typed impl or conflict */
 
-#if 0
-asm void floorDataBiosGetCurrentPtr(void) {
-#include "src/game/gs_field_world_fn_80115BD8.inc"
-}
-#endif
 extern u8 lbl_8035BA98[];
 extern const char lbl_80272608[];
-#if 0
-asm void floorDataBiosGetFieldCameraListPtr(void) {
-#include "src/game/gs_field_world_fn_801155CC.inc"
-}
-#else
 void* floorDataBiosGetFieldCameraListPtr(u8* ptr) {
     void* sub;
 
@@ -1578,13 +1568,7 @@ void* floorDataBiosGetFieldCameraListPtr(u8* ptr) {
     }
     return *(void**)sub;
 }
-#endif
 extern u8 lbl_8035BA7C[];
-#if 0
-asm void floorDataBiosGetPosListPtr(void) {
-#include "src/game/gs_field_world_fn_80115628.inc"
-}
-#else
 void* floorDataBiosGetPosListPtr(u8* ptr) {
     void* sub;
 
@@ -1598,13 +1582,7 @@ void* floorDataBiosGetPosListPtr(u8* ptr) {
     }
     return *(void**)sub;
 }
-#endif
 extern u8 lbl_8035BA60[];
-#if 0
-asm void floorDataBiosGetCharInfo(void) {
-#include "src/game/gs_field_world_fn_80115684.inc"
-}
-#else
 void* floorDataBiosGetCharInfo(u8* ptr, u32 idx) {
     void* sub;
     void* arr;
@@ -1623,13 +1601,7 @@ void* floorDataBiosGetCharInfo(u8* ptr, u32 idx) {
     }
     return (u8*)*(void**)((u8*)arr + 4) + idx * 0x24;
 }
-#endif
 extern u8 lbl_8035BA48[];
-#if 0
-asm void floorDataBiosGetCharNum(void) {
-#include "src/game/gs_field_world_fn_80115704.inc"
-}
-#else
 u32 floorDataBiosGetCharNum(u8* ptr) {
     void* sub;
 
@@ -1643,13 +1615,7 @@ u32 floorDataBiosGetCharNum(u8* ptr) {
     }
     return *(u32*)*(u32*)*(u32*)sub;
 }
-#endif
 extern u8 lbl_8035BA2C[];
-#if 0
-asm void floorDataBiosGetPostFunc(void) {
-#include "src/game/gs_field_world_fn_80115768.inc"
-}
-#else
 u32 floorDataBiosGetPostFunc(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035BA2C);
@@ -1657,13 +1623,7 @@ u32 floorDataBiosGetPostFunc(u8* ptr) {
     }
     return *(u32*)(ptr + 0x44);
 }
-#endif
 extern u8 lbl_8035BA10[];
-#if 0
-asm void floorDataBiosGetMainFunc(void) {
-#include "src/game/gs_field_world_fn_801157B0.inc"
-}
-#else
 u32 floorDataBiosGetMainFunc(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035BA10);
@@ -1671,13 +1631,7 @@ u32 floorDataBiosGetMainFunc(u8* ptr) {
     }
     return *(u32*)(ptr + 0x40);
 }
-#endif
 extern u8 lbl_8035B9F8[];
-#if 0
-asm void floorDataBiosGetPreFunc(void) {
-#include "src/game/gs_field_world_fn_801157F8.inc"
-}
-#else
 u32 floorDataBiosGetPreFunc(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9F8);
@@ -1685,13 +1639,7 @@ u32 floorDataBiosGetPreFunc(u8* ptr) {
     }
     return *(u32*)(ptr + 0x3C);
 }
-#endif
 extern u8 lbl_8035B9DC[];
-#if 0
-asm void fn_80115840(void) {
-#include "src/game/gs_field_world_fn_80115840.inc"
-}
-#else
 u32 fn_80115840(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9DC);
@@ -1699,13 +1647,7 @@ u32 fn_80115840(u8* ptr) {
     }
     return *(u32*)(ptr + 0x24);
 }
-#endif
 extern u8 lbl_8035B9C0[];
-#if 0
-asm void fn_80115888(void) {
-#include "src/game/gs_field_world_fn_80115888.inc"
-}
-#else
 u32 fn_80115888(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9C0);
@@ -1713,13 +1655,7 @@ u32 fn_80115888(u8* ptr) {
     }
     return *(u32*)(ptr + 0x38);
 }
-#endif
 extern u8 lbl_8035B9A4[];
-#if 0
-asm void fn_801158D0(void) {
-#include "src/game/gs_field_world_fn_801158D0.inc"
-}
-#else
 u32 fn_801158D0(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B9A4);
@@ -1727,13 +1663,7 @@ u32 fn_801158D0(u8* ptr) {
     }
     return *(u32*)(ptr + 0x34);
 }
-#endif
 extern u8 lbl_8035B988[];
-#if 0
-asm void fn_80115918(void) {
-#include "src/game/gs_field_world_fn_80115918.inc"
-}
-#else
 u32 fn_80115918(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B988);
@@ -1741,13 +1671,7 @@ u32 fn_80115918(u8* ptr) {
     }
     return *(u32*)(ptr + 0x30);
 }
-#endif
 extern u8 lbl_8035B96C[];
-#if 0
-asm void fn_80115960(void) {
-#include "src/game/gs_field_world_fn_80115960.inc"
-}
-#else
 u32 fn_80115960(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B96C);
@@ -1755,13 +1679,7 @@ u32 fn_80115960(u8* ptr) {
     }
     return *(u32*)(ptr + 0x2C);
 }
-#endif
 extern u8 lbl_8035B950[];
-#if 0
-asm void fn_801159A8(void) {
-#include "src/game/gs_field_world_fn_801159A8.inc"
-}
-#else
 u32 fn_801159A8(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B950);
@@ -1769,13 +1687,7 @@ u32 fn_801159A8(u8* ptr) {
     }
     return *(u32*)(ptr + 0x28);
 }
-#endif
 extern u8 lbl_8035B938[];
-#if 0
-asm void floorDataBiosGetFloorID(void) {
-#include "src/game/gs_field_world_fn_801159F0.inc"
-}
-#else
 u32 floorDataBiosGetFloorID(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B938);
@@ -1783,7 +1695,6 @@ u32 floorDataBiosGetFloorID(u8* ptr) {
     }
     return *(u32*)(ptr + 0x0C);
 }
-#endif
 /* 0xfn_80115A38 | global_cond_call */
 u32 floorDataBiosGetFileGroupID(u8* entry) {
     extern u8 lbl_8035B91C[];
@@ -1794,11 +1705,6 @@ u32 floorDataBiosGetFileGroupID(u8* entry) {
     return *(u32*)(entry + 0x4);
 }
 extern u8 lbl_8035B904[];
-#if 0
-asm void floorDataBiosGetGroupID(void) {
-#include "src/game/gs_field_world_fn_80115A80.inc"
-}
-#else
 u32 floorDataBiosGetGroupID(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B904);
@@ -1806,13 +1712,7 @@ u32 floorDataBiosGetGroupID(u8* ptr) {
     }
     return *(u32*)(ptr + 0x4);
 }
-#endif
 extern u8 lbl_8035B8E8[];
-#if 0
-asm void floorDataBiosGetFloorKind(void) {
-#include "src/game/gs_field_world_fn_80115AC8.inc"
-}
-#else
 u8 floorDataBiosGetFloorKind(u8* ptr) {
     u8 val;
 
@@ -1829,14 +1729,8 @@ u8 floorDataBiosGetFloorKind(u8* ptr) {
     val = (ptr[0] >> 5) & 7;
     return val;
 }
-#endif
 extern const char lbl_802726AC[];
 extern const char lbl_8035B8CC[];
-#if 0
-asm void floorDataBiosGetMapResID(void) {
-#include "src/game/gs_field_world_fn_80115B48.inc"
-}
-#else
 u32 floorDataBiosGetMapResID(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_802726AC, lbl_8035B8CC);
@@ -1844,13 +1738,7 @@ u32 floorDataBiosGetMapResID(u8* ptr) {
     }
     return *(u32*)(ptr + 0x8);
 }
-#endif
 extern u8 lbl_8035B8B4[];
-#if 0
-asm void floorDataBiosGetArea(void) {
-#include "src/game/gs_field_world_fn_80115B90.inc"
-}
-#else
 u8 floorDataBiosGetArea(u8* ptr) {
     if (ptr == NULL) {
         GSlogWrite(lbl_80272608, lbl_8035B8B4);
@@ -1858,7 +1746,6 @@ u8 floorDataBiosGetArea(u8* ptr) {
     }
     return *(u8*)(ptr + 0x1);
 }
-#endif
 extern u32 lbl_80478FB8;
 extern u32 lbl_80478FBC;
 static inline void* floorDataBiosFindCurrent(u32 key) {
@@ -1878,11 +1765,6 @@ static inline void* floorDataBiosFindCurrent(u32 key) {
 void* floorDataBiosGetCurrentPtr(void) {
     return floorDataBiosFindCurrent((u32)fn_800FF56C());
 }
-#if 0
-asm void floorDataBiosGetPtr(void) {
-#include "src/game/gs_field_world_fn_80115C48.inc"
-}
-#else
 void* floorDataBiosGetPtr(u32 key) {
     u8* p = (u8*)lbl_80478FBC;
     u32 i;
@@ -1893,4 +1775,3 @@ void* floorDataBiosGetPtr(u32 key) {
     GSlogWrite((char*)lbl_802726D4, lbl_8035B8A0);
     return 0;
 }
-#endif

@@ -409,11 +409,6 @@ extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
 extern f32 lbl_8047CAC8;
-#if 0
-asm void GSmaterialSetTexture(void) {
-#include "src/game/gs_render_GSmaterialSetTexture.inc"
-}
-#else
 void GSmaterialSetTexture(u8* obj, void* image) {
     void* desc;
     u32 transparent;
@@ -440,98 +435,38 @@ void GSmaterialSetTexture(u8* obj, void* image) {
         *(void**)(*(u8**)(*(u8**)(obj + 0x8) + 0x8) + 0x58) = desc;
     }
 }
-#endif
 
-#if 0
-asm void GSmaterialGetModulate(void) {
-#include "src/game/gs_render_GSmaterialGetModulate.inc"
-}
-#else
 void GSmaterialGetModulate(u8* src, u8* dst) { dst[0] = src[0xc]; dst[1] = src[0xd]; dst[2] = src[0xe]; dst[3] = src[0xf]; }
-#endif
 
 extern f64 lbl_8047CAD0;
 extern f32 lbl_8047CACC;
-#if 0
-asm void GSmaterialResetAlpha(void) {
-#include "src/game/gs_render_GSmaterialResetAlpha.inc"
-}
-#else
 void GSmaterialResetAlpha(u8* obj) {
     extern void HSD_MObjSetAlpha(u32, f32);
     HSD_MObjSetAlpha(*(u32*)(obj + 0x8), (f32)obj[0x1] / 255.0f);
 }
-#endif
 
 extern f32 lbl_8047CACC;
 #ifndef GS_MATERIAL_SKIP_STORE_ALPHA
-#if 0
-asm void GSmaterialStoreAlpha(void) {
-#include "src/game/gs_render_GSmaterialStoreAlpha.inc"
-}
-#else
 #pragma scheduling off
 void GSmaterialStoreAlpha(u8* obj) { f32 scale = lbl_8047CACC; obj[0x1] = (u8)(s32)(scale * *(f32*)(*(u32*)(*(u32*)((u8*)obj + 0x8) + 0xc) + 0xc)); }
 #pragma scheduling on
 #endif
-#endif
 
-#if 0
-asm void GSmaterialSetEnvMapBlendValue(void) {
-#include "src/game/gs_render_GSmaterialSetEnvMapBlendValue.inc"
-}
-#else
 void GSmaterialSetEnvMapBlendValue(u8* obj, f32 val) { u32 ptr = *(u32*)(obj + 0x20); *(f32*)(obj + 0x34) = val; if (ptr) *(f32*)(ptr + 0x50) = val; }
-#endif
 
-#if 0
-asm void GSmaterialSetEnvMapParams(void) {
-#include "src/game/gs_render_GSmaterialSetEnvMapParams.inc"
-}
-#else
 void GSmaterialSetEnvMapParams(u8* obj, u32 a, u32 b, f32 c, u32 d) { *(u32*)(obj+0x2c) = a; *(u32*)(obj+0x30) = b; *(f32*)(obj+0x34) = c; *(u32*)(obj+0x28) = d; }
-#endif
 
-#if 0
-asm void GSmaterialSetModulate(void) {
-#include "src/game/gs_render_GSmaterialSetModulate.inc"
-}
-#else
 void GSmaterialSetModulate(u8* dst, u8* src) { dst[0xc] = src[0]; dst[0xd] = src[1]; dst[0xe] = src[2]; dst[0xf] = src[3]; }
-#endif
 
-#if 0
-asm void GSmaterialSetColorChannels(void) {
-#include "src/game/gs_render_fn_800DF208.inc"
-}
-#else
 void GSmaterialSetColorChannels(u8* obj, u32 a, u32 b, u32 c, u32 d) { *(u32*)(obj+0x10) = a; *(u32*)(obj+0x14) = b; *(u32*)(obj+0x18) = c; *(u32*)(obj+0x1c) = d; }
-#endif
 
-#if 0
-asm void GSmaterialSetAlpha(void) {
-#include "src/game/gs_render_GSmaterialSetAlpha.inc"
-}
-#else
 void GSmaterialSetAlpha(u8* obj) {
     extern void HSD_MObjSetAlpha(u32);
     HSD_MObjSetAlpha(*(u32*)((u8*)obj + 0x8));
 }
-#endif
 
-#if 0
-asm void GSmaterialGetEnabledExtensions(void) {
-#include "src/game/gs_render_GSmaterialGetEnabledExtensions.inc"
-}
-#else
 u16 GSmaterialGetEnabledExtensions(u8* obj) { return *(u16*)((u8*)obj + 0x2); }
-#endif
 
-#if 0
-asm void GSmaterialDisableExtension(void) {
-#include "src/game/gs_render_GSmaterialDisableExtension.inc"
-}
-#else
 static inline void GSmaterialDisableExtensionImpl(u8* obj, u32 flags) {
     u32 bits;
     u8* mobj;
@@ -641,13 +576,7 @@ void GSmaterialDisableExtension(u8* obj, u32 flags) {
     }
     HSD_MObjCompileTev(mobj);
 }
-#endif
 
-#if 0
-asm void GSmaterialEnableExtension(void) {
-#include "src/game/gs_render_fn_800DF384.inc"
-}
-#else
 void GSmaterialEnableExtension(u8* obj, u32 flags) {
     u32 new_bits;
     u8* ptr;
@@ -661,13 +590,7 @@ void GSmaterialEnableExtension(u8* obj, u32 flags) {
     *(u16*)(obj + 0x2) = *(u16*)(obj + 0x2) | new_bits;
     HSD_MObjCompileTev(ptr);
 }
-#endif
 
-#if 0
-asm void GSmaterialGetFlags(void) {
-#include "src/game/gs_render_fn_800DF3F0.inc"
-}
-#else
 u32 GSmaterialGetFlags(void* obj) {
     u32 v = HSD_MObjGetFlags(*(void**)((u8*)obj + 8));
     u32 flags = 0;
@@ -680,26 +603,14 @@ u32 GSmaterialGetFlags(void* obj) {
     if (v & 0x4000) flags |= 0x40;
     return flags;
 }
-#endif
 
-#if 0
-asm void GSmaterialResetPEdescr(void) {
-#include "src/game/gs_render_fn_800DF470.inc"
-}
-#else
 void GSmaterialResetPEdescr(u8* obj) {
     u32 v = *(u32*)(obj + 0x3c);
     if ((u32)(v + 0x01020000) == 0xfefe) return;
     *(u32*)(*(u32*)(obj + 0x8) + 0x10) = v;
     *(u32*)(obj + 0x3c) = 0xfefefefe;
 }
-#endif
 
-#if 0
-asm void GSmaterialSetPEdescr(void) {
-#include "src/game/gs_render_GSmaterialSetPEdescr.inc"
-}
-#else
 void GSmaterialSetPEdescr(u8* obj, u32 new_val) {
     u32 sentinel = *(u32*)(obj + 0x3c);
     if ((u32)(sentinel + 0x01020000) == 0xfefe) {
@@ -709,25 +620,13 @@ void GSmaterialSetPEdescr(u8* obj, u32 new_val) {
     }
     *(u32*)(*(u8**)(obj + 0x8) + 0x10) = new_val;
 }
-#endif
 
-#if 0
-asm void GSmaterialResetFlags(void) {
-#include "src/game/gs_render_fn_800DF504.inc"
-}
-#else
 void GSmaterialResetFlags(u8* obj) {
     HSD_MObjClearFlags(*(void**)(obj + 0x8), 0x4000600f);
     HSD_MObjSetFlags(*(void**)(obj + 0x8), *(void**)(obj + 0x4));
     HSD_MObjCompileTev(*(void**)(obj + 0x8));
 }
-#endif
 
-#if 0
-asm void GSmaterialSetFlags(void) {
-#include "src/game/gs_render_GSmaterialSetFlags.inc"
-}
-#else
 void GSmaterialSetFlags(u8* obj, u32 flags) {
     u32 r4;
     *(u32*)(obj + 4) = HSD_MObjGetFlags(*(void**)(obj + 8));
@@ -743,13 +642,7 @@ void GSmaterialSetFlags(u8* obj, u32 flags) {
     HSD_MObjSetFlags(*(void**)(obj + 8), (void*)r4);
     HSD_MObjCompileTev(*(void**)(obj + 8));
 }
-#endif
 
-#if 0
-asm void fn_800DF608(void) {
-#include "src/game/gs_render_fn_800DF608.inc"
-}
-#else
 void fn_800DF608(u8* obj) {
     u32 sentinel;
     u32 desc;
@@ -779,15 +672,9 @@ void fn_800DF608(u8* obj) {
     GSmaterialDisableExtensionImpl(obj, *(u16*)(obj + 0x2));
     obj[0] = 0;
 }
-#endif
 
 extern u32 lbl_8047AB20;
 extern u32 lbl_8047AB1C;
-#if 0
-asm void GSmaterialCreate(void) {
-#include "src/game/gs_render_GSmaterialCreate.inc"
-}
-#else
 static inline u8* GSmaterialFindFree(void) {
     u32 i;
     u8* p = (u8*)lbl_8047AB1C;
@@ -819,17 +706,11 @@ u8* GSmaterialCreate(void) {
     *(u32*)(p + 0x38) = 0xFEFEFEFE;
     return p;
 }
-#endif
 
 extern u32 lbl_8047AB20;
 extern u16 lbl_8047AB18;
 extern u32 lbl_8047AB1C;
 extern u8 lbl_80315490[];
-#if 0
-asm void GSmaterialInit(void) {
-#include "src/game/gs_render_fn_800DF854.inc"
-}
-#else
 void GSmaterialInit(u32 count) {
     u16 handle;
     u16 new_var;
@@ -848,27 +729,15 @@ void GSmaterialInit(u32 count) {
         HSD_MObjSetDefaultClass(lbl_80315490);
     }
 }
-#endif
 
 extern u8 lbl_8036CB30[];
-#if 0
-asm void _GSmaterialObjInit_800EF33C(void) {
-#include "src/game/gs_render__GSmaterialObjInit_800EF33C.inc"
-}
-#else
 void _GSmaterialObjInit_800EF33C(void) {
     hsdInitClassInfo(lbl_80315490, lbl_8036CB30, (void*)lbl_802705C0,
                      (void*)lbl_802705C0, 0x54, 0x24);
     *(void**)&lbl_80315490[0x40] = (void*)_matGSmatObjLoad;
     *(void**)&lbl_80315490[0x44] = (void*)_matGSmatObjMakeTExp;
 }
-#endif
 
-#if 0
-asm void _matGSmatObjMakeTExp(void) {
-#include "src/game/gs_render__matGSmatObjMakeTExp.inc"
-}
-#else
 u32 _matGSmatObjMakeTExp(void* obj, void* a, void* b, void* c, void* d) {
     u32 result;
     u8* ext;
@@ -894,15 +763,9 @@ u32 _matGSmatObjMakeTExp(void* obj, void* a, void* b, void* c, void* d) {
 
     return result;
 }
-#endif
 
 extern u8 lbl_803154E4[];
 extern f32 lbl_8047CAC8;
-#if 0
-asm void _matGSmatEnableEnvMapExt(void) {
-#include "src/game/gs_render__matGSmatEnableEnvMapExt.inc"
-}
-#else
 void _matGSmatEnableEnvMapExt(u8* obj) {
     extern void* fn_800EF548(u32, u32);
     extern u16 fn_800EF4FC(u32);
@@ -1026,13 +889,7 @@ void _matGSmatEnableEnvMapExt(u8* obj) {
     }
     fn_801A6FF0(mobj);
 }
-#endif
 
-#if 0
-asm s32 _matGSmatObjLoad(u8* obj) {
-#include "src/game/gs_render_fn_800DFE98.inc"
-}
-#else
 s32 _matGSmatObjLoad(u8* obj) {
     u8* table;
     s32 r;
@@ -1047,4 +904,3 @@ s32 _matGSmatObjLoad(u8* obj) {
     }
     return r;
 }
-#endif

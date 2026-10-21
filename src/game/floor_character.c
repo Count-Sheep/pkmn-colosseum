@@ -1458,11 +1458,6 @@ extern f32 lbl_8047CFA4;
 extern u8 lbl_80272708[];
 extern u32 lbl_80478EC4;
 extern u32 lbl_80478EC0;
-#if 0
-asm void fn_80116D30(void) {
-#include "src/game/gs_field_world_fn_80116D30.inc"
-}
-#else
 void fn_80116D30(u32 kind, u32 arg)
 {
     s32 skind;
@@ -1508,7 +1503,6 @@ void fn_80116D30(u32 kind, u32 arg)
         kind++;
     }
 }
-#endif
 /* 0x80116E6C | 0x18 */
 void floorCharacterBiosSetVisibility(u8* ptr, u8 val) {
     u8 tmp;
@@ -1576,11 +1570,6 @@ ret_null:
 extern u32 lbl_8047CFC0;
 extern u32 lbl_8047CFC8;
 extern u32 lbl_8047CFC4;
-#if 0
-asm void floorCharacterBiosGetRot(void) {
-#include "src/game/gs_field_world_fn_80116F68.inc"
-}
-#else
 #pragma push
 #pragma peephole off
 s32 floorCharacterBiosGetRot(void* a, void* b) {
@@ -1597,12 +1586,6 @@ s32 floorCharacterBiosGetRot(void* a, void* b) {
     return 1;
 }
 #pragma pop
-#endif
-#if 0
-asm void floorCharacterBiosGetPos(void) {
-#include "src/game/gs_field_world_fn_80116FE0.inc"
-}
-#else
 #pragma optimization_level 4
 #pragma push
 #pragma peephole off
@@ -1617,12 +1600,6 @@ u32 floorCharacterBiosGetPos(u8* ptr, void* obj) {
     return 1;
 }
 #pragma pop
-#endif
-#if 0
-asm void fn_801170A4(void) {
-#include "src/game/gs_field_world_fn_801170A4.inc"
-}
-#else
 #pragma peephole off
 u32 fn_801170A4(u8* arg1, u32 arg2) {
     extern void* fn_800FF56C(void);
@@ -1636,4 +1613,3 @@ u32 fn_801170A4(u8* arg1, u32 arg2) {
     return floorDataBiosGetCharInfo(temp, arg2);
 }
 #pragma peephole on
-#endif

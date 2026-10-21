@@ -14,18 +14,12 @@
 
 
 /* 0x80135F58 | 0x38 */
-#if 0
-asm void koukaLinkDataBiosGetKouka(void) {
-#include "src/game/effect/effect_util_fn_80135F58.inc"
-}
-#else
 u32 koukaLinkDataBiosGetKouka(u32 index, u32 sub) {
     if (index > lbl_80478B90 || sub > 8) {
         return 0;
     }
     return lbl_80363B78[index].links[sub];
 }
-#endif
 
 
 /* 0x80135F90 | 0x2C */

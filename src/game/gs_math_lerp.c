@@ -415,11 +415,6 @@ extern u32 lbl_8047AB3C;
 
 extern f32 lbl_8047CAF0;
 extern f32 lbl_8047CAF4;
-#if 0
-asm void GSlerpGetLinearInterpolationVector(void) {
-#include "src/game/gs_render_GSlerpGetLinearInterpolationVector.inc"
-}
-#else
 void GSlerpGetLinearInterpolationVector(void* dst, void* src, void* target, f32 t) {
     if (t <= lbl_8047CAF0) {
         GSvecCopy(dst, src);
@@ -431,19 +426,12 @@ void GSlerpGetLinearInterpolationVector(void* dst, void* src, void* target, f32 
         GSvecAdd(dst, dst, src);
     }
 }
-#endif
 
 extern f32 lbl_8047CAF0;
 extern f32 lbl_8047CAF4;
-#if 0
-asm void GSlerpGetLinearInterpolationFloat(void) {
-#include "src/game/gs_render_fn_800E09B4.inc"
-}
-#else
 f32 GSlerpGetLinearInterpolationFloat(f32 start, f32 end, f32 t) {
     if (t <= lbl_8047CAF0) return start;
     if (t >= lbl_8047CAF4) return end;
     return t * (end - start) + start;
 }
-#endif
 

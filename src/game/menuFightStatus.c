@@ -88,11 +88,6 @@ u32 menuFightStatusWaitAnimeEXP(u32 arg1, u8 arg2) {
 /* 0x80011BC4 | 0xB4 */
 extern u8* windowGetAllocPtr();
 extern void fn_80166A28(u32 val);
-#if 0
-asm void menuFightStatusStartAnimEXP(void) {
-#include "src/game/gs_npc_interact_fn_80011BC4.inc"
-}
-#else
 void menuFightStatusStartAnimEXP(u32 arg1, u32 target) {
     u32 ptr;
     u32 state;
@@ -116,7 +111,6 @@ void menuFightStatusStartAnimEXP(u32 arg1, u32 target) {
     *(s16*)(data + 0xe) = 0;
     fn_80166A28(0x4d0);
 }
-#endif
 
 /* 0x78 | menuFightStatusWaitAnimeHP | generic */
 u32 menuFightStatusWaitAnimeHP(u32 arg1, u8 arg2) {
@@ -133,11 +127,6 @@ u32 menuFightStatusWaitAnimeHP(u32 arg1, u8 arg2) {
 }
 
 /* 0x80011CF0 | 0xAC */
-#if 0
-asm void menuFightStatusStartAnimHP(void) {
-#include "src/game/gs_npc_interact_fn_80011CF0.inc"
-}
-#else
 void menuFightStatusStartAnimHP(u32 arg1, s16 target) {
     u32 ptr;
     u32 state;
@@ -162,14 +151,8 @@ void menuFightStatusStartAnimHP(u32 arg1, s16 target) {
     *(s16*)(state + 0x1a) = target;
     *(s16*)(data + 4) = 0;
 }
-#endif
 
 /* 0x80011D9C | 0xCC - item-kind resolver + dispatch (same switch as fn_800129A8) */
-#if 0
-asm void menuFightStatusSetActive(void) {
-#include "src/game/gs_npc_interact_fn_80011D9C.inc"
-}
-#else
 extern void fn_80103F74(void* head, u16 key, u32 data);
 void menuFightStatusSetActive(s32 id, s32 do_extra) {
     u32 resolved;
@@ -192,7 +175,6 @@ void menuFightStatusSetActive(s32 id, s32 do_extra) {
         fn_80103F74((void*)resolved, kind, 0);
     }
 }
-#endif
 
 /* 0x80011E68 | 0x3C */
 /* Set an NPC's facing direction. */

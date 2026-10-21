@@ -415,11 +415,6 @@ extern u32 lbl_8047CB50;
 extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
-#if 0
-asm void GSvecTransformQuat(void) {
-#include "src/game/gs_render_fn_800DFEEC.inc"
-}
-#else
 void GSvecTransformQuat(f32* r3, f32* r4, f32* r5) {
     f32 f0;
     f32 nextX;
@@ -466,140 +461,43 @@ void GSvecTransformQuat(f32* r3, f32* r4, f32* r5) {
     r3[1] = r4[3] * f5 + r4[1] * f7 + r4[2] * f4 - r4[0] * f6;
     r3[2] = r4[3] * f6 + r4[2] * f7 + r4[0] * f5 - r4[1] * f4;
 }
-#endif
 
-#if 0
-asm void GSvecTransform(void) {
-#include "src/game/gs_render_GSvecTransform.inc"
-}
-#else
 void GSvecTransform(void* a, void* b, void* c) { PSMTXMultVec(b, c, a); }
-#endif
 
-#if 0
-asm void fn_800DFFCC(void) {
-#include "src/game/gs_render_fn_800DFFCC.inc"
-}
-#else
 void fn_800DFFCC(void* a, void* b, void* c) { PSVECCrossProduct(b, c, a); }
-#endif
 
-#if 0
-asm void fn_800E0000(void) {
-#include "src/game/gs_render_fn_800E0000.inc"
-}
-#else
 void fn_800E0000(void) { PSVECDotProduct(); }
-#endif
 
-#if 0
-asm void GSvecSquareDistance(void) {
-#include "src/game/gs_render_GSvecSquareDistance.inc"
-}
-#else
 void GSvecSquareDistance(void) { PSVECSquareDistance(); }
-#endif
 
-#if 0
-asm void GSvecDistance(void) {
-#include "src/game/gs_render_fn_800E0040.inc"
-}
-#else
 void GSvecDistance(void) { PSVECDistance(); }
-#endif
 
-#if 0
-asm void fn_800E0060(void) {
-#include "src/game/gs_render_fn_800E0060.inc"
-}
-#else
 void fn_800E0060(void* a, void* b) { PSVECNormalize(b, a); }
-#endif
 
-#if 0
-asm void fn_800E008C(void) {
-#include "src/game/gs_render_fn_800E008C.inc"
-}
-#else
 void fn_800E008C(void) { PSVECMag(); }
-#endif
 
 extern const f32 lbl_8047CAD8;
-#if 0
-asm void fn_800E00AC(void) {
-#include "src/game/gs_render_fn_800E00AC.inc"
-}
-#else
 void fn_800E00AC(void* a, void* b, f32 scale) {
     PSVECScale(b, a, lbl_8047CAD8 / scale);
 }
-#endif
 
-#if 0
-asm void fn_800E00E0(void) {
-#include "src/game/gs_render_fn_800E00E0.inc"
-}
-#else
 void fn_800E00E0(f32* dst, f32* src) { dst[0] = -src[0]; dst[1] = -src[1]; dst[2] = -src[2]; }
-#endif
 
-#if 0
-asm void fn_800E0108(void) {
-#include "src/game/gs_render_fn_800E0108.inc"
-}
-#else
 void fn_800E0108(f32* dst, f32* a, f32* b) {
     dst[0] = a[0] * b[0];
     dst[1] = a[1] * b[1];
     dst[2] = a[2] * b[2];
 }
-#endif
 
-#if 0
-asm void fn_800E013C(void* a, void* b, f32 c) {
-#include "src/game/gs_render_fn_800E013C.inc"
-}
-#else
 void fn_800E013C(void* a, void* b, f32 c) { PSVECScale(b, a, c); }
-#endif
 
-#if 0
-asm void fn_800E0168(void) {
-#include "src/game/gs_render_fn_800E0168.inc"
-}
-#else
 void fn_800E0168(void* a, void* b, void* c) { PSVECSubtract(b, c, a); }
-#endif
 
-#if 0
-asm void GSvecAdd(void) {
-#include "src/game/gs_render_GSvecAdd.inc"
-}
-#else
 void GSvecAdd(void* a, void* b, void* c) { PSVECAdd(b, c, a); }
-#endif
 
-#if 0
-asm void GSvecCopy(void) {
-#include "src/game/gs_render_fn_800E01D0.inc"
-}
-#else
 void GSvecCopy(void* dst, void* src) { memcpy(dst, src, 0xc); }
-#endif
 
-#if 0
-asm void set__5GSvecFfff(void) {
-#include "src/game/gs_render_fn_800E01F4.inc"
-}
-#else
 void set__5GSvecFfff(f32* arr, f32 x, f32 y, f32 z) { arr[0] = x; arr[1] = y; arr[2] = z; }
-#endif
 
 extern f32 lbl_8047CADC;
-#if 0
-asm void clear__5GSvecFv(void) {
-#include "src/game/gs_render_clear__5GSvecFv.inc"
-}
-#else
 void clear__5GSvecFv(f32* arr) { f32 v = lbl_8047CADC; arr[0] = v; arr[1] = v; arr[2] = v; }
-#endif

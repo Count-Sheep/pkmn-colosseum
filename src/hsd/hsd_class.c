@@ -454,46 +454,28 @@ void _hsdClassAmnesia(HSD_ClassInfo* info) {
 #pragma optimization_level 0
 #pragma optimizewithasm off
 extern void HSD_Free(void* cls);
-#if 0
-asm void _hsdClassDestroy(void) {
-#include "src/hsd/hsd_class_fn_80193A58.inc"
-}
-#else
 #pragma optimization_level 4
 void _hsdClassDestroy(HSD_Class* cls) {
     HSD_ClassInfo* info = cls->class_info;
     info->head.nb_exist -= 1;
     HSD_Free(cls);
 }
-#endif
 #pragma pop
 
 /* 0x80193A88 | 0x4 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void _hsdClassRelease(void) {
-#include "src/hsd/hsd_class_fn_80193A88.inc"
-}
-#else
 #pragma optimization_level 4
 void _hsdClassRelease(HSD_Class* cls) {}
-#endif
 #pragma pop
 
 /* 0x80193A8C | 0x8 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void _hsdClassInit(void) {
-#include "src/hsd/hsd_class_fn_80193A8C.inc"
-}
-#else
 #pragma optimization_level 4
 int _hsdClassInit(HSD_Class* cls) { return 0; }
-#endif
 #pragma pop
 
 /* 0x80193A94 | 0x5C */
@@ -501,11 +483,6 @@ int _hsdClassInit(HSD_Class* cls) { return 0; }
 #pragma optimization_level 0
 #pragma optimizewithasm off
 extern void* fn_801A6928(s32 size);
-#if 0
-asm void _hsdClassAlloc(void) {
-#include "src/hsd/hsd_class_fn_80193A94.inc"
-}
-#else
 #pragma optimization_level 4
 HSD_Class* _hsdClassAlloc(HSD_ClassInfo* info) {
     HSD_Class* result = (HSD_Class*) fn_801A6928((s32) info->head.obj_size);
@@ -517,39 +494,26 @@ HSD_Class* _hsdClassAlloc(HSD_ClassInfo* info) {
     }
     return result;
 }
-#endif
 #pragma pop
 
 /* 0x80193AF0 | 0x20 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_80193AF0(void) {
-#include "src/hsd/hsd_class_fn_80193AF0.inc"
-}
-#else
 #pragma optimization_level 4
 void fn_80193AF0(void* cls) {
     HSD_Free(cls);
 }
-#endif
 #pragma pop
 
 /* 0x80193B10 | 0x20 */
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-#if 0
-asm void fn_80193B10(void) {
-#include "src/hsd/hsd_class_fn_80193B10.inc"
-}
-#else
 #pragma optimization_level 4
 void fn_80193B10(HSD_ClassInfo* info) {
     fn_801A6928((s32)(u32)info);
 }
-#endif
 #pragma pop
 
 /* 0x80193B30 | 0xF4 */
@@ -559,11 +523,6 @@ void fn_80193B10(HSD_ClassInfo* info) {
 extern char lbl_8047D950;
 extern char lbl_802745B4[];
 extern char lbl_802745EC[];
-#if 0
-asm void hsdInitClassInfo(void) {
-#include "src/hsd/hsd_class_fn_80193B30.inc"
-}
-#else
 void hsdInitClassInfo(HSD_ClassInfo* class_info, HSD_ClassInfo* parent_info,
                       char* base_class_library, char* type, s32 info_size,
                       s32 class_size)
@@ -595,5 +554,4 @@ void hsdInitClassInfo(HSD_ClassInfo* class_info, HSD_ClassInfo* parent_info,
         parent_info->head.child = class_info;
     }
 }
-#endif
 #pragma pop

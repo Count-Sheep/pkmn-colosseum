@@ -91,16 +91,10 @@ u16 msgctrlNpc(void) { return lbl_8047AEA2; }
 
 
 
-#if 0
-asm void msgctrlTribe(void) {
-#include "src/game/effect/effect_util_fn_801316A8.inc"
-}
-#else
 void msgctrlTribe(void) {
     fightTrainerKindDataBiosGetPtr(lbl_8047AEA0);
     fightTrainerKindDataBiosGetPrefixName();
 }
-#endif
 
 
 /* 0x801316D0 | 0x8 | sda_getter */
@@ -127,11 +121,6 @@ u32 msgctrlTalkSE(EffectUtilCommandObj* obj) {
     return 0;
 }
 
-#if 0
-asm void msgctrlAlign(void) {
-#include "src/game/effect/effect_util_fn_80131714.inc"
-}
-#else
 s32 msgctrlAlign(EffectUtilCommandObj* obj) {
     extern void GSmsgAdjustAlign(void*);
     u8* stream;
@@ -144,7 +133,6 @@ s32 msgctrlAlign(EffectUtilCommandObj* obj) {
     obj->stream = stream + 1;
     return 0;
 }
-#endif
 
 
 /* 0x80131768 | 0x2C -- read byte from stream, store to obj+0x02 if flag set */
@@ -161,40 +149,22 @@ u32 msgctrlShadow(EffectUtilCommandObj* obj) {
 
 
 /* 0x80131794 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80426FF0, 0x10, lbl_8047AE94, 4) */
-#if 0
-asm void msgctrlMenuMoney(void) {
-#include "src/game/effect/effect_util_fn_80131794.inc"
-}
-#else
 void msgctrlMenuMoney(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80426FF0, 0x10, lbl_8047AE94, 4);
 }
-#endif
 
 
 /* 0x801317C8 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427010, 0x10, lbl_8047AE68, 5) */
-#if 0
-asm void msgctrlMenuFullDigit(void) {
-#include "src/game/effect/effect_util_fn_801317C8.inc"
-}
-#else
 void msgctrlMenuFullDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427010, 0x10, lbl_8047AE68, 5);
 }
-#endif
 
 
 /* 0x801317FC | 0x28 -- calls pokemonDataBiosGetPtr(lbl_8047AE90) then pokemonDataBiosGetName */
-#if 0
-asm void msgctrlPokemonID(void) {
-#include "src/game/effect/effect_util_fn_801317FC.inc"
-}
-#else
 void msgctrlPokemonID(void) {
     pokemonDataBiosGetPtr(lbl_8047AE90);
     pokemonDataBiosGetName();
 }
-#endif
 
 
 /* 0x80131824 | 0x8 | sda_getter */
@@ -202,11 +172,6 @@ u32 msgctrlString(void) { return lbl_8047AE88; }
 
 
 /* 0x8013182C | 0x208 */
-#if 0
-asm void msgctrlTime(void) {
-#include "src/game/effect/effect_util_fn_8013182C.inc"
-}
-#else
 void msgctrlTime(void) {
     u32 seconds = lbl_8047AE84 / 3600;
     u32 minutes = (lbl_8047AE84 - seconds * 3600) / 60;
@@ -239,91 +204,48 @@ void msgctrlTime(void) {
     ((u16*)lbl_80427050)[outIndex++] = glyph[0];
     ((u16*)lbl_80427050)[outIndex] = 0;
 }
-#endif
 
 
 /* 0x80131A34 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427070, 0x10, lbl_8047AE80, 4) */
-#if 0
-asm void msgctrlMoney(void) {
-#include "src/game/effect/effect_util_fn_80131A34.inc"
-}
-#else
 void msgctrlMoney(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427070, 0x10, lbl_8047AE80, 4);
 }
-#endif
 
 
 /* 0x80131A68 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427090, 0x10, lbl_8047AE6C, 2) */
-#if 0
-asm void msgctrlMenuZDigit2(void) {
-#include "src/game/effect/effect_util_fn_80131A68.inc"
-}
-#else
 void msgctrlMenuZDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427090, 0x10, lbl_8047AE6C, 2);
 }
-#endif
 
 
 /* 0x80131A9C | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_804270B0, 0x10, lbl_8047AE68, 2) */
-#if 0
-asm void msgctrlMenuZDigit(void) {
-#include "src/game/effect/effect_util_fn_80131A9C.inc"
-}
-#else
 void msgctrlMenuZDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804270B0, 0x10, lbl_8047AE68, 2);
 }
-#endif
 
 
 /* 0x80131AD0 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_804270D0, 0x10, lbl_8047AE68, 3) */
-#if 0
-asm void msgctrlMenuHex2(void) {
-#include "src/game/effect/effect_util_fn_80131AD0.inc"
-}
-#else
 void msgctrlMenuHex2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804270D0, 0x10, lbl_8047AE68, 3);
 }
-#endif
 
 
 /* 0x80131B04 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_804270F0, 0x10, lbl_8047AE68, 3) */
-#if 0
-asm void msgctrlMenuHex(void) {
-#include "src/game/effect/effect_util_fn_80131B04.inc"
-}
-#else
 void msgctrlMenuHex(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804270F0, 0x10, lbl_8047AE68, 3);
 }
-#endif
 
 
 /* 0x80131B38 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427110, 0x10, lbl_8047AE6C, 1) */
-#if 0
-asm void msgctrlMenuUDigit2(void) {
-#include "src/game/effect/effect_util_fn_80131B38.inc"
-}
-#else
 void msgctrlMenuUDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427110, 0x10, lbl_8047AE6C, 1);
 }
-#endif
 
 
 /* 0x80131B6C | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427130, 0x10, lbl_8047AE68, 1) */
-#if 0
-asm void msgctrlMenuUDigit(void) {
-#include "src/game/effect/effect_util_fn_80131B6C.inc"
-}
-#else
 void msgctrlMenuUDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427130, 0x10, lbl_8047AE68, 1);
 }
-#endif
 
 
 /* 0x80131BA0 | 0x8 | return_const */
@@ -371,75 +293,39 @@ u32 msgctrlTrainerType(void) { return lbl_8047AE20; }
 
 
 /* 0x80131BF8 | 0x28 -- _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE4C, 2) */
-#if 0
-asm void msgctrlSideDefenceNameno(void) {
-#include "src/game/effect/effect_util_fn_80131BF8.inc"
-}
-#else
 void msgctrlSideDefenceNameno(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE4C, 2);
 }
-#endif
 
 
 /* 0x80131C20 | 0x28 -- _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE48, 1) */
-#if 0
-asm void msgctrlSideDefenceNamewo(void) {
-#include "src/game/effect/effect_util_fn_80131C20.inc"
-}
-#else
 void msgctrlSideDefenceNamewo(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE48, 1);
 }
-#endif
 
 
 /* 0x80131C48 | 0x28 -- _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE44, 0) */
-#if 0
-asm void msgctrlSideDefenceNameha(void) {
-#include "src/game/effect/effect_util_fn_80131C48.inc"
-}
-#else
 void msgctrlSideDefenceNameha(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE44, 0);
 }
-#endif
 
 
 /* 0x80131C70 | 0x28 -- _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE1C, 2) */
-#if 0
-asm void msgctrlSideAttackNameno(void) {
-#include "src/game/effect/effect_util_fn_80131C70.inc"
-}
-#else
 void msgctrlSideAttackNameno(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE1C, 2);
 }
-#endif
 
 
 /* 0x80131C98 | 0x28 -- _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE18, 1) */
-#if 0
-asm void msgctrlSideAttackNamewo(void) {
-#include "src/game/effect/effect_util_fn_80131C98.inc"
-}
-#else
 void msgctrlSideAttackNamewo(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE18, 1);
 }
-#endif
 
 
 /* 0x80131CC0 | 0x28 -- _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE14, 0) */
-#if 0
-asm void msgctrlSideAttackNameha(void) {
-#include "src/game/effect/effect_util_fn_80131CC0.inc"
-}
-#else
 void msgctrlSideAttackNameha(void) {
     _msgctrlSideName__FP15FightOutPokemonUc(lbl_8047AE14, 0);
 }
-#endif
 
 
 /* 0x80131CE8 | 0x21C
@@ -532,11 +418,6 @@ void _msgctrlSideName__FP15FightOutPokemonUc(u32 pokemon, u32 kind) {
 
 
 /* 0x80131F04 | 0x98 */
-#if 0
-asm void msgctrlClientnowork(void) {
-#include "src/game/effect/effect_util_fn_80131F04.inc"
-}
-#else
 void msgctrlClientnowork(void) {
     extern u32 lbl_8047AE10;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -558,7 +439,6 @@ void msgctrlClientnowork(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#endif
 
 
 /* 0x80131F9C | 0x8 | sda_getter */
@@ -606,11 +486,6 @@ u32 msgctrlMyName(void) { return lbl_8047ADE4; }
 
 
 /* 0x80131FF4 | 0x98 */
-#if 0
-asm void msgctrlTsuikaMons(void) {
-#include "src/game/effect/effect_util_fn_80131FF4.inc"
-}
-#else
 void msgctrlTsuikaMons(void) {
     extern u32 lbl_8047ADE0;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -632,15 +507,9 @@ void msgctrlTsuikaMons(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#endif
 
 
 /* 0x8013208C | 0x98 */
-#if 0
-asm void msgctrlClientMos(void) {
-#include "src/game/effect/effect_util_fn_8013208C.inc"
-}
-#else
 void msgctrlClientMos(void) {
     extern u32 lbl_8047ADDC;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -662,15 +531,9 @@ void msgctrlClientMos(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#endif
 
 
 /* 0x80132124 | 0x98 */
-#if 0
-asm void msgctrlDeffenceMons(void) {
-#include "src/game/effect/effect_util_fn_80132124.inc"
-}
-#else
 void msgctrlDeffenceMons(void) {
     extern u32 lbl_8047ADD8;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -692,15 +555,9 @@ void msgctrlDeffenceMons(void) {
         fightOutPokemonGetNicknamePtr(val);
     }
 }
-#endif
 
 
 /* 0x801321BC | 0x98 */
-#if 0
-asm void msgctrlAttackMons(void) {
-#include "src/game/effect/effect_util_fn_801321BC.inc"
-}
-#else
 void msgctrlAttackMons(void) {
     extern u32 lbl_8047ADD4;
     extern u32 fightFloorGetFightOutPokemonPtrToFightTrainerPtr(u32, u32);
@@ -722,7 +579,6 @@ void msgctrlAttackMons(void) {
         fightOutPokemonGetNicknamePtr(new_var);
     }
 }
-#endif
 
 
 /* 0x80132254 | 0x8 | sda_getter */
@@ -738,16 +594,10 @@ u32 msgctrlEvStrBuf0(void) { return lbl_8047ADC8; }
 
 
 /* 0x8013226C | 0x28 -- calls wazaDataBiosGetPtr(lbl_8047AE7C) then wazaDataBiosGetName */
-#if 0
-asm void msgctrlWaza(void) {
-#include "src/game/effect/effect_util_fn_8013226C.inc"
-}
-#else
 void msgctrlWaza(void) {
     wazaDataBiosGetPtr(lbl_8047AE7C);
     wazaDataBiosGetName();
 }
-#endif
 
 
 /* 0x80132294 | 0x8 | sda_getter */
@@ -763,27 +613,15 @@ u32 msgctrlMenuPokemon(void) { return lbl_8047AE70; }
 
 
 /* 0x801322AC | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427150, 0x10, lbl_8047AE6C, 0) */
-#if 0
-asm void msgctrlMenuDigit2(void) {
-#include "src/game/effect/effect_util_fn_801322AC.inc"
-}
-#else
 void msgctrlMenuDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427150, 0x10, lbl_8047AE6C, 0);
 }
-#endif
 
 
 /* 0x801322E0 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427170, 0x10, lbl_8047AE68, 0) */
-#if 0
-asm void msgctrlMenuDigit(void) {
-#include "src/game/effect/effect_util_fn_801322E0.inc"
-}
-#else
 void msgctrlMenuDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427170, 0x10, lbl_8047AE68, 0);
 }
-#endif
 
 
 /* 0x80132314 | 0x8 | sda_getter */
@@ -799,27 +637,15 @@ u32 msgctrlMsgID(void) { return lbl_8047AE5C; }
 
 
 /* 0x8013232C | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_80427190, 0x10, lbl_8047AE58, 0) */
-#if 0
-asm void msgctrlDigit2(void) {
-#include "src/game/effect/effect_util_fn_8013232C.inc"
-}
-#else
 void msgctrlDigit2(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_80427190, 0x10, lbl_8047AE58, 0);
 }
-#endif
 
 
 /* 0x80132360 | 0x34 -- _msgctrlMakeDigit__FPUslUll(lbl_804271B0, 0x10, lbl_8047AE54, 0) */
-#if 0
-asm void msgctrlDigit(void) {
-#include "src/game/effect/effect_util_fn_80132360.inc"
-}
-#else
 void msgctrlDigit(void) {
     _msgctrlMakeDigit__FPUslUll(lbl_804271B0, 0x10, lbl_8047AE54, 0);
 }
-#endif
 
 
 /* 0x80132394 | 0x34 -- calls itemDataBiosGetPtr(lbl_8047AE52) then itemDataBiosGetName, default to 0x2B6E */
@@ -855,11 +681,6 @@ u32 msgctrlHero(void) {
     return heroBiosGetNamePtr();
 }
 
-#if 0
-asm void msgctrlWait(void) {
-#include "src/game/effect/effect_util_fn_80132454.inc"
-}
-#else
 s32 msgctrlWait(EffectUtilCommandObj* obj) {
     u8* stream;
     s32 counter;
@@ -883,7 +704,6 @@ doneIncrement:
     obj->stream = stream + 1;
     return 0;
 }
-#endif
 
 
 /* 0x801324CC | 0xA4 -- read color index from stream, look up RGBA, apply */
@@ -916,11 +736,6 @@ void msgctrlPalette(EffectUtilCommandObj* obj) {
     obj->stream = obj->stream + 1;
 }
 
-#if 0
-asm void msgctrlColor(void) {
-#include "src/game/effect/effect_util_fn_80132570.inc"
-}
-#else
 s32 msgctrlColor(EffectUtilCommandObj* obj) {
     extern void GSmsgSetColor(void*);
     u8* stream;
@@ -933,7 +748,6 @@ s32 msgctrlColor(EffectUtilCommandObj* obj) {
     obj->stream = stream + 4;
     return 0;
 }
-#endif
 
 
 /* 0x801325C4 | 0x68 -- read byte command into u16 field and apply */
@@ -968,11 +782,6 @@ u32 msgctrlRubyTop(EffectUtilCommandObj* obj) {
     return 0;
 }
 
-#if 0
-asm void msgctrlRubyStart(void) {
-#include "src/game/effect/effect_util_fn_8013264C.inc"
-}
-#else
 s32 msgctrlRubyStart(EffectUtilCommandObj* obj) {
     extern void GSmsgInitRuby(void*);
     if (obj->activeFlag != 0) {
@@ -981,7 +790,6 @@ s32 msgctrlRubyStart(EffectUtilCommandObj* obj) {
     obj->field_4B = 1;
     return 0;
 }
-#endif
 
 
 /* 0x80132690 | 0xCC -- effect tick with flag-based logic */
@@ -1019,11 +827,6 @@ u32 msgctrlKeyWait(EffectUtilCommandObj* obj) {
 
 
 /* 0x8013275C | 0x84 */
-#if 0
-asm void msgctrlKeyEnd(void) {
-#include "src/game/effect/effect_util_fn_8013275C.inc"
-}
-#else
 u32 msgctrlKeyEnd(EffectUtilCommandObj* obj) {
     if (obj->flags & 0x02) {
         obj->pendingFlag = 1;
@@ -1038,13 +841,7 @@ u32 msgctrlKeyEnd(EffectUtilCommandObj* obj) {
     }
     return 1;
 }
-#endif
 
-#if 0
-asm void msgctrlCR(void) {
-#include "src/game/effect/effect_util_fn_801327E0.inc"
-}
-#else
 u32 msgctrlCR(void* obj) {
     u8* p = (u8*)obj;
     f32 diff;
@@ -1053,7 +850,6 @@ u32 msgctrlCR(void* obj) {
     *(f32*)(p + 0x10) += *(f32*)(p + 0x64) * diff;
     return 0;
 }
-#endif
 
 
 /* 0x80132834 - 0x80132A38: shared with the standalone matching owner. */

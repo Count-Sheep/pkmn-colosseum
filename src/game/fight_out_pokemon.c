@@ -788,11 +788,6 @@ void* fightOutPokemonCreateFightAction(void* r3, void* r4, u32 r5, u32 r6,
   return NULL;
 }
 
-#if 0
-asm void fightOutPokemonGetFightActionPri(void) {
-#include "src/game/colosseum_event_fn_802050F4.inc"
-}
-#else
 s32 fightOutPokemonGetFightActionPri(void* ctx) {
     void* p;
     p = pokemonGetStatus(ctx, 0, 0xFE, 0);
@@ -801,7 +796,6 @@ s32 fightOutPokemonGetFightActionPri(void* ctx) {
     }
     return fightActionGetPri(p);
 }
-#endif
 
 /* fightOutPokemonGetWazaZokuseiDataId | Size: 0x50 | Get field 0x30 from resolved 0xD9, default 9 */
 u16 fightOutPokemonGetWazaZokuseiDataId(void* ctx) {

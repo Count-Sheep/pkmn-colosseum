@@ -355,11 +355,6 @@ u32 loadSequence(int *r3,u32 r4,u16 *r5,int r6)
   return uVar1;
 }
 
-#if 0
-asm void fn_8025E1BC(void) {
-#include "src/game/colosseum_battle_fn_8025E1BC.inc"
-}
-#endif
 static inline u32 *validptr_8025E1BC(u32 *p) {
 
   u32 *q = p;

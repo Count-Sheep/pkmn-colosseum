@@ -494,11 +494,6 @@ u32 fn_801380D4(void* callbacks) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013814C)
-#if 0
-asm void _lightningRenderMain(void) {
-#include "src/game/effect/effect_visual__lightningRenderMain.inc"
-}
-#else
 /*
  * RULE-EXCEPTION(user-approved): _lightningRenderMain's .sdata2 pool
  * (0x8047D148-0x8047D160) as named stand-ins, defined after the function so
@@ -657,15 +652,9 @@ __declspec(section ".sdata2") u32 lbl_8047D158 = 0x40000000; /* 2.0f */
    0x8047D15C word has to come from this object. */
 __declspec(section ".sdata2") u32 lbl_8047D15C = 0x40C90FDB; /* 6.2831855f */
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80138630_801386DC)
-#if 0
-asm void fn_80138630(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80138630.inc"
-}
-#else
 u32 fn_80138630(void* ptr) {
     if (ptr) {
         GXDrawDone();
@@ -677,14 +666,8 @@ u32 fn_80138630(void* ptr) {
     }
     return 0;
 }
-#endif
 extern void fn_800E24B0(u16 a);
 extern void fn_800E209C(u16 a);
-#if 0
-asm void fn_80138680(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80138680.inc"
-}
-#else
 u32 fn_80138680(void* ptr) {
     u32 val;
     u32 ret;
@@ -703,16 +686,10 @@ u32 fn_80138680(void* ptr) {
     return ret;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_801386DC)
 extern u8 lbl_80272B40[];
-#if 0
-asm u32 fn_801386DC(void* ptr) {
-#include "src/game/effect/effect_visual_fn_801386DC.inc"
-}
-#else
 u32 fn_801386DC(void* ptr) {
     u8* p;
     u16 handle;
@@ -743,15 +720,9 @@ u32 fn_801386DC(void* ptr) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_801387C0_80138838)
-#if 0
-asm void fn_801387C0(void* ptr, u32 delta) {
-#include "src/game/effect/effect_visual_fn_801387C0.inc"
-}
-#else
 u32 fn_801387C0(void* ptr, u32 delta) {
     u8* p;
     u32 d;
@@ -772,7 +743,6 @@ fail:
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_80138838)
 extern f32 fn_800E0BE4(void);
@@ -784,11 +754,6 @@ extern void fn_800E0718(void*, void*, f32);
 extern void GSvecTransformQuat(void* dst, void* quat, void* src);
 extern void GSmtxMakeYRotation(void* mtx, f32 angle);
 extern void fn_800E013C(void* dst, void* src, f32 scale);
-#if 0
-asm void fn_80138838(void* ptr, u32 b) {
-#include "src/game/effect/effect_visual_fn_80138838.inc"
-}
-#else
 void fn_80138838(void* ptr, u32 b) {
     u8* p;
     u8* current;
@@ -869,15 +834,9 @@ void fn_80138838(void* ptr, u32 b) {
     }
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80138B00_80138BBC)
-#if 0
-asm void leaffxStartEffect(void) {
-#include "src/game/effect/effect_visual_leaffxStartEffect.inc"
-}
-#else
 u32 leaffxStartEffect(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x4c);
     if (effectId) {
@@ -893,13 +852,7 @@ u32 leaffxStartEffect(void* callbacks) {
     }
     return effectId;
 }
-#endif
 extern void fn_800F9210(u32 a, u32 b);
-#if 0
-asm void fn_80138B74(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80138B74.inc"
-}
-#else
 u32 fn_80138B74(void* ptr) {
     if (ptr) {
         fn_800F9210(*(u16*)((u8*)ptr + 0x40), *(u16*)((u8*)ptr + 0x44));
@@ -908,18 +861,12 @@ u32 fn_80138B74(void* ptr) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80138BBC_80138DE4)
 extern void GSmodelSetVisibility(void* a, u32 b);
 extern void GSpartFree(void* handle);
 extern u32 lbl_8047D160;
-#if 0
-asm u32 fn_80138BBC(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80138BBC.inc"
-}
-#else
 u32 fn_80138BBC(void* ptr) {
     u32 j;
     u32 k;
@@ -971,14 +918,8 @@ u32 fn_80138BBC(void* ptr) {
     }
     return 1;
 }
-#endif
 extern u8 lbl_80272C30[];
 extern u8 lbl_80272C90[];
-#if 0
-asm u32 fn_80138CCC(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80138CCC.inc"
-}
-#else
 u32 fn_80138CCC(void* ptr) {
     u8* entry;
     u8* p;
@@ -1027,7 +968,6 @@ allocation_error:
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80138DE4)
@@ -1040,11 +980,6 @@ extern u32 lbl_8047D164;
 extern u32 lbl_8047D178;
 extern u32 lbl_8047D160;
 extern const f32 lbl_8047D168;
-#if 0
-asm void fn_80138DE4(void) {
-#include "src/game/effect/effect_visual_fn_80138DE4.inc"
-}
-#else
 u32 fn_80138DE4(void* ptr, u32 delta) {
     u8* p;
     u32 j;
@@ -1130,7 +1065,6 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80139074_80139820)
@@ -1143,11 +1077,6 @@ extern void GSmodelSetMatrix();
 extern void fn_800E076C(void* dst, void* src);
 extern u32 lbl_8047D180;
 extern u32 lbl_8047D184;
-#if 0
-asm void fn_80139074(void) {
-#include "src/game/effect/effect_visual_fn_80139074.inc"
-}
-#else
 void fn_80139074(void* entry, u8* leaf) {
     u8* config = entry;
     f32* vec;
@@ -1237,7 +1166,6 @@ void fn_80139074(void* entry, u8* leaf) {
     fn_800E013C(vec, vec, distance2);
     GSvecAdd(vec, vec, leaf + 0xC);
 }
-#endif
 extern void* GSmodelClone(void* model);
 extern void GSpartGetTransform(void* obj, void* a, void* b, void* c);
 extern u8 lbl_80272CC4[];
@@ -1248,11 +1176,6 @@ extern const f32 lbl_8047D168;
 extern u32 lbl_8047D180;
 extern u32 lbl_8047D184;
 extern u32 lbl_8047D188;
-#if 0
-asm void _leaffxGenerateLeafData(void* ptr, void* entry) {
-#include "src/game/effect/effect_visual__leaffxGenerateLeafData.inc"
-}
-#else
 u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
     void* source;
     f32* vec;
@@ -1408,15 +1331,9 @@ u8 _leaffxGenerateLeafData(void* ptr, void* entry) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80139820_80139AC4)
-#if 0
-asm void electronStartEffect(void) {
-#include "src/game/effect/effect_visual_electronStartEffect.inc"
-}
-#else
 u32 electronStartEffect(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x60);
     if (effectId) {
@@ -1432,12 +1349,6 @@ u32 electronStartEffect(void* callbacks) {
     }
     return effectId;
 }
-#endif
-#if 0
-asm void fn_80139898(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80139898.inc"
-}
-#else
 u32 fn_80139898(void* ptr) {
     if (ptr) {
         GXDrawDone();
@@ -1448,12 +1359,6 @@ u32 fn_80139898(void* ptr) {
     }
     return 1;
 }
-#endif
-#if 0
-asm void fn_801398E0(void* ptr) {
-#include "src/game/effect/effect_visual_fn_801398E0.inc"
-}
-#else
 u32 fn_801398E0(void* ptr) {
     u32 val;
     if (ptr) {
@@ -1467,7 +1372,6 @@ u32 fn_801398E0(void* ptr) {
     }
     return 1;
 }
-#endif
 extern u32 fn_800EE7E0(void* obj);
 extern const f32 lbl_8047D190;
 #if 1
@@ -1605,11 +1509,6 @@ BOOL fn_80139AC4(void* ptr, u32 tick) {
 extern u8 lbl_80272D08[];
 extern const f32 lbl_8047D190;
 extern u8 lbl_80272D54[];
-#if 0
-asm u32 fn_80139D10(void* ptr) {
-#include "src/game/effect/effect_visual_fn_80139D10.inc"
-}
-#else
 u32 fn_80139D10(void* ptr) {
     u16 handle;
     u32 size;
@@ -1664,7 +1563,6 @@ u32 fn_80139D10(void* ptr) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_80139E80)
 extern void fn_800E0108(void);
@@ -1676,11 +1574,6 @@ extern const f32 lbl_8047D1A8;
 extern const f32 lbl_8047D190;
 extern const f32 lbl_8047D1AC;
 extern const f32 lbl_8047D1B0;
-#if 0
-asm void fn_80139E80(void* entry, void* parent, void* cameraPos, void* modelPos) {
-#include "src/game/effect/effect_visual_fn_80139E80.inc"
-}
-#else
 void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     extern void fn_800D7E5C(void);
     extern void fn_800D7F14(void*);
@@ -1779,7 +1672,6 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
     fn_800D7E5C();
 }
 #endif
-#endif
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013A1D4)
 #if defined(EFFECT_VISUAL_EXACT_8013A1D4)
 extern f32 fn_800E0BE4(void);
@@ -1875,11 +1767,6 @@ void fn_8013A1D4(u8* entry, u8* parent, ElectronPoint* origin, u32 depth, f32 we
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013A42C_8013A520)
-#if 0
-asm void fn_8013A42C(void) {
-#include "src/game/effect/effect_visual_fn_8013A42C.inc"
-}
-#else
 u32 fn_8013A42C(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x24);
     if (effectId) {
@@ -1895,14 +1782,8 @@ u32 fn_8013A42C(void* callbacks) {
     }
     return effectId;
 }
-#endif
 extern u8 lbl_80272D90[];
 extern u8 lbl_80272DF4[];
-#if 0
-asm u32 fn_8013A49C(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013A49C.inc"
-}
-#else
 u32 fn_8013A49C(void* ptr) {
     void* res;
     if (ptr) {
@@ -1917,7 +1798,6 @@ u32 fn_8013A49C(void* ptr) {
     GSlogWrite((const char*)lbl_80272DF4);
     return 0;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013A520)
@@ -1934,11 +1814,6 @@ extern const f32 lbl_8047D1C8;
 extern const f32 lbl_8047D1CC;
 extern const f32 lbl_8047D1D0;
 extern u32 lbl_8047D1D8;
-#if 0
-asm void fn_8013A520(void) {
-#include "src/game/effect/effect_visual_fn_8013A520.inc"
-}
-#else
 u32 fn_8013A520(void* ptr) {
     extern f64 sin(f64);
     extern f64 cos(f64);
@@ -2116,15 +1991,9 @@ u32 fn_8013A520(void* ptr) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013AA8C_8013AB60)
-#if 0
-asm u32 fn_8013AA8C(void* ptr, u16 delta) {
-#include "src/game/effect/effect_visual_fn_8013AA8C.inc"
-}
-#else
 u32 fn_8013AA8C(void* ptr, u16 delta) {
     u16 cur;
     u16 max;
@@ -2138,12 +2007,6 @@ u32 fn_8013AA8C(void* ptr, u16 delta) {
     }
     return 0;
 }
-#endif
-#if 0
-asm void fn_8013AABC(void) {
-#include "src/game/effect/effect_visual_fn_8013AABC.inc"
-}
-#else
 u32 fn_8013AABC(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x5c);
     if (effectId) {
@@ -2159,12 +2022,6 @@ u32 fn_8013AABC(void* callbacks) {
     }
     return effectId;
 }
-#endif
-#if 0
-asm u32 fn_8013AB34(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013AB34.inc"
-}
-#else
 u32 fn_8013AB34(void* ptr) {
     void* inner;
     u32 val;
@@ -2178,17 +2035,11 @@ u32 fn_8013AB34(void* ptr) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013AB60)
 extern u32 lbl_8047D1E8;
 extern const f32 lbl_8047D1E0;
-#if 0
-asm u32 fn_8013AB60(void* ptr, u8* src, u8* dst, u32 alpha) {
-#include "src/game/effect/effect_visual_fn_8013AB60.inc"
-}
-#else
 u32 fn_8013AB60(void* ptr, u8* src, u8* dst, u32 alpha) {
     u8* p;
     u8* node;
@@ -2244,15 +2095,9 @@ u32 fn_8013AB60(void* ptr, u8* src, u8* dst, u32 alpha) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013AD68_8013AD9C)
-#if 0
-asm u32 fn_8013AD68(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013AD68.inc"
-}
-#else
 u32 fn_8013AD68(void* ptr) {
     void* ptr2;
     if (ptr) {
@@ -2265,7 +2110,6 @@ u32 fn_8013AD68(void* ptr) {
     }
     return 0;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
@@ -2360,11 +2204,6 @@ done:
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013B034_8013B268)
-#if 0
-asm void fn_8013B034(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013B034.inc"
-}
-#else
 u32 fn_8013B034(void* ptr) {
     void* next;
     u32 val;
@@ -2384,14 +2223,8 @@ u32 fn_8013B034(void* ptr) {
     }
     return ret;
 }
-#endif
 extern void GSmodelDisableModulation(void* texture);
 extern void fn_801684F0(void* texture);
-#if 0
-asm void fn_8013B0A0(void) {
-#include "src/game/effect/effect_visual_fn_8013B0A0.inc"
-}
-#else
 u32 fn_8013B0A0(void* ptr) {
     u8 flag2;
     u8 flag1;
@@ -2431,17 +2264,11 @@ u32 fn_8013B0A0(void* ptr) {
 fail:
     return 0;
 }
-#endif
 extern void GSmodelEnableModulation(void* texture, void* filter);
 extern void fn_80168570(void);
 extern u8 lbl_80363CA8[];
 extern u8 lbl_80272E30[];
 extern u8 lbl_80272E70[];
-#if 0
-asm u16 filterStart(void) {
-#include "src/game/effect/effect_visual_filterStart.inc"
-}
-#else
 u16 filterStart(void* arg) {
     u8 flag2;
     u8 flag1;
@@ -2491,7 +2318,6 @@ report_null:
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013B268)
@@ -2516,11 +2342,6 @@ static inline u8 effectColorMultiply(u8 base, u8 color) {
     return ((f32)base * (f32)color) / 255.0f;
 }
 
-#if 0
-asm void fn_8013B268(void* ptr, u8* color) {
-#include "src/game/effect/effect_visual_fn_8013B268.inc"
-}
-#else
 void fn_8013B268(void* ptr, u8* color) {
     u8* p;
     void** textures;
@@ -2552,15 +2373,9 @@ void fn_8013B268(void* ptr, u8* color) {
     }
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013B490_8013B5E4)
-#if 0
-asm void fn_8013B490(void) {
-#include "src/game/effect/effect_visual_fn_8013B490.inc"
-}
-#else
 u32 fn_8013B490(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0xd0);
     if (effectId) {
@@ -2576,12 +2391,6 @@ u32 fn_8013B490(void* callbacks) {
     }
     return effectId;
 }
-#endif
-#if 0
-asm u32 fn_8013B504(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013B504.inc"
-}
-#else
 u32 fn_8013B504(void* ptr) {
     if (ptr) {
         if (*(s32*)((u8*)ptr + 0x58) != 0) {
@@ -2591,12 +2400,6 @@ u32 fn_8013B504(void* ptr) {
     }
     return 1;
 }
-#endif
-#if 0
-asm u32 fn_8013B558(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013B558.inc"
-}
-#else
 u32 fn_8013B558(void* ptr) {
     u16 val;
     if (ptr) {
@@ -2618,7 +2421,6 @@ u32 fn_8013B558(void* ptr) {
     }
     return 1;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
@@ -2765,11 +2567,6 @@ fail:
 }
 extern void fn_800E09E8(void* dst, void* src, u32 count);
 extern u32 lbl_8047D208;
-#if 0
-asm u32 fn_8013B85C(void* ptr, u32 delta) {
-#include "src/game/effect/effect_visual_fn_8013B85C.inc"
-}
-#else
 u32 fn_8013B85C(void* ptr, u32 delta) {
     u8* p;
     s32 half;
@@ -2818,7 +2615,6 @@ u32 fn_8013B85C(void* ptr, u32 delta) {
     }
     return 0;
 }
-#endif
 extern u8 lbl_8031554C[];
 extern u8 lbl_80315540[];
 extern const f32 lbl_8047D200;
@@ -2945,11 +2741,6 @@ extern const f32 lbl_8047D204;
 extern u32 lbl_8047D228;
 extern const f32 lbl_8047D21C;
 extern u32 lbl_8047D208;
-#if 0
-asm void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
-#include "src/game/effect/effect_visual_fn_8013BE04.inc"
-}
-#else
 void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     u8* p = ptr;
     u16 row;
@@ -2994,7 +2785,6 @@ void fn_8013BE04(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     }
     fn_800E0E14(0, 0);
 }
-#endif
 extern void* fn_8019FF48(void* model);
 extern void HSD_MObjSetFlags(void* mobj, u32 flags);
 extern void HSD_MObjCompileTev(void* mobj);
@@ -3007,11 +2797,6 @@ extern void* fn_8019FF48(void* model);
 extern void HSD_MObjSetFlags(void* mobj, u32 flags);
 extern void HSD_MObjCompileTev(void* mobj);
 #endif
-#if 0
-asm void fn_8013C074(void) {
-#include "src/game/effect/effect_visual_fn_8013C074.inc"
-}
-#else
 typedef struct SurfRenderStage {
     s32 kind;
     u32 field_04;
@@ -3207,15 +2992,9 @@ u32 fn_8013C074(void* ptr, void* arg) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013C5A0_8013C670)
-#if 0
-asm void fn_8013C5A0(void) {
-#include "src/game/effect/effect_visual_fn_8013C5A0.inc"
-}
-#else
 u32 fn_8013C5A0(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0xac);
     if (effectId) {
@@ -3231,12 +3010,6 @@ u32 fn_8013C5A0(void* callbacks) {
     }
     return effectId;
 }
-#endif
-#if 0
-asm u32 fn_8013C614(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013C614.inc"
-}
-#else
 u32 fn_8013C614(void* ptr) {
     if (ptr) {
         GXDrawDone();
@@ -3249,14 +3022,8 @@ u32 fn_8013C614(void* ptr) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
-#if 0
-asm void fn_8013C670(void) {
-#include "src/game/effect/effect_visual_fn_8013C670.inc"
-}
-#else
 u32 fn_8013C670(void* arg) {
     void* ptr;
     void* inner;
@@ -3290,7 +3057,6 @@ u32 fn_8013C670(void* arg) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013C718)
@@ -3313,11 +3079,6 @@ extern const f32 lbl_8047D234;
 extern const f32 lbl_8047D238;
 extern const f32 lbl_8047D23C;
 extern u8 lbl_80272ED0[];
-#if 0
-asm u16 seaEffectStart(void) {
-#include "src/game/effect/effect_visual_seaEffectStart.inc"
-}
-#else
 /* RULE-EXCEPTION(user-approved): single-function inline helper — see docs/RULE_EXCEPTIONS.md */
 static inline u8 seaAllocMesh(u8* p, void* model) {
     u16 columns;
@@ -3460,7 +3221,6 @@ fail:
     GSlogWrite((const char*)lbl_80272ED0);
     return 0;
 }
-#endif
 #if defined(EFFECT_VISUAL_EXACT_8013C718)
 /*
  * RULE-EXCEPTION(user-approved): seaEffectStart's .sdata2 pool
@@ -3493,11 +3253,6 @@ extern u8 lbl_80363CB8[];
 extern const f32 lbl_8047D240;
 extern const f32 lbl_8047D244;
 extern u32 lbl_8047D250;
-#if 0
-asm u32 fn_8013CA48(void* ptr, u32 delta) {
-#include "src/game/effect/effect_visual_fn_8013CA48.inc"
-}
-#else
 u32 fn_8013CA48(void* ptr, u32 delta) {
     u8* p;
     f32 angleStep;
@@ -3551,14 +3306,8 @@ u32 fn_8013CA48(void* ptr, u32 delta) {
     }
     return 0;
 }
-#endif
 extern u32 lbl_8047D250;
 extern u32 lbl_8047D248;
-#if 0
-asm void fn_8013CBF0(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
-#include "src/game/effect/effect_visual_fn_8013CBF0.inc"
-}
-#else
 void fn_8013CBF0(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     u8* p = ptr;
     u32 rows = *(u16*)(p + 0x18);
@@ -3608,14 +3357,8 @@ void fn_8013CBF0(void* ptr, void* mtx, u8* color, f32 x, f32 z, f32 scale) {
     }
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
-#if 0
-asm u32 fn_8013CE58(void* inner, void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013CE58.inc"
-}
-#else
 u32 fn_8013CE58(void* inner, void* ptr) {
     u8* p = ptr;
     u8* displayObject;
@@ -3722,7 +3465,6 @@ u32 fn_8013CE58(void* inner, void* ptr) {
     *(u16*)(material + 0xE) = *(u16*)(p + 0x44);
     return 1;
 }
-#endif
 #endif /* 8013CE58 */
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013D0A8)
@@ -3732,11 +3474,6 @@ extern void HSD_MObjSetFlags(void* mobj, u32 flags);
 extern void HSD_MObjCompileTev(void* mobj);
 extern u8 lbl_80363CB8[];
 #endif
-#if 0
-asm void fn_8013D0A8(void) {
-#include "src/game/effect/effect_visual_fn_8013D0A8.inc"
-}
-#else
 typedef struct BlurRenderStage {
     s32 kind;
     u32 field_04;
@@ -3945,15 +3682,9 @@ u32 fn_8013D0A8(void* ptr, void* arg) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013D604_8013D984)
-#if 0
-asm void fn_8013D604(void* ptr, u32 val, f32 f1, f32 f2) {
-#include "src/game/effect/effect_visual_fn_8013D604.inc"
-}
-#else
 u32 fn_8013D604(void* ptr, u32 val, f32 f1, f32 f2) {
     u16 handle;
     void* node;
@@ -3978,12 +3709,6 @@ u32 fn_8013D604(void* ptr, u32 val, f32 f1, f32 f2) {
     }
     return 0;
 }
-#endif
-#if 0
-asm void fn_8013D6B8(void) {
-#include "src/game/effect/effect_visual_fn_8013D6B8.inc"
-}
-#else
 u32 fn_8013D6B8(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x18);
     if (effectId) {
@@ -3999,14 +3724,8 @@ u32 fn_8013D6B8(void* callbacks) {
     }
     return effectId;
 }
-#endif
 extern u32 lbl_8047AEE0;
 extern u16 lbl_8047AEE4;
-#if 0
-asm void fn_8013D730(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013D730.inc"
-}
-#else
 u32 fn_8013D730(void* ptr) {
     void* next;
     u32 val;
@@ -4033,13 +3752,7 @@ u32 fn_8013D730(void* ptr) {
     }
     return ret;
 }
-#endif
 extern void GSmodelDisableEnvMap(void* ptr);
-#if 0
-asm u32 fn_8013D7CC(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013D7CC.inc"
-}
-#else
 u32 fn_8013D7CC(void* ptr) {
     void* inner;
     if (ptr != NULL) {
@@ -4050,16 +3763,10 @@ u32 fn_8013D7CC(void* ptr) {
     }
     return 1;
 }
-#endif
 extern u32 lbl_8047AEE0;
 extern u8 lbl_80466BC0[];
 extern u16 lbl_8047AEE4;
 extern u8 lbl_80272F00[];
-#if 0
-asm u32 envMapEffectInit(void* ptr) {
-#include "src/game/effect/effect_visual_envMapEffectInit.inc"
-}
-#else
 u32 envMapEffectInit(void* ptr) {
     void* next;
     u32 val;
@@ -4094,14 +3801,8 @@ u32 envMapEffectInit(void* ptr) {
     GSlogWrite((const char*)lbl_80272F00);
     return 0;
 }
-#endif
 extern u32 lbl_8047AEE0;
 extern u8 lbl_80272F38[];
-#if 0
-asm u32 envMapEffectStart(void* ptr) {
-#include "src/game/effect/effect_visual_envMapEffectStart.inc"
-}
-#else
 u32 envMapEffectStart(void* ptr) {
     void* inner;
     if (ptr) {
@@ -4119,7 +3820,6 @@ log:
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013D984)
@@ -4128,11 +3828,6 @@ extern u8 GSmodelIsEnvMapEnabled(void* model);
 extern void GSmodelSetEnvMapBlendValue(void* model, f32 value);
 extern u32 lbl_8047AEE0;
 extern u32 lbl_8047D260;
-#if 0
-asm u32 fn_8013D984(void* ptr, u32 delta) {
-#include "src/game/effect/effect_visual_fn_8013D984.inc"
-}
-#else
 u32 fn_8013D984(void* ptr, u32 delta) {
     u8* p;
     u8* node;
@@ -4198,15 +3893,9 @@ u32 fn_8013D984(void* ptr, u32 delta) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013DB64_8013DE6C)
-#if 0
-asm void fn_8013DB64(void* ptr, u32 val, f32 f1, f32 f2) {
-#include "src/game/effect/effect_visual_fn_8013DB64.inc"
-}
-#else
 u32 fn_8013DB64(void* ptr, u32 val, f32 f1, f32 f2) {
     u16 handle;
     void* node;
@@ -4231,12 +3920,6 @@ u32 fn_8013DB64(void* ptr, u32 val, f32 f1, f32 f2) {
     }
     return 0;
 }
-#endif
-#if 0
-asm void fn_8013DC18(void) {
-#include "src/game/effect/effect_visual_fn_8013DC18.inc"
-}
-#else
 u32 fn_8013DC18(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x20);
     if (effectId) {
@@ -4252,12 +3935,6 @@ u32 fn_8013DC18(void* callbacks) {
     }
     return effectId;
 }
-#endif
-#if 0
-asm u32 fn_8013DC94(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013DC94.inc"
-}
-#else
 u32 fn_8013DC94(void* ptr) {
     void* node;
     u16 val;
@@ -4277,12 +3954,6 @@ u32 fn_8013DC94(void* ptr) {
     }
     return 1;
 }
-#endif
-#if 0
-asm u32 fn_8013DD10(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013DD10.inc"
-}
-#else
 u32 fn_8013DD10(void* ptr) {
     if (ptr) {
         if (*(s32*)((u8*)ptr + 0x10) != 0) {
@@ -4294,14 +3965,8 @@ u32 fn_8013DD10(void* ptr) {
     }
     return 1;
 }
-#endif
 extern void GSgfxEndBackFBCapture(void* a);
 extern void fn_800E5790(void* a);
-#if 0
-asm u32 fn_8013DD7C(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013DD7C.inc"
-}
-#else
 u32 fn_8013DD7C(void* ptr) {
     void* inner;
     if (ptr) {
@@ -4316,15 +3981,9 @@ u32 fn_8013DD7C(void* ptr) {
     }
     return 1;
 }
-#endif
 extern void GSgfxBeginBackFBCapture(void* handle, void* callback, void* ctx);
 extern void* fn_800E584C(void* a, void* b);
 extern u8 lbl_80272F70[];
-#if 0
-asm u16 blurEffectStart(void) {
-#include "src/game/effect/effect_visual_blurEffectStart.inc"
-}
-#else
 u32 blurEffectStart(void* ptr) {
     if (ptr) {
         *(u32*)((u8*)ptr + 0x18) = *(u32*)((u8*)ptr + 0x14);
@@ -4344,7 +4003,6 @@ u32 blurEffectStart(void* ptr) {
     GSlogWrite((const char*)lbl_80272F70);
     return 0;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
@@ -4370,11 +4028,6 @@ extern u32 lbl_8047D290;
 extern const f32 lbl_8047D27C;
 extern u8 lbl_80363CC8[];
 extern const f32 lbl_8047D280;
-#if 0
-asm void fn_8013DE6C(void) {
-#include "src/game/effect/effect_visual_fn_8013DE6C.inc"
-}
-#else
 u32 fn_8013DE6C(void* ptr) {
     extern void fn_800D4604(s32);
     u8* timing;
@@ -4489,7 +4142,6 @@ u32 fn_8013DE6C(void* ptr) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013E258_ONLY)
@@ -4500,11 +4152,6 @@ extern const f32 lbl_8047D29C;
 extern const f32 lbl_8047D2A0;
 extern u8 lbl_80314AE8[];
 extern const f32 lbl_8047D280;
-#if 0
-asm u32 fn_8013E258(void* model, void* unused, void* state) {
-#include "src/game/effect/effect_visual_fn_8013E258.inc"
-}
-#else
 u32 fn_8013E258(void* model, void* unused, void* state) {
     struct EffectVisualState {
         f32 start;
@@ -4560,15 +4207,9 @@ ret0:
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013E470_8013E54C)
-#if 0
-asm void fn_8013E470(void) {
-#include "src/game/effect/effect_visual_fn_8013E470.inc"
-}
-#else
 u32 fn_8013E470(void* ptr, u32 delta) {
     void* node;
     if (ptr == NULL) {
@@ -4591,12 +4232,6 @@ u32 fn_8013E470(void* ptr, u32 delta) {
 ret0:
     return 0;
 }
-#endif
-#if 0
-asm void fn_8013E4D4(void) {
-#include "src/game/effect/effect_visual_fn_8013E4D4.inc"
-}
-#else
 u32 fn_8013E4D4(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x34);
     if (effectId) {
@@ -4613,14 +4248,8 @@ u32 fn_8013E4D4(void* callbacks) {
     return effectId;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
-#if 0
-asm void fn_8013E54C(void) {
-#include "src/game/effect/effect_visual_fn_8013E54C.inc"
-}
-#else
 u32 fn_8013E54C(void* arg) {
     void* ptr;
     if (arg != 0) {
@@ -4635,15 +4264,9 @@ u32 fn_8013E54C(void* arg) {
     return 1;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013E5AC_8013E8A4)
-#if 0
-asm void fn_8013E5AC(void) {
-#include "src/game/effect/effect_visual_fn_8013E5AC.inc"
-}
-#else
 u32 fn_8013E5AC(u8* p) {
     extern u8 lbl_80466BC0[];
     extern void* GStextureCreate(u32 a, u32 b, u32 size, u32 d, u32 e);
@@ -4666,13 +4289,7 @@ u32 fn_8013E5AC(u8* p) {
     }
     return 0;
 }
-#endif
 extern u8 lbl_80272FA0[];
-#if 0
-asm u32 auraEffectStart(void* ptr) {
-#include "src/game/effect/effect_visual_auraEffectStart.inc"
-}
-#else
 u32 auraEffectStart(void* ptr) {
     if (ptr == NULL) { goto log; }
     *(u16*)((u8*)ptr + 0x30) = 0;
@@ -4684,7 +4301,6 @@ log:
     GSlogWrite((const char*)lbl_80272FA0);
     return 0;
 }
-#endif
 extern const f32 lbl_8047D2AC;
 extern const f32 lbl_8047D2B0;
 extern const f32 lbl_8047D2B4;
@@ -4756,11 +4372,6 @@ extern const f32 lbl_8047D2C0;
 extern u32 lbl_8047D2C8;
 extern const f32 lbl_8047D2D0;
 extern const f32 lbl_8047D2D4;
-#if 0
-asm u32 fn_8013E8A4(void* ptr, u32 delta) {
-#include "src/game/effect/effect_visual_fn_8013E8A4.inc"
-}
-#else
 u32 fn_8013E8A4(void* ptr, u32 delta) {
     u8* p;
     u8 flags;
@@ -4810,7 +4421,6 @@ u32 fn_8013E8A4(void* ptr, u32 delta) {
     return 0;
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013EA44)
@@ -4832,11 +4442,6 @@ const char lbl_8047D2E8[5] = "jobj";
 extern char lbl_80272FD0[10];
 const char lbl_8047D2F0[6] = "scale";
 extern const f32 lbl_8047D2A8;
-#if 0
-asm void fn_8013EA44(void) {
-#include "src/game/effect/effect_visual_fn_8013EA44.inc"
-}
-#else
 typedef struct LayerVec {
     f32 x;
     f32 y;
@@ -4998,15 +4603,9 @@ void fn_8013EA44(void* ptr) {
     GSmodelResetPEdescr(model);
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013F000_8013F344)
-#if 0
-asm void fn_8013F000(void) {
-#include "src/game/effect/effect_visual_fn_8013F000.inc"
-}
-#else
 u32 fn_8013F000(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0xb4);
     if (effectId) {
@@ -5022,15 +4621,9 @@ u32 fn_8013F000(void* callbacks) {
     }
     return effectId;
 }
-#endif
 extern void fn_800D75F4(void* a);
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047AEEC;
-#if 0
-asm void fn_8013F078(void) {
-#include "src/game/effect/effect_visual_fn_8013F078.inc"
-}
-#else
 u32 fn_8013F078(void* ptr) {
     if (ptr) {
         GXDrawDone();
@@ -5054,7 +4647,6 @@ u32 fn_8013F078(void* ptr) {
     }
     return 1;
 }
-#endif
 extern void* fn_800D7894(void);
 extern void fn_800D7868(void* handle, u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g);
 extern u32 lbl_8047AEE8;
@@ -5139,11 +4731,6 @@ extern u32 lbl_8047AEE8;
 /* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D300;
 extern u8 lbl_80272FE0[];
-#if 0
-asm u16 distortionEffectStart(void) {
-#include "src/game/effect/effect_visual_distortionEffectStart.inc"
-}
-#else
 typedef struct DistortionState {
     void* unk_00;
     void* texture;   /* 0x04 */
@@ -5191,7 +4778,6 @@ u16 distortionEffectStart(void* ptr) {
     GSlogWrite((const char*)lbl_80272FE0);
     return 0;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
@@ -5347,11 +4933,6 @@ extern u32 lbl_8047D310;
 /* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D300;
 extern const f32 lbl_8047D308;
-#if 0
-asm u32 fn_8013F80C(void* ptr, u32 delta) {
-#include "src/game/effect/effect_visual_fn_8013F80C.inc"
-}
-#else
 u32 fn_8013F80C(void* ptr, u32 delta) {
     DistortionState* s = ptr;
     void* part;
@@ -5385,7 +4966,6 @@ u32 fn_8013F80C(void* ptr, u32 delta) {
     }
     return 0;
 }
-#endif
 extern void* fn_800D7BF8(u32 index);
 extern void GScameraGetLookAt(void* mtx, void* lookAt, void* eye);
 extern void fn_800E0628(void* dst, void* src);
@@ -5405,11 +4985,6 @@ extern const f32 lbl_8047D320;
 extern u32 lbl_8047AEE8;
 extern u32 lbl_8047D310;
 extern const f32 lbl_8047D324;
-#if 0
-asm void _distortionEffectUpdateMatrices(void) {
-#include "src/game/effect/effect_visual__distortionEffectUpdateMatrices.inc"
-}
-#else
 void _distortionEffectUpdateMatrices(void* ptr) {
     void* camera;
     f32* matrix;
@@ -5474,15 +5049,9 @@ void _distortionEffectUpdateMatrices(void* ptr) {
                 yScale + projected[0][1], lbl_8047D300);
 }
 #endif
-#endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013FBE0_8013FF0C)
-#if 0
-asm void patchiruTextureStart(void) {
-#include "src/game/effect/effect_visual_patchiruTextureStart.inc"
-}
-#else
 u32 patchiruTextureStart(void* callbacks) {
     u32 effectId = fn_80131428(callbacks, 0x24);
     if (effectId) {
@@ -5498,12 +5067,6 @@ u32 patchiruTextureStart(void* callbacks) {
     }
     return effectId;
 }
-#endif
-#if 0
-asm void fn_8013FC58(void) {
-#include "src/game/effect/effect_visual_fn_8013FC58.inc"
-}
-#else
 u32 fn_8013FC58(void* ptr) {
     if (ptr) {
         if (*(u32*)((u8*)ptr + 0x10) != 0) {
@@ -5516,13 +5079,7 @@ u32 fn_8013FC58(void* ptr) {
     }
     return 1;
 }
-#endif
 extern void* fn_801195AC(void* a);
-#if 0
-asm void fn_8013FCC4(void) {
-#include "src/game/effect/effect_visual_fn_8013FCC4.inc"
-}
-#else
 u32 fn_8013FCC4(void* ptr) {
     void* res;
     if (ptr) {
@@ -5545,14 +5102,8 @@ u32 fn_8013FCC4(void* ptr) {
     }
     return 0;
 }
-#endif
 extern void fn_80118874(void* a, u32 b);
 extern void GSmodelStopAnimation(void* a);
-#if 0
-asm u32 fn_8013FD68(void* ptr) {
-#include "src/game/effect/effect_visual_fn_8013FD68.inc"
-}
-#else
 u32 fn_8013FD68(void* ptr) {
     void* inner;
     if (ptr) {
@@ -5568,7 +5119,6 @@ u32 fn_8013FD68(void* ptr) {
     }
     return 1;
 }
-#endif
 extern void* fn_801190DC(void* ptr, u16 arg, u32 flag);
 extern void fn_800E3CC8(void* model, u32 flag);
 extern u8 GSmodelCanAnimate(void* model);
@@ -5578,11 +5128,6 @@ extern void GSmodelSetAnimRate(void* model, f32 value);
 extern const f32 lbl_8047D328;
 extern const f32 lbl_8047D32C;
 extern u8 lbl_80273078[];
-#if 0
-asm u16 billboardEffectStart(void) {
-#include "src/game/effect/effect_visual_billboardEffectStart.inc"
-}
-#else
 u16 billboardEffectStart(void* ptr) {
     void* model;
 
@@ -5623,7 +5168,6 @@ report_null:
     GSlogWrite((const char*)lbl_80273078);
     return 0;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
@@ -5714,11 +5258,6 @@ u32 fn_8013FF0C(void* ptr) {
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80140138_801402AC)
-#if 0
-asm void Unload__13ModelSequenceFPUc(void) {
-#include "src/game/effect/effect_visual_fn_80140138.inc"
-}
-#else
 void Unload__13ModelSequenceFPUc(u8* ptr) {
     if (*(u32*)(ptr) != 0) {
         fn_800DF608(*(void**)(ptr));
@@ -5729,14 +5268,8 @@ void Unload__13ModelSequenceFPUc(u8* ptr) {
         *(u32*)(ptr + 0x4) = 0;
     }
 }
-#endif
 extern void* _pachiruEffectCreateTexture__FP9GStextureP9GStextureUl(void* tex1, void* tex2, u32 arg);
 extern void GSmaterialSetTexture(void* material, void* texture);
-#if 0
-asm void fn_80140190(void) {
-#include "src/game/effect/effect_visual_fn_80140190.inc"
-}
-#else
 u32 fn_80140190(void** out, void* model, u32 arg) {
     u32 ret;
     void* handle;
@@ -5784,7 +5317,6 @@ u32 fn_80140190(void** out, void* model, u32 arg) {
     GSpartFree(handle);
     return ret;
 }
-#endif
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
@@ -5909,11 +5441,6 @@ fail:
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
-#if 0
-asm void itemParamGetPPMaxFullFlag(void) {
-#include "src/game/effect/effect_visual_fn_801436F0.inc"
-}
-#else
 #pragma peephole off
 #pragma peephole off
 #pragma peephole off
@@ -5944,49 +5471,25 @@ u32 itemParamGetPPMaxFullFlag(void* ptr) {
 #pragma peephole on
 #pragma peephole on
 #pragma peephole on
-#endif
 
-#if 0
-asm void itemParamGetSpAttackEffortUp(void) {
-#include "src/game/effect/effect_visual_fn_80143718.inc"
-}
-#else
 unsigned int itemParamGetSpAttackEffortUp(const void *ptr) {
     const unsigned char *p = (const unsigned char*)ptr;
     if (p == NULL) return 0;
     return (unsigned int)(unsigned char)p[0xF];
 }
-#endif
 
-#if 0
-asm void itemParamGetSpDefenceEffortUp(void) {
-#include "src/game/effect/effect_visual_fn_80143730.inc"
-}
-#else
 unsigned int itemParamGetSpDefenceEffortUp(const void *ptr) {
     const unsigned char *p = (const unsigned char*)ptr;
     if (p == NULL) return 0;
     return (unsigned int)(unsigned char)p[0xE];
 }
-#endif
 
-#if 0
-asm void itemParamGetQuickEffortUp(void) {
-#include "src/game/effect/effect_visual_fn_80143748.inc"
-}
-#else
 unsigned int itemParamGetQuickEffortUp(const void *ptr) {
     const unsigned char *p = (const unsigned char*)ptr;
     if (p == NULL) return 0;
     return (unsigned int)(unsigned char)p[0xD];
 }
-#endif
 
-#if 0
-asm void itemParamGetEvolutionFlag(void) {
-#include "src/game/effect/effect_visual_fn_80143778.inc"
-}
-#else
 #pragma peephole off
 #pragma peephole off
 #pragma peephole off
@@ -6025,25 +5528,13 @@ unsigned int itemParamGetEvolutionFlag(const void *ptr) {
 #pragma peephole on
 #pragma peephole on
 #pragma peephole on
-#endif
 
-#if 0
-asm void fn_801437D8(void) {
-#include "src/game/effect/effect_visual_fn_801437B8.inc"
-}
-#else
 unsigned int fn_801437D8(const void *ptr) {
     const unsigned char *p = (const unsigned char*)ptr;
     if (p == NULL) return 0;
     return ((p[4] & 0xFE) != 0);
 }
-#endif
 
-#if 0
-asm void tasteDataGetAisyou(void) {
-#include "src/game/effect/effect_visual_fn_80143ABC.inc"
-}
-#else
 int tasteDataGetAisyou(void* obj, u32 index) {
     s8* new_var;
     u32 masked_index;
@@ -6053,5 +5544,4 @@ int tasteDataGetAisyou(void* obj, u32 index) {
     new_var = (s8*)obj;
     return (int)(s8)*(new_var + masked_index + 4);
 }
-#endif
 #endif

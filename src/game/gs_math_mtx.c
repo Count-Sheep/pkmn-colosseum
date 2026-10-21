@@ -416,212 +416,92 @@ extern u32 lbl_8047CB50;
 extern u32 lbl_8047CB48;
 extern u32 lbl_8047AB3C;
 
-#if 0
-asm void fn_800E0218(void) {
-#include "src/game/gs_render_fn_800E0218.inc"
-}
-#else
 void fn_800E0218(void)
 {
     C_MTXLookAt();
 }
-#endif
 
-#if 0
-asm void fn_800E0238(void) {
-#include "src/game/gs_render_fn_800E0238.inc"
-}
-#else
 void fn_800E0238(void* a, void* b) { PSMTXTranspose(b, a); }
-#endif
 
-#if 0
-asm void fn_800E0264(void) {
-#include "src/game/gs_render_fn_800E0264.inc"
-}
-#else
 void fn_800E0264(void* a, void* b)
 {
     PSMTXInverse(b, a);
 }
-#endif
 
-#if 0
-asm void fn_800E0290(void* a, void* b, void* c) {
-#include "src/game/gs_render_fn_800E0290.inc"
-}
-#else
 void fn_800E0290(void* a, void* b, void* c)
 {
     PSMTXConcat(b, c, a);
 }
-#endif
 
-#if 0
-asm void fn_800E02C4(void) {
-#include "src/game/gs_render_fn_800E02C4.inc"
-}
-#else
 void fn_800E02C4(void* a) { PSMTXScaleApply(a, a); }
-#endif
 
-#if 0
-asm void fn_800E02E8(void* obj) {
-#include "src/game/gs_render_fn_800E02E8.inc"
-}
-#else
 void fn_800E02E8(void* obj, f32 angle)
 {
     u8 tmp[0x30];
     PSMTXRotRad(tmp, 0x5a);
     PSMTXConcat(obj, tmp, obj);
 }
-#endif
 
-#if 0
-asm void fn_800E032C(void* obj) {
-#include "src/game/gs_render_fn_800E032C.inc"
-}
-#else
 void fn_800E032C(void* obj, f32 angle)
 {
     u8 tmp[0x30];
     PSMTXRotRad(tmp, 0x59);
     PSMTXConcat(obj, tmp, obj);
 }
-#endif
 
-#if 0
-asm void fn_800E0370(void* obj) {
-#include "src/game/gs_render_fn_800E0370.inc"
-}
-#else
 void fn_800E0370(void* obj, f32 angle)
 {
     u8 tmp[0x30];
     PSMTXRotRad(tmp, 0x58);
     PSMTXConcat(obj, tmp, obj);
 }
-#endif
 
-#if 0
-asm void fn_800E03B4(void) {
-#include "src/game/gs_render_fn_800E03B4.inc"
-}
-#else
 void fn_800E03B4(void* dst, f32* src) {
     PSMTXTransApply(dst, dst, src[0], src[1], src[2]);
 }
-#endif
 
-#if 0
-asm void fn_800E03E8(void* a, f32 b, f32 c, f32 d) {
-#include "src/game/gs_render_fn_800E03E8.inc"
-}
-#else
 void fn_800E03E8(void* a, f32 b, f32 c, f32 d) { PSMTXTransApply(a, a, b, c, d); }
-#endif
 
-#if 0
-asm void fn_800E040C(void) {
-#include "src/game/gs_render_fn_800E040C.inc"
-}
-#else
 void fn_800E040C(void)
 {
     PSMTXQuat();
 }
-#endif
 
 extern u8 lbl_80315568[];
-#if 0
-asm void fn_800E042C(void) {
-#include "src/game/gs_render_fn_800E042C.inc"
-}
-#else
 void fn_800E042C(u8* dst, f32* src) {
     memcpy(dst, lbl_80315568, 0x30);
     *(f32*)(dst + 0x00) = src[0];
     *(f32*)(dst + 0x14) = src[1];
     *(f32*)(dst + 0x28) = src[2];
 }
-#endif
 
-#if 0
-asm void fn_800E048C(void) {
-#include "src/game/gs_render_fn_800E048C.inc"
-}
-#else
 void fn_800E048C(u8* dst, f32 x, f32 y, f32 z) {
     memcpy(dst, lbl_80315568, 0x30);
     *(f32*)(dst + 0x00) = x;
     *(f32*)(dst + 0x14) = y;
     *(f32*)(dst + 0x28) = z;
 }
-#endif
 
-#if 0
-asm void GSmtxMakeZRotation(void) {
-#include "src/game/gs_render_fn_800E04F4.inc"
-}
-#else
 void GSmtxMakeZRotation(void* a) { PSMTXRotRad(a, 0x5a); }
-#endif
 
-#if 0
-asm void GSmtxMakeYRotation(void) {
-#include "src/game/gs_render_fn_800E0518.inc"
-}
-#else
 void GSmtxMakeYRotation(void* a) { PSMTXRotRad(a, 0x59); }
-#endif
 
-#if 0
-asm void GSmtxMakeXRotation(void) {
-#include "src/game/gs_render_fn_800E053C.inc"
-}
-#else
 void GSmtxMakeXRotation(void* a) { PSMTXRotRad(a, 0x58); }
-#endif
 
-#if 0
-asm void fn_800E0560(void) {
-#include "src/game/gs_render_fn_800E0560.inc"
-}
-#else
 void fn_800E0560(u8* dst, f32* src) {
     memcpy(dst, lbl_80315568, 0x30);
     *(f32*)(dst + 0x0c) = src[0];
     *(f32*)(dst + 0x1c) = src[1];
     *(f32*)(dst + 0x2c) = src[2];
 }
-#endif
 
-#if 0
-asm void fn_800E05C0(void) {
-#include "src/game/gs_render_fn_800E05C0.inc"
-}
-#else
 void fn_800E05C0(u8* dst, f32 x, f32 y, f32 z) {
     memcpy(dst, lbl_80315568, 0x30);
     *(f32*)(dst + 0x0c) = x;
     *(f32*)(dst + 0x1c) = y;
     *(f32*)(dst + 0x2c) = z;
 }
-#endif
 
-#if 0
-asm void fn_800E0628(void) {
-#include "src/game/gs_render_fn_800E0628.inc"
-}
-#else
 void fn_800E0628(void* dst, void* src) { memcpy(dst, src, 0x30); }
-#endif
 
-#if 0
-asm void fn_800E064C(void) {
-#include "src/game/gs_render_fn_800E064C.inc"
-}
-#else
 void fn_800E064C(void* dst) { memcpy(dst, lbl_80315568, 0x30); }
-#endif

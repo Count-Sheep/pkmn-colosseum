@@ -63,17 +63,11 @@ void gamedatasaveBiosSetSavecount(void* ptr, u32 val) {
 
 
 /* 0x80135B8C | 0x14 */
-#if 0
-asm void gamedatasaveBiosSetMemcardID(void) {
-#include "src/game/effect/effect_util_fn_80135B8C.inc"
-}
-#else
 void gamedatasaveBiosSetMemcardID(void* ptr, u32 unused, u32 a, u32 b) {
     if (ptr == 0) return;
     ((EffectParamBlock*)ptr)->field_04 = b;
     ((EffectParamBlock*)ptr)->word0.word = a;
 }
-#endif
 
 
 /* 0x80135BA0 | 0x10 | nc_setter */
@@ -120,18 +114,12 @@ u32 gamedatasaveBiosGetPrevfloorid(void* ptr) {
 
 
 /* 0x80135C10 | 0x18 */
-#if 0
-asm f32 gamedatasaveBiosGetPlaytime(void* ptr) {
-#include "src/game/effect/effect_util_fn_80135C10.inc"
-}
-#else
 f32 gamedatasaveBiosGetPlaytime(void* ptr) {
     if (ptr != NULL) {
         return ((EffectParamBlock*)ptr)->field_18;
     }
     return lbl_8047D110;
 }
-#endif
 
 
 /* 0x80135C28 | 24 bytes | beq_default_getter */
@@ -153,18 +141,12 @@ u32 gamedatasaveBiosGetSavecount(void* ptr) {
 
 
 /* 0x80135C58 | 0x20 */
-#if 0
-asm void gamedatasaveBiosGetMemcardID(void) {
-#include "src/game/effect/effect_util_fn_80135C58.inc"
-}
-#else
 /* Returns the r3:r4 pair (two words at *p) as a u64, or 0 if p is NULL.
  * byte-match verified: 8/8 instrs vs target; decomp.me scratch O3Iat = 100%. */
 u64 gamedatasaveBiosGetMemcardID(u32* p) {
     if (p) return *(u64*)p;
     return 0;
 }
-#endif
 
 
 /* 0x80135C78 | 24 bytes | beq_default_getter */
@@ -208,11 +190,6 @@ void* gamedatasaveBiosGetPtr(void* ptr) {
 
 
 /* 0x80135CE8 | 0x28 */
-#if 0
-asm void gamedatasaveInit(void) {
-#include "src/game/effect/effect_util_fn_80135CE8.inc"
-}
-#else
 void gamedatasaveInit(void* ptr) {
     void* sub;
     if (ptr == 0) {
@@ -223,4 +200,3 @@ void gamedatasaveInit(void* ptr) {
     if (sub == 0) return;
     *(u32*)((u8*)sub + 0x8) = 0;
 }
-#endif

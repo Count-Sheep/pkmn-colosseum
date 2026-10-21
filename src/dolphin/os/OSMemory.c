@@ -99,11 +99,6 @@ static void MEMIntrruptHandler(s16 interrupt, OSContext* context) {
     __OSUnhandledException(OS_ERROR_PROTECTION, context, cause, addr);
 }
 
-#if 0
-asm void fn_8009F488(void) {
-#include "src/dolphin/os/OSMemory_fn_8009F488.inc"
-}
-#else
 void fn_8009F488(u32 chan, void* addr, u32 nBytes, u32 control) {
     BOOL enabled;
     u32 start;
@@ -140,7 +135,6 @@ void fn_8009F488(u32 chan, void* addr, u32 nBytes, u32 control) {
 
     OSRestoreInterrupts(enabled);
 }
-#endif
 #endif /* !OSMEMORY_PRIVILEGED_ONLY */
 
 /* Config24MB - sets BAT registers for 24MB physical memory layout.
