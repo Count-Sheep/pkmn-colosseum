@@ -182,7 +182,7 @@ u8 lbl_8047AF1C[8];                          /* lbl_8047AF1C */
 extern void* memset(void* dst, int val, u32 size);
 extern void fn_80157360(SYNTH_VOICE* svoice);            /* fn_80157360 */
 extern u32 fn_801576C4(SYNTH_VOICE* svoice, u32 isMaster); /* fn_801576C4 */
-extern u32 fn_801576B0(SYNTH_VOICE* svoice);             /* fn_801576B0 */
+extern u32 vidMakeRoot(SYNTH_VOICE* svoice);             /* vidMakeRoot */
 extern u32 vidGetInternalId(u32 vid);
 extern void vidInit(void);
 extern void voiceSetLastStarted(SYNTH_VOICE* svoice);
@@ -445,7 +445,7 @@ static u32 StartLayer(u16 layerID, s16 prio, u8 maxVoices,
     apply_new_id:
       if (vid == SND_ID_ERROR) {
         if (vidFlag != 0) {
-          vid = fn_801576B0(&lbl_8047AF48[new_id & 0xff]);
+          vid = vidMakeRoot(&lbl_8047AF48[new_id & 0xff]);
         } else {
           vid = new_id;
         }

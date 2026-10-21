@@ -181,7 +181,8 @@ void fn_80157360(SYNTH_VOICE* svoice) /* vidRemoveVoiceReferences */
     }
 }
 
-u32 fn_801576B0(SYNTH_VOICE* svoice) /* vidMakeRoot */
+/* NAME-T1 fn_801576B0 */
+u32 vidMakeRoot(SYNTH_VOICE* svoice) /* vidMakeRoot */
 {
     svoice->vidMasterList = svoice->vidList;
     return ((VID_LIST*)svoice->vidList)->vid;

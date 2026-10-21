@@ -4247,7 +4247,8 @@ typedef struct {
     VidListMini* vidMasterList; /* 0xFC */
 } SvoiceVidMini;
 
-u32 fn_801576B0(SvoiceVidMini* svoice) {
+/* NAME-T1 fn_801576B0 */
+u32 vidMakeRoot(SvoiceVidMini* svoice) {
     svoice->vidMasterList = svoice->vidList;
     return svoice->vidList->vid;
 }
