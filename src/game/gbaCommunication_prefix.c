@@ -67,7 +67,7 @@ extern u32 fn_800E202C(void *p);
 extern void __assert(const u8 *file, u32 line, const u8 *msg);
 extern void fn_800E24B0(u32 status);
 extern void fn_800E209C(u32 status);
-extern u32 fn_800A13F8(void);
+extern u32 OSGetCurrentThread(void);
 extern void OSYieldThread(void);
 extern void fn_800FF730(u32 id);
 extern void floorSetFadeScript(u32 a, u32 b);

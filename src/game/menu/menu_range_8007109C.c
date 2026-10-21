@@ -461,7 +461,7 @@ extern s32 fn_80073A44(s32, u16*);
 extern s32 windowGetActiveID(void);
 extern void* windowSearchID(s32);
 extern void menuCloseCustom(s32, s32, s32);
-extern u32 fn_800A13F8(void);
+extern u32 OSGetCurrentThread(void);
 extern u8 lbl_803B6DE0[];
 extern int fn_800D0F44();
 extern f64 sin(f64);

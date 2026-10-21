@@ -12457,7 +12457,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800A13F8",
+"name": "OSGetCurrentThread",
 "addr": "0x800A13F8",
 "size": 12,
 "label": "dolphin-sdk",

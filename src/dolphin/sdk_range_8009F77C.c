@@ -71,7 +71,7 @@ extern s32 OSDisableScheduler(void);
 extern s32 OSEnableScheduler(void);
 extern void OSSleepThread(OSThreadQueue* queue);
 extern s32 __OSGetEffectivePriority(OSCurThread* thread);
-extern OSCurThread* fn_800A13F8(void);
+extern OSCurThread* OSGetCurrentThread(void);
 extern void fn_800A16E8(OSCurThread* thread, s32 priority);
 
 #if defined(SDK_8009F77C_PREFIX_ACTIVE)
@@ -81,7 +81,7 @@ void fn_8009F7B4(OSMutex* mutex) {
     OSCurThread* owner;
 
     enabled = OSDisableInterrupts();
-    current = fn_800A13F8();
+    current = OSGetCurrentThread();
 
     for (;;) {
         OSMutex* tail;
@@ -120,7 +120,7 @@ void fn_8009F890(OSMutex* mutex) {
     OSCurThread* current;
 
     enabled = OSDisableInterrupts();
-    current = fn_800A13F8();
+    current = OSGetCurrentThread();
 
     if (mutex->thread == current && --mutex->count == 0) {
         OSMutex* next = mutex->next;
@@ -179,7 +179,7 @@ void fn_8009F9E8(OSThreadQueue* queue, OSMutex* mutex) {
     s32 count;
 
     enabled = OSDisableInterrupts();
-    current = fn_800A13F8();
+    current = OSGetCurrentThread();
 
     if (mutex->thread == current) {
         OSMutex* next;

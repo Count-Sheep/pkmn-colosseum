@@ -159,7 +159,8 @@ void OSInitThreadQueue(OSThreadQueue* queue)
     queue->head = queue->tail = NULL;
 }
 
-OSThread* fn_800A13F8(void)
+/* NAME-T1 fn_800A13F8 */
+OSThread* OSGetCurrentThread(void)
 {
     return __OSCurrentThread;
 }
@@ -294,7 +295,7 @@ static OSThread* SelectThread(BOOL yield)
     }
 
     currentContext = OSGetCurrentContext();
-    currentThread = fn_800A13F8();
+    currentThread = OSGetCurrentThread();
     if (currentContext != &currentThread->context) {
         return NULL;
     }

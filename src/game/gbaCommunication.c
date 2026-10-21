@@ -51,7 +51,7 @@ extern u32 fn_800E202C(void *p);
 extern void __assert(const u8 *file, u32 line, const u8 *msg);
 extern void fn_800E24B0(u32 status);
 extern void fn_800E209C(u32 status);
-extern u32 fn_800A13F8(void);
+extern u32 OSGetCurrentThread(void);
 extern void OSYieldThread(void);
 extern void fn_800FF730(u32 id);
 extern void floorSetFadeScript(u32 a, u32 b);
@@ -1712,7 +1712,7 @@ s32 fn_800937F4(void* arg0)
             status = fn_80073E8C(p + 0x4344, arg);
             if (status == 0) {
                 while (fn_80073E84() == 0) {
-                    fn_800A257C((void*)fn_800A13F8(), 0x10);
+                    fn_800A257C((void*)OSGetCurrentThread(), 0x10);
                     OSYieldThread();
                 }
                 result = 1;
@@ -1736,7 +1736,7 @@ s32 fn_800937F4(void* arg0)
                     result = 0x20002;
                     goto case2Done;
                 }
-                fn_800A257C((void*)fn_800A13F8(), 0x10);
+                fn_800A257C((void*)OSGetCurrentThread(), 0x10);
                 OSYieldThread();
             }
             status = fn_800745B4(*(s32*)(p + GBA_STATE_PORT),
@@ -1793,7 +1793,7 @@ s32 fn_800937F4(void* arg0)
                     if (status >= 0) {
                         break;
                     }
-                    fn_800A257C((void*)fn_800A13F8(), 0x10);
+                    fn_800A257C((void*)OSGetCurrentThread(), 0x10);
                     OSYieldThread();
                 }
                 if (status == 0) {
@@ -1819,7 +1819,7 @@ void fn_80093B04(u32 a, u32 b) {
     u32 r31;
     u32 result;
     r31 = b;
-    result = fn_800A13F8();
+    result = OSGetCurrentThread();
     if (r31 != 0) {
         if (r31 != result) return;
     }

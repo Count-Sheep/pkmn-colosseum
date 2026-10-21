@@ -7,7 +7,7 @@ void fn_80093B04(u32 a, u32 b)
     u32 result;
 
     r31 = b;
-    result = fn_800A13F8();
+    result = OSGetCurrentThread();
     if (r31 != 0) {
         if (r31 != result) {
             return;
