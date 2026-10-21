@@ -247,7 +247,8 @@ u32 __close_console(u32 arg) {
  *
  * 0x800C3A40 | size: 0xBC
  */
-u32 fn_800C3A40(u32 unused, u32 length, u32* addrPtr) {
+/* NAME-T1 fn_800C3A40 */
+u32 __TRK_write_console(u32 unused, u32 length, u32* addrPtr) {
     extern u8 fn_800C39A0(void);
     extern s32 GetTRKConnected(void);
     extern u32 TRKAccessFile(u32 cmd, u32 dir, u32* addrBuf, u32 len);

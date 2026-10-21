@@ -17537,7 +17537,7 @@
 "seed": null
 },
 {
-"name": "fn_800C3A40",
+"name": "__TRK_write_console",
 "addr": "0x800C3A40",
 "size": 188,
 "label": "trk",
