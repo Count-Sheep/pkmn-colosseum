@@ -13,9 +13,10 @@ asm u32 __TRK_get_MSR(void) {
     blr
 }
 
-/* fn_800C0E68 - 0x800C0E68 | size: 0x8 (upstream __TRK_set_MSR)
+/* __TRK_set_MSR - 0x800C0E68 | size: 0x8 (upstream __TRK_set_MSR)
  * Hand-written MetroTRK asm; evidence: docs/asm_evidence/trk_dispatch.md */
-asm void fn_800C0E68(register u32 msr) {
+/* NAME-T1 fn_800C0E68 */
+asm void __TRK_set_MSR(register u32 msr) {
     nofralloc
     mtmsr r3
     blr

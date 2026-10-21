@@ -417,7 +417,7 @@ extern void TRK_flush_cache(u32 address, u32 length);
 extern s32 TRKAppendBuffer1_ui64(s32 buffer, u64 value);
 extern s32 TRKReadBuffer1_ui64(s32 buffer, u64* value);
 extern u32 __TRK_get_MSR(void);
-extern void fn_800C0E68(u32 msr);
+extern void __TRK_set_MSR(u32 msr);
 extern void ReadFPSCR(void* value);
 extern void WriteFPSCR(void* value);
 
@@ -612,7 +612,7 @@ s32 TRKTargetAccessFP(u32 firstRegister, u32 lastRegister, s32 buffer,
     savedState =
         *(TRKTargetExceptionStatus*)gTRKExceptionStatus_80313824;
     gTRKExceptionStatus_80313824[0xD] = 0;
-    fn_800C0E68(__TRK_get_MSR() | 0x2000);
+    __TRK_set_MSR(__TRK_get_MSR() | 0x2000);
     *transferSize = 0;
     result = 0;
 

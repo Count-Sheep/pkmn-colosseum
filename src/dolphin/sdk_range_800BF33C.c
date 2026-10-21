@@ -44,10 +44,10 @@ s32 TRKDispatchMessage(u8* message)
     extern const char lbl_8026F834[];
     extern s32 TRKDoConnect(void*);
     extern s32 TRKDoDisconnect(void*);
-    extern s32 fn_800C03B4(void*);
+    extern s32 TRKDoReset(void*);
     extern s32 TRKDoOverride(void*);
-    extern s32 fn_800C0354(void*);
-    extern s32 fn_800C034C(void*);
+    extern s32 TRKDoVersions(void*);
+    extern s32 TRKDoSupportMask(void*);
     extern s32 TRKDoReadMemory(void*);
     extern s32 TRKDoWriteMemory(void*);
     extern s32 TRKDoReadRegisters(void*);
@@ -68,16 +68,16 @@ s32 TRKDispatchMessage(u8* message)
         result = TRKDoDisconnect(message);
         break;
     case 3:
-        result = fn_800C03B4(message);
+        result = TRKDoReset(message);
         break;
     case 7:
         result = TRKDoOverride(message);
         break;
     case 4:
-        result = fn_800C0354(message);
+        result = TRKDoVersions(message);
         break;
     case 5:
-        result = fn_800C034C(message);
+        result = TRKDoSupportMask(message);
         break;
     case 0x10:
         result = TRKDoReadMemory(message);

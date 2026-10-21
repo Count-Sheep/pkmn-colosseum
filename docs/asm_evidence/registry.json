@@ -1563,7 +1563,7 @@
     },
     {
       "path": "src/trk/TRKDispatch_candidate_800C0E60.c",
-      "function": "fn_800C0E68",
+      "function": "__TRK_set_MSR",
       "mnemonics": [
         "blr",
         "mtmsr"

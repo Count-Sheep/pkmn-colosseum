@@ -455,12 +455,14 @@ s32 TRKDoReadMemory(TRKBuffer* buffer)
     return TRKSendACK(buffer);
 }
 
-s32 fn_800C034C(TRKBuffer* buffer)
+/* NAME-T1 fn_800C034C */
+s32 TRKDoSupportMask(TRKBuffer* buffer)
 {
     return 0;
 }
 
-s32 fn_800C0354(TRKBuffer* buffer)
+/* NAME-T1 fn_800C0354 */
+s32 TRKDoVersions(TRKBuffer* buffer)
 {
     return 0;
 }
@@ -473,7 +475,8 @@ s32 TRKDoOverride(TRKBuffer* buffer)
     return 0;
 }
 
-s32 fn_800C03B4(TRKBuffer* buffer)
+/* NAME-T1 fn_800C03B4 */
+s32 TRKDoReset(TRKBuffer* buffer)
 {
     TRKStandardACK(buffer, 0);
     fn_800053E0();

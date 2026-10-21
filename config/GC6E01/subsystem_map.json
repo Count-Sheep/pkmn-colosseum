@@ -16889,7 +16889,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C034C",
+"name": "TRKDoSupportMask",
 "addr": "0x800C034C",
 "size": 8,
 "label": "dolphin-sdk",
@@ -16897,7 +16897,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C0354",
+"name": "TRKDoVersions",
 "addr": "0x800C0354",
 "size": 8,
 "label": "dolphin-sdk",
@@ -16913,7 +16913,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C03B4",
+"name": "TRKDoReset",
 "addr": "0x800C03B4",
 "size": 88,
 "label": "dolphin-sdk",
@@ -17057,7 +17057,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C0E68",
+"name": "__TRK_set_MSR",
 "addr": "0x800C0E68",
 "size": 8,
 "label": "dolphin-sdk",
