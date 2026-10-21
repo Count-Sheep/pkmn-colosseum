@@ -29,7 +29,8 @@ Safety:
     uses __FUNCTION__/__func__ (all of these put the name into data bytes).
   * A row is refused when the new name already exists in any symbols.txt or is
     defined in the C sources as a different function or macro (a header
-    prototype or a `#define NEW fn_X` alias is fine; the alias line is dropped).
+    prototype or an alias `#define NEW fn_X` / `#define NEW(a, b) fn_X(a, b)` is fine; the
+    alias line is dropped).
   * A row is refused when its old name sits inside an asm block that includes
     a .inc file (a dead asm-wrapper stub): .github/scripts/quality_scan.py
     rejects any edit there.
@@ -132,11 +133,28 @@ def decl_start(code: str, name_off: int) -> int:
     return j
 
 
+def is_alias_macro(rest: str, target: str) -> bool:
+    """True when `#define NAME<rest>` only forwards to target: `#define NAME target`, or the
+    function-like pass-through `#define NAME(a, b) target(a, b)` (same parameters, same order)."""
+    if rest[:1] == "(":
+        m = re.fullmatch(r"\(([^()]*)\)\s*" + re.escape(target) + r"\s*\(([^()]*)\)\s*", rest)
+        if not m:
+            return False
+        params = [x.strip() for x in m.group(1).split(",")] if m.group(1).strip() else []
+        args = [x.strip() for x in m.group(2).split(",")] if m.group(2).strip() else []
+        return params == args
+    return rest.strip() == target
+
+
 def drop_alias_defines(text: str, tags) -> str:
-    """Remove `#define NEW NEW` lines left by renaming a `#define NEW fn_X` alias."""
+    """Remove the `#define NEW NEW` / `#define NEW(a) NEW(a)` lines left by renaming an alias
+    `#define NEW fn_X` or `#define NEW(a) fn_X(a)`."""
+    def keep(m: re.Match) -> str:
+        rest = cn.blank_spans(m.group(2), {"c"}).rstrip()
+        return "" if is_alias_macro(rest, m.group(1)) else m.group(0)
     for new in tags:
-        text = re.sub(rf"^[ \t]*#[ \t]*define[ \t]+{re.escape(new)}[ \t]+{re.escape(new)}[ \t]*"
-                      rf"(?:/\*[^\n]*?\*/[ \t]*|//[^\n]*)?\n", "", text, flags=re.M)
+        text = re.sub(rf"^[ \t]*#[ \t]*define[ \t]+({re.escape(new)})((?:\(|[ \t])[^\n]*)?\n", keep, text,
+                      flags=re.M)
     return text
 
 
@@ -317,9 +335,9 @@ def plan(root: Path, batch: list[dict[str, str]], ledger_rows: list[dict[str, st
                 if any(True for _ in cn.find_definitions(blank_directives(code), new)):
                     errors.append(f"{rel}: new name {new} is already defined here as a different function")
                 for m in re.finditer(rf"^[ \t]*#[ \t]*define[ \t]+{re.escape(new)}\b(.*)$", text, re.M):
-                    body = cn.blank_spans(m.group(1), {"c"}).strip()
-                    if body != inverse[new]:
-                        errors.append(f"{rel}: new name {new} is already a macro ({body[:40]})")
+                    rest = cn.blank_spans(m.group(1), {"c"}).rstrip()
+                    if not is_alias_macro(rest, inverse[new]):
+                        errors.append(f"{rel}: new name {new} is already a macro ({rest.strip()[:40]})")
         if not has_old:
             continue
         for kind, a, b in cn.lex(text):

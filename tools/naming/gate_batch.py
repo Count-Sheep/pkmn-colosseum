@@ -332,6 +332,12 @@ def main() -> int:
                                                      "steps": gate.steps}, indent=1))
 
 
+def source_file_key(root: Path, unit: str) -> str:
+    sys.path.insert(0, str(root / "tools"))
+    import check_naming  # noqa: PLC0415
+    return check_naming.source_file_of_unit(root, unit)
+
+
 def default_message(root: Path, batch: Path) -> str:
     led = list(csv.DictReader((root / "docs/function_renames.csv").open(encoding="utf-8")))
     rows = [r for r in csv.DictReader(batch.open(encoding="utf-8"))]
@@ -340,7 +346,13 @@ def default_message(root: Path, batch: Path) -> str:
     t = Counter(r["tier"] for r in applied)
     units = sorted({r["unit"] for r in applied})
     bids = sorted({r["batch_id"] for r in applied})
-    unit = units[0] if len(units) == 1 else f"{len(units)} units"
+    files = sorted({source_file_key(root, u) for u in units})
+    if len(units) == 1:
+        unit = units[0]
+    elif len(files) == 1:  # a per-source-file batch (NAMING_SCHEME section 4)
+        unit = f"{files[0]} ({len(units)} units)"
+    else:
+        unit = f"{len(units)} units"
     head = (f"Names: {unit} — {len(applied)} renames (T1 {t['T1']} / T2 {t['T2']} / T3 {t['T3']}) "
             + " ".join(f"[batch {b}]" for b in bids))
     body = "\n".join(f"{r['old_name']} -> {r['new_name']} ({r['tier']}, {r['evidence_ref']})" for r in applied)
