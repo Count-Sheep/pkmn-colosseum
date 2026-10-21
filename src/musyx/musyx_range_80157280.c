@@ -1935,13 +1935,14 @@ u32 inpGetTremolo(u8* obj) {
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-/* fn_80161934 = inpGetAuxA (0x80161934) -- same shape as fn_801619E8/inpGetAuxB
+/* inpGetAuxA = inpGetAuxA (0x80161934) -- same shape as inpGetAuxB/inpGetAuxB
  * below but using lbl_80369C90 (dirtyMask table) and lbl_80435B74 (inpAuxA,
  * already-known identity) instead of lbl_80369CA0/lbl_804356F4. */
 extern u32 lbl_80449390[];
 extern u32 lbl_80369C90[];
 extern u8  lbl_80435B74[];
-u32 fn_80161934(u8 idx, u8 index, u8 midi, u8 midiSet) {
+/* NAME-T1 fn_80161934 */
+u32 inpGetAuxA(u8 idx, u8 index, u8 midi, u8 midiSet) {
     u32 mask = lbl_80369C90[index] & ((u32(*)[16])lbl_80449390)[midiSet][midi];
     u32 nonzero = ((-mask | mask) >> 31);
     if (nonzero) {
@@ -1964,7 +1965,8 @@ u32 fn_80161934(u8 idx, u8 index, u8 midi, u8 midiSet) {
 extern u32 lbl_80449390[];
 extern u32 lbl_80369CA0[];
 extern u8  lbl_804356F4[];
-u32 fn_801619E8(u8 idx, u8 index, u8 midi, u8 midiSet) {
+/* NAME-T1 fn_801619E8 */
+u32 inpGetAuxB(u8 idx, u8 index, u8 midi, u8 midiSet) {
     u32 mask = lbl_80369CA0[index] & ((u32(*)[16])lbl_80449390)[midiSet][midi];
     u32 nonzero = ((-mask | mask) >> 31);
     if (nonzero) {
@@ -7638,7 +7640,7 @@ void salInvertMatrix(SndFMatrix* out, const SndFMatrix* in) {
  * lbl_802733C0 (data already 100% matched in this unit -- no new data
  * needed, just extern declarations by address). */
 extern u32 lbl_80449390[];            /* inpGlobalMIDIDirtyFlags (flat; matches existing
-                                        * extern in fn_801619E8 -- must not redeclare with
+                                        * extern in inpGetAuxB -- must not redeclare with
                                         * a conflicting sized type) */
 extern u8  lbl_80449590[8][16][134];  /* midi_ctrl */
 extern u8  lbl_8044D890[8][16];       /* inpChannelDefaults (pre-2.0.1: just pbRange) */

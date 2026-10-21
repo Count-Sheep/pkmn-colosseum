@@ -206,8 +206,8 @@ extern u16 inpGetReverb(SYNTH_VOICE* svoice);
 extern u16 inpGetPreAuxB(SYNTH_VOICE* svoice);
 extern u16 inpGetPostAuxB(SYNTH_VOICE* svoice);
 extern u16 inpGetTremolo(SYNTH_VOICE* svoice);
-extern u16 fn_80161934(u8 studio, u8 index, u8 midi, u8 midiSet); /* fn_80161934 */
-extern u16 fn_801619E8(u8 studio, u8 index, u8 midi, u8 midiSet); /* fn_801619E8 */
+extern u16 inpGetAuxA(u8 studio, u8 index, u8 midi, u8 midiSet); /* inpGetAuxA */
+extern u16 inpGetAuxB(u8 studio, u8 index, u8 midi, u8 midiSet); /* inpGetAuxB */
 extern void fn_80161A9C(SYNTH_VOICE* svoice);            /* fn_80161A9C */
 extern LAYER* dataGetLayer(u16 cid, u16* n);
 extern KEYMAP* dataGetKeymap(u16 cid);
@@ -1074,7 +1074,7 @@ void synthHandle(u32 deltaTime) {
         SND_AUX_INFO info; // r1+0x18
         for (i = 0; i < SND_AUX_NUMPARAMETERS; ++i) {
           info.data.parameterUpdate.para[i] =
-              fn_80161934(s, i, lbl_8047AF34[s], lbl_8047AF2C[s]);
+              inpGetAuxA(s, i, lbl_8047AF34[s], lbl_8047AF2C[s]);
         }
         lbl_80435644[s](SND_AUX_REASON_PARAMETERUPDATE, &info, lbl_80435624[s]);
       }
@@ -1083,7 +1083,7 @@ void synthHandle(u32 deltaTime) {
         SND_AUX_INFO info; // r1+0xC
         for (i = 0; i < SND_AUX_NUMPARAMETERS; ++i) {
           info.data.parameterUpdate.para[i] =
-              fn_801619E8(s, i, lbl_8047AF24[s], lbl_8047AF1C[s]);
+              inpGetAuxB(s, i, lbl_8047AF24[s], lbl_8047AF1C[s]);
         }
         lbl_80435684[s](SND_AUX_REASON_PARAMETERUPDATE, &info, lbl_80435664[s]);
       }

@@ -38289,7 +38289,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80161934",
+"name": "inpGetAuxA",
 "addr": "0x80161934",
 "size": 180,
 "label": "musyx",
@@ -38297,7 +38297,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801619E8",
+"name": "inpGetAuxB",
 "addr": "0x801619E8",
 "size": 180,
 "label": "musyx",
