@@ -965,12 +965,12 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
     extern s32 gbaCommandGetAction(u32);
     extern void fightOutPokemonCreateFightAction(u32, u32, u32, u32, char*, s32);
     extern u8 fightOutPokemonCheckFightActionWazaSelect(u32, u32);
-    extern u32 fn_80089F68(u32);
+    extern u32 gbaCommandGetWazaDataId(u32);
     extern u32 fightOutPokemonGetPokemonPtr(u32);
     extern u32 pokemonGetStatus(u32, u32, u32, u32);
     extern u32 fn_8022B2CC(u32, u16, u32, void*, u32, u32, s32);
     extern u32 _fightMenuFightTrainerAgbHeroSelectDefensePokemon__FP15FightOutPokemonUsUs();
-    extern u32 fn_80089F60(u32);
+    extern u32 gbaCommandGetWazaTarget(u32);
     extern u32 fightFloorGetValidFightSidePtr(u32, u16);
     extern u32 fightSideGetValidFightTrainerPtr(u32, u16);
     extern u32 fightTargetGetTragetPtrToRelativeHostSideFightTargetId(u32, u32);
@@ -1046,7 +1046,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
                 last = i;
                 continue;
             }
-            wazaSlot = fn_80089F68(menu);
+            wazaSlot = gbaCommandGetWazaDataId(menu);
             if (wazaSlot < 0) {
                 goto select_action;
             }
@@ -1060,7 +1060,7 @@ u32 fightMenuFightTrainerAgbHeroOpenMenu(u32 trainer, u32 side)
             if (defense != 0) {
                 target = defense;
             } else {
-                targetIndex = fn_80089F60(menu);
+                targetIndex = gbaCommandGetWazaTarget(menu);
                 count = 0;
                 found = 0;
                 for (sideNo = 0; sideNo < 2; sideNo++) {

@@ -14,7 +14,8 @@ void gbaCommandSendWazaText(s32 param0, s32 param1)
     fn_800733D0(param0 - 1, buf);
 }
 
-s32 fn_8008AB8C(s32 value)
+/* NAME-T1 fn_8008AB8C */
+s32 gbaCommandKeyPressed(s32 value)
 {
     return lbl_8047A67C[value - 1];
 }

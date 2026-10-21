@@ -20,7 +20,7 @@ extern void* menuSeBiosGetPtr(s32 group);
 extern u16 fn_8005D798(void*, s32);
 extern int fn_80166A28(u16);
 extern u8 fn_8008ABA0(s32);
-extern s32 fn_8008AB8C(s32);
+extern s32 gbaCommandKeyPressed(s32);
 
 /* 0x80103484 | 0x58 */
 void menuPlaySe(u32 id, s32 event) {
@@ -46,7 +46,7 @@ u8 _menuGetAgbKeyInfo__FlPUs(s32 port, u16* keys) {
         return 0;
     }
 
-    buttons = fn_8008AB8C(device);
+    buttons = gbaCommandKeyPressed(device);
     if (buttons & 0x40) result |= 0x1;
     if (buttons & 0x80) result |= 0x2;
     if (buttons & 0x20) result |= 0x4;

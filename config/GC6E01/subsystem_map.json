@@ -10193,7 +10193,7 @@
 "seed": null
 },
 {
-"name": "fn_80089F60",
+"name": "gbaCommandGetWazaTarget",
 "addr": "0x80089F60",
 "size": 8,
 "label": "fight",
@@ -10201,7 +10201,7 @@
 "seed": null
 },
 {
-"name": "fn_80089F68",
+"name": "gbaCommandGetWazaDataId",
 "addr": "0x80089F68",
 "size": 8,
 "label": "fight",
@@ -10265,7 +10265,7 @@
 "seed": "prefix"
 },
 {
-"name": "fn_8008AB8C",
+"name": "gbaCommandKeyPressed",
 "addr": "0x8008AB8C",
 "size": 20,
 "label": "gs-engine",

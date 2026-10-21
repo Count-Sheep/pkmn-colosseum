@@ -279,8 +279,8 @@ void fn_80089D74(s32 param);
 s32 fn_80089D98(s32 r31);
 s32 fn_80089E20(s32 idx, void* obj, u32 packedStatus, u32 highHalf);
 u32 gbaCommandGetGBAChangePokemon(u32 v);
-u32 fn_80089F60(u32 v);
-u32 fn_80089F68(u32 v);
+u32 gbaCommandGetWazaTarget(u32 v);
+u32 gbaCommandGetWazaDataId(u32 v);
 u32 gbaCommandGetAction(u32 v);
 u32 fn_80089F78(u32 port, u32 trainer, u32 slot, s32 irekae);
 s32 fn_8008A99C(void);
@@ -288,7 +288,7 @@ int gbaCommandEntryPokemon(u32 r3, u8* r4);
 s32 GbaMisc_GetEntryStatus(s32 idx, u32* out);
 void GbaMisc_SendPackedEntryStatus(s32 param0, u32 param1, u32 param2);
 void gbaCommandSendWazaText(s32 param0, s32 param1);
-s32 fn_8008AB8C(s32 r3);
+s32 gbaCommandKeyPressed(s32 r3);
 u8 fn_8008ABA0(s32 idx);
 s32 GbaMisc_SetEntryState(s32 idx, s32 value);
 void fn_8008AC34(void);
@@ -859,12 +859,14 @@ u32 gbaCommandGetGBAChangePokemon(u32 v) {
 }
 
 /* 0x80089F60 | size: 0x8 */
-u32 fn_80089F60(u32 v) {
+/* NAME-T1 fn_80089F60 */
+u32 gbaCommandGetWazaTarget(u32 v) {
     return (v >> 8) & 0xFF;
 }
 
 /* 0x80089F68 | size: 0x8 */
-u32 fn_80089F68(u32 v) {
+/* NAME-T1 fn_80089F68 */
+u32 gbaCommandGetWazaDataId(u32 v) {
     return v & 0xFF;
 }
 
@@ -1278,7 +1280,8 @@ void gbaCommandSendWazaText(s32 param0, s32 param1) {
 }
 
 /* 0x8008AB8C | size: 0x14 */
-s32 fn_8008AB8C(s32 r3) {
+/* NAME-T1 fn_8008AB8C */
+s32 gbaCommandKeyPressed(s32 r3) {
     u16 *base = (u16*)&lbl_8047A67C;
     return base[r3 - 1];
 }

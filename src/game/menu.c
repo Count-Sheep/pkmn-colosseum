@@ -150,7 +150,7 @@ u16 fn_8005D798(void*, s32);
 void fn_800F7434(void*, u32, ...);
 int fn_80166A28(u16);
 u8 fn_8008ABA0(s32);
-s32 fn_8008AB8C(s32);
+s32 gbaCommandKeyPressed(s32);
 u8 fn_800F7EF8(s32 pad_id);
 u32 fn_800F7A08(s32 pad_id, s32 axis);
 u32 fn_800F7A7C(s32 pad_id, s32 axis);
@@ -1045,7 +1045,7 @@ u8 _menuGetAgbKeyInfo__FlPUs(s32 port, u16* keys) {
         return 0;
     }
 
-    buttons = fn_8008AB8C(device);
+    buttons = gbaCommandKeyPressed(device);
     if (buttons & 0x40) result |= 0x1;
     if (buttons & 0x80) result |= 0x2;
     if (buttons & 0x20) result |= 0x4;
