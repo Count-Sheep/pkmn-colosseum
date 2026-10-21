@@ -139,7 +139,7 @@ extern void fn_80163BCC(void* aram, u32 len); /* fn_80163BCC */
 extern void fn_80163490(void);               /* fn_80163490 */
 extern void salInitHRTFBuffer(void);
 
-void fn_8016245C(u8 offset);
+void hwSetTimeOffset(u8 offset);
 void fn_801629A4(u32 v, u8 salSRCType);
 void fn_801629D0(u32 v, u8 salCoefSel);
 void hwSetITDMode(u32 v, u8 mode);
@@ -192,7 +192,7 @@ void snd_handle_irq(void) {
   fn_801643B8();
   for (r = 0; r < 5; ++r) {
     fn_80164398();
-    fn_8016245C(r);
+    hwSetTimeOffset(r);
     // sndProfStartPMC(&prof.sequencer);
     fn_801496A0(256);
     // sndProfPausePMC(&prof.sequencer);
@@ -205,7 +205,7 @@ void snd_handle_irq(void) {
   // sndProfStopPMC(&prof.sequencer);
   // sndProfStopPMC(&prof.synthesizer);
   fn_80164398();
-  fn_8016245C(0);
+  hwSetTimeOffset(0);
   // sndProfStartPMC(&prof.emitters);
   fn_8015F620();
   // sndProfStopPMC(&prof.emitters);
@@ -253,13 +253,16 @@ void hwExit() {
   fn_80164324();
 }
 
-void fn_8016245C(u8 offset) { lbl_8047B050 = offset; }
+/* NAME-T1 fn_8016245C */
+void hwSetTimeOffset(u8 offset) { lbl_8047B050 = offset; }
 
-u8 fn_80162464() { return lbl_8047B050; }
+/* NAME-T1 fn_80162464 */
+u8 hwGetTimeOffset() { return lbl_8047B050; }
 
 u32 fn_8016246C(u32 v) { return lbl_8047B024[v].state != 0; }
 
-void fn_8016248C(SND_MESSAGE_CALLBACK callback) { lbl_8047B028 = (u32)callback; } /* hwSetMesgCallback */
+/* NAME-T1 fn_8016248C */
+void hwSetMesgCallback(SND_MESSAGE_CALLBACK callback) { lbl_8047B028 = (u32)callback; } /* hwSetMesgCallback */
 
 void fn_80162494(u32 v, u32 prio) { lbl_8047B024[v].prio = prio; }
 
@@ -569,7 +572,8 @@ u8 fn_80162F48(u32 len) {
   return fn_80163CA8(len);
 }
 
-void fn_80162F68(u8 id) {
+/* NAME-T1 fn_80162F68 */
+void hwExitStream(u8 id) {
   // TODO: Platform specific audio memory handling
   aramFreeStreamBuffer(id);
 }
@@ -584,12 +588,14 @@ void* fn_80162FAC(void* samples) { return samples; }
 
 u32 hwFrq2Pitch(u32 frq) { return (frq * 4096.f) / lbl_80434C50.mixFrq; }
 
-void fn_8016300C(u32 baseAddr, u32 length) {
+/* NAME-T1 fn_8016300C */
+void hwInitSampleMem(u32 baseAddr, u32 length) {
   // TODO: Platform specific audio memory handling
   fn_801634A8(length);
 }
 
-void fn_80163030() { fn_80163794(); }
+/* NAME-T1 fn_80163030 */
+void hwExitSampleMem() { fn_80163794(); }
 
 static u32 convert_length(u32 len, u8 type) {
   switch (type) {

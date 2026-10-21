@@ -38409,7 +38409,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8016245C",
+"name": "hwSetTimeOffset",
 "addr": "0x8016245C",
 "size": 8,
 "label": "musyx",
@@ -38417,7 +38417,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80162464",
+"name": "hwGetTimeOffset",
 "addr": "0x80162464",
 "size": 8,
 "label": "musyx",
@@ -38433,7 +38433,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8016248C",
+"name": "hwSetMesgCallback",
 "addr": "0x8016248C",
 "size": 8,
 "label": "musyx",
@@ -38641,7 +38641,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80162F68",
+"name": "hwExitStream",
 "addr": "0x80162F68",
 "size": 32,
 "label": "musyx",
@@ -38673,7 +38673,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8016300C",
+"name": "hwInitSampleMem",
 "addr": "0x8016300C",
 "size": 36,
 "label": "musyx",
@@ -38681,7 +38681,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80163030",
+"name": "hwExitSampleMem",
 "addr": "0x80163030",
 "size": 32,
 "label": "musyx",

@@ -644,7 +644,7 @@ u32 dataGetFX(u16 key) {
 typedef struct { u16 num; u16 subTabIndex; } DataMacMainEntry;
 
 void dataInit(u32 smpBase, u32 smpLength) {
-    extern void fn_8016300C(u32 a, u32 b);
+    extern void hwInitSampleMem(u32 a, u32 b);
     s32 i;
 
     dataSmpSDirNum = 0;
@@ -657,12 +657,12 @@ void dataInit(u32 smpBase, u32 smpLength) {
         ((DataMacMainEntry*)lbl_8043D6F8)[i].num = 0;
         ((DataMacMainEntry*)lbl_8043D6F8)[i].subTabIndex = 0;
     }
-    fn_8016300C(smpBase, smpLength);
+    hwInitSampleMem(smpBase, smpLength);
 }
 
 #undef fn_80162118
 
 void dataExit(void) {
-    extern void fn_80163030(void);
-    fn_80163030();
+    extern void hwExitSampleMem(void);
+    hwExitSampleMem();
 }

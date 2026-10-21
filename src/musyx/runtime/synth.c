@@ -227,9 +227,9 @@ extern void sndConvertMs(u32* ms);                         /* sndConvertMs */
 extern u32 adsrHandleLowPrecision(ADSR_VARS* adsr, u16* adsr_start, u16* adsr_delta);
 extern u32 adsrRelease(ADSR_VARS* adsr);
 extern u32 fn_8016246C(u32 v);                            /* fn_8016246C */
-extern u8 fn_80162464(void);                              /* fn_80162464 */
+extern u8 hwGetTimeOffset(void);                              /* hwGetTimeOffset */
 extern void fn_80162494(u32 v, u32 prio);                 /* fn_80162494 */
-extern void fn_8016248C(u32 (*callback)(u32, u32));       /* fn_8016248C */
+extern void hwSetMesgCallback(u32 (*callback)(u32, u32));       /* hwSetMesgCallback */
 extern void fn_801631A8(void);                            /* fn_801631A8 */
 extern void hwKeyOff(u32 v);
 extern void hwSetPitch(u32 v, u16 speed);
@@ -866,7 +866,7 @@ static void ZeroOffsetHandler(u32 i) {
     fn_80162494(i, sv->prio << 24 | sv->age >> 15);
   }
 
-  synthAddJob(sv, SYNTH_JOBTYPE_ZERO, (5 - fn_80162464()) * 256);
+  synthAddJob(sv, SYNTH_JOBTYPE_ZERO, (5 - hwGetTimeOffset()) * 256);
 
 end:
   UpdateTimeMIDICtrl(sv);
@@ -1041,7 +1041,7 @@ void synthHandle(u32 deltaTime) {
   macHandle(deltaTime);
   HandleVoices();
 
-  if (fn_80162464() == 0) {
+  if (hwGetTimeOffset() == 0) {
     if ((lbl_8047AF40 | lbl_8047AF3C) != 0) {
       for (i = 0, smf = lbl_80434E64, testFlag = 1; i < 32; testFlag <<= 1, ++i, ++smf) {
         if ((lbl_8047AF40 & testFlag) != 0) {
@@ -1541,7 +1541,7 @@ void synthInit(u32 mixFrq, u32 numVoices) {
 
   voiceInitLastStarted();
   synthInitJobQueue();
-  fn_8016248C(synthHWMessageHandler);
+  hwSetMesgCallback(synthHWMessageHandler);
 }
 
 void synthExit() { fn_80164400(lbl_8047AF48); }

@@ -2395,7 +2395,7 @@ extern u32 fn_801643B8(void);
 extern u8* salAiGetDest(void);
 extern void salCtrlDsp(u32 arg);
 extern void salHandleAuxProcessing(void);
-extern void fn_8016245C(u8 offset);
+extern void hwSetTimeOffset(u8 offset);
 extern void fn_801496A0(u32 ticks);
 extern void synthHandle(u32 ticks);
 extern void fn_8015F620(void);
@@ -2441,14 +2441,14 @@ void snd_handle_irq(void) {
 
     for (frame = 0; frame < 5; frame++) {
         fn_80164398();
-        fn_8016245C(frame);
+        hwSetTimeOffset(frame);
         fn_801496A0(0x100);
         synthHandle(0x100);
         fn_801643B8();
     }
 
     fn_80164398();
-    fn_8016245C(0);
+    hwSetTimeOffset(0);
     fn_8015F620();
     fn_801643B8();
     fn_80164398();
@@ -2528,12 +2528,14 @@ typedef struct PeopleFieldMoveSlot {
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-void fn_8016245C(u8 val) { lbl_8047B050 = val; }
+/* NAME-T1 fn_8016245C */
+void hwSetTimeOffset(u8 val) { lbl_8047B050 = val; }
 #pragma pop
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-u8 fn_80162464(void) { return lbl_8047B050; }
+/* NAME-T1 fn_80162464 */
+u8 hwGetTimeOffset(void) { return lbl_8047B050; }
 #pragma pop
 extern u32 lbl_8047B024;
 /* hwIsActive (hardware.c) -- cross-TU boundary: synthvoice.c's voiceBlock
@@ -2550,7 +2552,8 @@ u32 fn_8016246C(u32 index) {
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-void fn_8016248C(u32 val) { lbl_8047B028 = val; }
+/* NAME-T1 fn_8016248C */
+void hwSetMesgCallback(u32 val) { lbl_8047B028 = val; }
 #pragma pop
 #pragma push
 #pragma optimization_level 2
@@ -3161,7 +3164,8 @@ void fn_80162F48(void) { fn_80163CA8(); }
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-void fn_80162F68(void) { aramFreeStreamBuffer(); }
+/* NAME-T1 fn_80162F68 */
+void hwExitStream(void) { aramFreeStreamBuffer(); }
 #pragma pop
 #pragma push
 #pragma optimization_level 4
@@ -3191,7 +3195,8 @@ u32 hwFrq2Pitch(u32 value) {
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-void fn_8016300C(u32 a, u32 b) {
+/* NAME-T1 fn_8016300C */
+void hwInitSampleMem(u32 a, u32 b) {
     extern void fn_801634A8(u32 x);
     fn_801634A8(b);
 }
@@ -3199,7 +3204,8 @@ void fn_8016300C(u32 a, u32 b) {
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-void fn_80163030(void) { fn_80163794(); }
+/* NAME-T1 fn_80163030 */
+void hwExitSampleMem(void) { fn_80163794(); }
 #pragma pop
 #pragma push
 #pragma optimization_level 4

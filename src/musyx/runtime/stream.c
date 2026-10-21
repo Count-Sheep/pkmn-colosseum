@@ -44,7 +44,7 @@ extern void voiceUnblock(u32 voice);
  *   fn_801628B4 = hwSetStreamLoopPS(u32 voice, u8 ps)
  *   fn_80162E14 = hwGetPos(u32 voice) -> current DSP playback position
  *   fn_80162F48 = hwInitStream(u32 len) -> u8 hwStreamHandle (0xFF = fail)
- *   fn_80162F68 = hwExitStream(u8 hwStreamHandle)
+ *   hwExitStream = hwExitStream(u8 hwStreamHandle)
  *   fn_80162F88 = hwGetStreamPlayBuffer(u8 hwStreamHandle) -> void*
  *   hwInitSamplePlayback: signature pinned from the 8-register call at
  *     0x8014E03C (v, -1 as u16 pitch, &newsmp, 1, -1, synthVoice[v].id, 1, 1).
@@ -53,7 +53,7 @@ extern u32 fn_80158328(u8 prio);
 extern void fn_801628B4(u32 voice, u8 ps);
 extern u32 fn_80162E14(u32 voice);
 extern u8 fn_80162F48(u32 len);
-extern void fn_80162F68(u8 hwStreamHandle);
+extern void hwExitStream(u8 hwStreamHandle);
 extern void* fn_80162F88(u8 hwStreamHandle);
 extern void hwInitSamplePlayback(u32 voice, u16 pitch, void* smp, u32 resetState, u32 unk1C,
                                   u32 unk18, u32 initFlags, u32 setupFlag);
@@ -598,7 +598,7 @@ void sndStreamFree(SND_STREAMID stid) {
   i = GetPrivateIndex(carrier);
   if (i != -1) {
     sndStreamDeactivate(carrier);
-    fn_80162F68(streamInfo[i].hwStreamHandle);
+    hwExitStream(streamInfo[i].hwStreamHandle);
     if (streamInfo[i].nextStreamHandle != 0xffffffff) {
       sndStreamFree(streamInfo[i].nextStreamHandle);
     }
