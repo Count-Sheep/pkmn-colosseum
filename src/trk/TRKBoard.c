@@ -24,8 +24,9 @@ int TRKReadUARTN(int a, int b) {
     return (s32)((u32)-ret | (u32)ret) >> 31;
 }
 
-/* fn_800C3600 - 0x800C3600 | size: 0x30 */
-void fn_800C3600(void) {
+/* TRKPollUART - 0x800C3600 | size: 0x30 */
+/* NAME-T1 fn_800C3600 */
+void TRKPollUART(void) {
     typedef void (*CommFunc)(void);
     CommFunc func = ((CommFunc*)gDBCommTable)[3];
 

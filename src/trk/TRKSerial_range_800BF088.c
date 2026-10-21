@@ -26,7 +26,7 @@ extern TRKResult TRKPostEvent(TRKEvent* event);
 extern TRKBuffer* TRKGetBuffer(s32 bufferID);
 extern TRKResult TRKGetFreeBuffer(s32* bufferID, TRKBuffer** buffer);
 extern TRKResult TRKSetBufferPosition(TRKBuffer* buffer, u32 position);
-extern TRKResult fn_800C3600(void);
+extern TRKResult TRKPollUART(void);
 extern TRKResult TRKReadUARTN(void* data, u32 length);
 extern TRKResult TRKAppendBuffer_ui8(TRKBuffer* buffer, u8* data, s32 length);
 extern void TRKReleaseBuffer(s32 bufferID);
@@ -40,7 +40,7 @@ s32 TRKTestForPacket(void)
     TRKBuffer* buffer;
     s32 result;
 
-    if (fn_800C3600() <= 0) {
+    if (TRKPollUART() <= 0) {
         return -1;
     }
 
