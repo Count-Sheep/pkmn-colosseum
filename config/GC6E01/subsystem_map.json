@@ -36665,7 +36665,7 @@
 "seed": "range"
 },
 {
-"name": "fn_8014D740",
+"name": "seqGetMIDIPriority",
 "addr": "0x8014D740",
 "size": 28,
 "label": "musyx",

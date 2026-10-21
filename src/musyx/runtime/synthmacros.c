@@ -310,7 +310,7 @@ extern void synthInitPortamento(SYNTH_VOICE* svoice);
 extern u32 macStart(u16 macid, u8 priority, u8 maxVoices, u16 allocId, u8 key, u8 vol, u8 panning,
                         u8 midi, u8 midiSet, u8 section, u16 step, u16 trackid, u8 new_vid,
                         u8 vGroup, u8 studio, u32 itd); /* macStart, defined later in this file */
-extern u16 fn_8014D740(u8 midiSet, u8 midi);              /* seqGetMIDIPriority */
+extern u16 seqGetMIDIPriority(u8 midiSet, u8 midi);              /* seqGetMIDIPriority */
 extern u32 fn_80157A64(u8 priority, u8 maxVoices, u16 allocId, u8 isFX); /* voiceAllocate */
 extern void inpResetMidiCtrl(u8 voice, u32 arg2, u32 arg3);
 extern void fn_80160ED4(u8 voice, u32 val); /* inpResetChannelDefaults */
@@ -2158,7 +2158,7 @@ u32 macStart(u16 macid, u8 priority, u8 maxVoices, u16 allocId, u8 key, u8 vol, 
     u16 seqPrio;
 
     if ((addr = (MSTEP*)dataGetMacro(macid)) != 0) {
-        if (!(key & 0x80) && (seqPrio = fn_8014D740(midiSet, midi)) != 0xFFFF) {
+        if (!(key & 0x80) && (seqPrio = seqGetMIDIPriority(midiSet, midi)) != 0xFFFF) {
             priority = (u8)seqPrio;
         }
 
