@@ -5,7 +5,9 @@ amendment in section 7. Decisions recorded at approval: inferred names are
 marked with a comment and a CSV row (no name suffix); game T3 gets a 10%
 spot check; parked functions get a second-pass T3 name (section 4); the CSV
 is backfilled from git history for earlier unlogged renames, as rows marked
-`historical`. The coordinator is the Opus orchestration session; the user
+`historical`. Later decisions (2026-10-21): batch per source file; `sched-only` XD
+matches count as T1 `xd`; the API naming run is capped at $75; dead `#if 0` `.inc`
+stubs that block renames are deleted. The coordinator is the Opus orchestration session; the user
 decides human-review rows.
 
 Scope: the 3,636 `fn_80xxxxxx` functions in `config/GC6E01/symbols.txt` at
@@ -32,7 +34,7 @@ Qualifying sources, strongest first:
 | `map` | The function lines up with a **live** or `UNUSED` entry of the XD JP demo's own linker map `NXXJ01.map` (StarsMmd/Colo-XD-PBR-symbol-maps @ `6b51d3af`), as aligned by `tools/xd_map_xref.py`. It must sit in the same object, in the same order between two anchors, with equal size and a retail body similarity of at least 0.95, or with a shared rare string. A `size`-only row is **not** enough. | `map:NXXJ01:<object.o>:<name>` |
 | `self` | A string in this DOL names the function itself, and that string is referenced **only** by this function. The name must be the string's subject: `name:`, `name()`, `[name]` or `name(0x..)` at the start, or a `__FUNCTION__` object. No other symbol already carries the name. A string that names a callee (`"GSfileOpen failed"`) does not qualify. | `str:0x8xxxxxxx` |
 | `lib` | Library code (`src/dolphin`, `src/hsd`, `src/musyx`, `src/trk`, `src/crt`) whose name appears in a reference source **that got its names from symbols**: the Dolphin SDK debug libraries, a linker map (`NXXJ01.map` also covers the SDK, MusyX and HSD objects), or a decompilation that documents map or symbol provenance. The body must match the reference function. | `lib:<owner/repo>@<commit>:<path>:<name>` |
-| `xd` | A name from XD retail (TeamOrre/xd-decomp `config/GXXE01/symbols.txt` @ `4989794e`). It counts only when the same name is also in `NXXJ01.map`, which proves XD's name original, and the bodies are identical apart from register and address differences. They must also share a rare string (fan-out ≤ 2), or have the same position in the map object. | `xd:0x80xxxxxx+str:0x8xxxxxxx`, or `xd:0x80xxxxxx+map:<object.o>` |
+| `xd` | A name from XD retail (TeamOrre/xd-decomp `config/GXXE01/symbols.txt` @ `4989794e`). It counts only when the same name is also in `NXXJ01.map`, which proves XD's name original, and the bodies are identical apart from register and address differences, or (user decision, 2026-10-21) equal in size with the same multiset of instructions (opcode and operands, after register/address normalisation) and differing only in instruction order (scheduling), which is typical of XD being built with a slightly different compiler. Record `sched-only` in the evidence. They must also share a rare string (fan-out ≤ 2), or have the same position in the map object. | `xd:0x80xxxxxx+str:0x8xxxxxxx`, or `xd:0x80xxxxxx+map:<object.o>` |
 
 Not T1, however confident it looks:
 - `__FILE__` literals. They prove the unit and its prefix, never the name.
@@ -238,8 +240,11 @@ therefore pass silently. Every rename batch remaps the base report first:
 ## 4. Process per rename
 
 1. Claim the batch's owner through `tools/local_campaign.py claim`.
-2. **One batch = one `splits.txt` unit**, or one map object when that object
-   spans several units. Maximum 40 renames per batch. Inside the batch, run
+2. **One batch = one source file** (user decision, 2026-10-21; it replaces
+   "one `splits.txt` unit", which left 618 of 1,101 batches with one function).
+   A file's carves and suffix units share one batch. A map object that spans
+   several files stays one batch. Maximum 40 renames per batch; split larger
+   files by address order. Inside the batch, run
    the tiers in order T1 → T2 → T3, because T1 names in the unit set the
    prefix for T3.
 3. For each function: choose the tier and the name, apply the rename to the
