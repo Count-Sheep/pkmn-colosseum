@@ -140,6 +140,38 @@
 #include "dolphin/types.h"
 #include "game/effect/gs_effect.h"
 
+/* ===== GS model / material / texture / vector helpers (their definitions' signatures) ===== */
+struct GSmodel;
+struct GSpart;
+struct GSmaterial;
+struct GSmaterialEntry;
+struct GStextureHandle;
+extern s32 fn_800EE0E8(struct GSmodel* model);
+extern u32 GSpartGetMaterialCount(struct GSpart* part);
+extern void GSmaterialSetAlpha(struct GSmaterialEntry* material, f32 alpha);
+extern void fn_800DF608(struct GSmaterial* material);
+extern void GSmodelFree(struct GSmodel* model);
+extern void GSmodelEnableEnvMap(struct GSmodel* model, void* texture, void* matrix,
+                                void* light, f32 blend);
+extern void GSmodelSetPEdescr(struct GSmodel* model, void* descriptor);
+extern void GSmodelDrawModel(struct GSmodel* model, u32 flags);
+extern void GSmodelResetPEdescr(struct GSmodel* model);
+extern void GSmodelStopTexAnimation(struct GSmodel* model);
+extern void GSmodelSetAnimFrame(struct GSmodel* model, f32 frame);
+extern void GSmodelStartAnimation(struct GSmodel* model);
+extern u16 GStextureGetXsize(struct GStextureHandle* tex);
+extern u16 GStextureGetYsize(struct GStextureHandle* tex);
+extern u32 fn_800E3B3C(void);
+extern void fn_800D377C(s32 mode);
+extern void fn_800D3410(void* arg0, u8 arg1);
+extern void fn_800D3190(void);
+extern void GSvecCopy(void* dst, void* src);
+extern void GSvecAdd(void* a, void* b, void* c);
+extern void GSvecTransform(void* a, void* b, void* c);
+extern void fn_800E064C(void* dst);
+/* gs_math_mtx.c's body passes f1-f3 through to PSMTXScaleApply unread. */
+extern void fn_800E02C4(void* a, f32 x, f32 y, f32 z);
+
 /* ===== External SDK / engine functions ===== */
 extern void  GSlogWrite(const char* fmt, ...);     /* OSReport */
 extern void* memset(void* dst, int val, u32 size);
@@ -747,14 +779,11 @@ extern f32 fn_800E0BE4(void);
 extern void fn_800CDBE0(void);
 extern void fn_800CE148(void);
 extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
-extern void GSvecCopy(void* dst, const void* src);
 extern void fn_800DFFCC(void* dst, void* src, const void* value);
 extern void fn_800E0718(void*, void*, f32);
 extern void GSvecTransformQuat(void* dst, void* quat, void* src);
 extern void GSmtxMakeYRotation(void* mtx, f32 angle);
-extern void GSvecTransform(void* dst, void* matrix, void* vec);
 extern void fn_800E013C(void* dst, void* src, f32 scale);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 #if 0
 asm void fn_80138838(void* ptr, u32 b) {
 #include "src/game/effect/effect_visual_fn_80138838.inc"
@@ -884,11 +913,6 @@ u32 fn_80138B74(void* ptr) {
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80138BBC_80138DE4)
 extern void GSmodelSetVisibility(void* a, u32 b);
-extern void GSmodelFree(void* entry);
-extern u32 fn_800EE0E8(void* entry);
-extern s32 GSpartGetMaterialCount(void* outerP);
-extern void GSmaterialSetAlpha(void* obj, f32 val);
-extern void fn_800DF608(void* handle);
 extern void GSpartFree(void* handle);
 extern u32 lbl_8047D160;
 #if 0
@@ -1009,7 +1033,6 @@ allocation_error:
     defined(EFFECT_VISUAL_EXACT_80138DE4)
 extern void fn_800E06B8();
 extern void fn_800E040C();
-extern void fn_800E02C4(void* matrix, f32 x, f32 y, f32 z);
 extern void fn_800E03B4();
 extern void GSmodelSetMatrix();
 extern u32 lbl_8047D170;
@@ -1112,11 +1135,8 @@ u32 fn_80138DE4(void* ptr, u32 delta) {
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_80139074_80139820)
 extern f32 fn_800E0BE4(void);
-extern void GSvecCopy(void* dst, const void* src);
 extern void fn_800E0718(void*, void*, f32);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 extern void fn_800E040C();
-extern void fn_800E02C4(void* matrix, f32 x, f32 y, f32 z);
 extern void fn_800E03B4();
 extern void GSmodelSetMatrix();
 /* Quaternion copy, dst = src (src/game/gs_math_quat.c). */
@@ -1763,8 +1783,6 @@ void fn_80139E80(u8* e, u8* p, void* cameraPos, void* modelPos) {
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013A1D4)
 #if defined(EFFECT_VISUAL_EXACT_8013A1D4)
 extern f32 fn_800E0BE4(void);
-extern void GSvecCopy(void* dst, const void* src);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 #endif
 extern const f32 lbl_8047D1B4;
 extern const f32 lbl_8047D190;
@@ -1905,8 +1923,6 @@ u32 fn_8013A49C(void* ptr) {
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || defined(EFFECT_VISUAL_EXACT_8013A520)
 #if defined(EFFECT_VISUAL_EXACT_8013A520)
 extern f32 fn_800E0BE4(void);
-extern void GSvecCopy(void* dst, const void* src);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 extern u32 fn_800EE7E0(void* obj);
 #endif
 extern void __cvt_fp2unsigned(void);
@@ -1924,7 +1940,6 @@ asm void fn_8013A520(void) {
 }
 #else
 u32 fn_8013A520(void* ptr) {
-    extern u32 fn_800EE0E8(void*);
     extern f64 sin(f64);
     extern f64 cos(f64);
     u32 segment;
@@ -2371,7 +2386,6 @@ u32 fn_8013B034(void* ptr) {
 }
 #endif
 extern void GSmodelDisableModulation(void* texture);
-extern void GSmodelResetPEdescr(void* texture);
 extern void fn_801684F0(void* texture);
 #if 0
 asm void fn_8013B0A0(void) {
@@ -2418,7 +2432,6 @@ fail:
     return 0;
 }
 #endif
-extern void GSmodelSetPEdescr(void* texture, void* name);
 extern void GSmodelEnableModulation(void* texture, void* filter);
 extern void fn_80168570(void);
 extern u8 lbl_80363CA8[];
@@ -2613,14 +2626,11 @@ u32 fn_8013B558(void* ptr) {
 #if defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern f32 fn_800E0BE4(void);
 extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
-extern void GSvecCopy(void* dst, const void* src);
 extern void fn_800DFFCC(void* dst, void* src, const void* value);
 extern void fn_800E0718(void*, void*, f32);
 extern void GSvecTransformQuat(void* dst, void* quat, void* src);
 extern void GSmtxMakeYRotation(void* mtx, f32 angle);
-extern void GSvecTransform(void* dst, void* matrix, void* vec);
 extern void fn_800E013C(void* dst, void* src, f32 scale);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 #endif
 extern u16 fn_800E2C04(u32 size, u32 alignment);
 extern u8 fn_800E0E14();
@@ -3242,7 +3252,6 @@ u32 fn_8013C614(void* ptr) {
 #endif
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE)
-extern void GSmodelStopTexAnimation(void* a);
 #if 0
 asm void fn_8013C670(void) {
 #include "src/game/effect/effect_visual_fn_8013C670.inc"
@@ -3297,8 +3306,6 @@ extern void GSmodelSetTexAnimType(void* model, u32 value);
 extern void GSmodelStartTexAnimation(void* model);
 extern f32 fn_800E0BE4(void);
 extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
-extern void GSvecCopy(void* dst, const void* src);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 #endif
 extern void GSmodelLinkTexAnimToAnim(void* model, u32 enable);
 extern const f32 lbl_8047D230;
@@ -3475,8 +3482,6 @@ __declspec(section ".sdata2") const f32 lbl_8047D23C = 0.0f;
     defined(EFFECT_VISUAL_EXACT_8013CA48)
 #if defined(EFFECT_VISUAL_BANK_ACTIVE)
 extern void set__5GSvecFfff(void* dst, f32 x, f32 y, f32 z);
-extern void GSvecCopy(void* dst, const void* src);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 #endif
 extern f32 fn_800E0CA0(f32 angle);
 extern u32 lbl_8047D248;
@@ -4090,7 +4095,6 @@ u32 envMapEffectInit(void* ptr) {
     return 0;
 }
 #endif
-extern void GSmodelEnableEnvMap(void* a, void* b, void* c, void* d, f32 e);
 extern u32 lbl_8047AEE0;
 extern u8 lbl_80272F38[];
 #if 0
@@ -4119,12 +4123,7 @@ log:
 
 #if !defined(EFFECT_VISUAL_BANK_ACTIVE) || \
     defined(EFFECT_VISUAL_EXACT_8013D984)
-extern s32 fn_800E3B3C(void);
-extern void fn_800D377C(u32 a);
-extern void fn_800D3410(void* texture, u32 a);
 extern u8 fn_800E3C64(void* model);
-extern void GSmodelDrawModel(void* obj, u32 flags);
-extern void fn_800D3190(void);
 extern u8 GSmodelIsEnvMapEnabled(void* model);
 extern void GSmodelSetEnvMapBlendValue(void* model, f32 value);
 extern u32 lbl_8047AEE0;
@@ -4358,8 +4357,6 @@ extern s32 fn_800D45F8(void);
 extern u32 GSmaterialGetFlags(void* material);
 extern void GSmaterialSetFlags(void* material, u32 flags);
 extern void GSmaterialStoreAlpha(void* material);
-extern void GSmodelStartAnimation(void* model);
-extern void GSmodelSetAnimFrame(void* model, f32 value);
 extern void fn_800EC134(void*);
 extern void GSmaterialResetAlpha(void* material);
 extern void GSmaterialResetFlags(void* material);
@@ -4826,8 +4823,6 @@ extern void fn_8019D620(void* jobj);
 extern void GSmodelSetMaterialAlpha(void* model, f32 alpha);
 extern void GSmodelResetMaterialAlpha(void* model);
 extern void GSmodelResetRenderFlags(void* model);
-extern void GSmodelDrawModel(void* model, u32 flags);
-extern void GSmodelSetPEdescr(void* model, void* peDescr);
 extern u8 lbl_80363CD8[];
 /* RULE-EXCEPTION(user-approved): the jobj.h assert strings as named .sdata2
    arrays, placed between fn_8013E8A4's pool and fn_8013EA44's conversion
@@ -5204,7 +5199,6 @@ u16 distortionEffectStart(void* ptr) {
 extern u8 GSmodelGetVisibility(void* obj);
 extern void fn_80118104(u32 a, u32 b);
 extern void fn_800D848C(u32 a, u32 b, u32 c, void* d);
-extern void fn_800E064C(void* dst);
 extern void fn_800DC1D4(u32 a);
 extern void fn_800DBA54(u32 a);
 extern void fn_800DB9F0(u32 a, u32 b, u32 c);
@@ -5399,8 +5393,6 @@ extern void fn_800E0238(void* dst, void* src);
 extern void set__5GSvecFfff(void* vec, f32 x, f32 y, f32 z);
 extern s32 fn_800D2DE8(void* input, void* output, s32 count);
 extern void GSlogWrite(const char* fmt, ...);
-extern u16 GStextureGetXsize(void* texture);
-extern u16 GStextureGetYsize(void* texture);
 extern void fn_800E03E8(void* matrix, f32 x, f32 y, f32 z);
 /* RULE-EXCEPTION(user-approved): extern-named stand-ins for constants shared with linked code — see docs/RULE_EXCEPTIONS.md */
 extern const f32 lbl_8047D300;
@@ -5640,7 +5632,6 @@ extern f64 tan(f64 x);
 extern u8 GSmodelCanAnimate(void* model);
 extern void* GSmodelGetBound(void* model);
 extern void GScameraGetLookAt(void* mtx, void* lookAt, void* eye);
-extern void GSvecAdd(void* dst, void* srcA, void* srcB);
 extern u32 fn_80118DA8(void* ptr);
 extern void fn_80118F04(void* arg1, void* arg2);
 extern u8 GSmodelHasAnimationEnded(void* model);
@@ -5729,7 +5720,6 @@ asm void Unload__13ModelSequenceFPUc(void) {
 }
 #else
 void Unload__13ModelSequenceFPUc(u8* ptr) {
-    extern void fn_800DF608(void* handle);
     if (*(u32*)(ptr) != 0) {
         fn_800DF608(*(void**)(ptr));
         *(u32*)(ptr) = 0;

@@ -811,6 +811,10 @@ s32 fn_800181C4(page, itemId, itemSlot)
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80018594_ONLY)
 /* fn_80018594 - 0x80018594 | size: 0x34c */
+extern s32 winMsgOpen(s8 type, u32 message, u32 wait, u8 pause);
+extern void winMsgClose(u32 wait);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern s32 fn_800181C4(s32 page, s32 itemId, s32 itemSlot); /* K&R definition: u16 itemId arrives promoted */
 extern u32 itemDataBiosGetFieldUseFunc();
 extern u32 itemDataBiosGetBattleUseFunc();
 extern s32 fn_80017CB8();
@@ -1300,6 +1304,8 @@ u16 fn_80018A68(void) {
 u16 fn_80018A68(void);
 #endif
 /* fn_80018F30 - 0x80018F30 | size: 0x24 */
+extern void floorSetFadeScript(u32 a, u32 b);
+extern void _threadSwitch(void);
 extern u32 lbl_8047A2F0;
 #if 0
 asm void fn_80018F30(void) {
@@ -1729,6 +1735,7 @@ s32 fn_800194E4(u8* a, u8* b) {
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_800195E0_ONLY)
 /* fn_800195E0 - 0x800195E0 | size: 0xa0 */
+extern void winSeqSetMenu(s32 id, u32 seqId);
 #if 0
 asm void fn_800195E0(void) {
 #include "src/game/gs_pcbox_fn_800195E0.inc"
@@ -1786,7 +1793,7 @@ s32 fn_80019680(u8* arg) {
     switch (val) {
     case 0:
         if ((s8)arg[2] == 0) {
-            winSeqSetMenu((void*)0x5f, 0x66);
+            winSeqSetMenu(0x5f, 0x66);
             *(f32*)&lbl_8047A300 = *(f32*)&lbl_8047B7A8;
             arg[2] = 1;
         }
@@ -1802,7 +1809,7 @@ s32 fn_80019680(u8* arg) {
     }
     case 3:
         if ((s8)arg[2] == 0) {
-            winSeqSetMenu((void*)0x5f, 0x6a);
+            winSeqSetMenu(0x5f, 0x6a);
             arg[2] = 1;
         }
         break;
@@ -1901,6 +1908,7 @@ u16 fn_80019754(u32 color) {
 #endif /* guard split */
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_ISLAND_80019938_ONLY)
 /* fn_80019938 - 0x80019938 | size: 0xbc */
+extern s32 menuGetCursorItemID(u32 id);
 extern u8* windowGetAllocPtr();
 #if 0
 asm void fn_80019938(void) {
@@ -2106,6 +2114,7 @@ void* fn_80019D5C(void* current, s32 dir) {
 #endif /* !MENU_POKEMON_CARVE_ONLY || MENU_POKEMON_80019D5C_ONLY */
 
 #if !defined(MENU_POKEMON_CARVE_ONLY) || defined(MENU_POKEMON_80019F6C_ONLY)
+extern u16 pokemonBiosGetPokemonDataId(u8* ptr);
 
 #if defined(MENU_POKEMON_80019F6C_ONLY)
 /* First declarations the full file has made by this point. */
@@ -2123,13 +2132,13 @@ extern u8* windowGetKeyInfo();
 extern s32 windowGetParam(s32, s32);
 extern u32 itemDataBiosGetWazaMachineNo();
 extern u32 pokemonIsDarkPokemon();
-extern u32 pokemonDataBiosGetWazaMcn();
+extern u8 pokemonDataBiosGetWazaMcn(u8* ptr, u16 idx);
 extern void fn_800FBB34();
 extern void fn_8010B9E8();
 extern u32 fn_80107E78();
 extern void fn_801081F8();
 extern void windowDrawSprite2();
-extern u32 pokemonDataBiosGetPtr();
+extern void* pokemonDataBiosGetPtr(u16 idx);
 extern void fn_8001DACC();
 extern u32 GSmsgGetGSchar();
 extern u32 lbl_8047A308;
@@ -2144,13 +2153,13 @@ extern u32 menuSubCalcColor();
 extern s32 windowGetParam(s32, s32);
 extern u32 itemDataBiosGetWazaMachineNo();
 extern u32 pokemonIsDarkPokemon();
-extern u32 pokemonDataBiosGetWazaMcn();
+extern u8 pokemonDataBiosGetWazaMcn(u8* ptr, u16 idx);
 extern void fn_800FBB34();
 extern void fn_8010B9E8();
 extern u32 fn_80107E78();
 extern void fn_801081F8();
 extern void windowDrawSprite2();
-extern u32 pokemonDataBiosGetPtr();
+extern void* pokemonDataBiosGetPtr(u16 idx);
 extern void fn_8001DACC();
 extern u32 GSmsgGetGSchar();
 extern u32 lbl_8047A308;
@@ -2237,7 +2246,7 @@ void menuPokemonDrawItem(u8* ctx, u8* pane) {
                                             *(void**)(lbl_803A1D40 + 0xC));
                 if ((u8)pokemonIsDarkPokemon(mon) != 0) {
                     msg = 0x2B65;
-                } else if ((u8)pokemonDataBiosGetWazaMcn(pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(mon)), (u8)msgId) == 0) {
+                } else if ((u8)pokemonDataBiosGetWazaMcn((u8*)pokemonDataBiosGetPtr(pokemonBiosGetPokemonDataId(mon)), (u8)msgId) == 0) {
                     msg = 0x2B65;
                 } else {
                     msg = 0x2B64;

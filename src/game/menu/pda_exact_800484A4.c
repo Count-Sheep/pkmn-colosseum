@@ -9,6 +9,7 @@
  * sdata2_8047BCA0.c.
  */
 #include "dolphin/types.h"
+#include "crt/string.h"
 
 typedef struct PdaModelWindow {
     u8 pad00[0x8];

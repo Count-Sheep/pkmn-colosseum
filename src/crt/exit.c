@@ -1,4 +1,5 @@
 #include "dolphin/types.h"
+#include "crt/string.h"
 
 /*
  * exit.c - MetroWerks CRT exit handling.

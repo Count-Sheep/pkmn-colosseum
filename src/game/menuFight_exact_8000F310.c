@@ -47,6 +47,9 @@ extern u32   fn_800F7BC4(s32 slot);                   /* Get VSync flags */
 /* Battle bridge */
 extern void menuClose();
 
+/* Window params (window_exact_801040A0.c) */
+extern u32 windowGetParam(void* window, u32 index);
+
 /* menuFightCtrlSecretPokemonTop - 0x8000F310 | size: 0x4c */
 u32 menuFightCtrlSecretPokemonTop(u32 arg) {
     windowGetParam((void*)arg, 0);

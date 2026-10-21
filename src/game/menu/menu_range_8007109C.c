@@ -2027,6 +2027,7 @@ static inline u32 menuGbaFindKeyC(const char* strings, u32 final_word, u32 check
 }
 
 s32 fn_8007480C(s32 channel, s32 use_primary_image) {
+    extern u32 fn_800D0F44(s32 channel);
     u8 status;
     u32 recv_word;
     u32 send_word;
@@ -2577,6 +2578,29 @@ extern s32 menuClose(s32);
 extern s32 fn_800D37CC(void);
 extern u32 fn_800D3088(void);
 extern s32 fn_8001E184(void);
+extern void fn_801CB834(u32 resource, u32 anim_index, s32 frame, s32 loop);
+extern s32 scriptWaitSyncMotion(u32 resource, s32 wait);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern u8 menuSetEnablePort(u8 enable);
+extern u32 fn_80165668(u32 id, void* buffer, u32 size);
+extern void fn_80166A28(u32 id);
+extern u8 heroBiosGetSexDataId(u8* ptr);
+extern s32 fn_800849B4(s32 mode, s32 command, void* input, void* output);
+struct ShopItemSlot;
+extern u32 fn_80029850(u8* slot, u16 count, u16 item_id, u16 maximum);
+extern s32 fn_800298DC(struct ShopItemSlot* slots, s32 count, s32 item_id, s32 quantity,
+                       s16 index, s32 maximum);
+extern int fn_80079C1C(s32 arg0, int arg1, int arg2, s32 arg3);
+extern void pokemonInit(u8* ptr);
+/* hero_pokemon.c's body reads only the hero; retail callers also pass the
+ * current floor id in r4. */
+extern void heroPokemonGetPikachu(u8* hero, u32 floorId);
+extern void* floorDataBiosGetCurrentPtr(void);
+extern u32 floorDataBiosGetFloorID(u8* ptr);
+extern u32 fn_80093574(s32 channel);
+extern s32 fn_80092C90(s32 channel, void* arg1, void* arg2);
+extern u32 fn_80093610(s32 channel);
+extern s32 fn_80093698(s32 channel);
 #endif /* MENU_R47_80077ED4_ONLY */
 
 #if !defined(MENU_RANGE_CARVE) || defined(MENU_R47_80077ED4_ONLY)
@@ -2714,7 +2738,7 @@ void fn_80078390(void)
 {
     extern s8 menuSubOpenYesNo(s32 port, s32 x, s32 y, s32 initial);
     void* name;
-    s32 sex;
+    u8 sex;
     s8 answer;
     f32 elapsed;
     u32 resource = 0x104F1000;
@@ -3206,15 +3230,15 @@ void fn_800792D8(void) {
 
     canBag = 1;
     if (lbl_8047A632 != 0) {
-        if (fn_80029850(result.bag, result.itemId, 0x47, 0x3e7) < 1) {
+        if ((s32)fn_80029850(result.bag, result.itemId, 0x47, 0x3e7) < 1) {
             canBag = 0;
         } else {
-            fn_800298DC(result.bag, result.itemId, 0x47, 1, -1, 0x3e7);
+            fn_800298DC((struct ShopItemSlot*)result.bag, result.itemId, 0x47, 1, -1, 0x3e7);
             result.optionFlags |= 4;
         }
     }
 
-    if (lbl_8047A630 != 0 && fn_80029850(result.bag, result.itemId, 1, 0x3e7) < 1) {
+    if (lbl_8047A630 != 0 && (s32)fn_80029850(result.bag, result.itemId, 1, 0x3e7) < 1) {
         canBag = 0;
     }
 
@@ -3234,7 +3258,7 @@ void fn_800792D8(void) {
             pokemonInit(heroBiosGetPokemonPtr(hero, i));
         }
 
-        heroPokemonGetPikachu(hero, floorDataBiosGetFloorID(floorDataBiosGetCurrentPtr()));
+        heroPokemonGetPikachu(hero, floorDataBiosGetFloorID((u8*)floorDataBiosGetCurrentPtr()));
 
         for (i = 0; i < 6; i++) {
             if (pokemonCheckValid(heroBiosGetPokemonPtr(hero, i)) != 0) {
@@ -3251,14 +3275,14 @@ void fn_800792D8(void) {
     }
 
     if (lbl_8047A630 != 0) {
-        fn_800298DC(result.bag, result.itemId, 1, 1, -1, 0x3e7);
+        fn_800298DC((struct ShopItemSlot*)result.bag, result.itemId, 1, 1, -1, 0x3e7);
         result.optionFlags |= 1;
     }
 
     fn_80093574(1);
     fn_80092C90(1, &result, giftPokemon);
     fn_80093574(1);
-    if (fn_80093610(1) != 0xc) {
+    if ((s32)fn_80093610(1) != 0xc) {
         fn_80093698(1);
         winMsgOpen(2, 0x3d85, 1, 0);
         winMsgClose(1);
@@ -3441,6 +3465,16 @@ extern f32 lbl_8047C114;
 extern const f32 lbl_8047C128;
 extern s32 fn_800D37CC(void);
 extern u32 fn_800D3088(void);
+extern void fn_801CB834(u32 resource, u32 anim_index, s32 frame, s32 loop);
+extern s32 scriptWaitSyncMotion(u32 resource, s32 wait);
+extern void msgctrlSetValue(u32 id, u32 value);
+extern u8 menuSetEnablePort(u8 enable);
+extern u32 fn_80165668(u32 id, void* buffer, u32 size);
+extern void fn_80166A28(u32 id);
+void fn_800792D8(void);
+void fn_800798E8(void* backup);
+struct OSThread;
+extern BOOL fn_800A1E54(struct OSThread* thread, u32* val);
 
 #define WAIT_MENU_TIME(limit_)           \
     do {                                 \
@@ -3924,7 +3958,7 @@ s32 fn_8007AB10(s32 code, s32* state) {
     }
 
     if (lbl_803F7A30[0x345] != 0) {
-        fn_800A1E54(lbl_803F7A30 + 0x28, &event);
+        fn_800A1E54((struct OSThread*)(lbl_803F7A30 + 0x28), (u32*)&event);
         lbl_803F7A30[0x345] = 0;
 
         if (fn_800D0F44(1) != 0x40000) {

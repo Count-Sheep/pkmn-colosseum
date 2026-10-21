@@ -16,6 +16,8 @@
 #define GBA_COMMUNICATION_DECLS_ONLY
 #include "src/game/gbaCommunication.c"
 
+extern u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d);
+
 typedef struct RibbonGroupDescriptor {
     u16 selector;
     s8 firstRibbon;
@@ -199,7 +201,7 @@ static inline u16 menuStatusMoveValid(s32 move)
     if ((u16)move == 4) {
         return *(u16*)(lbl_803FB380 + 0x18);
     }
-    valid = pokemonGetStatus(pokemon, 0, 0x7F, move);
+    valid = pokemonGetStatus((u8*)pokemon, 0, 0x7F, move);
     if (pokemonWazaCheckValid(pokemon, move) == 0) {
         valid = 0;
     }

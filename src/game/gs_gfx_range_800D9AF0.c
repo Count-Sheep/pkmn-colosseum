@@ -16,6 +16,8 @@
 
 #include "dolphin/types.h"
 
+extern void fn_800D834C(void);
+
 /* ===== External SDK / engine functions ===== */
 extern void  GSlogWrite(const char*, ...);             /* OSReport / GSlog */
 extern void* memcpy(void* dst, const void* src, u32 n);

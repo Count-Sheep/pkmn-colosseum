@@ -5,6 +5,9 @@
  */
 #include "dolphin/types.h"
 
+extern void winSeqSetMenu(s32 id, u32 seqId);
+extern void menuSetDisp(u32 id, u8 enable);
+
 /* ===== SDA globals ===== */
 extern u32 lbl_8047A584;
 extern f32 lbl_8047A570;
@@ -433,7 +436,7 @@ u32 fn_80056704(void)
         val = (s32)tbl[cur];
     }
     if (val >= 0) {
-        menuSetDisp((void*)val, 1);
+        menuSetDisp((u32)val, 1);
     }
     lbl_8047A57C = 0.0f;
     lbl_8047A578 = -0.033333335f;
@@ -463,7 +466,7 @@ u32 fn_800567AC(void)
         val = (s32)tbl[cur];
     }
     if (val >= 0) {
-        menuSetDisp((void*)val, 1);
+        menuSetDisp((u32)val, 1);
     }
     lbl_8047A57C = 0.0f;
     lbl_8047A578 = 0.033333335f;
@@ -474,7 +477,6 @@ u32 fn_800567AC(void)
 void fn_80056854(void)
 {
     extern void* windowSearchID(u32);
-    extern void menuSetDisp(u32, u32);
     f32 old578;
     u32 tbl1[3];
     u32 tbl2[3];
@@ -628,7 +630,6 @@ u32 fn_80056B74(u32 idx, s32 mode) {
     extern f32 lbl_8047A57C;
     extern f32 lbl_8047A574;
     extern void menuOpenCustom(u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, ...);
-    extern void menuSetDisp(void* p, u32 enable);
     s32 val;
     s32 i;
 
@@ -639,7 +640,7 @@ u32 fn_80056B74(u32 idx, s32 mode) {
             menuOpenCustom(val, 0x1f, 0, 0, 0, 0);
         }
         if ((s32)idx != i) {
-            menuSetDisp((void*)val, 0);
+            menuSetDisp((u32)val, 0);
         }
     }
     lbl_8047A584 = idx;

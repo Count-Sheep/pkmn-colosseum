@@ -207,6 +207,10 @@ extern void PSVECNormalize(const Vec* src, Vec* unit);
 extern void PSVECCrossProduct(const Vec* a, const Vec* b, Vec* axb);
 extern void PSMTXRotAxisRad(Mtx m, const Vec* axis, f32 rad);
 extern void PSMTXMultVec(const Mtx m, const Vec* src, Vec* dst);
+extern void PSMTXIdentity(Mtx m);
+extern void PSMTXCopy(const Mtx src, Mtx dst);
+extern void PSMTXConcat(const Mtx a, const Mtx b, Mtx ab);
+extern u32 PSMTXInverse(const Mtx src, Mtx inv);
 
 typedef void (*HSD_JObjWalkTreeCallback)(HSD_JObj* jobj, void* args,
                                          u32 type);

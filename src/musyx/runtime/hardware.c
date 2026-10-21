@@ -22,6 +22,9 @@
 #include "dolphin/types.h"
 #include "musyx/runtime/hw_dspctrl.h"
 
+/* RULE-EXCEPTION(user-approved): salReconnectVoice and hwChangeStudio are both linker-stripped from retail, so the real studio width is unproven; a u32 parameter keeps the existing object (the old implicit call's clrlwi) - see docs/RULE_EXCEPTIONS.md */
+extern void salReconnectVoice(DSPvoice* dsp_vptr, u32 studio);
+
 typedef struct SND_PLAYBACKINFO {
     u32 frq;
     u8 stereo;

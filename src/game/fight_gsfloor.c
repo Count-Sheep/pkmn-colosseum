@@ -71,6 +71,14 @@ extern void OSRegisterResetFunction();
 extern void OSInitAlarm();
 extern void OSInitThreadQueue();
 extern void* memcpy();
+extern void _threadSwitch(void);
+extern void fn_801C3114(void);
+extern void* battleGridGetPtr(void);
+extern u32 fn_801DAC3C(void* obj);
+extern void fn_801DA224(void* effect, s32 flags);
+extern void* fn_801DE190(u16 index, void* model, u8 variant);
+extern void fn_801DA4E8(void* effect, u32 visible);
+extern void* fightTrainerGetStatus(void* ctx, u16 slot, u32 field, u32 idx);
 
 /* Forward declarations for converted functions */
 u32 evolutionWazaLearn();
@@ -212,21 +220,21 @@ void fightGSfloorPopData(BattleReplayHeader *header)
         model = fn_801DE418(firstEntry->modelId);
         *(u32 *)(firstEntry->target + 0x27C0) = model;
         *firstEntry->modelOut = model;
-        state = fn_801DAC3C(model);
+        state = fn_801DAC3C((void*)model);
         GSmodelPopState(state, firstEntry->state);
-        fn_801DA224(model, firstEntry->attr);
+        fn_801DA224((void*)model, firstEntry->attr);
         firstEntry++;
     }
     secondEntry = (BattleReplaySecondEntry *)firstEntry;
     while (secondCount-- != 0) {
-        model = fn_801DE190(secondEntry->modelId, secondEntry->arg, secondEntry->variant);
+        model = (u32)fn_801DE190(secondEntry->modelId, (void*)secondEntry->arg, secondEntry->variant);
         *(u32 *)(secondEntry->target + 0x600) = model;
         *secondEntry->modelOut = model;
-        state = fn_801DAC3C(model);
+        state = fn_801DAC3C((void*)model);
         GSmodelPopState(state, secondEntry->state);
-        fn_801DA224(model, secondEntry->attr);
+        fn_801DA224((void*)model, secondEntry->attr);
         state = GSmodelGetVisibility(state);
-        fn_801DA4E8(model, state);
+        fn_801DA4E8((void*)model, state);
         secondEntry++;
     }
     memcpy(battleGridGetPtr(), entries, 0x44);
@@ -316,7 +324,7 @@ u32 _fightGSfloorPokemonCB__FPvUsPv(u32 r3,u32 r4,char *r5)
         *(u8 *)((int)entry + 7) = fn_801D9E1C(seq);
         entry[2] = fn_801DE164(seq);
         entry[3] = (u32)fightGSfloorFindBGSeqPtr(*(FightGSfloorGridRow **)(r5 + 4), seq, 0);
-        GSmodelPushState(fn_801DAC3C(seq), entry + 4);
+        GSmodelPushState(fn_801DAC3C((void*)seq), entry + 4);
         *(int *)(r5 + 8) = *(int *)(r5 + 8) + 0x7c;
     }
     if (r5[1] != '\0') {
@@ -337,7 +345,7 @@ u32 _fightGSfloorTrainerCB__FPvUsPv(u32 r3,u32 r4,char *r5)
     u32 seq;
     u16 id;
 
-    seq = fightTrainerGetStatus(r3, 0, 0x4c, 0);
+    seq = (u32)fightTrainerGetStatus((void*)r3, 0, 0x4c, 0);
     if (seq == 0) {
         return 1;
     }
@@ -351,7 +359,7 @@ u32 _fightGSfloorTrainerCB__FPvUsPv(u32 r3,u32 r4,char *r5)
         *(short *)(entry + 1) = id;
         *(u8 *)((int)entry + 6) = fn_801DA354(seq);
         entry[2] = (u32)fightGSfloorFindBGSeqPtr(*(FightGSfloorGridRow **)(r5 + 4), seq, 1);
-        GSmodelPushState(fn_801DAC3C(seq), entry + 3);
+        GSmodelPushState(fn_801DAC3C((void*)seq), entry + 3);
         *(int *)(r5 + 8) = *(int *)(r5 + 8) + 0x78;
     }
     if (r5[1] != '\0') {

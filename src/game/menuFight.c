@@ -1309,6 +1309,7 @@ void menuFightDrawSecretPokemon(u8* ctx, u8* npc) {
 
 #if !defined(MENU_FIGHT_ONLY) || defined(MENU_FIGHT_ONLY_8000ED34)
 /* menuFightButtonSecretPokemonTop - 0x8000ED34 | size: 0x5dc */
+extern void menuClose(s32 id);
 extern void menuSetDisp(void);
 extern void fn_800F7920(void);
 extern void fn_800F7994(void);

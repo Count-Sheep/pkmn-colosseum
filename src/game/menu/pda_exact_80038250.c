@@ -4,6 +4,8 @@
  */
 #include "dolphin/types.h"
 
+extern void winSeqSetMenu(s32 id, u32 seqId);
+
 typedef struct PdaMenuState {
     u8 pad00;
     s8 mode;
@@ -27,7 +29,6 @@ typedef struct PdaKeyInfo {
 #pragma peephole off
 s32 fn_80038250(PdaMenuState* state)
 {
-    extern void winSeqSetMenu(s32 sequence, s32 menu);
 
     switch (state->mode) {
     case 0:

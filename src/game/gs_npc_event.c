@@ -498,13 +498,13 @@ extern void fn_8002F284(void);
 extern void fn_8002EE74(void);
 extern void menuSetEnablePort(void);
 extern s32 menuGetLastError(void);
-extern void winMsgOpen(s32, s32, s32, s32);
+extern s32 winMsgOpen(s8 type, u32 message, u32 wait, u8 pause);
 extern void fn_8002EA5C(void);
 extern void fn_8002E460(void);
 extern void menuOpen(void);
 extern void menuModelInit(void);
 extern void fn_80109C88(void);
-extern void winMsgClose(s32);
+extern void winMsgClose(u32 wait);
 extern void stateFunctionExChangeMain(void);
 extern void fn_8010A420(void);
 extern void pokemonBiosSetFriend(void);
@@ -656,8 +656,6 @@ static inline void NpcEventTradeShow(u8* base)
     extern void menuModelInit(void*, s32, s32);
     extern void fn_80109C88(void*, s32);
     extern s32 pokemonBiosGetNicknamePtr(s32 pokemon);
-    extern void winMsgClose();
-    extern void winMsgOpen();
     extern void fadeCheck(s32);
     extern void fadeSet(s32, f32);
     s32 name;
@@ -694,8 +692,6 @@ static inline void NpcEventTradeDone(u8* base)
     extern void pokemonBiosSetFriend(s32, s32);
     extern s32 pokemonBiosGetNicknamePtr(s32 pokemon);
     extern void memoDataSet(s32, s32);
-    extern void winMsgClose();
-    extern void winMsgOpen();
     s32 pokemon1;
     s32 name;
     s32 pokemon2;
@@ -752,8 +748,6 @@ void fn_80031B4C(void) {
     extern u32 windowGetActiveID();
     extern u8* windowSearchItemID(u32, s32);
     extern u32 windowSearchID(s32);
-    extern void winMsgClose();
-    extern void winMsgOpen();
     extern void winSpriteSetDisp(void*, s32);
     extern void fn_80109C88(void*, s32);
     extern void fn_8010A420(void*);
@@ -946,11 +940,14 @@ void fn_80031B4C(void) {
 #if !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80032ED8) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 
 /* 0x800324A0 | 0xC4; linked (with the next two) from gs_npc_event_candidate_800324A0.c */
+extern void _threadSwitch(void);
+extern s32 winMsgOpen(s8 type, u32 message, u32 wait, u8 pause);
+extern void winMsgClose(u32 wait);
 extern void fn_80112260(s32);
 extern u32  fn_80113F48(void);
 extern u32  fn_801CBA0C(u32);
 extern u32  GSresGetResource(u32, u32);
-extern void cameraPlayAnime(s32, u32, s32, s32);
+extern void cameraPlayAnime(u32 groupId, u32 animationId, s32 frame, u8 loop);
 extern void GSscene_SetMode(s32);
 extern void fn_801CB7C4(u32);
 extern u8 lbl_8047A408;
@@ -1409,6 +1406,8 @@ void fn_800327FC(void)
  * gs_npc_event_candidate_80032ED8 unit. */
 #if !defined(GS_NPC_EVENT_ONLY_800324A0) && !defined(GS_NPC_EVENT_ONLY_800301B0) && !defined(GS_NPC_EVENT_ONLY_80031B4C) && !defined(GS_NPC_EVENT_ONLY_800327FC)
 /* 0x80032ED8 | 0x1E0 */
+extern u32 fn_80113F48(void);
+extern void cameraPlayAnime(u32 groupId, u32 animationId, s32 frame, u8 loop);
 extern u8*  fightEncountDataBiosGetPtr(s32);
 extern void fightEncountDataBiosSetTrainer(u8*, s32);
 extern void fightEncountDataBiosSetFightFloorDataId(u8*, u16);
@@ -1484,7 +1483,7 @@ u8* fn_80032ED8(s32 arg0, s32 arg1, u8* arg2) {
     }
 
     result = fn_801CA5C4(arg1, 1, 0);
-    cameraPlayAnime((s32)fn_80113F48(), 0x11171800, 0, 0);
+    cameraPlayAnime(fn_80113F48(), 0x11171800, 0, 0);
 
     sfx_id = (lbl_8047A439 != 0) ? 0x446 : 0x4CD;
     if (sfx_id != fn_801653C4()) {
