@@ -64,7 +64,7 @@ extern void GSlogWrite(const char* format, ...);
 extern u16 _toolentryAlloc__FUl(u32 size);
 extern void* fn_800E27B0(u16 handle);
 extern void GXDrawDone(void);
-extern void fn_801A6DA0(HSD_MObj* mobj, HSD_TObj* tobj); /* HSD_MObjAddTObj */
+extern void HSD_MObjAddTObj(HSD_MObj* mobj, HSD_TObj* tobj); /* HSD_MObjAddTObj */
 extern s32 HSD_TExpGetType(HSD_TExp* texp);
 extern void fn_801B6DC0(HSD_TExp* texp, u32 r, u32 g, u32 b, u32 a); /* TEV channel swap */
 extern HSD_TExp* HSD_TExpCnst(void* value, u32 comp, u32 type, HSD_TExp** list);
@@ -397,7 +397,7 @@ void _matGSmatEnableEnvMapExt(GSmaterial* material)
             }
             HSD_MObjAddTObjNext(mobj, last, tobj);
         } else {
-            fn_801A6DA0(mobj, tobj);
+            HSD_MObjAddTObj(mobj, tobj);
         }
         material->envTObj = tobj;
         material->envImageDesc = imageDesc;

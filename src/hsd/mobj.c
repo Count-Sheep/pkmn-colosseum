@@ -39,7 +39,7 @@
  *    same fcmpo sequence in all thirteen cases (recovered as the static
  *    inline MObjClamp01, policy "repeated expansion"; it leaves no symbol)
  *    and checks mat / pe for NULL;
- *  - fn_801A6DA0 (push a TObj onto the material) and
+ *  - HSD_MObjAddTObj (push a TObj onto the material) and
  *    HSD_MObjAddTObjNext are new; HSD_MObjSetToonTextureImage is gone;
  *  - assert line numbers are those of Colosseum's longer file.
  *
@@ -771,7 +771,8 @@ HSD_TObj* HSD_MObjGetTObj(HSD_MObj* mobj)
 }
 
 /* 0x801A6DA0 | 0x24 */
-void fn_801A6DA0(HSD_MObj* mobj, HSD_TObj* tobj)
+/* NAME-T1 fn_801A6DA0 */
+void HSD_MObjAddTObj(HSD_MObj* mobj, HSD_TObj* tobj)
 {
     if (mobj == NULL || tobj == NULL) {
         return;

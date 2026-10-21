@@ -45329,7 +45329,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801A6DA0",
+"name": "HSD_MObjAddTObj",
 "addr": "0x801A6DA0",
 "size": 36,
 "label": "hsd",

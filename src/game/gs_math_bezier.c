@@ -337,7 +337,7 @@ extern void HSD_ImageDescRemove(void);
 extern void HSD_TObjLoadDesc(void);
 extern void HSD_MObjGetTObj(void);
 extern void HSD_MObjAddTObjNext(void);
-extern void fn_801A6DA0(void);
+extern void HSD_MObjAddTObj(void);
 extern u8 lbl_803154E4[];
 extern void PSMTXMultVec(void*, void*, void*);
 extern void PSVECCrossProduct(void*, void*, void*);
