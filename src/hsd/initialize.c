@@ -94,7 +94,7 @@ void VIWaitForRetrace(void);
 
 void fn_800B856C(void);                                  /* GXInvalidateVtxCache */
 void GXInvalidateTexAll(void);
-void fn_800BA198(GXLightObj* lt, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1,
+void GXInitLightAttn(GXLightObj* lt, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1,
                  f32 k2);                                /* GXInitLightAttn */
 void fn_800BA414(GXLightObj* lt, f32 x, f32 y, f32 z);   /* GXInitLightPos */
 void fn_800BA424(GXLightObj* lt, f32 nx, f32 ny, f32 nz); /* GXInitLightDir */
@@ -264,7 +264,7 @@ static void HSD_GXInit(void)
 
     fn_800BA414(&lightobj, 1.0F, 0.0F, 0.0F);
     fn_800BA424(&lightobj, 1.0F, 0.0F, 0.0F);
-    fn_800BA198(&lightobj, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F);
+    GXInitLightAttn(&lightobj, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F);
     fn_800BA440(&lightobj, HSD_Init_804D5E1C);
 
     for (i = 0; i < 8; i++) {

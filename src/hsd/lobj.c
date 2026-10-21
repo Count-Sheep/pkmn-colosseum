@@ -46,7 +46,7 @@ void PSVECSubtract(const Vec3* a, const Vec3* b, Vec3* ab);
 void PSVECNormalize(const Vec3* src, Vec3* unit);
 
 /* GXInitLightAttn */
-void fn_800BA198(GXLightObj* lt_obj, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1,
+void GXInitLightAttn(GXLightObj* lt_obj, f32 a0, f32 a1, f32 a2, f32 k0, f32 k1,
                  f32 k2);
 void GXInitLightSpot(GXLightObj* lt_obj, f32 cutoff, s32 spot_func);
 void GXInitLightDistAttn(GXLightObj* lt_obj, f32 ref_dist, f32 ref_br,
@@ -59,7 +59,7 @@ void GXLoadLightObjImm(GXLightObj* lt_obj, s32 light);
 
 /* SDK GXLighting.h macro */
 #define GXInitLightShininess(lobj, shininess)                              \
-    (fn_800BA198(lobj, 0.0F, 0.0F, 1.0F, (shininess) / 2.0F, 0.0F,         \
+    (GXInitLightAttn(lobj, 0.0F, 0.0F, 1.0F, (shininess) / 2.0F, 0.0F,         \
                  1.0F - (shininess) / 2.0F))
 
 /* hsdSearchClassInfo */
@@ -579,7 +579,7 @@ static void setup_infinite_lightobj(HSD_LObj* lobj, MtxPtr vmtx)
     PSMTXMultVec(vmtx, &lpos, &lpos);
     if (lobj->flags & LOBJ_DIFFUSE) {
         fn_800BA414(&lobj->lightobj, lpos.x, lpos.y, lpos.z);
-        fn_800BA198(&lobj->lightobj, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F);
+        GXInitLightAttn(&lobj->lightobj, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, 0.0F);
     }
     if (lobj->flags & LOBJ_SPECULAR) {
         fn_800BA414(&lobj->spec_lightobj, lpos.x, lpos.y, lpos.z);
@@ -597,7 +597,7 @@ static void setup_point_lightobj(HSD_LObj* lobj, MtxPtr mtx)
     fn_800BA414(&lobj->lightobj, lpos.x, lpos.y, lpos.z);
     fn_800BA414(&lobj->spec_lightobj, lpos.x, lpos.y, lpos.z);
     if (lobj->flags & LOBJ_RAW_PARAM) {
-        fn_800BA198(&lobj->lightobj, 1.0F, 0.0F, 0.0F, lobj->u.attn.k0,
+        GXInitLightAttn(&lobj->lightobj, 1.0F, 0.0F, 0.0F, lobj->u.attn.k0,
                     lobj->u.attn.k1, lobj->u.attn.k2);
     } else {
         f32 ref_br = lobj->u.spot.ref_br;
@@ -624,7 +624,7 @@ static void setup_spot_lightobj(HSD_LObj* lobj, MtxPtr mtx)
     fn_800BA414(&lobj->spec_lightobj, lpos.x, lpos.y, lpos.z);
     fn_800BA424(&lobj->lightobj, ldir.x, ldir.y, ldir.z);
     if (lobj->flags & LOBJ_RAW_PARAM) {
-        fn_800BA198(&lobj->lightobj, lobj->u.attn.a0, lobj->u.attn.a1,
+        GXInitLightAttn(&lobj->lightobj, lobj->u.attn.a0, lobj->u.attn.a1,
                     lobj->u.attn.a2, lobj->u.attn.k0, lobj->u.attn.k1,
                     lobj->u.attn.k2);
     } else {

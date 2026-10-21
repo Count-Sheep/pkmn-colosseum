@@ -15345,7 +15345,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800B770C",
+"name": "GXGetCPUFifo",
 "addr": "0x800B770C",
 "size": 8,
 "label": "dolphin-sdk",
@@ -15817,7 +15817,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BA198",
+"name": "GXInitLightAttn",
 "addr": "0x800BA198",
 "size": 28,
 "label": "dolphin-sdk",

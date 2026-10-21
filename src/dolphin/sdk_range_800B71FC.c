@@ -186,7 +186,7 @@ static inline void GXResetFifoPtrs(GXFifoObj* fifo, void* readPtr, void* writePt
 }
 
 void __GXCleanGPFifo(void) {
-    extern GXFifoObjPrivate* fn_800B770C(void);
+    extern GXFifoObjPrivate* GXGetCPUFifo(void);
     extern GXFifoObjPrivate* GXGetGPFifo(void);
     GXFifoObjPrivate* gpFifo;
     GXFifoObjPrivate* cpuFifo;
@@ -196,7 +196,7 @@ void __GXCleanGPFifo(void) {
 
     gpFifo = GXGetGPFifo();
     if (gpFifo != NULL) {
-        cpuFifo = fn_800B770C();
+        cpuFifo = GXGetCPUFifo();
         base = gpFifo->fifo.base;
         (void)_pad;
         cleanFifo = *gpFifo;
