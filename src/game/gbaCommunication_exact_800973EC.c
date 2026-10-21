@@ -12,6 +12,9 @@
 #define GBA_COMMUNICATION_DECLS_ONLY
 #include "src/game/gbaCommunication.c"
 
+extern u32 pokemonGetStatus(u8* obj, u32 id, u32 selector, u32 d);
+extern void* memset(void* dst, int value, u32 len);
+
 typedef struct RibbonGroupDescriptor {
     u16 selector;
     s8 firstRibbon;
@@ -64,7 +67,7 @@ static inline void menuStatusSyncPage(u8* menu)
 
     switch (page.page) {
     case 0:
-        if ((s32)pokemonGetStatus(pokemon, 0, 0xC2, 0) != 0) {
+        if ((s32)pokemonGetStatus((u8*)pokemon, 0, 0xC2, 0) != 0) {
             menuId = 0x55;
         } else {
             menuId = 0x54;

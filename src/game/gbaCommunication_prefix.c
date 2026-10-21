@@ -12,6 +12,13 @@
 #include "dolphin/types.h"
 #include "game/gs_material.h"
 
+extern s32 fn_800D37CC(void);
+extern u32 fn_800D3088(void);
+extern void GSmodelSetAnimIndex(struct GSmodel* model, u32 index);
+extern void GSmodelStartAnimation(struct GSmodel* model);
+extern void fn_800FF58C(u32 floorId);
+extern void fn_80118874(u8* list, u32 notify);
+
 #define GBA_DATA_OFFSET 0x20
 #define GBA_STATE_PORT 0x4338
 #define GBA_STATE_TIMEOUT 0x433C
@@ -609,13 +616,13 @@ void fn_8008D348(u32 ctx) {
 
     frame = lbl_8047C1D4;
     model = GSresGetResource(ctx, 0x0CE61004);
-    GSmodelSetAnimIndex(model, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)model, 0);
     GSmodelGetFrameCount(model, &frame, 0);
     frame -= lbl_8047C1D8;
-    GSmodelSetAnimIndex(model, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)model, 0);
     GSmodelSetAnimFrame(model, frame);
     GSmodelSetAnimType(model, 0);
-    GSmodelStartAnimation(model);
+    GSmodelStartAnimation((struct GSmodel*)model);
 
     GSmodelLinkToGSparticleBank(GSresGetResource(ctx, 0x0CE61000), GSresGetResource(ctx, 0x11201400));
     GSmodelSetGSparticleLinkAttachMode(GSresGetResource(ctx, 0x0CE61000), 4);
@@ -998,13 +1005,13 @@ void fn_8008E320(u32 ctx) {
 
     frame = lbl_8047C1D4;
     handle2 = GSresGetResource(ctx, 0x0CE61004);
-    GSmodelSetAnimIndex(handle2, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)handle2, 0);
     GSmodelGetFrameCount(handle2, &frame, 0);
     frame -= lbl_8047C1D8;
-    GSmodelSetAnimIndex(handle2, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)handle2, 0);
     GSmodelSetAnimFrame(handle2, frame);
     GSmodelSetAnimType(handle2, 0);
-    GSmodelStartAnimation(handle2);
+    GSmodelStartAnimation((struct GSmodel*)handle2);
 
     GSmodelLinkToGSparticleBank(GSresGetResource(ctx, 0x0CE61000), GSresGetResource(ctx, 0x111B1400));
     GSmodelSetGSparticleLinkAttachMode(GSresGetResource(ctx, 0x0CE61000), 4);
@@ -1143,13 +1150,13 @@ void fn_8008E7D4(u32 ctx) {
 
     frame = lbl_8047C1D4;
     handle2 = GSresGetResource(ctx, 0x0CE61004);
-    GSmodelSetAnimIndex(handle2, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)handle2, 0);
     GSmodelGetFrameCount(handle2, &frame, 0);
     frame -= lbl_8047C1D8;
-    GSmodelSetAnimIndex(handle2, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)handle2, 0);
     GSmodelSetAnimFrame(handle2, frame);
     GSmodelSetAnimType(handle2, 0);
-    GSmodelStartAnimation(handle2);
+    GSmodelStartAnimation((struct GSmodel*)handle2);
 
     GSmodelLinkToGSparticleBank(GSresGetResource(ctx, 0x0CE61000), GSresGetResource(ctx, 0x111B1400));
     GSmodelSetGSparticleLinkAttachMode(GSresGetResource(ctx, 0x0CE61000), 4);
@@ -2075,13 +2082,13 @@ void fn_80090100(u32 ctx) {
 
     frame = lbl_8047C1D4;
     model = GSresGetResource(ctx, 0x0CE61004);
-    GSmodelSetAnimIndex(model, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)model, 0);
     GSmodelGetFrameCount(model, &frame, 0);
     frame -= lbl_8047C1D8;
-    GSmodelSetAnimIndex(model, 0);
+    GSmodelSetAnimIndex((struct GSmodel*)model, 0);
     GSmodelSetAnimFrame(model, frame);
     GSmodelSetAnimType(model, 0);
-    GSmodelStartAnimation(model);
+    GSmodelStartAnimation((struct GSmodel*)model);
 
     h06bc0400 = fn_801CBA0C(0x06BC0400);
     h0cea1000 = fn_801CBA0C(0x0CEA1000);

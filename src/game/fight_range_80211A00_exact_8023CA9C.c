@@ -490,6 +490,7 @@ extern u8 fn_802359D8(u32, u32);
 extern u8 fn_80235A3C(u32, u32);
 extern u8 fn_80235AA0(u32, u32);
 extern u8 fn_802357CC(u32, u32);
+extern void* fightTrainerGetStatus(void* ctx, u16 slot, u32 field, u32 idx);
 
 /* 0x8023D94C size 0x24C: fightTrainerAiWazaValueMeisou */
 u32 fightTrainerAiWazaValueMeisou(u32 ctx, u32 poke, u32 msgArg) {
@@ -548,7 +549,7 @@ after_scan:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x20b, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x20b, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x20b, count2);
@@ -613,7 +614,7 @@ after_scan_ryuunomai:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x207, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x207, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x207, count2);
@@ -678,7 +679,7 @@ after_scan_birudoappu:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x203, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x203, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x203, count2);
@@ -743,7 +744,7 @@ after_scan_kosumopawaa:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1ff, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1ff, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1ff, count2);
@@ -808,7 +809,7 @@ after_scan_kaihirituappu:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1fb, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1fb, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1fb, count2);
@@ -873,7 +874,7 @@ after_scan_dowasure:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1f7, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1f7, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1f7, count2);
@@ -938,7 +939,7 @@ after_scan_tokukouappu:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1f3, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1f3, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1f3, count2);
@@ -1003,7 +1004,7 @@ after_scan_kousokuidou:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1ef, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1ef, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1ef, count2);
@@ -1068,7 +1069,7 @@ after_scan_bougyoappu:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1eb, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1eb, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1eb, count2);
@@ -1133,7 +1134,7 @@ after_scan_kougekiappu:
         if (count2 < 0) {
             count2 = 0;
         }
-        scale = fightTrainerGetStatus(0, 0x1e7, 0x3e, 0);
+        scale = (u32)fightTrainerGetStatus(0, 0x1e7, 0x3e, 0);
         count2 *= scale;
         result += fightTrainerAiAddValue(acc, count2);
         fn_80239CCC(0xec64, ctx, fightOutPokemonGetPokemonPtr(poke), 0, 0, msgArg, 0, 0x1e7, count2);
@@ -1200,6 +1201,9 @@ extern s32 fightTrainerAiWazaValueJisin();
 extern s32 fightTrainerAiWazaValueJibaku();
 extern s32 fightTrainerAiWazaValueNull();
 extern u8 fn_8023943C(int, int, int);
+extern u32 fn_80236520(void* ctx, u32 param);
+extern u8 fn_80237F74(void* ctx, u32 param2, u32 param3);
+extern u8 fn_80237DBC(u32 ctx, void* param2, u16 target);
 
 /* 0x8023F278 size 0x648: fightTrainerAiWazaValueMamoru */
 u32 fightTrainerAiWazaValueMamoru(u32 ctx, u32 poke, u32 msgArg,

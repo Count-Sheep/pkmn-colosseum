@@ -12,6 +12,8 @@
 #define SDK_EXACT_800AF8A0_800B016C
 #include "src/dolphin/sdk_range_800AE3F0.c"
 
+void DSPInit(void);
+
 /* __CARDBlock */
 CARDControl lbl_803FC620[2];
 

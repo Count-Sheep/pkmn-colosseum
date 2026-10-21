@@ -708,12 +708,13 @@ void fn_8021799C(void) {
 void fn_80217AE4(void)
 
 {
+    extern u16 fightOutPokemonGetUseWazaDataId(void* ctx);
     extern void fn_8011BBD8();
-    extern short fn_8011BEB4();
+    extern u32 fn_8011BEB4(void* ptr, u16 dataId, u16 status, u32 index);
     extern u32 fn_801F025C();
     extern u32 fn_80205B8C();
   u32 uVar1;
-  u32 moveId;
+  u16 moveId;
   u32 uVar3;
   u16 sVar5;
   u32 uVar2;

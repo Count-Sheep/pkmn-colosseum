@@ -10,6 +10,8 @@
  */
 #include "dolphin/types.h"
 
+extern void pokemonInit(u8* ptr);
+
 /* One file-level prototype each for the callees all parts of the TU share
  * (peopleMoveCheck as in game/people/people.h). */
 extern void fn_8018805C(s32 groupId, s32 index, f32 yaw, f32 speed);

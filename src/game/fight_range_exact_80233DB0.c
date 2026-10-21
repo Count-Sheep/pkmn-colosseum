@@ -400,6 +400,21 @@ void fn_802342CC(u32 trainer, u32 fightType) {
     extern u8 fightFloorCheckFightActionFightOutPokemonIrekaeSelect();
     extern u8 fightFloorGetStatus();
     extern u8 fightOutPokemonCheckFightActionWazaSelect();
+    /* RULE-EXCEPTION(user-approved): caller-side prototype with a u32 fight type (the definition takes u16); retail passes the untruncated value (mr r3, no clrlwi) - see docs/RULE_EXCEPTIONS.md */
+    extern struct FightTypeData* fightTypeDataBiosGetPtr(u32 index);
+    extern void* fightTrainerGetValidFightOutPokemonPtr(void* arg1, u32 arg2);
+    extern void fightOutPokemonInitFightActionBuff(void* param_1);
+    extern void* fightTrainerGetStatus(void* ctx, u16 slot, u32 field, u32 idx);
+    extern void msgctrlSetValue(u32 id, u32 value);
+    extern void* GSmsgGetGSchar(u32 key);
+    extern void* fightTrainerGetNamePtr(void* context);
+    extern void menuGetKeyInfo(struct MenuKeyInfo* out, s32 port);
+    extern void* fightTrainerGetNoActionFightOutPokemonPtr(void* context, u32 index);
+    extern u32 fightTrainerAiSelectFightActionIrekae(void* ctx, u32 param1, u32 param2);
+    extern s32 fightTrainerAiSelectFightActionItem(void* ctx, u32 param1, u32 param2);
+    extern u32 fn_8024E534(void* ctx, u32 slot, u32 param);
+    extern void fightFloorSortFightOutPokemonPtrArySub(void* floor, u32* ary_, u16 num, u8 usePri);
+    extern int fn_8023A308(u32 r3, u32 r4, u32 r5);
     u32 noAction[8];
     u16 keyFinal[14];
     u16 keyOk1[14];
@@ -417,41 +432,41 @@ void fn_802342CC(u32 trainer, u32 fightType) {
     u8 selected;
     u16 selectedCount;
 
-    fightTypeData = fightTypeDataBiosGetPtr(fightType);
+    fightTypeData = (u32)fightTypeDataBiosGetPtr(fightType);
     count = (u8)fightTypeDataBiosGetFightoutPokemonNum(fightTypeData);
     fn_80234A0C(trainer);
 
     for (i = 0; (u16)i < count; i++) {
-        pokemon = fightTrainerGetValidFightOutPokemonPtr(trainer, i);
+        pokemon = (u32)fightTrainerGetValidFightOutPokemonPtr((void*)trainer, i);
         if (pokemon != 0 && fightOutPokemonCheckFightActionSelect(pokemon, 1) != 0) {
-            fightOutPokemonInitFightActionBuff(pokemon);
+            fightOutPokemonInitFightActionBuff((void*)pokemon);
         }
     }
 
-    species = (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0);
+    species = (u16)fightTrainerGetStatus((void*)trainer, 0, 0x43, 0);
     species = (u16)fightTrainerGetStatus(0, species, 2, 0);
     j = (u8)fightTrainerGetStatus(0, species, 0x26, 0);
     if ((s32)j > (fn_800E0C54() % 100)) {
-        msgctrlSetValue(0xd, GSmsgGetGSchar(0xec04));
+        msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec04));
         if (trainer != 0) {
-            msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+            msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
         }
         msgctrlSetValue(0x2f, j);
         if (fn_80008164() == 1) {
-            menuGetKeyInfo(keyOk1, 1);
+            menuGetKeyInfo((struct MenuKeyInfo*)keyOk1, 1);
             if ((keyOk1[0] & 0x800) == 0 && fightMenuOpenMsg(0xec67) == 1) {
                 fightMenuCloseMsg();
             }
         }
         selected = 1;
     } else {
-        msgctrlSetValue(0xd, GSmsgGetGSchar(0xec04));
+        msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec04));
         if (trainer != 0) {
-            msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+            msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
         }
         msgctrlSetValue(0x2f, j);
         if (fn_80008164() == 1) {
-            menuGetKeyInfo(keyFail1, 1);
+            menuGetKeyInfo((struct MenuKeyInfo*)keyFail1, 1);
             if ((keyFail1[0] & 0x800) == 0 && fightMenuOpenMsg(0xec68) == 1) {
                 fightMenuCloseMsg();
             }
@@ -461,38 +476,38 @@ void fn_802342CC(u32 trainer, u32 fightType) {
 
     if (selected == 1) {
         for (i = 0; (u16)i < count; i++) {
-            pokemon = fightTrainerGetNoActionFightOutPokemonPtr(trainer, i);
+            pokemon = (u32)fightTrainerGetNoActionFightOutPokemonPtr((void*)trainer, i);
             if (pokemon != 0 && fightFloorCheckFightActionFightOutPokemonIrekaeSelect(0, pokemon, 0) == 0) {
-                fightTrainerAiSelectFightActionIrekae(trainer, pokemon, fightType);
+                fightTrainerAiSelectFightActionIrekae((void*)trainer, pokemon, fightType);
             }
         }
     }
 
     if (fightFloorGetStatus(0, 0, 0x20, 0) == 1) {
-        species = (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0);
+        species = (u16)fightTrainerGetStatus((void*)trainer, 0, 0x43, 0);
         species = (u16)fightTrainerGetStatus(0, species, 2, 0);
         j = (u8)fightTrainerGetStatus(0, species, 0x27, 0);
         if ((s32)j > (fn_800E0C54() % 100)) {
-            msgctrlSetValue(0xd, GSmsgGetGSchar(0xec46));
+            msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec46));
             if (trainer != 0) {
-                msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+                msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
             }
             msgctrlSetValue(0x2f, j);
             if (fn_80008164() == 1) {
-                menuGetKeyInfo(keyOk2, 1);
+                menuGetKeyInfo((struct MenuKeyInfo*)keyOk2, 1);
                 if ((keyOk2[0] & 0x800) == 0 && fightMenuOpenMsg(0xec67) == 1) {
                     fightMenuCloseMsg();
                 }
             }
             selected = 1;
         } else {
-            msgctrlSetValue(0xd, GSmsgGetGSchar(0xec46));
+            msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec46));
             if (trainer != 0) {
-                msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+                msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
             }
             msgctrlSetValue(0x2f, j);
             if (fn_80008164() == 1) {
-                menuGetKeyInfo(keyFail2, 1);
+                menuGetKeyInfo((struct MenuKeyInfo*)keyFail2, 1);
                 if ((keyFail2[0] & 0x800) == 0 && fightMenuOpenMsg(0xec68) == 1) {
                     fightMenuCloseMsg();
                 }
@@ -502,38 +517,38 @@ void fn_802342CC(u32 trainer, u32 fightType) {
 
         if (selected == 1) {
             for (i = 0; (u16)i < count; i++) {
-                pokemon = fightTrainerGetNoActionFightOutPokemonPtr(trainer, i);
+                pokemon = (u32)fightTrainerGetNoActionFightOutPokemonPtr((void*)trainer, i);
                 if (pokemon != 0) {
-                    fightTrainerAiSelectFightActionItem(trainer, pokemon, fightType);
+                    fightTrainerAiSelectFightActionItem((void*)trainer, pokemon, fightType);
                 }
             }
         }
     }
 
-    species = (u16)fightTrainerGetStatus(trainer, 0, 0x43, 0);
+    species = (u16)fightTrainerGetStatus((void*)trainer, 0, 0x43, 0);
     species = (u16)fightTrainerGetStatus(0, species, 2, 0);
     j = (u8)fightTrainerGetStatus(0, species, 0x25, 0);
     if ((s32)j > (fn_800E0C54() % 100)) {
-        msgctrlSetValue(0xd, GSmsgGetGSchar(0xec47));
+        msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec47));
         if (trainer != 0) {
-            msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+            msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
         }
         msgctrlSetValue(0x2f, j);
         if (fn_80008164() == 1) {
-            menuGetKeyInfo(keyOk3, 1);
+            menuGetKeyInfo((struct MenuKeyInfo*)keyOk3, 1);
             if ((keyOk3[0] & 0x800) == 0 && fightMenuOpenMsg(0xec67) == 1) {
                 fightMenuCloseMsg();
             }
         }
         selected = 1;
     } else {
-        msgctrlSetValue(0xd, GSmsgGetGSchar(0xec47));
+        msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec47));
         if (trainer != 0) {
-            msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+            msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
         }
         msgctrlSetValue(0x2f, j);
         if (fn_80008164() == 1) {
-            menuGetKeyInfo(keyFail3, 1);
+            menuGetKeyInfo((struct MenuKeyInfo*)keyFail3, 1);
             if ((keyFail3[0] & 0x800) == 0 && fightMenuOpenMsg(0xec68) == 1) {
                 fightMenuCloseMsg();
             }
@@ -543,20 +558,20 @@ void fn_802342CC(u32 trainer, u32 fightType) {
 
     if (selected == 1) {
         for (i = 0; (u16)i < count; i++) {
-            pokemon = fightTrainerGetNoActionFightOutPokemonPtr(trainer, i);
+            pokemon = (u32)fightTrainerGetNoActionFightOutPokemonPtr((void*)trainer, i);
             if (pokemon != 0) {
-                fn_8024E534(trainer, pokemon, fightType);
+                fn_8024E534((void*)trainer, pokemon, fightType);
             }
         }
     }
 
-    msgctrlSetValue(0xd, GSmsgGetGSchar(0xec2c));
+    msgctrlSetValue(0xd, (u32)GSmsgGetGSchar(0xec2c));
     if (trainer != 0) {
-        msgctrlSetValue(0x13, fightTrainerGetNamePtr(trainer));
+        msgctrlSetValue(0x13, (u32)fightTrainerGetNamePtr((void*)trainer));
     }
     msgctrlSetValue(0x2f, 100);
     if (fn_80008164() == 1) {
-        menuGetKeyInfo(keyFinal, 1);
+        menuGetKeyInfo((struct MenuKeyInfo*)keyFinal, 1);
         if ((keyFinal[0] & 0x800) == 0 && fightMenuOpenMsg(0xec67) == 1) {
             fightMenuCloseMsg();
         }
@@ -568,7 +583,7 @@ void fn_802342CC(u32 trainer, u32 fightType) {
 
     selectedCount = 0;
     for (i = 0; (u16)i < count; i++) {
-        pokemon = fightTrainerGetNoActionFightOutPokemonPtr(trainer, i);
+        pokemon = (u32)fightTrainerGetNoActionFightOutPokemonPtr((void*)trainer, i);
         if (pokemon != 0 && fightOutPokemonCheckFightActionWazaSelect(pokemon, 1) == 0) {
             noAction[selectedCount] = pokemon;
             selectedCount++;

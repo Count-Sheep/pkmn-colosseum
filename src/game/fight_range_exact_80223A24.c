@@ -550,6 +550,14 @@ void WS_CONDITION_CHECK(void)
 #define fn_80205B8C fightOutPokemonGetPokemonPtr
 #define fn_8020912C fightOutPokemonKizetuEffect
 void fn_80223F1C(void) {
+    extern void* fightFloorGetFightOutPokemonPtrToFightTrainerPtr(void* obj, void* search_val);
+    extern void fightOutPokemonKizetuEffect(void* r3, u8 r4);
+    extern void fn_8026532C(u32 r3, u32 r4, u8 r5);
+    extern u8 fightFloorLoopValidFightOutPokemon(void* floor, void* callback, void* buf, u8 flag);
+    extern void pokemonInitJoutai(u8* ptr);
+    extern void* fightOutPokemonGetPokemonPtr(void* ctx);
+    extern void fightOutPokemonResetSeqStatus(void* ctx, u16 mode);
+    extern void fightOutPokemonWriteJoutaiDataId(void* ctx, void* typeObj);
     extern u32 fn_801F025C();
     extern u32 fn_801F54A4();
     extern u8 fn_802026E4();
@@ -561,20 +569,20 @@ void fn_80223F1C(void) {
     count = (u16)fn_801F54A4(0, 0, 0x14, 0);
     ctx = fn_801F025C(*(u8*)(lbl_8047B610 + 1), 0);
 
-    fn_801F4354(0, ctx);
-    fn_8020912C(ctx, 2);
+    fn_801F4354(0, (void*)ctx);
+    fn_8020912C((void*)ctx, 2);
     fn_8026532C(ctx, count, 0);
-    fn_8020912C(ctx, 3);
-    fn_801F37B0(0, fn_80232FE4, ctx, 0);
-    fn_801252E0(fn_80205B8C(ctx));
-    fn_80202998(ctx, 0);
-    fn_80202810(ctx, 0x17);
+    fn_8020912C((void*)ctx, 3);
+    fn_801F37B0(0, (void*)fn_80232FE4, (void*)ctx, 0);
+    fn_801252E0(fn_80205B8C((void*)ctx));
+    fn_80202998((void*)ctx, 0);
+    fn_80202810((void*)ctx, (void*)0x17);
 
     if ((u8)fn_801FECD4(ctx) == 1) {
         fn_801FE7EC(ctx, 0x7c, 0, 0);
     }
     if ((u8)fn_802026E4(ctx, 0x3e) == 1) {
-        fn_80202810(ctx, 0x3e);
+        fn_80202810((void*)ctx, (void*)0x3e);
         if ((u8)fn_801FECD4(ctx) == 1) {
             fn_801FE7EC(ctx, 0xc8, 0, 0);
         }
@@ -602,6 +610,7 @@ void fn_80223F1C(void) {
 #define fn_8020F108 fightWazaWzxTypeFuncMigawari
 #define fn_8020912C fightOutPokemonKizetuEffect
 void fn_80224060(void) {
+    extern void fn_80265598(u32 r3, u32 r4, u32 r5);
     extern s32 fn_801FEF74();
     extern void fn_80202810();
     extern void fn_802086B0();

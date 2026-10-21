@@ -5,6 +5,7 @@
 #include "dolphin/os/OSInterrupt.h"
 #include "dolphin/os/OSReset.h"
 #include "dolphin/os/OSTime.h"
+#include "crt/string.h"
 
 /* Internal PAD library state. Names kept as lbl_/fn_ where the exact
  * original SDK identifier is not yet confirmed by symbols.txt. */

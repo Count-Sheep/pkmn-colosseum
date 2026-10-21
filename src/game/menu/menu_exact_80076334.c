@@ -393,6 +393,7 @@ static inline u8 menuRuleCheckPresentPokemonMode(void* pokemon,
                                                  const char* file,
                                                  const char* cond)
 {
+    extern void __assert(const char* file, u32 line, const char* expr);
     extern u8 pokemonBiosGetLevel(void*);
     extern u16 pokemonBiosGetItemDataId(void*);
     extern u8 fn_80142984(u16);

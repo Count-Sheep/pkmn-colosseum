@@ -25,6 +25,12 @@
  * Proposed name from symbols: wazaSequenceEntryStop.
  */
 u8 wazaSequenceEntryStop(void* entry, BOOL immediate) {
+    extern void GSmodelGetPosition(void* model, void* out);
+    extern void GSmodelGetRotation(void* model, void* out);
+    extern void fn_800E0168(void* dst, void* lhs, void* rhs);
+    extern void GSvecCopy(void* dst, void* src);
+    extern void fn_80131010(u32 effectId);
+    extern void fn_80166B18(u32 id);
     extern void GSmodelStopTexAnimation(void* model);
     extern void GSmodelGetScale(void* model, void* out);
     extern void GSmodelSetPosition(void* model, void* position);
@@ -370,6 +376,10 @@ u8 wazaSequenceEntryUpdate(void* entry, s32 elapsed) {
  */
 u8 wazaSequenceEntryStart(void* entry) {
     extern void GSthreadSetArgs(void* thread, s32 priority, ...);
+    extern struct GSThread* GSthreadCreate(u32 affinity, u32 priority,
+                                           u32 stackSize, u8 usesFPU,
+                                           u32 autoStart, void* entryFunc);
+    extern u32 fn_80166AB8(u32 id, u32 arg1, u32 arg2);
     extern void fn_80165668(u32 id, void* buffer, u32 size);
     extern s32 lbl_8047B408;
     /* RULE-EXCEPTION(title-path): shared log-pool stand-ins;
@@ -538,6 +548,8 @@ u8 _wazaSequenceEffectEntryStart(void* entry) {
     extern void GSmodelGetRotation(void* model, void* out);
     extern void GSmodelGetPosition(void* model, void* out);
     extern void GSmodelSetPosition(void* model, void* position);
+    extern void GSvecCopy(void* dst, void* src);
+    extern void GSvecAdd(void* dst, void* lhs, void* rhs);
     u8* node = entry;
     u8* owner;
     WazaEffectTblEntry* table;
@@ -751,6 +763,13 @@ u8 _wazaSequenceParticleEntryStart(WazaSequenceNode* node) {
     extern void fn_80118CF4(void* particleNode, u8 enabledA, u8 enabledB,
                            u8 applyToGenerator);
     extern const char lbl_80279658[];
+    extern void fn_80118D3C(void* obj, u8 enabledA, u8 enabledB);
+    extern void fn_80118D60(void* obj, u8 enabled);
+    extern void fn_80118CD0(void* obj, u8 enabled);
+    extern void fn_80118F7C(u8* obj, f32* arg);
+    extern void clear__5GSvecFv(f32* vec);
+    extern void fn_80118F04(u8* obj, f32* vec);
+    extern void fn_80118E8C(u8* obj, f32* vec);
 
     resource = node->resource;
     owner = node->sequence->owner;
@@ -985,6 +1004,10 @@ u8 _wazaSequenceModelEntryStart(WazaSequenceNode* node) {
     extern void GSmodelSetTexAnimFrame(void* model, f32 frame);
     extern void GSmodelStartTexAnimation(void* model);
     extern void GSmodelSetShadowFlags(void* model, u32 flags);
+    extern void GSmodelSetShadowLight(struct GSmodel* model,
+                                      struct GSlight* light);
+    extern void GSmodelSetShadowSurface(struct GSmodel* model, s32 count,
+                                        const void* vertices);
     extern void GSmodelSetBoundCheck(void* model, u8 enable);
     extern void fn_800E3B44(void* model, u8 enable);
     extern const char lbl_80279694[];

@@ -117,6 +117,7 @@ typedef struct ColosseumBattleRules {
 } ColosseumBattleRules;
 
 /* ===== External function declarations (menuColosseumBattleMain only) ===== */
+extern void winSetSequence(struct WinSeqState* state, u16 id);
 extern void fn_800347B8(void);
 extern void fn_800347C4(void);
 extern void fn_800347E8(s32);
@@ -765,7 +766,7 @@ void menuColosseumBattleMain(void) {
                 s32 r;
                 playerMode = (u8)(v == 1);
                 playerWindowWork = menuCBWindowWork();
-                winSetSequence(playerWindowWork + 0xC, 0x1CE);
+                winSetSequence((struct WinSeqState*)(playerWindowWork + 0xC), 0x1CE);
                 r = menuOpenCustom(0xBC, 0, NULL, 0x10, 1, 1, playerMode);
                 switch (r) {
                 case 0:
@@ -782,7 +783,7 @@ void menuColosseumBattleMain(void) {
                 }
                 default:
                     menuCloseCustom(0xBC, 0, 1);
-                    winSetSequence(playerWindowWork + 0xC, 0x1CA);
+                    winSetSequence((struct WinSeqState*)(playerWindowWork + 0xC), 0x1CA);
                     break;
                 }
                 break;

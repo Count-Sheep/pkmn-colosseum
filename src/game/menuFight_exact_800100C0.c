@@ -7,6 +7,7 @@
  * -O4,p with the TU's unit-wide -opt nopeephole, no pragmas.
  */
 #include "dolphin/types.h"
+#include "crt/string.h"
 
 /* =========================================================================
  * External declarations
@@ -45,6 +46,8 @@ extern u32   fn_800F7AF0(s32 slot);                   /* Get render flags */
 extern u32   fn_800F7BC4(s32 slot);                   /* Get VSync flags */
 
 /* Battle bridge */
+extern void msgctrlSetValue(u32 id, u32 value);
+extern u8 fightFloorSetStatus(u32 p1, u16 p2, u32 p3, u16 p4, u32 p5);
 extern void menuClose();
 extern f64 atan2(f64, f64);
 

@@ -235,6 +235,8 @@ static u8 lbl_8047B310;
 static void makeMatrix(HSD_Shadow* shadow);
 void fn_801B06DC(HSD_Shadow* shadow);
 
+void HSD_ObjAllocInit(HSD_ObjAllocData* data, u32 size, u32 align);
+
 HSD_ObjAllocData* HSD_ShadowGetAllocData(void)
 {
     return &lbl_804656E0;

@@ -21,6 +21,7 @@ u32 fn_80228DAC(u32 r3, u32 r4, u32 r5)
 
 {
     extern u16 fn_8011BEB4();
+    extern s32 fn_801F453C(void* param_1, u32 param_2);
     extern u16 fn_801F0134();
     extern u32 fn_801F025C();
     extern void fn_801F4C14();

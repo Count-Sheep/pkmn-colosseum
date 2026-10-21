@@ -6,6 +6,12 @@
 #define SDK_RANGE_EXACT_ACTIVE
 #include "src/dolphin/sdk_range_800AE3F0.c"
 extern void __CARDExtHandler(s32 chan);
+extern s32 EXIProbeEx(s32 chan);
+extern s32 fn_80099400(s32 chan, u32 dev, u32* id);
+extern BOOL IsCard(u32 id);
+extern void DCInvalidateRange(void* addr, u32 nBytes);
+extern s32 __CARDVerify(CARDControl* card);
+extern void DoUnmount(s32 chan, s32 result);
 
 s32 CARDProbeEx(s32 chan, s32* memSize, s32* sectorSize)
 {

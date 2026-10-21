@@ -1708,6 +1708,9 @@ extern u8 winMsgCloseCheckFight(void);
 extern u8 lbl_80266678[];
 #if 1
 u32 dbgMenuFightGetMsgSpeedToFrame(u32 value) {
+    extern u32 fn_800F7AF0(s32 id);
+    /* RULE-EXCEPTION(user-approved): caller-side prototype returning u32 (input.c defines it returning u16); retail uses the result without re-extending it (and r0,r3,r31, no clrlwi) - see docs/RULE_EXCEPTIONS.md */
+    extern u32 fn_800F7BC4(s32 id);
     u32 buttons;
     u32 held;
     u8 idx;
