@@ -47857,7 +47857,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801C6928",
+"name": "fadeEffectInit",
 "addr": "0x801C6928",
 "size": 12,
 "label": "fade",

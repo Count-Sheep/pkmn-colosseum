@@ -987,7 +987,8 @@ u32 fn_801C6908(u32 range) {
     return _fadeEffectGetRandom__FUl(range);
 }
 
-void fn_801C6928(void) {
+/* NAME-T1 fn_801C6928 */
+void fadeEffectInit(void) {
     lbl_8047B3B0 = 1;
 }
 

@@ -400,7 +400,7 @@ typedef struct GStexture GStexture;
 /* fn_801C680C */ void fn_801C680C(s32 arg0);
 /* _fadeEffect_AdjustParms__Fv */ u8   _fadeEffect_AdjustParms__Fv(void);
 /* fn_801C6908 */ void fn_801C6908(void);
-/* fn_801C6928 */ u8   fn_801C6928(void);
+/* fadeEffectInit */ u8   fadeEffectInit(void);
 
 /* Scene layout */
 /* fn_801C6934 */ void fn_801C6934(void* stageModel, f32 scale);
