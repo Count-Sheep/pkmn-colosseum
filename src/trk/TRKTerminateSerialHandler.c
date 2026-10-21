@@ -1,5 +1,6 @@
 #include "dolphin/types.h"
 
-u32 fn_800BF080(void) {
+/* NAME-T1 fn_800BF080 */
+u32 TRKTerminateSerialHandler(void) {
     return 0;
 }

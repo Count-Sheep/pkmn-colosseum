@@ -16753,7 +16753,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800BF080",
+"name": "TRKTerminateSerialHandler",
 "addr": "0x800BF080",
 "size": 8,
 "label": "dolphin-sdk",
