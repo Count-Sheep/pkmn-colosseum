@@ -12,6 +12,9 @@
  */
 #include "dolphin/types.h"
 
+extern void* memcpy(void* dst, const void* src, u32 len);
+extern u16 fn_8003D4C8(void);
+
 extern s8 lbl_8047A470;
 extern void* lbl_8047A480;
 extern s8 lbl_8047A490;

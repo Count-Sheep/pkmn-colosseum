@@ -74,6 +74,8 @@ extern void  fn_8010147C(u32 memOffset, u32 resId,
 extern void  fn_801013A0(u32 memOffset, u32 size,
                           u32 data, u32 handle);         /* GSfloor load data */
 extern void  memset(void* dst, u32 val, u32 size);
+extern void* memcpy(void* dst, const void* src, u32 len);
+extern s32 fn_800D37CC(void);
 extern void  GXDrawDone(void);
 extern void  fn_800B856C(void);
 extern void  GStextureFree(void* p);

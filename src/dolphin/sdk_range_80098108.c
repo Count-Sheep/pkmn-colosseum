@@ -17,6 +17,7 @@
 #include "dolphin/os/OSTime.h"
 #include "dolphin/os/PPCArch.h"
 #include "dolphin/db/DB.h"
+#include "crt/string.h"
 
 typedef struct EXIRegs {
     u32 csr;

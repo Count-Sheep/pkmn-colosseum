@@ -15,6 +15,7 @@
 #include "dolphin/os/OSThread.h"
 #include "dolphin/si/SI.h"
 #include "dolphin/vi/VI.h"
+#include "dolphin/os/PPCArch.h"
 
 #define OS_FPUCONTEXT (*(OSContext* volatile*)0x800000D8)
 
@@ -59,6 +60,10 @@ typedef struct OSFatalParam {
     /* 0x04 */ GXColor bg;
     /* 0x08 */ const char* msg;
 } OSFatalParam;
+
+void ScreenReport(void* xfb, u16 xfbW, u16 xfbH, GXColor yuv, s32 x, s32 y,
+                  s32 leading, const char* string);
+void ConfigureVideo(u16 fbWidth, u16 xfbHeight);
 
 #if !defined(SDK_8009BD84_BANK_ACTIVE) || \
     defined(SDK_EXACT_8009C860_8009CD38)

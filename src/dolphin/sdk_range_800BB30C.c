@@ -9,6 +9,8 @@
  */
 #include "dolphin/types.h"
 
+void fn_800BD0F8(f32 nearz, f32 sideX);
+
 typedef union GXStatus_800BB30C {
     /* 0x000 */ u32 word;
     struct {

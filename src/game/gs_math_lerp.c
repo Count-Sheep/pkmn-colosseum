@@ -14,6 +14,11 @@
 
 #include "dolphin/types.h"
 
+extern void GSvecCopy(void* dst, void* src);
+extern void fn_800E0168(void* a, void* b, void* c);
+extern void fn_800E013C(void* a, void* b, f32 c);
+extern void GSvecAdd(void* a, void* b, void* c);
+
 /* ===== External SDK / engine functions ===== */
 extern void  GSlogWrite(const char*, ...);             /* OSReport / GSlog */
 extern void* memcpy(void* dst, const void* src, u32 n);

@@ -30,6 +30,8 @@ extern f32 lbl_8047A4C0;
 extern u8 lbl_803A6498[];
 extern u8 lbl_80314F98[];
 extern void* pcboxGetItem(void*, s16);
+extern s32 fn_801429E8(u32 entry);
+extern void winSeqSetMenu(s32 id, u32 seqId);
 
 extern f32 lbl_8047BA58;
 extern f32 lbl_8047BA5C;
@@ -326,7 +328,7 @@ static inline s32 pdaBoxItemId(s32 target)
     found = -1;
     for (i = 0; i < slots; i++) {
         item = pcboxGetItem(0, (s16)i);
-        if ((u8)fn_801429E8(item) != 0) {
+        if ((u8)fn_801429E8((u32)item) != 0) {
             found++;
             if (found >= target) {
                 return itemBiosGetItemDataId(item);
@@ -350,7 +352,7 @@ static inline s32 pdaBoxItemNum(s32 target)
     found = -1;
     for (i = 0; i < slots; i++) {
         item = pcboxGetItem(0, (s16)i);
-        if ((u8)fn_801429E8(item) != 0) {
+        if ((u8)fn_801429E8((u32)item) != 0) {
             found++;
             if (found >= target) {
                 return itemBiosGetNum(item);

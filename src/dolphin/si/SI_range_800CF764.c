@@ -13,6 +13,8 @@
 #include "dolphin/os/OSAlarm.h"
 #include "dolphin/vi/VI.h"
 
+void OSRegisterVersion(const char* version);
+
 /* The bus clock is the SDK's address-bound __OSBusClock, which MWCC
  * reloads at each use. */
 extern u32 __OSBusClock : 0x800000F8;

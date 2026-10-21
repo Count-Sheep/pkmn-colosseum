@@ -9,6 +9,8 @@
  */
 #include "dolphin/types.h"
 
+extern void* memset(void* dst, int value, u32 len);
+
 /* Compiled on its own (the game/menu/cardesavedata.c unit), this file
  * builds only fn_8007FDBC; the tail units define CARDESAVEDATA_ALL. */
 #if !defined(CARDESAVEDATA_ALL) && \
@@ -4148,6 +4150,7 @@ typedef struct CardGridChoice {
 } CardGridChoice;
 
 extern CardGridKeyInfo* windowGetPortKeyInfo(u32 port);
+extern void GSmodelSetAnimIndex(struct GSmodel* model, u32 index);
 extern void GSmodelSetAnimFrame(void* model, f32 frame);
 extern void GSmodelSetAnimRate(void* model, f32 rate);
 extern void GSmodelStartAnimation(void* model);

@@ -10,6 +10,8 @@
  */
 #include "dolphin/types.h"
 
+extern void fn_8005471C(void);
+
 typedef struct MenuCBPane MenuCBPane;
 typedef struct MenuCBSlotInfo MenuCBSlotInfo;
 typedef struct MenuCBState MenuCBState;

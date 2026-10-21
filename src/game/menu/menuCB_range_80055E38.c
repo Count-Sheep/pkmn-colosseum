@@ -15,6 +15,8 @@
  */
 #include "dolphin/types.h"
 
+extern void pokemonInit(u8* ptr);
+
 /* ===== SDA globals ===== */
 extern u32 lbl_8047A584;
 extern f32 lbl_8047BEC0;

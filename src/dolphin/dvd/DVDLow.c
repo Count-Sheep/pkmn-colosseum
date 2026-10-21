@@ -4,6 +4,8 @@
 #include "dolphin/os/OSInterrupt.h"
 #include "dolphin/os/OSTime.h"
 
+BOOL DVDLowSeek(u32 offset, DVDLowCallback callback);
+
 #define OSSecondsToTicks(sec) ((sec) * OS_TIMER_CLOCK)
 
 extern volatile u32 __DIRegs[16] : 0xCC006000;

@@ -17,6 +17,7 @@ extern u8 pokemonGetAnnonKatati(u32 personality);
 extern u8 pokemonCheckRare(void* pokemon);
 extern u16 lbl_8035B478[][2];
 extern void* memset(void* dst, int val, u32 size);
+extern void* memcpy(void* dst, const void* src, u32 len);
 
 /* Face model key: either a plain 32-bit face id (type 0) or a description
  * built from a Pokemon (type 1). */
