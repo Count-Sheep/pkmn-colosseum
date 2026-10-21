@@ -53,6 +53,7 @@ T3_MAX_LEN = 40
 T2_MAX_LEN = 64
 PREFIX_MIN_USES = 3
 TAG_WINDOW = 5  # lines above the name line that may hold the tag
+MAX_BATCH = 40  # renames per batch (section 4)
 
 VERBS = set("""
 Init Exit Term Create Delete Destroy Alloc Free Release Open Close Main Ctrl
@@ -92,6 +93,49 @@ C_EXTS = {".c", ".h", ".cpp", ".hpp", ".cp"}
 LIVE_TEXT_EXTS = C_EXTS | {".s", ".S", ".txt", ".json", ".md", ".py"}
 
 
+# --------------------------------------------------------------------------- batches
+
+# A carve or suffix unit's file name: <stem>[_<kind>]_<8 hex address>[_<anything>].<ext>
+CARVE_SUFFIX = re.compile(
+    r"(?:_(?:exact|candidate|range|residual|island|suffix|middle|prefix|fn|sdata2|r\d+[a-z]?))?"
+    r"_[0-9A-Fa-f]{8}(?:_.*)?$")
+
+
+def load_splits(root: Path) -> list[tuple[str, int, int]]:
+    """(unit, start, end) of every .text/.init range in config/GC6E01/splits.txt."""
+    out, unit = [], None
+    for line in (root / "config/GC6E01/splits.txt").read_text().splitlines():
+        if line and not line[0].isspace() and line.rstrip().endswith(":"):
+            unit = line.rstrip()[:-1]
+            continue
+        m = re.match(r"\s+\.(?:text|init)\s+start:0x([0-9A-Fa-f]+) end:0x([0-9A-Fa-f]+)", line)
+        if m and unit and unit != "Sections":
+            out.append((unit, int(m.group(1), 16), int(m.group(2), 16)))
+    return out
+
+
+def source_file_of_unit(root: Path, unit: str) -> str:
+    """The source file a splits.txt unit belongs to: the batch key of section 4 (user
+    decision, 2026-10-21). A forwarding wrapper (a file that only #includes one other
+    src/ .c file) is followed to its target; then the carve suffix of the file name
+    (`_exact_8xxxxxxx`, `_range_...`, `_candidate_...`, `_rNN_...`, `_suffix`, ...)
+    is stripped, so a file's carve and suffix units share one key. The extension is
+    dropped from the key, so `pda.c` and `pda.cpp` carves are one file. Returns a path
+    such as `src/game/menu/pda`, which need not exist."""
+    source, seen = f"src/{unit}", set()
+    while source not in seen and (root / source).is_file():
+        seen.add(source)
+        text = re.sub(r"/\*.*?\*/|//[^\n]*", "", (root / source).read_text(errors="replace"), flags=re.S)
+        active = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        inc = [m.group(1) for ln in active if (m := re.fullmatch(r'#\s*include\s+"(src/[^"\n]+\.c)"', ln))]
+        if not active or any(not ln.startswith("#") for ln in active) or len(inc) != 1:
+            break
+        source = inc[0]
+    p = Path(source)
+    stem = CARVE_SUFFIX.sub("", p.stem) or p.stem
+    return str(p.with_name(stem))
+
+
 class Report:
     def __init__(self) -> None:
         self.errors: list[str] = []
@@ -125,8 +169,21 @@ def blank_spans(text: str, kinds: set[str]) -> str:
     return "".join(out)
 
 
+INCLUDE_LINE = re.compile(r"[ \t]*#[ \t]*include\b")
+
+
 def literals(text: str) -> list[str]:
-    return [text[a:b] for kind, a, b in lex(text) if kind in ("s", "ch")]
+    """String and char literals, except `#include "path"` operands: an include path is a
+    preprocessor directive, never data bytes (deleting a dead `#include "x.inc"` is not a
+    literal change)."""
+    out = []
+    for kind, a, b in lex(text):
+        if kind not in ("s", "ch"):
+            continue
+        if INCLUDE_LINE.match(text, text.rfind("\n", 0, a) + 1):
+            continue
+        out.append(text[a:b])
+    return out
 
 
 def match_close(text: str, i: int, open_ch: str, close_ch: str) -> int:

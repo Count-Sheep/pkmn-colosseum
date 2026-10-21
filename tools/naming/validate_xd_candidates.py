@@ -6,7 +6,10 @@ docs/NAMING_SCHEME.md, tier T1 kind `xd`: a name from XD retail
   1. the same name is also in NXXJ01.map (the XD JP demo's own linker map),
   2. the bodies are identical apart from register and address differences
      (checked here as: equal size and an equal normalised instruction stream,
-     registers -> R/F/CR, symbols/labels/branch targets -> SYM), and
+     registers -> R/F/CR, symbols/labels/branch targets -> SYM), or (user
+     decision, 2026-10-21) equal size and the same multiset of normalised
+     instructions in a different order: a scheduling-only difference, recorded
+     as `sched-only` in the evidence, and
   3. they share a rare string (fan-out <= 2 in both games), or the function
      has the same position in the map object (an adjacent Colosseum neighbour
      is already named, or accepted in an earlier round, with a name that sits in
@@ -21,7 +24,10 @@ Inputs (defaults are the decomp layout; the NXXJ01 map is external):
   --xd-asm      build/xd_ref/_xdsplit/asm   (dtk split of the XD retail DOL)
   --colo-asm    build/GC6E01/asm
 Outputs: a batch CSV (ledger columns) of accepted rows, and a JSON report with
-every candidate's verdict and reasons.
+every candidate's verdict and reasons. With --split-dir, the accepted rows are
+also written as one batch CSV per source file (docs/NAMING_SCHEME.md section 4:
+a file's carve and suffix units share a batch, at most 40 rows, split by
+address order), named <batch_id>.csv.
 """
 
 from __future__ import annotations
@@ -211,6 +217,35 @@ def position_ok(fn_name, xd_name, colo_order, idx, names_now, objs, where, windo
     return None
 
 
+# --------------------------------------------------------------------------- batches
+
+def write_split(root: Path, rows: list[dict], out_dir: Path, tag: str, today: dt.date) -> None:
+    """One batch per source file (cn.source_file_of_unit), <= 40 rows each, by address."""
+    splits = cn.load_splits(root)
+    by_file: dict[str, list[dict]] = defaultdict(list)
+    for r in rows:
+        addr = int(r["address"], 16)
+        unit = next((u for u, a, b in splits if a <= addr < b), "")
+        by_file[cn.source_file_of_unit(root, unit) if unit else "(unsplit)"].append(r)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for old in out_dir.glob("*.csv"):
+        old.unlink()
+    n = 0
+    for sf in sorted(by_file):
+        fs = sorted(by_file[sf], key=lambda r: int(r["address"], 16))
+        stem = re.sub(r"[^A-Za-z0-9_.-]", "_", Path(sf).stem)
+        for k in range(0, len(fs), cn.MAX_BATCH):
+            bid = f"{today:%Y%m%d}-{tag}-{stem}-{k // cn.MAX_BATCH + 1}"
+            chunk = [dict(r, batch_id=bid) for r in fs[k:k + cn.MAX_BATCH]]
+            with (out_dir / f"{bid}.csv").open("w", newline="", encoding="utf-8") as fh:
+                w = csv.DictWriter(fh, fieldnames=cn.COLUMNS, lineterminator="\n")
+                w.writeheader()
+                w.writerows(chunk)
+            n += 1
+            print(f"  batch {bid}: {len(chunk)} row(s) ({sf})")
+    print(f"{n} batch file(s) in {out_dir}")
+
+
 # --------------------------------------------------------------------------- main
 
 def main() -> int:
@@ -225,6 +260,7 @@ def main() -> int:
     ap.add_argument("--batch-tag", default="xdhigh", help="unit-stem part of the batch_id")
     ap.add_argument("--out-batch", type=Path, required=True)
     ap.add_argument("--out-report", type=Path, required=True)
+    ap.add_argument("--split-dir", type=Path, help="also write one batch CSV per source file here")
     args = ap.parse_args()
 
     root = args.root.resolve()
@@ -299,10 +335,13 @@ def main() -> int:
         if not cfun or not xfun:
             r["reasons"].append("body not found in asm")
             continue
-        same = normalise(cfun["ins"]) == normalise(xfun["ins"])
+        nc, nx = normalise(cfun["ins"]), normalise(xfun["ins"])
+        same = nc == nx
+        sched = not same and Counter(nc) == Counter(nx)
         r["body_identical"] = same
-        if not same:
-            r["reasons"].append("bodies differ beyond registers/addresses")
+        r["sched_only"] = sched
+        if not same and not sched:
+            r["reasons"].append("bodies differ beyond registers/addresses and scheduling")
         cs, xsr = string_refs(cfun, cstr), string_refs(xfun, xstr)
         rare = sorted(t for t in cs.keys() & xsr.keys() if cfan[t] <= 2 and xfan[t] <= 2)
         if rare:
@@ -341,13 +380,16 @@ def main() -> int:
     rows = []
     for fn, r in sorted(accepted.items(), key=lambda kv: colo_addr[kv[0]]):
         addr = colo_addr[fn]
+        body = "sched-only" if r.get("sched_only") else "identical body"
         if r["via"] == "str":
             ref = f"xd:{r['xd_addr']}+str:{r['str_addr']}"
-            ev = f"XD {r['name']} @ {r['xd_addr']} ({XD_DECOMP}); NXXJ01.map; identical body; rare str {r['rare_string'][:40]!r}"
+            ev = f"XD {r['name']} @ {r['xd_addr']} ({XD_DECOMP}); NXXJ01.map; {body}; rare str {r['rare_string'][:40]!r}"
         else:
             ref = f"xd:{r['xd_addr']}+map:{r['object']}"
             ev = (f"XD {r['name']} @ {r['xd_addr']} ({XD_DECOMP}); NXXJ01 {r['object']} next to {r['anchor']}; "
-                  f"identical body, size 0x{r['size_colo']:X}")
+                  f"{body}, size 0x{r['size_colo']:X}")
+        if len(ev) > 160 and r.get("sched_only"):
+            ev = ev[:149] + "; sched-only"  # never let truncation drop the sched-only marker
         rows.append({
             "address": f"0x{addr:08X}", "module": "main", "old_name": fn, "new_name": r["name"], "tier": "T1",
             "evidence": ev[:160], "evidence_ref": ref, "unit": "", "source_file": "",
@@ -358,12 +400,15 @@ def main() -> int:
         w = csv.DictWriter(fh, fieldnames=cn.COLUMNS, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
+    if args.split_dir:
+        write_split(root, rows, args.split_dir, args.batch_tag, today)
     rejected = {fn: r for fn, r in results.items() if fn not in accepted}
     args.out_report.write_text(json.dumps({"accepted": accepted, "rejected": rejected}, indent=1, default=list))
     why = Counter(x for r in rejected.values() for x in r["reasons"])
     print(f"candidates {len(results)}: accepted {len(accepted)} "
           f"(str {sum(1 for r in accepted.values() if r['via'] == 'str')}, "
-          f"map {sum(1 for r in accepted.values() if r['via'] == 'map')}), rejected {len(rejected)}")
+          f"map {sum(1 for r in accepted.values() if r['via'] == 'map')}; "
+          f"sched-only {sum(1 for r in accepted.values() if r.get('sched_only'))}), rejected {len(rejected)}")
     for k, n in why.most_common():
         print(f"  {n:4d}  {k}")
     return 0
