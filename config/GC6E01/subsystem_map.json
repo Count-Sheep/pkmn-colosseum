@@ -13401,7 +13401,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800A5FC0",
+"name": "stateCheckID3",
 "addr": "0x800A5FC0",
 "size": 52,
 "label": "dolphin-sdk",
@@ -13409,7 +13409,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800A5FF4",
+"name": "stateCheckID2a",
 "addr": "0x800A5FF4",
 "size": 52,
 "label": "dolphin-sdk",
@@ -13641,7 +13641,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800A7BCC",
+"name": "DVDGetCurrentDiskID",
 "addr": "0x800A7BCC",
 "size": 8,
 "label": "dolphin-sdk",

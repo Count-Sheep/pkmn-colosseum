@@ -99,7 +99,7 @@ extern u32 __OSBusClock AT_ADDRESS(0x800000F8);
 extern s32 __OSIsGcam;
 
 extern s32 fn_800A7820(s32 enable);
-extern DVDDiskID* fn_800A7BCC(void);
+extern DVDDiskID* DVDGetCurrentDiskID(void);
 extern void fn_8009FAEC(void);
 extern void fn_8009FADC(void* address);
 extern void DVDResume(void);
@@ -133,7 +133,7 @@ static void CancelThreads(void);
 #define OS_ROUND_UP_32B(value) (((u32)(value) + 0x1F) & ~0x1F)
 
 static inline BOOL IsStreamEnabled(void) {
-    if (fn_800A7BCC()->streaming) {
+    if (DVDGetCurrentDiskID()->streaming) {
         return TRUE;
     }
     return FALSE;

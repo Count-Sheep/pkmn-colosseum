@@ -451,7 +451,7 @@ extern void DVDInit(void);
 extern BOOL DVDSetAutoFatalMessaging(BOOL enable);
 extern s32 fn_800057A0(void);
 extern s32 fn_800057A8(void);
-extern u8* fn_800A7BCC(void);
+extern u8* DVDGetCurrentDiskID(void);
 extern u32 GSgappCreate(s32 state, u8 priority, u32 parameter,
                        void (*callback)(void));
 extern void winMsgCloseError(u32 wait);
@@ -778,7 +778,7 @@ u32 fn_80167FA8(u32 workCount)
             lbl_80478C24 = (const u8*)"GC6E";
             break;
         }
-        destination = fn_800A7BCC();
+        destination = DVDGetCurrentDiskID();
         destination[0] = lbl_80478C24[0];
         destination[1] = lbl_80478C24[1];
         destination[2] = lbl_80478C24[2];

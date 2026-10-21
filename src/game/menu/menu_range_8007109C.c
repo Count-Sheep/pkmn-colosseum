@@ -1228,7 +1228,7 @@ extern s32 menuIsCheck(s32);
 /* fn_80073E8C (0x80073E8C): load one or two menu binary blocks and refresh checksum bytes. */
 s32 fn_80073E8C(void* pathA, void* pathB) {
     extern void* memcpy(void* dst, const void* src, u32 size);
-    extern void* fn_800A7BCC(void);
+    extern void* DVDGetCurrentDiskID(void);
     extern void GBAInit(void);
     extern s32 DVDOpen(void* path, MenuDVDFileInfo* info);
     extern s32 DVDRead(MenuDVDFileInfo* info, void* dst, s32 length, s32 offset, s32 prio);
@@ -1247,7 +1247,7 @@ s32 fn_80073E8C(void* pathA, void* pathB) {
     u8* key;
     void* bootKey;
 
-    bootKey = fn_800A7BCC();
+    bootKey = DVDGetCurrentDiskID();
     memcpy(&lbl_8047A60C, bootKey, 4);
     lbl_8047A60C |= 0x202020;
     GBAInit();
@@ -4091,12 +4091,12 @@ s32 fn_8007AB10(s32 code, s32* state) {
 
 /* fn_8007B090 (0x8007B090): snapshot callback state, then start the request. */
 void fn_8007B090(s32 request) {
-    extern void* fn_800A7BCC(void);
+    extern void* DVDGetCurrentDiskID(void);
     extern u32 lbl_8047A640;
     extern void fn_8007B114(s32 request);
     void* state;
 
-    state = fn_800A7BCC();
+    state = DVDGetCurrentDiskID();
     memcpy(&lbl_8047A640, state, 4);
     fn_8007B114(request);
 }

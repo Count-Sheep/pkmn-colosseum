@@ -1537,8 +1537,8 @@ static inline void stateCheckID(void)
             executing_8047A7E8->state = 1;
             DCInvalidateRange(&staticData->bb2.bootFilePosition,
                               sizeof(DVDBB2));
-            lbl_8047A82C = fn_800A5FF4;
-            fn_800A5FF4(executing_8047A7E8);
+            lbl_8047A82C = stateCheckID2a;
+            stateCheckID2a(executing_8047A7E8);
         } else {
             DVDLowStopMotor(fn_800A60D4);
         }
@@ -1548,8 +1548,8 @@ static inline void stateCheckID(void)
                    sizeof(DVDDiskID)) != 0) {
             DVDLowStopMotor(fn_800A60D4);
         } else {
-            lbl_8047A82C = fn_800A5FC0;
-            fn_800A5FC0(executing_8047A7E8);
+            lbl_8047A82C = stateCheckID3;
+            stateCheckID3(executing_8047A7E8);
         }
         break;
     }
@@ -1561,14 +1561,16 @@ void stateCheckID_800B5D94(void)
 }
 
 /* 0x800A5FC0 | size: 0x34 */
-void fn_800A5FC0(DVDCommandBlock* block)
+/* NAME-T1 fn_800A5FC0 */
+void stateCheckID3(DVDCommandBlock* block)
 {
     DVDLowAudioBufferConfig(((DVDDiskID*)IDShouldBe_8047A7EC)->streaming, 10,
                             fn_800A62CC);
 }
 
 /* 0x800A5FF4 | size: 0x34 */
-void fn_800A5FF4(DVDCommandBlock* block)
+/* NAME-T1 fn_800A5FF4 */
+void stateCheckID2a(DVDCommandBlock* block)
 {
     DVDLowAudioBufferConfig(((DVDDiskID*)IDShouldBe_8047A7EC)->streaming, 10,
                             fn_800A6028);
