@@ -165,7 +165,8 @@ u32 salInitAi(SND_SOME_CALLBACK callback, u32 unk, u32* outFreq)
     return FALSE;
 }
 
-void fn_801640C4(void) /* salStartAi */
+/* NAME-T1 fn_801640C4 */
+void salStartAi(void) /* salStartAi */
 {
     AIStartDMA();
 }
@@ -250,7 +251,8 @@ void hwInitIrq(void)
     lbl_8047B084 = 1;
 }
 
-void fn_80164324(void) /* hwExitIrq */
+/* NAME-T1 fn_80164324 */
+void hwExitIrq(void) /* hwExitIrq */
 {
 }
 
@@ -268,12 +270,14 @@ void hwDisableIrq(void)
     }
 }
 
-u32 fn_80164398(void) /* hwIRQEnterCritical */
+/* NAME-T1 fn_80164398 */
+u32 hwIRQEnterCritical(void) /* hwIRQEnterCritical */
 {
     return OSDisableInterrupts();
 }
 
-u32 fn_801643B8(void) /* hwIRQLeaveCritical */
+/* NAME-T1 fn_801643B8 */
+u32 hwIRQLeaveCritical(void) /* hwIRQLeaveCritical */
 {
     return OSEnableInterrupts();
 }

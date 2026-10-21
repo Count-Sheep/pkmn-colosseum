@@ -95,8 +95,8 @@ extern SND_HOOKS lbl_8047B054;               /* lbl_8047B054 */
 extern u8 lbl_8036944C[];                    /* lbl_8036944C */
 
 extern void streamCorrectLoops(void);               /* streamCorrectLoops */
-extern u32 fn_80164398(void);                /* fn_80164398 */
-extern u32 fn_801643B8(void);                /* fn_801643B8 */
+extern u32 hwIRQEnterCritical(void);                /* hwIRQEnterCritical */
+extern u32 hwIRQLeaveCritical(void);                /* hwIRQLeaveCritical */
 extern void salCtrlDsp(void* dest);
 extern void* salAiGetDest(void);
 extern void salHandleAuxProcessing(void);
@@ -111,11 +111,11 @@ extern u32 salInitDspCtrl(u8 numVoices, u8 numStudios, u32 defaultStudioDPL2);
 extern u32 fn_80164148(u32 flags);           /* fn_80164148 */
 extern void hwEnableIrq(void);
 extern void hwDisableIrq(void);
-extern void fn_801640C4(void);               /* fn_801640C4 */
+extern void salStartAi(void);               /* salStartAi */
 extern u32 fn_80164204(void);                /* fn_80164204 */
 extern u32 salExitDspCtrl(void);
 extern u32 salExitAi(void);
-extern void fn_80164324(void);               /* fn_80164324 */
+extern void hwExitIrq(void);               /* hwExitIrq */
 extern void salActivateVoice(DSPvoice* dsp_vptr, u8 studio);
 extern void salDeactivateVoice(DSPvoice* dsp_vptr);
 extern void salActivateStudio(u8 studio, u32 isMaster, SND_STUDIO_TYPE type);
@@ -165,17 +165,17 @@ void snd_handle_irq(void) {
   }
 
   streamCorrectLoops();
-  fn_80164398();
+  hwIRQEnterCritical();
   // sndProfStartPCM(&prof.dspCtrl);
   salCtrlDsp(salAiGetDest());
   // sndProfStopPMC(&prof.dspCtrl);
-  fn_801643B8();
-  fn_80164398();
+  hwIRQLeaveCritical();
+  hwIRQEnterCritical();
   // sndProfStartPCM(&prof.auxProcessing);
   salHandleAuxProcessing();
   // sndProfStopPMC(&prof.auxProcessing);
-  fn_801643B8();
-  fn_80164398();
+  hwIRQLeaveCritical();
+  hwIRQEnterCritical();
   lbl_8047B05F ^= 1;
   lbl_8047B05E = (lbl_8047B05E + 1) % 3;
 
@@ -189,9 +189,9 @@ void snd_handle_irq(void) {
   // sndProfPausePMC(&prof.sequencer);
   // sndProfStartPMC(&prof.synthesizer);
   // sndProfPausePMC(&prof.synthesizer);
-  fn_801643B8();
+  hwIRQLeaveCritical();
   for (r = 0; r < 5; ++r) {
-    fn_80164398();
+    hwIRQEnterCritical();
     hwSetTimeOffset(r);
     // sndProfStartPMC(&prof.sequencer);
     fn_801496A0(256);
@@ -199,25 +199,25 @@ void snd_handle_irq(void) {
     // sndProfStartPMC(&prof.synthesizer);
     synthHandle(256);
     // sndProfPausePMC(&prof.synthesizer);
-    fn_801643B8();
+    hwIRQLeaveCritical();
   }
 
   // sndProfStopPMC(&prof.sequencer);
   // sndProfStopPMC(&prof.synthesizer);
-  fn_80164398();
+  hwIRQEnterCritical();
   hwSetTimeOffset(0);
   // sndProfStartPMC(&prof.emitters);
   fn_8015F620();
   // sndProfStopPMC(&prof.emitters);
-  fn_801643B8();
-  fn_80164398();
+  hwIRQLeaveCritical();
+  hwIRQEnterCritical();
   // sndProfStartPMC(&prof.streaming);
   fn_8014DF20();
   // sndProfStopPMC(&prof.streaming);
-  fn_801643B8();
-  fn_80164398();
+  hwIRQLeaveCritical();
+  hwIRQEnterCritical();
   vsSampleUpdates();
-  fn_801643B8();
+  hwIRQLeaveCritical();
   // sndProfUpdateMisc(&prof);
 
   // if (sndProfUserCallback) {
@@ -234,7 +234,7 @@ s32 hwInit(u32* frq, u16 numVoices, u16 numStudios, u32 flags) {
     if (salInitDspCtrl(numVoices, numStudios, (flags & 1) != 0) != 0) {
       if (fn_80164148(flags)) {
         hwEnableIrq();
-        fn_801640C4();
+        salStartAi();
         return 0;
       }
     } else {
@@ -250,7 +250,7 @@ void hwExit() {
   salExitDspCtrl();
   salExitAi();
   hwEnableIrq();
-  fn_80164324();
+  hwExitIrq();
 }
 
 /* NAME-T1 fn_8016245C */

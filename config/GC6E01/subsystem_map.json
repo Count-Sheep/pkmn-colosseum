@@ -38897,7 +38897,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801640C4",
+"name": "salStartAi",
 "addr": "0x801640C4",
 "size": 32,
 "label": "musyx",
@@ -38961,7 +38961,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80164324",
+"name": "hwExitIrq",
 "addr": "0x80164324",
 "size": 4,
 "label": "musyx",
@@ -38985,7 +38985,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80164398",
+"name": "hwIRQEnterCritical",
 "addr": "0x80164398",
 "size": 32,
 "label": "musyx",
@@ -38993,7 +38993,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801643B8",
+"name": "hwIRQLeaveCritical",
 "addr": "0x801643B8",
 "size": 32,
 "label": "musyx",

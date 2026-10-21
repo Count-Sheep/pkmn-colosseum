@@ -2353,11 +2353,11 @@ extern u8   fn_80163CA8();
 extern u32  aramGetStreamBufferAddress(u32 idx, u32 *out);
 extern void aramFreeStreamBuffer();
 extern u32  salInitAi(void(*fnptr)(void), u32 d, u32 a);
-extern void fn_801640C4(void);
+extern void salStartAi(void);
 extern u32  salExitAi(void);
 extern u32  fn_80164148(u32 d);
 extern u32  fn_80164204(void);
-extern void fn_80164324(void);
+extern void hwExitIrq(void);
 extern void hwInitIrq(void);
 extern u32 salGetStartDelay(void);
 extern u32  fn_801643D8(u32 size);
@@ -2390,8 +2390,8 @@ extern u8 lbl_8047B05E;
 extern u8 lbl_8047B05F;
 extern u32 lbl_8047B024;
 extern void streamCorrectLoops(void);
-extern u32 fn_80164398(void);
-extern u32 fn_801643B8(void);
+extern u32 hwIRQEnterCritical(void);
+extern u32 hwIRQLeaveCritical(void);
 extern u8* salAiGetDest(void);
 extern void salCtrlDsp(u32 arg);
 extern void salHandleAuxProcessing(void);
@@ -2422,13 +2422,13 @@ void snd_handle_irq(void) {
     }
 
     streamCorrectLoops();
-    fn_80164398();
+    hwIRQEnterCritical();
     salCtrlDsp((u32)salAiGetDest());
-    fn_801643B8();
-    fn_80164398();
+    hwIRQLeaveCritical();
+    hwIRQEnterCritical();
     salHandleAuxProcessing();
-    fn_801643B8();
-    fn_80164398();
+    hwIRQLeaveCritical();
+    hwIRQEnterCritical();
 
     lbl_8047B05F ^= 1;
     lbl_8047B05E = (lbl_8047B05E + 1) % 3;
@@ -2437,26 +2437,26 @@ void snd_handle_irq(void) {
             sndGetIrqVoice(voice)->changed[i] = 0;
         }
     }
-    fn_801643B8();
+    hwIRQLeaveCritical();
 
     for (frame = 0; frame < 5; frame++) {
-        fn_80164398();
+        hwIRQEnterCritical();
         hwSetTimeOffset(frame);
         fn_801496A0(0x100);
         synthHandle(0x100);
-        fn_801643B8();
+        hwIRQLeaveCritical();
     }
 
-    fn_80164398();
+    hwIRQEnterCritical();
     hwSetTimeOffset(0);
     fn_8015F620();
-    fn_801643B8();
-    fn_80164398();
+    hwIRQLeaveCritical();
+    hwIRQEnterCritical();
     fn_8014DF20();
-    fn_801643B8();
-    fn_80164398();
+    hwIRQLeaveCritical();
+    hwIRQEnterCritical();
     vsSampleUpdates();
-    fn_801643B8();
+    hwIRQLeaveCritical();
 }
 
 #pragma push
@@ -2475,7 +2475,7 @@ u32 hwInit(u32 a, u16 b, u32 c, u32 d) {
      && salInitDspCtrl(b, c, (u8)(d & 1)) != 0
      && fn_80164148(d) != 0) {
         hwEnableIrq();
-        fn_801640C4();
+        salStartAi();
         return 0;
     }
     return -1;
@@ -2490,7 +2490,7 @@ void hwExit(void) {
     salExitDspCtrl();
     salExitAi();
     hwEnableIrq();
-    fn_80164324();
+    hwExitIrq();
 }
 extern u8  lbl_8047B050;
 extern u32 lbl_8047B028;
@@ -3731,7 +3731,8 @@ u32 salInitAi(void(*fnptr)(void), u32 d, u32 a) {
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-void fn_801640C4(void) { AIStartDMA(); }
+/* NAME-T1 fn_801640C4 */
+void salStartAi(void) { AIStartDMA(); }
 #pragma pop
 u32 salExitAi(void) {
     extern u32 lbl_8047B09C;
@@ -3867,7 +3868,8 @@ void hwInitIrq(void) {
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-void fn_80164324(void) {}
+/* NAME-T1 fn_80164324 */
+void hwExitIrq(void) {}
 #pragma pop
 void hwEnableIrq(void) {
     extern u16 lbl_8047B084;
@@ -3892,12 +3894,14 @@ void hwDisableIrq(void) {
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-u32 fn_80164398(void) { return OSDisableInterrupts(); }
+/* NAME-T1 fn_80164398 */
+u32 hwIRQEnterCritical(void) { return OSDisableInterrupts(); }
 #pragma pop
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-u32 fn_801643B8(void) { return OSEnableInterrupts(); }
+/* NAME-T1 fn_801643B8 */
+u32 hwIRQLeaveCritical(void) { return OSEnableInterrupts(); }
 #pragma pop
 #pragma push
 #pragma optimization_level 4
