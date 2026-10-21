@@ -2219,7 +2219,8 @@ extern u32 lbl_80478BF0;
 #pragma push
 #pragma optimization_level 4
 #pragma optimizewithasm off
-u32 fn_80162070(void) {
+/* NAME-T1 fn_80162070 */
+u32 sndRand(void) {
     u32 temp;
 
     temp = lbl_80478BF0 * 0xA8351D63;
@@ -2364,7 +2365,8 @@ extern void fn_80164400(u32 a);
 #pragma push
 #pragma optimization_level 0
 #pragma optimizewithasm off
-void fn_801621BC(u32* ptr) { *ptr <<= 8; }
+/* NAME-T1 fn_801621BC */
+void sndConvertMs(u32* ptr) { *ptr <<= 8; }
 #pragma pop
 #pragma push
 #pragma optimization_level 4
@@ -2379,7 +2381,8 @@ void sndConvertTicks(u32* ptr, u32 divisor) {
 #pragma optimization_level 4
 #pragma optimizewithasm off
 /* identity: sndConvert2Ms (MusyX runtime, snd_service.c) */
-u32 fn_80162214(u32 time) { return time / 256; }
+/* NAME-T1 fn_80162214 */
+u32 sndConvert2Ms(u32 time) { return time / 256; }
 #pragma pop
 extern u8 lbl_8047AF18;
 extern u8 lbl_8047B05D;

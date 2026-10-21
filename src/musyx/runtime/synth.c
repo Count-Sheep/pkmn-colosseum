@@ -223,7 +223,7 @@ extern void macSetPedalState(SYNTH_VOICE* svoice, u32 state);
 extern u32 sndGetPitch(u8 key, u32 sInfo);
 extern s32 sndPitchUpOne(u16 note);
 extern s16 sndSin(u16 angle);
-extern void fn_801621BC(u32* ms);                         /* fn_801621BC */
+extern void sndConvertMs(u32* ms);                         /* sndConvertMs */
 extern u32 adsrHandleLowPrecision(ADSR_VARS* adsr, u16* adsr_start, u16* adsr_delta);
 extern u32 adsrRelease(ADSR_VARS* adsr);
 extern u32 fn_8016246C(u32 v);                            /* fn_8016246C */
@@ -1273,7 +1273,7 @@ void synthVolume(u8 volume, u16 time, u8 vGroup, u8 seqMode, u32 seqId) {
   SYNTHMasterFader* smf; // r31
 
   if ((ltime = time) != 0) {
-    fn_801621BC(&ltime);
+    sndConvertMs(&ltime);
   }
 
   switch (vGroup) {
@@ -1345,7 +1345,7 @@ void synthPauseVolume(u8 volume, u16 time, u8 vGroup) {
     ++time;
   }
   ltime = time & 0xffff;
-  fn_801621BC(&ltime);
+  sndConvertMs(&ltime);
 
   switch (vGroup) {
   case SND_ALL_VOLGROUPS:

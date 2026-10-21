@@ -38337,7 +38337,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80162070",
+"name": "sndRand",
 "addr": "0x80162070",
 "size": 28,
 "label": "musyx",
@@ -38361,7 +38361,7 @@
 "seed": "range"
 },
 {
-"name": "fn_801621BC",
+"name": "sndConvertMs",
 "addr": "0x801621BC",
 "size": 16,
 "label": "musyx",
@@ -38377,7 +38377,7 @@
 "seed": "range"
 },
 {
-"name": "fn_80162214",
+"name": "sndConvert2Ms",
 "addr": "0x80162214",
 "size": 8,
 "label": "musyx",

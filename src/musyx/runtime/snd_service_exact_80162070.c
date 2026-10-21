@@ -13,7 +13,8 @@ extern u32 synthGetTicksPerSecond(u32 voice);
 typedef s32 (*PeopleCmpFn)(u8* a, u8* b);
 
 /* sndRand */
-u16 fn_80162070(void)
+/* NAME-T1 fn_80162070 */
+u16 sndRand(void)
 {
     lbl_80478BF0 *= 0xA8351D63;
     return lbl_80478BF0 >> 6;
@@ -63,7 +64,8 @@ void* sndBSearch(u8* key, u8* base, s32 count, u32 size, PeopleCmpFn cmp)
 }
 
 /* sndConvertMs */
-void fn_801621BC(u32* time)
+/* NAME-T1 fn_801621BC */
+void sndConvertMs(u32* time)
 {
     *time *= 0x100;
 }
@@ -74,7 +76,8 @@ void sndConvertTicks(u32* time, u32 voice)
 }
 
 /* sndConvert2Ms */
-u32 fn_80162214(u32 time)
+/* NAME-T1 fn_80162214 */
+u32 sndConvert2Ms(u32 time)
 {
     return time / 0x100;
 }
