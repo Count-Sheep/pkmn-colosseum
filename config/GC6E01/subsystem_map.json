@@ -17137,7 +17137,7 @@
 "seed": "range"
 },
 {
-"name": "fn_800C1310",
+"name": "TRKTargetStop",
 "addr": "0x800C1310",
 "size": 24,
 "label": "dolphin-sdk",

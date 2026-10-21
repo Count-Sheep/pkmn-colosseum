@@ -27,7 +27,7 @@ extern s32 lbl_803FE7D0[3];
 extern void* memset(void* destination, s32 value, u32 size);
 extern s32 TRKWriteUARTN(void* message, u32 length);
 extern void MWTRACE(s32 level, const char* format, ...);
-extern s32 fn_800C1310(void);
+extern s32 TRKTargetStop(void);
 extern s32 TRKTargetStopped(void);
 extern s32 TRKTargetContinue(void);
 extern void TRKSetBufferPosition(TRKBuffer* buffer, u32 position);
@@ -100,7 +100,7 @@ s32 TRKDoStop(TRKBuffer* buffer)
 {
     u8 error;
 
-    switch (fn_800C1310()) {
+    switch (TRKTargetStop()) {
     case 0:
         error = 0;
         break;
