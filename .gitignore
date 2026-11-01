@@ -64,3 +64,5 @@ tools/symbolmap/xd_ref/GXXE01/_xdsplit
 tools/symbolmap/xd_ref/GXXE01/config/
 tools/decomp_work/scratch/
 .pi-sessions/
+# Local compiler candidate kept for review
+/debug_source.c
